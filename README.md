@@ -42,6 +42,9 @@ password `password`:
 
 Names, schools and figures in the demo data are examples only.
 
+Use the **Light / Dark / System** switch in the top bar (or on the sign-in page) to change the theme.
+The choice is remembered on that device; *System* follows the device setting.
+
 ### With PostgreSQL
 
 ```bash

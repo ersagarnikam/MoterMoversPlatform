@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { homeFor } from '../App'
 import { useAuth } from '../auth'
 import StageStripe from '../components/StageStripe'
+import ThemeSwitch from '../components/ThemeSwitch'
 
 const DEMO_ACCOUNTS = [
   ['teacher@oakfield.test', 'Class teacher'],
@@ -41,6 +42,9 @@ export default function LoginPage() {
         <StageStripe />
         <h1>Motor Movers</h1>
         <p>Screening, daily sessions and progress for schools, practitioners and parents.</p>
+        <div>
+          <ThemeSwitch />
+        </div>
       </div>
       <form className="card login-card" onSubmit={submit}>
         <h2>Sign in</h2>

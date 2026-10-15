@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { Role } from '../api'
 import { useAuth } from '../auth'
 import StageStripe from './StageStripe'
+import ThemeSwitch from './ThemeSwitch'
 
 const NAV: Record<Role, { to: string; label: string }[]> = {
   TEACHER: [
@@ -46,6 +47,7 @@ export default function Layout() {
           <span>Motor Movers</span>
         </div>
         <div className="who">
+          <ThemeSwitch />
           <span>
             {user.displayName} · <span className="muted-on-dark">{ROLE_LABEL[user.role]}</span>
           </span>
