@@ -77,8 +77,11 @@ public class ClassroomService {
                 .map(l -> l.covers(schoolClass.getStage()))
                 .orElse(false);
 
+        // Once today's session is done, keep showing it rather than jumping ahead to tomorrow's.
+        Optional<ProgrammeSession> todays = records.findBySchoolClassIdAndSessionDate(classId, today)
+                .map(DailySessionRecord::getSession);
         ClassroomViews.SessionCard next = licensed
-                ? nextSession(schoolClass).map(ClassroomViews.SessionCard::of).orElse(null)
+                ? todays.or(() -> nextSession(schoolClass)).map(ClassroomViews.SessionCard::of).orElse(null)
                 : null;
 
         List<LocalDate> window = SchoolDays.lastSchoolDays(today, COUNTER_DAYS);

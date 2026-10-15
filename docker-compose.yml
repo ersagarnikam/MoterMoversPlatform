@@ -1,0 +1,15 @@
+# Local PostgreSQL for running the API with the "postgres" profile.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: motormovers
+      POSTGRES_USER: motormovers
+      POSTGRES_PASSWORD: motormovers
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
