@@ -1,0 +1,39 @@
+package uk.co.motormovers.platform.child;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import uk.co.motormovers.platform.common.PlatformProperties;
+
+/** Deletes children's records a set time after they leave. Data we no longer hold cannot be lost. */
+@Component
+public class RetentionJob {
+
+    private static final Logger log = LoggerFactory.getLogger(RetentionJob.class);
+
+    private final ChildRepository children;
+    private final PlatformProperties properties;
+
+    public RetentionJob(ChildRepository children, PlatformProperties properties) {
+        this.children = children;
+        this.properties = properties;
+    }
+
+    @Scheduled(cron = "0 30 2 * * *")
+    @Transactional
+    public int purgeLeavers() {
+        LocalDate cutoff = LocalDate.now().minusDays(properties.retentionDays());
+        List<Child> expired = children.findByLeftOnBefore(cutoff);
+        children.deleteAll(expired);
+        if (!expired.isEmpty()) {
+            log.info("Retention: deleted {} child records (left before {})", expired.size(), cutoff);
+        }
+        return expired.size();
+    }
+}

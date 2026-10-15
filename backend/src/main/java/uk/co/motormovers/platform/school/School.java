@@ -68,4 +68,10 @@ public class School {
     public boolean isTrustCanSeeChildren() {
         return trustCanSeeChildren;
     }
+
+    public void setPrivacy(boolean fullNamesEnabled, boolean videoEnabled, boolean trustCanSeeChildren) {
+        this.fullNamesEnabled = fullNamesEnabled;
+        this.videoEnabled = videoEnabled;
+        this.trustCanSeeChildren = trustCanSeeChildren;
+    }
 }

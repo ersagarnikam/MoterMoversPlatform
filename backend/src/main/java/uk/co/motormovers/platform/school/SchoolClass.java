@@ -67,4 +67,8 @@ public class SchoolClass {
     public ColourStage getStage() {
         return stage;
     }
+
+    public void moveToStage(ColourStage stage) {
+        this.stage = stage;
+    }
 }
