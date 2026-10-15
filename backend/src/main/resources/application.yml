@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: motor-movers-platform
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+platform:
+  # A deployment serves one data region. UK data stays in UK hosting, Australian data in Australia.
+  region: UK
+  # Records of children who have left are deleted this many days after their leaving date.
+  retention-days: 365
+  # A class below this daily participation rate is flagged on the head teacher dashboard.
+  participation-flag-threshold: 0.70
+  jwt:
+    # Override in every real environment (env var PLATFORM_JWT_SECRET). Must be at least 32 bytes.
+    secret: ${PLATFORM_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
+    ttl-minutes: 480
+  cors:
+    allowed-origins: http://localhost:5173
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:motormovers;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+
+platform:
+  seed-demo-data: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/motormovers}
+    username: ${DATABASE_USERNAME:motormovers}
+    password: ${DATABASE_PASSWORD:motormovers}
+
+platform:
+  seed-demo-data: ${SEED_DEMO_DATA:false}
