@@ -252,3 +252,9 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 .theme-switch button { background: transparent; border: none; color: #c8d3de; font: inherit; font-size: 0.8rem; padding: 0.25rem 0.65rem; border-radius: 999px; cursor: pointer; }
 .theme-switch button[aria-pressed='true'] { background: #fff; color: #1f2b3a; font-weight: 600; }
 .theme-switch button:focus-visible { outline: 2px solid var(--bar); outline-offset: 1px; }
+
+/* Parent app: invite codes on a child's profile, links on the head dashboard */
+.invite-code { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.12em; margin: 0.5rem 0; }
+.parent-links { margin-top: 1rem; }
+.toggle { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.profile .card + .card { margin-top: 1rem; }

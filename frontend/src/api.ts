@@ -165,7 +165,28 @@ export interface SchoolRow {
   licenceStatus: string
   endsOn: string | null
   stages: ColourStage[]
+  parentLinksEnabled: boolean
 }
+
+export interface ParentInvite {
+  code: string
+  childName: string
+  className: string
+  expiresOn: string
+}
+
+export interface ParentLinkRow {
+  linkId: number
+  childId: number
+  childName: string
+  className: string
+  parentName: string
+  parentEmail: string
+  linkedAt: string
+}
+
+/** The three kinds of content Pat and Laura sign off. All share the ContentItem shape. */
+export type ContentKind = 'content' | 'home-activities' | 'guidance'
 
 const TOKEN_KEY = 'mm.token'
 
@@ -241,8 +262,16 @@ export const api = {
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
-  content: () => request<ContentItem[]>('GET', '/api/admin/content'),
-  approve: (id: number) => request<ContentItem>('POST', `/api/admin/content/${id}/approve`),
-  reject: (id: number) => request<ContentItem>('POST', `/api/admin/content/${id}/reject`),
+  content: (kind: ContentKind = 'content') => request<ContentItem[]>('GET', `/api/admin/${kind}`),
+  approve: (id: number, kind: ContentKind = 'content') =>
+    request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
+  reject: (id: number, kind: ContentKind = 'content') =>
+    request<ContentItem>('POST', `/api/admin/${kind}/${id}/reject`),
   schools: () => request<SchoolRow[]>('GET', '/api/admin/schools'),
+  setParentLinks: (schoolId: number, enabled: boolean) =>
+    request<void>('POST', `/api/admin/schools/${schoolId}/parent-links`, { enabled }),
+  createParentInvite: (childId: number) => request<ParentInvite>('POST', `/api/children/${childId}/parent-invites`),
+  parentLinks: (schoolId: number) => request<ParentLinkRow[]>('GET', `/api/schools/${schoolId}/parent-links`),
+  removeParentLink: (schoolId: number, linkId: number) =>
+    request<void>('DELETE', `/api/schools/${schoolId}/parent-links/${linkId}`),
 }

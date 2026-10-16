@@ -12,6 +12,7 @@ Built from the *How the platform works* overview and the *Motor Movers, online* 
 | API (`backend/`) | Java 21, Spring Boot 4, Spring Security (JWT), Spring Data JPA, Flyway |
 | Database | H2 in memory for development, PostgreSQL for real environments |
 | Web app (`frontend/`) | React 19, TypeScript, Vite, React Router |
+| Parent app (`mobile/`) | Expo SDK 58, React Native, TypeScript, Expo Router (iOS, Android and web) |
 
 ## Running it locally
 
@@ -37,13 +38,32 @@ password `password`:
 | `head@oakfield.test` | Head teacher / SENCo, Oakfield Primary | Progress dashboard |
 | `trust@northbridge.test` | Trust lead, Northbridge Academy Trust | Trust schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
-| `parent@example.test` | Parent or carer | Parent course |
+| `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
 | `admin@motormovers.test` | Motor Movers team | Content approval |
 
 Names, schools and figures in the demo data are examples only.
 
 Use the **Light / Dark / System** switch in the top bar (or on the sign-in page) to change the theme.
 The choice is remembered on that device; *System* follows the device setting.
+
+If the API runs somewhere other than port 8080, start the web app with `API_URL=http://localhost:9090 npm run dev`.
+
+### Parent app
+
+```bash
+cd mobile
+npm install
+npx expo start          # scan the QR code with Expo Go on a phone on the same Wi-Fi
+npx expo start --web    # or open it in a browser at http://localhost:8081
+```
+
+In development the app finds the API on the machine running Expo, port 8080. Set
+`EXPO_PUBLIC_API_URL` to use another address (for example `EXPO_PUBLIC_API_URL=https://api.example.org`).
+Sign in as `parent@example.test` / `password`, or create a new account and link a child with the demo
+code **HOME-TIME** (works once per database; restart the API to reset it).
+
+Store builds go through EAS (`npx eas-cli@latest build`). Real builds must use an `https://` API address:
+Android blocks plain `http://` outside development.
 
 ### With PostgreSQL
 
@@ -61,6 +81,7 @@ Set `SEED_DEMO_DATA=true` to load the demo data into PostgreSQL. Flyway creates 
 ```bash
 cd backend && mvn verify       # unit and API integration tests
 cd frontend && npm run build   # type-check and production build
+cd mobile && npm run typecheck # parent app type-check
 ```
 
 GitHub Actions runs both on every push (`.github/workflows/ci.yml`).
@@ -128,6 +149,7 @@ backend/
     screening/    screening items, results, readiness profile
     dashboard/    head teacher and trust dashboards, exports
     training/     courses, cohorts, enrolments, certificates
+    family/       parent app: invite codes, parent links, progress, home activities, guidance
     seed/         demo data (dev profile only)
     common/       shared config, exceptions, enums and helpers
                   each feature splits into controller/, service/, model/ (entities, enums),
@@ -137,7 +159,44 @@ frontend/
   src/pages/      one file per screen
   src/api.ts      typed API client
   src/outbox.ts   offline queue for screening scores
+mobile/
+  src/app/        one file per screen (Expo Router); (tabs)/ holds the five tabs
+  src/components/ shared UI
+  src/lib/        API client, sign-in, offline queue for home sessions, theme
 ```
+
+## Parent app
+
+A phone app for parents and carers (`mobile/`), with five tabs:
+
+- **Today**: one short home activity a day for the child's colour stage, played step by step with a
+  gentle timer, and a 14-day counter. Sessions are saved on the phone first and sent when online.
+  Parents without a linked child pick a stage.
+- **Progress**: the child's colour stage, the six areas as *Emerging / Developing / Secure* (never raw
+  scores), the dates of movement checks, and how often the class did its daily session. The *Not a
+  diagnosis* banner is always shown. Parents can give the child a name that is kept on the phone only.
+- **Guidance**: short articles approved by Pat and Laura.
+- **Course**: the parent course: book a place and see attendance.
+- **Account**: what the school can see, and signing out.
+
+How a parent gets linked to a child:
+
+1. The platform team switches **Parent app** on for the school (*Schools & licences*). It is off by default.
+2. A teacher or head opens a child's readiness profile and creates a parent code, for example `K7QX-3MPA`.
+   Codes work once and expire after 14 days.
+3. The parent creates an account in the app and enters the code.
+4. The head sees every link under *Parent app links* on the progress dashboard and can remove any of them.
+   The parent can also remove the child from their app.
+
+| Rule | Where |
+|---|---|
+| A parent sees a child only through a school-issued code, only while the school keeps parent links on, and only while the child is on roll | `security/service/AccessPolicy.java` (`requireParentOf`) |
+| Every time a parent opens progress is in the school's record access log | `family/service/FamilyService.java` |
+| Parents see programme bands, not scores or fractions | `family/dto/FamilyViews.java` (`AreaBand`) |
+| Home activities and guidance go through the same sign-off and wording check as class sessions | `content/controller/HomeContentController.java` |
+| A parent's home activity log is theirs: it is not shown to the school | `family/model/HomeSessionRecord.java` |
+| Bad invite codes all get the same message, so codes cannot be probed | `family/service/FamilyService.java` |
+| The sign-in token is kept in the phone's secure store; parent sign-ins last 30 days | `mobile/src/lib/storage.ts`, `platform.jwt.parent-ttl-minutes` |
 
 ## Not built yet
 
@@ -147,8 +206,10 @@ These come later in the roadmap or need decisions first:
 - Online payment for licences and courses (Phase 0 uses an off-the-shelf course platform)
 - Video calls for live training sessions, email reminders and calendar invites
 - Inspection evidence PDF export
-- Parent home app (month 13+), nursery mode, school-linked parent invites
-- Self-service school sign-up, staff account management and a password reset flow
+- Parent app: filmed home activity videos, push reminders, email verification, rate limiting on sign-in
+  and code entry, and online payment for the parent course (booking a place does not take payment yet)
+- Nursery mode
+- Self-service school sign-up, staff account management and a password reset flow (parents included)
 - The real screening items and stage mapping. `screening/util/ReadinessRules.java` holds placeholder
   thresholds until Pat and Laura confirm them.
 

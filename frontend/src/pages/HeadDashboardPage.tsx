@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type SchoolDashboard } from '../api'
+import { api, type ParentLinkRow, type SchoolDashboard } from '../api'
 import { useAuth } from '../auth'
 import { pct } from '../stages'
 
@@ -94,6 +94,70 @@ export default function HeadDashboardPage() {
           </button>
         </section>
       </div>
+      <ParentLinks schoolId={schoolId} />
     </>
+  )
+}
+
+/** Who can see which child in the parent app. Teachers issue codes from a child's profile. */
+function ParentLinks({ schoolId }: { schoolId: number }) {
+  const [links, setLinks] = useState<ParentLinkRow[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.parentLinks(schoolId).then(setLinks).catch((e) => setError(e.message))
+  }, [schoolId])
+
+  async function remove(link: ParentLinkRow) {
+    if (!window.confirm(`Remove ${link.parentName}'s access to ${link.childName}?`)) return
+    try {
+      await api.removeParentLink(schoolId, link.linkId)
+      setLinks((all) => all?.filter((l) => l.linkId !== link.linkId) ?? null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not remove')
+    }
+  }
+
+  return (
+    <section className="card parent-links">
+      <h3>Parent app links</h3>
+      <p className="muted">
+        Parents and carers who can see a child's stage and progress. Each view is in the record access log.
+      </p>
+      {error && <p className="error">{error}</p>}
+      {links && links.length === 0 && <p className="muted">No parents linked yet.</p>}
+      {links && links.length > 0 && (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Child</th>
+                <th>Class</th>
+                <th>Parent or carer</th>
+                <th>Linked</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {links.map((l) => (
+                <tr key={l.linkId}>
+                  <td>{l.childName}</td>
+                  <td>{l.className}</td>
+                  <td>
+                    {l.parentName} <span className="muted">· {l.parentEmail}</span>
+                  </td>
+                  <td>{l.linkedAt.slice(0, 10)}</td>
+                  <td>
+                    <button className="btn" onClick={() => remove(l)}>
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   )
 }

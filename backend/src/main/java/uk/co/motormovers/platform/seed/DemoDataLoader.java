@@ -27,8 +27,18 @@ import uk.co.motormovers.platform.common.config.PlatformProperties;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
+import uk.co.motormovers.platform.content.model.GuidanceArticle;
+import uk.co.motormovers.platform.content.model.HomeActivity;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
+import uk.co.motormovers.platform.content.repository.GuidanceArticleRepository;
+import uk.co.motormovers.platform.content.repository.HomeActivityRepository;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
+import uk.co.motormovers.platform.family.model.HomeSessionRecord;
+import uk.co.motormovers.platform.family.model.ParentInvite;
+import uk.co.motormovers.platform.family.model.ParentLink;
+import uk.co.motormovers.platform.family.repository.HomeSessionRecordRepository;
+import uk.co.motormovers.platform.family.repository.ParentInviteRepository;
+import uk.co.motormovers.platform.family.repository.ParentLinkRepository;
 import uk.co.motormovers.platform.school.model.Licence;
 import uk.co.motormovers.platform.school.model.LicencePlan;
 import uk.co.motormovers.platform.school.model.School;
@@ -62,6 +72,8 @@ public class DemoDataLoader implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DemoDataLoader.class);
     public static final String DEMO_PASSWORD = "password";
+    /** An unused invite for a second child in Ms Hardy's class. Parents type it as HOME-TIME. */
+    public static final String DEMO_INVITE_CODE = "HOMETIME";
 
     private final TrustRepository trusts;
     private final SchoolRepository schools;
@@ -75,6 +87,11 @@ public class DemoDataLoader implements ApplicationRunner {
     private final ScreeningResultRepository results;
     private final CourseRepository courses;
     private final CohortRepository cohorts;
+    private final HomeActivityRepository homeActivities;
+    private final GuidanceArticleRepository guidance;
+    private final ParentLinkRepository parentLinks;
+    private final ParentInviteRepository parentInvites;
+    private final HomeSessionRecordRepository homeRecords;
     private final PasswordEncoder passwordEncoder;
     private final PlatformProperties properties;
     private final Clock clock;
@@ -84,7 +101,15 @@ public class DemoDataLoader implements ApplicationRunner {
             SchoolClassRepository classes, AppUserRepository users, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, ScreeningItemRepository items,
             ScreeningResultRepository results, CourseRepository courses, CohortRepository cohorts,
-            PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock) {
+            HomeActivityRepository homeActivities, GuidanceArticleRepository guidance,
+            ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
+            HomeSessionRecordRepository homeRecords, PasswordEncoder passwordEncoder, PlatformProperties properties,
+            Clock clock) {
+        this.homeActivities = homeActivities;
+        this.guidance = guidance;
+        this.parentLinks = parentLinks;
+        this.parentInvites = parentInvites;
+        this.homeRecords = homeRecords;
         this.trusts = trusts;
         this.schools = schools;
         this.licences = licences;
@@ -128,7 +153,7 @@ public class DemoDataLoader implements ApplicationRunner {
         users.save(new AppUser("head@oakfield.test", "Mr Patel", hash, Role.HEAD, oakfield.getId(), trust.getId()));
         users.save(new AppUser("trust@northbridge.test", "Ms Okafor", hash, Role.TRUST_LEAD, null, trust.getId()));
         users.save(new AppUser("practitioner@example.test", "Sam Rivers", hash, Role.PRACTITIONER, null, null));
-        users.save(new AppUser("parent@example.test", "Jo Bennett", hash, Role.PARENT, null, null));
+        AppUser jo = users.save(new AppUser("parent@example.test", "Jo Bennett", hash, Role.PARENT, null, null));
         AppUser hardy = users.save(new AppUser("teacher@oakfield.test", "Ms Hardy", hash, Role.TEACHER,
                 oakfield.getId(), trust.getId()));
 
@@ -152,6 +177,7 @@ public class DemoDataLoader implements ApplicationRunner {
 
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
         seedTraining(today);
+        seedParentApp(oakfield, y2r, jo, today);
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
     }
 
@@ -296,6 +322,139 @@ public class DemoDataLoader implements ApplicationRunner {
                         Math.min(3, s1 + random.nextInt(2)), second, "demo"));
             }
         }
+    }
+
+    /**
+     * Oakfield has parent links switched on. Jo Bennett is linked to a child in Ms Hardy's class and has
+     * done some home activities; a second invite code, HOME-TIME, is ready to redeem in the demo.
+     */
+    private void seedParentApp(School oakfield, SchoolClass y2r, AppUser parent, LocalDate today) {
+        oakfield.setParentLinksEnabled(true);
+        Map<ColourStage, List<HomeActivity>> byStage = seedHomeActivities();
+        seedGuidance();
+
+        List<Child> roster = children.findBySchoolClassIdAndLeftOnIsNullOrderByInitials(y2r.getId());
+        Child child = roster.getFirst();
+        parentLinks.save(new ParentLink(parent, child));
+        parentInvites.save(new ParentInvite(roster.get(1), DEMO_INVITE_CODE, "teacher@oakfield.test",
+                today.plusDays(14)));
+
+        // Leave today undone so the parent can complete it in the demo.
+        List<HomeActivity> sequence = byStage.get(child.getCurrentStage());
+        int n = 0;
+        for (int daysAgo : new int[] {12, 9, 7, 5, 4, 2, 1}) {
+            homeRecords.save(new HomeSessionRecord(UUID.randomUUID().toString(), parent.getId(), child.getId(),
+                    sequence.get(n++ % sequence.size()), today.minusDays(daysAgo)));
+        }
+    }
+
+    private Map<ColourStage, List<HomeActivity>> seedHomeActivities() {
+        Object[][] defs = {
+            {"Starfish and seed", "Stretching out and curling up: body awareness", 5, new String[] {
+                "Lie on your backs side by side, arms and legs out wide like a starfish",
+                "Curl up small into a seed and hold for a count of five",
+                "Stretch back out slowly. Repeat five times",
+                "Finish lying still and breathing slowly together"}},
+            {"Animal walk parade", "Moving on hands and feet for strength and coordination", 8, new String[] {
+                "Bear walk across the room on hands and feet",
+                "Crab walk back, tummy up",
+                "Frog jumps to the door and back",
+                "Choose a favourite animal and do it once more, slowly"}},
+            {"Cushion path", "Balance on a wobbly path", 6, new String[] {
+                "Lay a line of cushions or folded towels on the floor",
+                "Walk along the path without stepping off",
+                "Try it again, walking backwards with a grown-up's hand",
+                "Finish by standing on one cushion on one leg, then the other"}},
+            {"Sock ball catch", "Aiming and catching with a soft ball", 6, new String[] {
+                "Roll a pair of socks into a ball",
+                "Stand two big steps apart and throw underarm to each other",
+                "Count how many catches you make in a row",
+                "Try throwing into a basket or box from the same spot"}},
+            {"Cross-crawl march", "Crossing the middle of the body", 5, new String[] {
+                "March on the spot, lifting knees high",
+                "Touch each knee with the opposite hand as it comes up",
+                "Do ten slowly, then ten a bit faster",
+                "Finish with ten slow ones to a favourite song"}},
+            {"Rocking boat", "Rocking and rolling for balance", 5, new String[] {
+                "Sit on the floor and hug your knees",
+                "Rock gently backwards and forwards like a boat",
+                "Rock side to side without letting go",
+                "Lie down and roll slowly like a log to finish"}},
+            {"Aeroplane", "Lying on the tummy, arms and legs lifted, for a strong back", 5, new String[] {
+                "Lie on your tummies facing each other",
+                "Lift arms and legs off the floor like an aeroplane",
+                "Hold while you count to five, then rest",
+                "Repeat three times and see if the count can grow"}},
+        };
+        Map<ColourStage, List<HomeActivity>> byStage = new EnumMap<>(ColourStage.class);
+        for (ColourStage stage : ColourStage.values()) {
+            List<HomeActivity> list = new ArrayList<>();
+            for (int position = 1; position <= 5; position++) {
+                Object[] d = defs[(stage.ordinal() + position - 1) % defs.length];
+                HomeActivity a = new HomeActivity(stage, position, (String) d[0], (String) d[1], (Integer) d[2],
+                        null, List.of((String[]) d[3]));
+                a.review(ContentStatus.APPROVED, "laura@neuroway.test");
+                list.add(homeActivities.save(a));
+            }
+            byStage.put(stage, list);
+        }
+        // A draft awaiting sign-off that fails the wording check on purpose.
+        homeActivities.save(new HomeActivity(ColourStage.YELLOW, 6, "Exercises for dyspraxia",
+                "Help with a diagnosis of dyspraxia at home.", 10, null, List.of("Warm up", "Wall push")));
+        return byStage;
+    }
+
+    private void seedGuidance() {
+        Object[][] approved = {
+            {"Why movement comes before pencil skills",
+                "Steady sitting and a strong core make writing and drawing easier.", null, 3,
+                "Before a child can hold a pencil comfortably, they need a body that stays steady while their "
+                        + "hand works. Crawling, rolling, climbing and balancing all build that steadiness.\n\n"
+                        + "The Motor Movers sessions at school follow the same order: big movements first, small "
+                        + "ones later. A few minutes of play at home each day helps the same skills grow.\n\n"
+                        + "You do not need equipment. Cushions, socks, a hallway and some music are plenty."},
+            {"Little and often",
+                "Five minutes most days does more than an hour once a week.", null, 2,
+                "Children build movement skills through repetition. A short, cheerful session most days "
+                        + "works better than a long one now and then.\n\n"
+                        + "Try linking the home activity to something that already happens every day, such as "
+                        + "after tea or before the bath. The app counts the days for you.\n\n"
+                        + "If a day is missed, simply pick it up again tomorrow."},
+            {"Making space for movement at home",
+                "Small homes work well. Here is how to set up safely.", null, 2,
+                "Clear a strip of floor about two metres long. Move anything sharp or breakable, and use a rug "
+                        + "or towel on hard floors.\n\n"
+                        + "Bare feet are best for balance activities, as long as the floor is safe.\n\n"
+                        + "Join in. Children copy what they see, and the activities are more fun together."},
+            {"Getting the most from the parent course",
+                "Three live sessions with the Motor Movers team.", null, 2,
+                "The parent course runs as three live online sessions of an hour each. Only adults are on "
+                        + "camera.\n\n"
+                        + "The trainers show each activity and explain why it helps. Questions about one "
+                        + "particular child are best taken to your child's school or your GP."},
+            {"Rolling, rocking and crawling",
+                "Why the early stages spend so long on the floor.", ColourStage.RED, 3,
+                "The first stages of the programme spend a lot of time rolling, rocking and crawling. These "
+                        + "movements help a child understand where their body is and how its two sides work "
+                        + "together.\n\n"
+                        + "At home, a rug and a bit of space are all you need. Make it a game: roll like a log, "
+                        + "rock like a boat, crawl through a tunnel of chairs."},
+            {"Balance games for the middle stages",
+                "Simple ways to practise balance on the way to school.", ColourStage.YELLOW, 2,
+                "Walking along a kerb line holding your hand, stepping only on the paving slabs, or standing "
+                        + "like a flamingo while you wait for the bus all count as balance practice.\n\n"
+                        + "Keep it light and stop while it is still fun."},
+        };
+        for (Object[] d : approved) {
+            GuidanceArticle a = new GuidanceArticle((String) d[0], (String) d[1], (String) d[4], (ColourStage) d[2],
+                    (Integer) d[3]);
+            a.review(ContentStatus.APPROVED, "laura@neuroway.test");
+            guidance.save(a);
+        }
+        guidance.save(new GuidanceArticle("Screen time and active time",
+                "Balancing tablets and TV with time on the move.",
+                "Draft for Pat and Laura to review.\n\nSuggest a movement break after every programme or game.",
+                null, 2));
     }
 
     private void seedTraining(LocalDate today) {

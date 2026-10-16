@@ -39,6 +39,10 @@ public final class ScreeningViews {
     public record RoundPoint(int round, LocalDate screenedOn, double overallFraction) {
     }
 
+    public record Readiness(boolean screened, List<AreaResult> areas, List<RoundPoint> history,
+            ColourStage suggestedStage) {
+    }
+
     public record Profile(Long childId, String reference, String name, String className, String banner,
             boolean screened, ColourStage suggestedStage, String suggestedStageName, ColourStage currentStage,
             List<AreaResult> areas, List<RoundPoint> history) {

@@ -96,29 +96,41 @@ public class ScreeningService {
         accessLog.save(new ChildAccessLog(child.getId(), child.getSchoolClass().getSchool().getId(), me.email(),
                 "VIEW_PROFILE"));
 
+        ScreeningViews.Readiness readiness = readiness(childId);
+        ColourStage suggested = readiness.suggestedStage();
+        return new ScreeningViews.Profile(child.getId(), "Child " + child.getId(), child.displayName(),
+                child.getSchoolClass().getName(), ScreeningViews.NOT_A_DIAGNOSIS, readiness.screened(), suggested,
+                suggested == null ? null : suggested.displayName(), child.getCurrentStage(), readiness.areas(),
+                readiness.history());
+    }
+
+    /**
+     * Areas from the latest screening round and the overall result of each round. No access check or
+     * logging here: callers check access and log the view first.
+     */
+    @Transactional(readOnly = true)
+    public ScreeningViews.Readiness readiness(Long childId) {
         List<ScreeningResult> all = results.findByChildIdOrderByRoundNumberAscScreenedOnAsc(childId);
         List<ScreeningViews.AreaResult> areas = new ArrayList<>();
         List<ScreeningViews.RoundPoint> history = new ArrayList<>();
-        ColourStage suggested = null;
-        if (!all.isEmpty()) {
-            int latest = all.getLast().getRoundNumber();
-            Map<MotorArea, List<Integer>> byArea = new EnumMap<>(MotorArea.class);
-            all.stream().filter(r -> r.getRoundNumber() == latest)
-                    .forEach(r -> byArea.computeIfAbsent(r.getItem().getArea(), a -> new ArrayList<>()).add(r.getScore()));
-            byArea.forEach((area, scores) -> {
-                double f = ReadinessRules.fraction(scores);
-                ReadinessBand band = ReadinessRules.band(f);
-                areas.add(new ScreeningViews.AreaResult(area, area.label(), f, band, band.label()));
-            });
-            all.stream().collect(Collectors.groupingBy(ScreeningResult::getRoundNumber, TreeMap::new, Collectors.toList()))
-                    .forEach((round, rs) -> history.add(new ScreeningViews.RoundPoint(round,
-                            rs.stream().map(ScreeningResult::getScreenedOn).min(Comparator.naturalOrder()).orElseThrow(),
-                            ReadinessRules.fraction(rs.stream().map(ScreeningResult::getScore).toList()))));
-            suggested = ReadinessRules.suggestedStage(history.getLast().overallFraction());
+        if (all.isEmpty()) {
+            return new ScreeningViews.Readiness(false, areas, history, null);
         }
-        return new ScreeningViews.Profile(child.getId(), "Child " + child.getId(), child.displayName(),
-                child.getSchoolClass().getName(), ScreeningViews.NOT_A_DIAGNOSIS, !all.isEmpty(), suggested,
-                suggested == null ? null : suggested.displayName(), child.getCurrentStage(), areas, history);
+        int latest = all.getLast().getRoundNumber();
+        Map<MotorArea, List<Integer>> byArea = new EnumMap<>(MotorArea.class);
+        all.stream().filter(r -> r.getRoundNumber() == latest)
+                .forEach(r -> byArea.computeIfAbsent(r.getItem().getArea(), a -> new ArrayList<>()).add(r.getScore()));
+        byArea.forEach((area, scores) -> {
+            double f = ReadinessRules.fraction(scores);
+            ReadinessBand band = ReadinessRules.band(f);
+            areas.add(new ScreeningViews.AreaResult(area, area.label(), f, band, band.label()));
+        });
+        all.stream().collect(Collectors.groupingBy(ScreeningResult::getRoundNumber, TreeMap::new, Collectors.toList()))
+                .forEach((round, rs) -> history.add(new ScreeningViews.RoundPoint(round,
+                        rs.stream().map(ScreeningResult::getScreenedOn).min(Comparator.naturalOrder()).orElseThrow(),
+                        ReadinessRules.fraction(rs.stream().map(ScreeningResult::getScore).toList()))));
+        return new ScreeningViews.Readiness(true, areas, history,
+                ReadinessRules.suggestedStage(history.getLast().overallFraction()));
     }
 
     private int roundFor(Long childId, LocalDate screenedOn) {

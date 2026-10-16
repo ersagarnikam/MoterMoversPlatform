@@ -1,7 +1,10 @@
 package uk.co.motormovers.platform.security.controller;
 
+import java.util.Locale;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,12 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.security.service.TokenService;
 import uk.co.motormovers.platform.user.model.AppUser;
+import uk.co.motormovers.platform.user.model.Role;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 @RestController
@@ -48,6 +54,28 @@ public class AuthController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email or password not recognised"));
         CurrentUser me = new CurrentUser(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole(),
                 user.getSchoolId(), user.getTrustId());
+        return new LoginResponse(tokens.issue(user), me);
+    }
+
+    public record RegisterRequest(@NotBlank @Email @Size(max = 200) String email,
+            @NotBlank @Size(min = 8, max = 200) String password, @NotBlank @Size(max = 100) String displayName) {
+    }
+
+    /**
+     * Parents and carers create their own account from the parent app. Every other role is set up by
+     * the platform team or a school. A new account sees no child until the school issues an invite code.
+     */
+    @PostMapping("/register")
+    @Transactional
+    public LoginResponse register(@Valid @RequestBody RegisterRequest request) {
+        String email = request.email().strip().toLowerCase(Locale.ROOT);
+        if (users.findByEmailIgnoreCase(email).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this email already exists");
+        }
+        AppUser user = users.save(new AppUser(email, request.displayName().strip(),
+                passwordEncoder.encode(request.password()), Role.PARENT, null, null));
+        CurrentUser me = new CurrentUser(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole(),
+                null, null);
         return new LoginResponse(tokens.issue(user), me);
     }
 

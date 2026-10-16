@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,7 +50,10 @@ public class AdminSchoolController {
     }
 
     public record SchoolRow(Long id, String name, String trustName, String region, String plan,
-            Licence.Status licenceStatus, LocalDate endsOn, Set<ColourStage> stages) {
+            Licence.Status licenceStatus, LocalDate endsOn, Set<ColourStage> stages, boolean parentLinksEnabled) {
+    }
+
+    public record ParentLinksRequest(boolean enabled) {
     }
 
     public record NewSchool(@NotBlank String name, Long trustId, @NotNull LicencePlan plan,
@@ -65,7 +69,7 @@ public class AdminSchoolController {
             return new SchoolRow(s.getId(), s.getName(), s.getTrust() == null ? null : s.getTrust().getName(),
                     s.getRegion().name(), l == null ? null : l.getPlan().label(),
                     l == null ? Licence.Status.EXPIRED : l.statusOn(today), l == null ? null : l.getEndsOn(),
-                    l == null ? Set.of() : Set.copyOf(l.getStages()));
+                    l == null ? Set.of() : Set.copyOf(l.getStages()), s.isParentLinksEnabled());
         }).toList();
     }
 
@@ -83,6 +87,14 @@ public class AdminSchoolController {
                 request.stages()));
         return new SchoolRow(school.getId(), school.getName(), trust == null ? null : trust.getName(),
                 school.getRegion().name(), licence.getPlan().label(), licence.statusOn(LocalDate.now(clock)),
-                licence.getEndsOn(), Set.copyOf(licence.getStages()));
+                licence.getEndsOn(), Set.copyOf(licence.getStages()), school.isParentLinksEnabled());
+    }
+
+    /** Lets the school's staff invite parents into the parent app. Switching it off hides every link at once. */
+    @PostMapping("/{id}/parent-links")
+    @Transactional
+    public void setParentLinks(@PathVariable Long id, @RequestBody ParentLinksRequest request) {
+        schools.findById(id).orElseThrow(() -> new NotFoundException("School", id))
+                .setParentLinksEnabled(request.enabled());
     }
 }

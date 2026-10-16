@@ -33,6 +33,8 @@ public class School {
 
     private boolean trustCanSeeChildren;
 
+    private boolean parentLinksEnabled;
+
     protected School() {
     }
 
@@ -68,6 +70,15 @@ public class School {
 
     public boolean isTrustCanSeeChildren() {
         return trustCanSeeChildren;
+    }
+
+    /** Whether staff may invite parents to see their child's progress in the parent app. */
+    public boolean isParentLinksEnabled() {
+        return parentLinksEnabled;
+    }
+
+    public void setParentLinksEnabled(boolean parentLinksEnabled) {
+        this.parentLinksEnabled = parentLinksEnabled;
     }
 
     public void setPrivacy(boolean fullNamesEnabled, boolean videoEnabled, boolean trustCanSeeChildren) {

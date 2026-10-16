@@ -11,6 +11,16 @@ export default function SchoolsPage() {
     api.schools().then(setSchools).catch((e) => setError(e.message))
   }, [])
 
+  async function toggleParentLinks(school: SchoolRow) {
+    const enabled = !school.parentLinksEnabled
+    try {
+      await api.setParentLinks(school.id, enabled)
+      setSchools((all) => all?.map((s) => (s.id === school.id ? { ...s, parentLinksEnabled: enabled } : s)) ?? null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not update')
+    }
+  }
+
   if (error) return <p className="error">{error}</p>
   if (!schools) return <p className="muted">Loading…</p>
 
@@ -27,6 +37,7 @@ export default function SchoolsPage() {
               <th>Status</th>
               <th>Ends</th>
               <th>Stages</th>
+              <th title="Whether staff can invite parents to the parent app">Parent app</th>
             </tr>
           </thead>
           <tbody>
@@ -41,6 +52,16 @@ export default function SchoolsPage() {
                   {STAGES.filter((st) => s.stages.includes(st.key)).map((st) => (
                     <StageBadge key={st.key} stage={st.key} />
                   ))}
+                </td>
+                <td>
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={s.parentLinksEnabled}
+                      onChange={() => toggleParentLinks(s)}
+                    />{' '}
+                    {s.parentLinksEnabled ? 'On' : 'Off'}
+                  </label>
                 </td>
               </tr>
             ))}

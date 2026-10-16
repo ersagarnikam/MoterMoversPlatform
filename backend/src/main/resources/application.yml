@@ -30,8 +30,11 @@ platform:
     # Override in every real environment (env var PLATFORM_JWT_SECRET). Must be at least 32 bytes.
     secret: ${PLATFORM_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
     ttl-minutes: 480
+    # Parent app: stay signed in for 30 days on the parent's own phone.
+    parent-ttl-minutes: 43200
   cors:
-    allowed-origins: http://localhost:5173
+    # 5173: web app (Vite). 8081: parent app in a browser (Expo web). The native apps do not need CORS.
+    allowed-origins: http://localhost:5173,http://localhost:8081
 
 ---
 spring:
