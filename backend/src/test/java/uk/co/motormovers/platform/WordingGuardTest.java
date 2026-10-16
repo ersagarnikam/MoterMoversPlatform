@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import uk.co.motormovers.platform.content.WordingGuard;
+import uk.co.motormovers.platform.content.util.WordingGuard;
 
 class WordingGuardTest {
 

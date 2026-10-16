@@ -77,7 +77,7 @@ GitHub Actions runs both on every push (`.github/workflows/ci.yml`).
 | Practitioner / parent | Live course catalogue, booking, attendance and certificate status |
 | Motor Movers team (admin) | Content approval, schools and licences, every class |
 
-Access rules are enforced in the API (`security/AccessPolicy.java`), not just hidden in the UI.
+Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
 ### Teacher screens
 - **Today**: one button to start the daily 10-minute session, the next session in sequence for
@@ -106,13 +106,13 @@ and the assessment, and the certificate is issued automatically when both are co
 ### Safety built in
 | Rule | Where |
 |---|---|
-| Initials and year group by default; full names only if the school switches them on; no dates of birth | `child/Child.java`, `school/School.java` |
-| Every view of a child's record is logged; heads can read the log | `child/ChildAccessLog.java` |
-| Records deleted automatically a set time after a child leaves (`platform.retention-days`) | `child/RetentionJob.java` |
+| Initials and year group by default; full names only if the school switches them on; no dates of birth | `child/model/Child.java`, `school/model/School.java` |
+| Every view of a child's record is logged; heads can read the log | `child/model/ChildAccessLog.java` |
+| Records deleted automatically a set time after a child leaves (`platform.retention-days`) | `child/service/RetentionJob.java` |
 | Video of children off unless the school opts in, with consent per child | `School.videoEnabled`, `Child.videoConsent` |
-| Wording check: content with diagnostic terms (ADHD, autism, diagnosis, centile…) cannot be approved | `content/WordingGuard.java` |
-| Nothing reaches teachers until Pat or Laura approve it | `content/ContentStatus.java` |
-| Trust leads see summaries only | `security/AccessPolicy.java` |
+| Wording check: content with diagnostic terms (ADHD, autism, diagnosis, centile…) cannot be approved | `content/util/WordingGuard.java` |
+| Nothing reaches teachers until Pat or Laura approve it | `content/model/ContentStatus.java` |
+| Trust leads see summaries only | `security/service/AccessPolicy.java` |
 | One data region per deployment (UK or AU) | `platform.region` |
 
 ## Project layout
@@ -129,6 +129,9 @@ backend/
     dashboard/    head teacher and trust dashboards, exports
     training/     courses, cohorts, enrolments, certificates
     seed/         demo data (dev profile only)
+    common/       shared config, exceptions, enums and helpers
+                  each feature splits into controller/, service/, model/ (entities, enums),
+                  repository/, dto/ (API views), util/ and config/ as needed
   src/main/resources/db/migration/   Flyway SQL
 frontend/
   src/pages/      one file per screen
@@ -146,7 +149,7 @@ These come later in the roadmap or need decisions first:
 - Inspection evidence PDF export
 - Parent home app (month 13+), nursery mode, school-linked parent invites
 - Self-service school sign-up, staff account management and a password reset flow
-- The real screening items and stage mapping. `screening/ReadinessRules.java` holds placeholder
+- The real screening items and stage mapping. `screening/util/ReadinessRules.java` holds placeholder
   thresholds until Pat and Laura confirm them.
 
 Deliberately out of scope: automatic movement analysis from video and predicting which children are at

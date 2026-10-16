@@ -1,0 +1,80 @@
+package uk.co.motormovers.platform.training.model;
+
+import java.time.LocalDate;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+
+/** One run of a course: a start date, a time slot (UK evening or UK morning / AU evening) and a trainer. */
+@Entity
+public class Cohort {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Course course;
+
+    private String name;
+
+    private LocalDate startsOn;
+
+    private String timeSlot;
+
+    private int capacity;
+
+    private String trainerName;
+
+    private boolean recordingAgreed;
+
+    protected Cohort() {
+    }
+
+    public Cohort(Course course, String name, LocalDate startsOn, String timeSlot, int capacity, String trainerName,
+            boolean recordingAgreed) {
+        this.course = course;
+        this.name = name;
+        this.startsOn = startsOn;
+        this.timeSlot = timeSlot;
+        this.capacity = capacity;
+        this.trainerName = trainerName;
+        this.recordingAgreed = recordingAgreed;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public LocalDate getStartsOn() {
+        return startsOn;
+    }
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public String getTrainerName() {
+        return trainerName;
+    }
+
+    public boolean isRecordingAgreed() {
+        return recordingAgreed;
+    }
+}

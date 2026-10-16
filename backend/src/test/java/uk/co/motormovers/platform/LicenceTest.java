@@ -7,12 +7,12 @@ import java.util.EnumSet;
 
 import org.junit.jupiter.api.Test;
 
-import uk.co.motormovers.platform.common.ColourStage;
-import uk.co.motormovers.platform.common.Region;
-import uk.co.motormovers.platform.common.SchoolDays;
-import uk.co.motormovers.platform.school.Licence;
-import uk.co.motormovers.platform.school.LicencePlan;
-import uk.co.motormovers.platform.school.School;
+import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.common.model.Region;
+import uk.co.motormovers.platform.common.util.SchoolDays;
+import uk.co.motormovers.platform.school.model.Licence;
+import uk.co.motormovers.platform.school.model.LicencePlan;
+import uk.co.motormovers.platform.school.model.School;
 
 class LicenceTest {
 

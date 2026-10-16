@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import uk.co.motormovers.platform.common.ColourStage;
-import uk.co.motormovers.platform.screening.ReadinessBand;
-import uk.co.motormovers.platform.screening.ReadinessRules;
+import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.screening.model.ReadinessBand;
+import uk.co.motormovers.platform.screening.util.ReadinessRules;
 
 class ReadinessRulesTest {
 
