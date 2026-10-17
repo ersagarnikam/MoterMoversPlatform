@@ -15,6 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
@@ -44,6 +45,10 @@ public class ProgrammeSession {
     private int durationMinutes;
 
     private String videoUrl;
+
+    /** The nursery rhyme sung in this session (Red, Orange and Yellow stages). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private LibraryResource rhyme;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "programme_session_activity", joinColumns = @JoinColumn(name = "session_id"))
@@ -123,6 +128,14 @@ public class ProgrammeSession {
 
     public String getVideoUrl() {
         return videoUrl;
+    }
+
+    public LibraryResource getRhyme() {
+        return rhyme;
+    }
+
+    public void setRhyme(LibraryResource rhyme) {
+        this.rhyme = rhyme;
     }
 
     public List<String> getActivities() {

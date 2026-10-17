@@ -11,6 +11,7 @@ import ClassListPage from './pages/ClassListPage'
 import HeadDashboardPage from './pages/HeadDashboardPage'
 import TrustDashboardPage from './pages/TrustDashboardPage'
 import TrainingPage from './pages/TrainingPage'
+import ResourcesPage from './pages/ResourcesPage'
 import ContentPage from './pages/ContentPage'
 import SchoolsPage from './pages/SchoolsPage'
 
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/dashboard" element={<HeadDashboardPage />} />
         <Route path="/trust" element={<TrustDashboardPage />} />
         <Route path="/training" element={<TrainingPage />} />
+        <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/admin/content" element={<ContentPage />} />
         <Route path="/admin/schools" element={<SchoolsPage />} />
         <Route path="*" element={<Navigate to={homeFor(user.role)} replace />} />

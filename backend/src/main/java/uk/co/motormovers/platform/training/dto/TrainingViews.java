@@ -6,6 +6,7 @@ import java.util.List;
 import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.model.Enrolment;
+import uk.co.motormovers.platform.training.model.InductionLesson;
 
 public final class TrainingViews {
 
@@ -23,6 +24,19 @@ public final class TrainingViews {
     public record CourseView(Long id, CourseTrack track, String title, String description, int liveSessions,
             int sessionMinutes, int pricePence, Integer renewalPence, boolean awardsCertificate,
             List<CohortView> cohorts) {
+    }
+
+    public record LessonView(Long id, int position, String title, String summary, List<String> paragraphs,
+            int minutes, String videoUrl, boolean done) {
+
+        public static LessonView of(InductionLesson l, boolean done) {
+            return new LessonView(l.getId(), l.getPosition(), l.getTitle(), l.getSummary(), l.paragraphs(),
+                    l.getMinutes(), l.getVideoUrl(), done);
+        }
+    }
+
+    /** A member of staff's progress through the induction. completedOn is null until every lesson is done. */
+    public record InductionView(List<LessonView> lessons, int totalMinutes, int lessonsDone, LocalDate completedOn) {
     }
 
     public record EnrolmentView(Long id, Long cohortId, String courseTitle, CourseTrack track, String cohortName,

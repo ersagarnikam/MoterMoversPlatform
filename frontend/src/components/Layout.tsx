@@ -7,11 +7,13 @@ import ThemeSwitch from './ThemeSwitch'
 const NAV: Record<Role, { to: string; label: string }[]> = {
   TEACHER: [
     { to: '/classes', label: 'My class' },
+    { to: '/resources', label: 'Resources' },
     { to: '/training', label: 'Training' },
   ],
   HEAD: [
     { to: '/dashboard', label: 'Progress' },
     { to: '/classes', label: 'Classes' },
+    { to: '/resources', label: 'Resources' },
     { to: '/training', label: 'Training' },
   ],
   TRUST_LEAD: [{ to: '/trust', label: 'Trust schools' }],
@@ -21,6 +23,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/admin/content', label: 'Content approval' },
     { to: '/admin/schools', label: 'Schools & licences' },
     { to: '/classes', label: 'All classes' },
+    { to: '/resources', label: 'Resources' },
     { to: '/training', label: 'Courses' },
   ],
 }

@@ -27,6 +27,7 @@ import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
+import uk.co.motormovers.platform.training.service.InductionService;
 
 /** The teacher's day: today's session, the half-term counter, the roster, and completing a session. */
 @Service
@@ -42,11 +43,12 @@ public class ClassroomService {
     private final LicenceRepository licences;
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
+    private final InductionService induction;
     private final Clock clock;
 
     public ClassroomService(SchoolClassRepository classes, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceRepository licences,
-            AccessPolicy access, CurrentUserResolver currentUser, Clock clock) {
+            AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock) {
         this.classes = classes;
         this.children = children;
         this.content = content;
@@ -54,6 +56,7 @@ public class ClassroomService {
         this.licences = licences;
         this.access = access;
         this.currentUser = currentUser;
+        this.induction = induction;
         this.clock = clock;
     }
 
@@ -72,7 +75,7 @@ public class ClassroomService {
     @Transactional(readOnly = true)
     public ClassroomViews.Today today(Long classId) {
         SchoolClass schoolClass = findClass(classId);
-        access.requireClassAccess(schoolClass);
+        CurrentUser me = access.requireClassAccess(schoolClass);
         LocalDate today = LocalDate.now(clock);
 
         boolean licensed = licences.findFirstBySchoolIdOrderByEndsOnDesc(schoolClass.getSchool().getId())
@@ -99,7 +102,8 @@ public class ClassroomService {
                 .map(ClassroomViews.RosterEntry::of)
                 .toList();
 
-        return new ClassroomViews.Today(ClassroomViews.ClassSummary.of(schoolClass), licensed, next, doneToday,
+        return new ClassroomViews.Today(ClassroomViews.ClassSummary.of(schoolClass), licensed,
+                induction.isComplete(me), next, doneToday,
                 (int) grid.stream().filter(Boolean::booleanValue).count(), COUNTER_DAYS, grid, roster,
                 schoolClass.getSchool().isFullNamesEnabled());
     }
@@ -109,6 +113,7 @@ public class ClassroomService {
     public ClassroomViews.Completed complete(Long classId, Long sessionId, Set<Long> absentChildIds) {
         SchoolClass schoolClass = findClass(classId);
         CurrentUser me = access.requireClassAccess(schoolClass);
+        induction.requireComplete(me);
         ProgrammeSession session = content.findById(sessionId)
                 .filter(s -> s.getStatus() == ContentStatus.APPROVED)
                 .orElseThrow(() -> new NotFoundException("Approved session", sessionId));

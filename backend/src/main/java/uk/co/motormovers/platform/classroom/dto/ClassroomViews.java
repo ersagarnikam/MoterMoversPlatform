@@ -5,6 +5,7 @@ import java.util.List;
 
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.content.model.LibraryResource;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 
@@ -25,11 +26,21 @@ public final class ClassroomViews {
     }
 
     public record SessionCard(Long id, String label, String title, String focus, int durationMinutes,
-            String videoUrl, List<String> activities) {
+            String videoUrl, List<String> activities, RhymeCard rhyme) {
 
         public static SessionCard of(ProgrammeSession s) {
+            LibraryResource rhyme = s.getRhyme();
             return new SessionCard(s.getId(), s.label(), s.getTitle(), s.getFocus(), s.getDurationMinutes(),
-                    s.getVideoUrl(), List.copyOf(s.getActivities()));
+                    s.getVideoUrl(), List.copyOf(s.getActivities()),
+                    rhyme != null && rhyme.isApproved() ? RhymeCard.of(rhyme) : null);
+        }
+    }
+
+    /** The session's nursery rhyme: the recording, once uploaded, and the words. */
+    public record RhymeCard(Long id, String title, String audioUrl, List<String> lines) {
+
+        public static RhymeCard of(LibraryResource r) {
+            return new RhymeCard(r.getId(), r.getTitle(), r.getFileUrl(), r.lines());
         }
     }
 
@@ -40,7 +51,8 @@ public final class ClassroomViews {
         }
     }
 
-    public record Today(ClassSummary schoolClass, boolean stageLicensed, SessionCard nextSession, boolean doneToday,
+    public record Today(ClassSummary schoolClass, boolean stageLicensed, boolean inductionComplete,
+            SessionCard nextSession, boolean doneToday,
             int sessionsDone, int counterDays, List<Boolean> counterGrid, List<RosterEntry> roster,
             boolean fullNamesEnabled) {
     }

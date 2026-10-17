@@ -1,10 +1,77 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api, type Course, type Enrolment } from '../api'
+import { api, type Course, type Enrolment, type Induction } from '../api'
+import { useAuth } from '../auth'
 
 const gbp = (pence: number) => `£${(pence / 100).toFixed(pence % 100 === 0 ? 0 : 2)}`
 
+/** The one-hour induction school staff complete before running sessions. */
+function InductionSection() {
+  const [induction, setInduction] = useState<Induction | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.induction().then(setInduction).catch((e) => setError(e.message))
+  }, [])
+
+  async function complete(lessonId: number) {
+    setError(null)
+    try {
+      setInduction(await api.completeLesson(lessonId))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save')
+    }
+  }
+
+  if (error) return <p className="error">{error}</p>
+  if (!induction) return null
+  return (
+    <section className="card">
+      <div className="section-head">
+        <h3>Motor Movers induction</h3>
+        {induction.completedOn ? (
+          <span className="badge badge-ok">Completed {induction.completedOn}</span>
+        ) : (
+          <span className="muted">
+            {induction.lessonsDone} of {induction.lessons.length} parts done · {induction.totalMinutes} minutes in all
+          </span>
+        )}
+      </div>
+      {!induction.completedOn && (
+        <p className="banner-info">Complete every part before running the daily sessions with your class.</p>
+      )}
+      <div className="cohorts">
+        {induction.lessons.map((l) => (
+          <details key={l.id} className="lesson">
+            <summary>
+              <span>
+                <strong>
+                  {l.position}. {l.title}
+                </strong>
+                <span className="muted"> · {l.minutes} min · {l.summary}</span>
+              </span>
+              {l.done && <span className="badge badge-ok">Done</span>}
+            </summary>
+            {l.videoUrl && <video src={l.videoUrl} controls />}
+            {l.paragraphs.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+            {!l.done && (
+              <div className="actions">
+                <button className="btn btn-primary" onClick={() => complete(l.id)}>
+                  Mark as done
+                </button>
+              </div>
+            )}
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 /** Live courses for professionals and parents. */
 export default function TrainingPage() {
+  const { user } = useAuth()
   const [courses, setCourses] = useState<Course[]>([])
   const [rules, setRules] = useState('')
   const [mine, setMine] = useState<Enrolment[]>([])
@@ -41,6 +108,7 @@ export default function TrainingPage() {
     <>
       <h1>Training</h1>
       {error && <p className="error">{error}</p>}
+      {user && ['TEACHER', 'HEAD', 'PRACTITIONER'].includes(user.role) && <InductionSection />}
 
       {mine.length > 0 && (
         <section className="card">

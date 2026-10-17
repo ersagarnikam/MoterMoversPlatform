@@ -35,6 +35,7 @@ password `password`:
 | Account | Who | Lands on |
 |---|---|---|
 | `teacher@oakfield.test` | Class teacher (Ms Hardy, Year 2 R) | Today's session |
+| `newteacher@oakfield.test` | Class teacher who has not done the induction yet (Mr Lewis, Year 2 T) | Today's session, locked until the induction is done |
 | `head@oakfield.test` | Head teacher / SENCo, Oakfield Primary | Progress dashboard |
 | `trust@northbridge.test` | Trust lead, Northbridge Academy Trust | Trust schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
@@ -105,7 +106,14 @@ Access rules are enforced in the API (`security/service/AccessPolicy.java`), not
   the class's colour stage, and a 20-day counter that shows when a class is quietly dropping off.
 - **Class player**: the session plan ticks along as the session runs. Tap a child to mark them absent,
   then **Complete session**. The video is a timed placeholder until filmed sessions are uploaded
-  (`programme_session.video_url`).
+  (`programme_session.video_url`). Red, Orange and Yellow sessions also show the session's nursery rhyme:
+  the recording (once uploaded) and the words.
+- **Induction gate**: school staff complete the one-hour induction (six 10-minute parts, under
+  *Training*) before they can run sessions. Until then *Start session* is replaced by a link to the
+  induction, and the API refuses to record a session. Finishing it is permanent: parts added later do not
+  lock anyone out (`training/service/InductionService.java`).
+- **Resources**: rhyme recordings and words, the rhyme book and printables, for the stages on the
+  school's licence. Files are URLs (`library_resource.file_url`) until uploads are built.
 - **Screening**: one item at a time with what to watch for and a 0 to 3 scale. Scores are queued on the
   device and sent when online. Each score carries a client id, so resending is safe.
 - **Readiness profile**: six areas (balance, gross motor, manual dexterity, aiming and catching, postural
@@ -120,7 +128,8 @@ Access rules are enforced in the API (`security/service/AccessPolicy.java`), not
   screened rate and participation.
 
 ### Training
-Professional track (4 × 90 min, certificate renewed yearly) and parent track (3 × 60 min, no
+The one-hour staff induction comes first (see *Induction gate* above), done online at the teacher's own
+pace. Then the live courses: professional track (4 × 90 min, certificate renewed yearly) and parent track (3 × 60 min, no
 certificate). Cohorts have UK-evening and UK-morning / AU-evening slots. The admin API records attendance
 and the assessment, and the certificate is issued automatically when both are complete.
 
@@ -132,7 +141,8 @@ and the assessment, and the certificate is issued automatically when both are co
 | Records deleted automatically a set time after a child leaves (`platform.retention-days`) | `child/service/RetentionJob.java` |
 | Video of children off unless the school opts in, with consent per child | `School.videoEnabled`, `Child.videoConsent` |
 | Wording check: content with diagnostic terms (ADHD, autism, diagnosis, centile…) cannot be approved | `content/util/WordingGuard.java` |
-| Nothing reaches teachers until Pat or Laura approve it | `content/model/ContentStatus.java` |
+| Nothing reaches teachers until Pat or Laura approve it: sessions, rhymes and resources, induction lessons | `content/model/ContentStatus.java` |
+| No one runs a session before finishing the induction | `training/service/InductionService.java` |
 | Trust leads see summaries only | `security/service/AccessPolicy.java` |
 | One data region per deployment (UK or AU) | `platform.region` |
 
@@ -212,6 +222,18 @@ These come later in the roadmap or need decisions first:
 - Self-service school sign-up, staff account management and a password reset flow (parents included)
 - The real screening items and stage mapping. `screening/util/ReadinessRules.java` holds placeholder
   thresholds until Pat and Laura confirm them.
+- Uploading files to the resource library (rhyme recordings, the rhyme book, printables), and rhymes in
+  the parent app. The induction's real wording and videos replace the demo text.
+- Adapting the programme for older children and for children with special educational needs: today a
+  class works at one stage, with no adapted sessions or stage per group.
+
+Open questions from the *Motor Movers Overview* (Neuroway) for Pat and Laura:
+
+- Age range: the overview says 6 months to 7 years; `common/model/ColourStage.java` says 6 months to 8.
+- Session length: the Loughborough research ran 20 minutes a day; the platform's daily session is 10.
+- The overview says staff can "distinguish between developmental gaps and potential SEND needs". The
+  platform deliberately makes no such call. A non-diagnostic prompt (for example, "not moving on after a
+  good run of daily sessions: talk to your SENCo") would support the claim without crossing that line.
 
 Deliberately out of scope: automatic movement analysis from video and predicting which children are at
 risk. Both would push the platform toward medical-device rules.

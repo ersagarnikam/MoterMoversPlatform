@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
 
 /**
@@ -27,6 +27,13 @@ export default function PlayerPage() {
   }, [playing])
 
   if (error) return <p className="error">{error}</p>
+  if (today && !today.inductionComplete) {
+    return (
+      <p className="banner-warn">
+        Complete the one-hour induction before running sessions. <Link to="/training">Go to the induction</Link>
+      </p>
+    )
+  }
   if (!today?.nextSession) return <p className="muted">Loading…</p>
   const session = today.nextSession
   const total = session.durationMinutes * 60
@@ -91,6 +98,22 @@ export default function PlayerPage() {
           </button>
         </aside>
       </div>
+
+      {session.rhyme && (
+        <section className="card rhyme">
+          <h3>Rhyme · {session.rhyme.title}</h3>
+          {session.rhyme.audioUrl ? (
+            <audio src={session.rhyme.audioUrl} controls />
+          ) : (
+            <p className="muted">The recording is on its way. Sing it together for now.</p>
+          )}
+          <p className="rhyme-words">
+            {session.rhyme.lines.map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+          </p>
+        </section>
+      )}
 
       <section className="card">
         <h3>Who took part</h3>

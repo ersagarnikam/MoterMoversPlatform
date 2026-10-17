@@ -1,5 +1,7 @@
 package uk.co.motormovers.platform.user.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,6 +30,9 @@ public class AppUser {
     private Long schoolId;
 
     private Long trustId;
+
+    /** When this member of staff finished the one-hour induction. Sessions stay locked until then. */
+    private LocalDate inductionCompletedOn;
 
     protected AppUser() {
     }
@@ -67,5 +72,15 @@ public class AppUser {
 
     public Long getTrustId() {
         return trustId;
+    }
+
+    public LocalDate getInductionCompletedOn() {
+        return inductionCompletedOn;
+    }
+
+    public void completeInduction(LocalDate on) {
+        if (inductionCompletedOn == null) {
+            inductionCompletedOn = on;
+        }
     }
 }

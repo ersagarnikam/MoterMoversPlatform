@@ -31,6 +31,7 @@ export interface SessionCard {
   durationMinutes: number
   videoUrl: string | null
   activities: string[]
+  rhyme: { id: number; title: string; audioUrl: string | null; lines: string[] } | null
 }
 
 export interface RosterEntry {
@@ -43,6 +44,7 @@ export interface RosterEntry {
 export interface Today {
   schoolClass: ClassSummary
   stageLicensed: boolean
+  inductionComplete: boolean
   nextSession: SessionCard | null
   doneToday: boolean
   sessionsDone: number
@@ -142,9 +144,36 @@ export interface Enrolment {
   learnerName: string
 }
 
+export interface Induction {
+  lessons: {
+    id: number
+    position: number
+    title: string
+    summary: string
+    paragraphs: string[]
+    minutes: number
+    videoUrl: string | null
+    done: boolean
+  }[]
+  totalMinutes: number
+  lessonsDone: number
+  completedOn: string | null
+}
+
+export interface LibraryResource {
+  id: number
+  kind: 'RHYME' | 'BOOK' | 'PRINTABLE'
+  title: string
+  description: string
+  stage: ColourStage | null
+  label: string
+  fileUrl: string | null
+  lines: string[]
+}
+
 export interface ContentItem {
   id: number
-  stage: ColourStage
+  stage: ColourStage | null
   label: string
   title: string
   focus: string
@@ -185,8 +214,8 @@ export interface ParentLinkRow {
   linkedAt: string
 }
 
-/** The three kinds of content Pat and Laura sign off. All share the ContentItem shape. */
-export type ContentKind = 'content' | 'home-activities' | 'guidance'
+/** The kinds of content Pat and Laura sign off. All share the ContentItem shape. */
+export type ContentKind = 'content' | 'home-activities' | 'guidance' | 'resources' | 'induction'
 
 const TOKEN_KEY = 'mm.token'
 
@@ -262,6 +291,10 @@ export const api = {
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
+  induction: () => request<Induction>('GET', '/api/training/induction'),
+  completeLesson: (lessonId: number) =>
+    request<Induction>('POST', `/api/training/induction/lessons/${lessonId}/complete`),
+  resources: () => request<LibraryResource[]>('GET', '/api/resources'),
   content: (kind: ContentKind = 'content') => request<ContentItem[]>('GET', `/api/admin/${kind}`),
   approve: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),

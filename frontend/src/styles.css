@@ -227,6 +227,14 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 .cohorts { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
 .cohort, .enrolment { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.75rem; border: 1px solid var(--line); border-radius: 8px; flex-wrap: wrap; }
 .enrolment-status { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; font-size: 0.9rem; }
+.lesson { padding: 0.75rem; border: 1px solid var(--line); border-radius: 8px; }
+.lesson summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; }
+.lesson video { width: 100%; border-radius: 8px; margin-top: 0.75rem; }
+
+/* Rhymes: on the class player and in Resources */
+.rhyme { margin-top: 1rem; }
+.rhyme audio, .card audio { width: 100%; margin: 0.5rem 0; }
+.rhyme-words { display: flex; flex-direction: column; font-size: 1.1rem; line-height: 1.6; margin: 0.5rem 0 0; }
 
 /* Content */
 .status { text-transform: capitalize; font-size: 0.82rem; padding: 0.1rem 0.6rem; border-radius: 999px; background: var(--chip-bg); }

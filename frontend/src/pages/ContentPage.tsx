@@ -6,6 +6,8 @@ const KINDS: { kind: ContentKind; label: string }[] = [
   { kind: 'content', label: 'Class sessions' },
   { kind: 'home-activities', label: 'Home activities' },
   { kind: 'guidance', label: 'Parent guidance' },
+  { kind: 'resources', label: 'Resources' },
+  { kind: 'induction', label: 'Staff induction' },
 ]
 
 /** Nothing reaches the library without Pat or Laura’s sign-off, and nothing diagnostic gets signed off. */

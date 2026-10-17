@@ -29,9 +29,12 @@ import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.GuidanceArticle;
 import uk.co.motormovers.platform.content.model.HomeActivity;
+import uk.co.motormovers.platform.content.model.LibraryResource;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
+import uk.co.motormovers.platform.content.model.ResourceKind;
 import uk.co.motormovers.platform.content.repository.GuidanceArticleRepository;
 import uk.co.motormovers.platform.content.repository.HomeActivityRepository;
+import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
 import uk.co.motormovers.platform.family.model.HomeSessionRecord;
 import uk.co.motormovers.platform.family.model.ParentInvite;
@@ -56,8 +59,12 @@ import uk.co.motormovers.platform.screening.repository.ScreeningResultRepository
 import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseTrack;
+import uk.co.motormovers.platform.training.model.InductionLesson;
+import uk.co.motormovers.platform.training.model.InductionProgress;
 import uk.co.motormovers.platform.training.repository.CohortRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
+import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
+import uk.co.motormovers.platform.training.repository.InductionProgressRepository;
 import uk.co.motormovers.platform.user.model.AppUser;
 import uk.co.motormovers.platform.user.model.Role;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
@@ -92,6 +99,9 @@ public class DemoDataLoader implements ApplicationRunner {
     private final ParentLinkRepository parentLinks;
     private final ParentInviteRepository parentInvites;
     private final HomeSessionRecordRepository homeRecords;
+    private final LibraryResourceRepository resources;
+    private final InductionLessonRepository inductionLessons;
+    private final InductionProgressRepository inductionProgress;
     private final PasswordEncoder passwordEncoder;
     private final PlatformProperties properties;
     private final Clock clock;
@@ -103,8 +113,12 @@ public class DemoDataLoader implements ApplicationRunner {
             ScreeningResultRepository results, CourseRepository courses, CohortRepository cohorts,
             HomeActivityRepository homeActivities, GuidanceArticleRepository guidance,
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
-            HomeSessionRecordRepository homeRecords, PasswordEncoder passwordEncoder, PlatformProperties properties,
-            Clock clock) {
+            HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
+            InductionLessonRepository inductionLessons, InductionProgressRepository inductionProgress,
+            PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock) {
+        this.resources = resources;
+        this.inductionLessons = inductionLessons;
+        this.inductionProgress = inductionProgress;
         this.homeActivities = homeActivities;
         this.guidance = guidance;
         this.parentLinks = parentLinks;
@@ -137,7 +151,9 @@ public class DemoDataLoader implements ApplicationRunner {
         String hash = passwordEncoder.encode(DEMO_PASSWORD);
 
         seedScreeningItems();
-        Map<ColourStage, List<ProgrammeSession>> sessions = seedContent();
+        Map<ColourStage, List<LibraryResource>> rhymes = seedResources();
+        Map<ColourStage, List<ProgrammeSession>> sessions = seedContent(rhymes);
+        List<InductionLesson> induction = seedInduction();
 
         Trust trust = trusts.save(new Trust("Northbridge Academy Trust"));
         School oakfield = school("Oakfield Primary", trust, LicencePlan.TRUST,
@@ -150,12 +166,20 @@ public class DemoDataLoader implements ApplicationRunner {
                 EnumSet.of(ColourStage.RED, ColourStage.ORANGE), today.minusMonths(1), today.plusMonths(2));
 
         users.save(new AppUser("admin@motormovers.test", "Laura Preedy-Maher", hash, Role.ADMIN, null, null));
-        users.save(new AppUser("head@oakfield.test", "Mr Patel", hash, Role.HEAD, oakfield.getId(), trust.getId()));
+        AppUser patel = users.save(new AppUser("head@oakfield.test", "Mr Patel", hash, Role.HEAD, oakfield.getId(),
+                trust.getId()));
         users.save(new AppUser("trust@northbridge.test", "Ms Okafor", hash, Role.TRUST_LEAD, null, trust.getId()));
         users.save(new AppUser("practitioner@example.test", "Sam Rivers", hash, Role.PRACTITIONER, null, null));
         AppUser jo = users.save(new AppUser("parent@example.test", "Jo Bennett", hash, Role.PARENT, null, null));
         AppUser hardy = users.save(new AppUser("teacher@oakfield.test", "Ms Hardy", hash, Role.TEACHER,
                 oakfield.getId(), trust.getId()));
+        // A newly qualified teacher who has not done the induction yet, so their sessions are still locked.
+        AppUser lewis = users.save(new AppUser("newteacher@oakfield.test", "Mr Lewis", hash, Role.TEACHER,
+                oakfield.getId(), trust.getId()));
+        for (AppUser trained : List.of(hardy, patel)) {
+            induction.forEach(l -> inductionProgress.save(new InductionProgress(trained.getId(), l.getId())));
+            trained.completeInduction(today.minusMonths(4));
+        }
 
         List<SchoolClass> screenedClasses = new ArrayList<>();
         screenedClasses.add(classWithHistory(oakfield, "Reception A", "Reception", null, ColourStage.RED, 26, 18,
@@ -165,7 +189,7 @@ public class DemoDataLoader implements ApplicationRunner {
         SchoolClass y2r = classWithHistory(oakfield, "Year 2 R", "Year 2", hardy, ColourStage.YELLOW, 28, 17,
                 sessions, today);
         screenedClasses.add(y2r);
-        screenedClasses.add(classWithHistory(oakfield, "Year 2 T", "Year 2", null, ColourStage.YELLOW, 27, 12,
+        screenedClasses.add(classWithHistory(oakfield, "Year 2 T", "Year 2", lewis, ColourStage.YELLOW, 27, 12,
                 sessions, today));
         classWithHistory(oakfield, "Year 3 K", "Year 3", null, ColourStage.GREEN, 29, 18, sessions, today);
         screenedClasses.add(classWithHistory(marlow, "Reception B", "Reception", null, ColourStage.RED, 25, 19,
@@ -271,7 +295,7 @@ public class DemoDataLoader implements ApplicationRunner {
         }
     }
 
-    private Map<ColourStage, List<ProgrammeSession>> seedContent() {
+    private Map<ColourStage, List<ProgrammeSession>> seedContent(Map<ColourStage, List<LibraryResource>> rhymes) {
         String[][] themes = {
             {"Balance and cross-lateral movement", "Balance, crossing the midline"},
             {"Rolling and rocking", "Body awareness and movement through space"},
@@ -290,6 +314,10 @@ public class DemoDataLoader implements ApplicationRunner {
                             List.of("Warm up: march and swing", "Activity 1: " + theme[0].toLowerCase(),
                                     "Activity 2: starfish stretch", "Activity 3: log roll",
                                     "Activity 4: nursery rhyme actions", "Cool down: slow breathing"));
+                    List<LibraryResource> stageRhymes = rhymes.getOrDefault(stage, List.of());
+                    if (!stageRhymes.isEmpty()) {
+                        s.setRhyme(stageRhymes.get(day % stageRhymes.size()));
+                    }
                     s.review(ContentStatus.APPROVED, "laura@neuroway.test");
                     list.add(content.save(s));
                 }
@@ -304,6 +332,121 @@ public class DemoDataLoader implements ApplicationRunner {
                 "Movement for children with a diagnosis of ADHD.", 10, null,
                 List.of("Warm up", "Wall push", "Cool down")));
         return byStage;
+    }
+
+    /**
+     * Traditional nursery rhymes for the Red, Orange and Yellow stages, the rhyme book and two printables.
+     * There are no recordings yet, so every file URL is empty. Returns the approved rhymes by stage.
+     */
+    private Map<ColourStage, List<LibraryResource>> seedResources() {
+        Object[][] rhymeDefs = {
+            {ColourStage.RED, "Row, row, row your boat", "Rocking forwards and backwards in pairs.",
+                "Row, row, row your boat\nGently down the stream\nMerrily, merrily, merrily, merrily\n"
+                        + "Life is but a dream"},
+            {ColourStage.RED, "Humpty Dumpty", "Sitting tall, then a slow roll to the side.",
+                "Humpty Dumpty sat on a wall\nHumpty Dumpty had a great fall\nAll the king's horses and all the "
+                        + "king's men\nCouldn't put Humpty together again"},
+            {ColourStage.ORANGE, "Incy Wincy Spider", "Finger climbing and big arm movements.",
+                "Incy Wincy spider climbed up the water spout\nDown came the rain and washed the spider out\n"
+                        + "Out came the sunshine and dried up all the rain\n"
+                        + "So Incy Wincy spider climbed up the spout again"},
+            {ColourStage.ORANGE, "The grand old Duke of York", "Marching, reaching up high and crouching low.",
+                "Oh, the grand old Duke of York\nHe had ten thousand men\nHe marched them up to the top of the hill\n"
+                        + "And he marched them down again\nAnd when they were up, they were up\n"
+                        + "And when they were down, they were down\n"
+                        + "And when they were only halfway up\nThey were neither up nor down"},
+            {ColourStage.YELLOW, "Jack and Jill", "Climbing on the spot, then a forward roll on the mat.",
+                "Jack and Jill went up the hill\nTo fetch a pail of water\nJack fell down and broke his crown\n"
+                        + "And Jill came tumbling after"},
+            {ColourStage.YELLOW, "Hickory dickory dock", "Swinging arms like a pendulum and crossing the middle.",
+                "Hickory dickory dock\nThe mouse ran up the clock\nThe clock struck one\nThe mouse ran down\n"
+                        + "Hickory dickory dock"},
+        };
+        Map<ColourStage, List<LibraryResource>> byStage = new EnumMap<>(ColourStage.class);
+        for (Object[] d : rhymeDefs) {
+            LibraryResource r = new LibraryResource(ResourceKind.RHYME, (String) d[1], (String) d[2],
+                    (ColourStage) d[0], null, (String) d[3]);
+            r.review(ContentStatus.APPROVED, "laura@neuroway.test");
+            byStage.computeIfAbsent((ColourStage) d[0], s -> new ArrayList<>()).add(resources.save(r));
+        }
+
+        Object[][] files = {
+            {ResourceKind.BOOK, "Motor Movers rhyme book",
+                "Every rhyme from the Red, Orange and Yellow stages, illustrated, with the actions for each line."},
+            {ResourceKind.PRINTABLE, "Getting the space ready",
+                "A one-page checklist: clear floor, shoes and socks off, jumpers and ties off, music ready."},
+            {ResourceKind.PRINTABLE, "Letter home: starting Motor Movers",
+                "A letter for families explaining the daily sessions and how to join in with the parent app."},
+        };
+        for (Object[] d : files) {
+            LibraryResource r = new LibraryResource((ResourceKind) d[0], (String) d[1], (String) d[2], null, null,
+                    null);
+            r.review(ContentStatus.APPROVED, "laura@neuroway.test");
+            resources.save(r);
+        }
+        // A rhyme awaiting sign-off.
+        resources.save(new LibraryResource(ResourceKind.RHYME, "Five little speckled frogs",
+                "Crouching and jumping into the pond, one frog at a time.", ColourStage.RED, null,
+                "Five little speckled frogs\nSat on a speckled log\nEating some most delicious bugs\nYum, yum\n"
+                        + "One jumped into the pool\nWhere it was nice and cool\n"
+                        + "Now there are four green speckled frogs\nGlub, glub"));
+        return byStage;
+    }
+
+    /** The one-hour induction: six approved lessons of ten minutes. */
+    private List<InductionLesson> seedInduction() {
+        Object[][] defs = {
+            {"Why movement comes first", "The early movements that get a body ready for the classroom.",
+                "Babies are meant to spend a long time on the floor: lifting the head, rolling, creeping on the "
+                        + "tummy, crawling on hands and knees, then standing and walking. Each stage builds the "
+                        + "balance and body control a child later needs to sit still, look at a page and hold a "
+                        + "pencil.\n\n"
+                        + "Car seats, buggies, baby seats and screens mean many children have had far less of this "
+                        + "than they need. Motor Movers gives them a second chance at those movements, a little "
+                        + "every day, as part of school life."},
+            {"Early reflexes and learning", "Why some baby reflexes matter in Reception and Key Stage 1.",
+                "Babies are born with reflexes that help them survive, such as the grasp reflex, where the hand "
+                        + "closes when the palm is touched, and the reflex that straightens the arm on the side "
+                        + "the head turns towards. Rolling and crawling help these reflexes fade during the first "
+                        + "year or so, and more mature balance takes over.\n\n"
+                        + "When an early reflex lingers, a child may find some things harder than they should be: "
+                        + "a comfortable pencil grip, reading smoothly across the middle of the page, or writing "
+                        + "up to a margin. The programme repeats the movements that help these reflexes fade."},
+            {"The seven colour stages", "Matching the programme to where children are.",
+                "The programme has seven stages following the colours of the rainbow, from Red to Violet. Each "
+                        + "class works at one stage, chosen from screening, so the movements match what the "
+                        + "children are ready for rather than their age.\n\n"
+                        + "Red, Orange and Yellow combine movement with nursery rhymes. You will find each rhyme's "
+                        + "recording and words on the session screen and in Resources, along with the rhyme book."},
+            {"Running the daily session", "Ten minutes, every school day, with the whole class.",
+                "Clear a space, take off shoes, socks, jumpers and ties, and press Start session. The screen "
+                        + "leads the class through a warm up, four activities and a cool down. The session is in "
+                        + "addition to PE, not part of it.\n\n"
+                        + "At the end, tap any child who was absent and press Complete session. The half-term "
+                        + "counter on the Today screen shows how many school days the class has managed. Little "
+                        + "and often is what makes the difference."},
+            {"Screening and the readiness profile", "What the scores tell you, and what they do not.",
+                "Screen each child at the start and again later in the year, one item at a time on a 0 to 3 "
+                        + "scale. The readiness profile shows six areas as Emerging, Developing or Secure and "
+                        + "suggests a colour stage.\n\n"
+                        + "The profile describes movement readiness only. If a child is not moving on after a "
+                        + "good run of daily sessions, share what you have seen with your SENCo, who can decide "
+                        + "on next steps."},
+            {"Keeping children and families safe", "Names, video, parents and the words we use.",
+                "The platform shows initials and year group unless your school switches full names on, never "
+                        + "records dates of birth, and keeps video off unless the school and each family agree.\n\n"
+                        + "When you talk to families, describe what you see: \"finds balancing on one leg tricky\" "
+                        + "rather than a label. If a parent wants the app, create a parent code from the child's "
+                        + "readiness profile. Codes work once and expire after 14 days."},
+        };
+        List<InductionLesson> lessons = new ArrayList<>();
+        int position = 1;
+        for (Object[] d : defs) {
+            InductionLesson l = new InductionLesson(position++, (String) d[0], (String) d[1], (String) d[2], 10, null);
+            l.review(ContentStatus.APPROVED, "laura@neuroway.test");
+            lessons.add(inductionLessons.save(l));
+        }
+        return lessons;
     }
 
     private void seedScreeningHistory(SchoolClass schoolClass, LocalDate today) {

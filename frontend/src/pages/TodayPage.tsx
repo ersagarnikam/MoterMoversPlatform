@@ -53,6 +53,11 @@ export default function TodayPage() {
                 <div className="stack">
                   {today.doneToday ? (
                     <p className="done-note">✓ Done for today</p>
+                  ) : !today.inductionComplete ? (
+                    <p className="banner-warn">
+                      Complete the one-hour induction before running sessions.{' '}
+                      <Link to="/training">Go to the induction</Link>
+                    </p>
                   ) : (
                     <button className="btn btn-primary btn-big" onClick={() => navigate(`/class/${schoolClass.id}/play`)}>
                       Start session
