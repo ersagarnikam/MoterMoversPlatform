@@ -76,9 +76,11 @@ jobs:
         working-directory: mobile
     steps:
       - uses: actions/checkout@v4
+      # Node 24 (npm 11), as the lock file was written with: npm 10 resolves Expo's optional peer
+      # dependencies differently and rejects it.
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: npm
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci

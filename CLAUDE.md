@@ -50,6 +50,7 @@ cd frontend && npm run e2e          # 16 Playwright tests; locally add PW_CHANNE
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
+The mobile lock file is written with npm 11 (Node 24); npm 10 rejects it, so CI's mobile job uses Node 24.
 CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on every push.
 
 ### On the owner's Windows machine
@@ -67,8 +68,9 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 
 ## Current state (2026-10-17)
 
-All work is committed on branch `claude/java-springboot-repo-setup-yoyu6y` (not yet pushed when this
-was written). Everything below is built and passing: backend tests, web build, mobile typecheck,
+All work is committed and pushed on branch `claude/java-springboot-repo-setup-yoyu6y`. On GitHub CI the
+backend, frontend and e2e jobs pass; the mobile job had failed since the parent app was added (npm 10
+vs 11 lock file) and was switched to Node 24. Everything below is built and passing: backend tests, web build, mobile typecheck,
 16/16 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
@@ -94,7 +96,7 @@ screens; accounts, password links, rate limits and school setup API; API input h
 
 Not started unless noted. Confirm priorities with the owner.
 
-1. Push the branch and get the first CI run (including the new e2e job) green.
+1. Confirm the CI mobile job is green on Node 24.
 2. Real go-live inputs from the owner: UK server, domain and DNS, SMTP account with SPF/DKIM for the
    sending domain, then follow `deploy/RUNBOOK.md`.
 3. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address.
