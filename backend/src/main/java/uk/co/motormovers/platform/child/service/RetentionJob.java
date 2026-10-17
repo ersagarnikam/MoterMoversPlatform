@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.child.service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,16 +22,18 @@ public class RetentionJob {
 
     private final ChildRepository children;
     private final PlatformProperties properties;
+    private final Clock clock;
 
-    public RetentionJob(ChildRepository children, PlatformProperties properties) {
+    public RetentionJob(ChildRepository children, PlatformProperties properties, Clock clock) {
         this.children = children;
         this.properties = properties;
+        this.clock = clock;
     }
 
     @Scheduled(cron = "0 30 2 * * *")
     @Transactional
     public int purgeLeavers() {
-        LocalDate cutoff = LocalDate.now().minusDays(properties.retentionDays());
+        LocalDate cutoff = LocalDate.now(clock).minusDays(properties.retentionDays());
         List<Child> expired = children.findByLeftOnBefore(cutoff);
         children.deleteAll(expired);
         if (!expired.isEmpty()) {

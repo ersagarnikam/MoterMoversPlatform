@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.screening.service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -36,19 +37,24 @@ public class ScreeningService {
     /** Scores more than this many days after a round began start a new round (e.g. end-of-year re-screen). */
     static final int NEW_ROUND_AFTER_DAYS = 60;
 
+    /** Scores queued offline can be sent up to this many days later. */
+    static final int MAX_BACKDATE_DAYS = 30;
+
     private final ScreeningItemRepository items;
     private final ScreeningResultRepository results;
     private final ChildRepository children;
     private final ChildAccessLogRepository accessLog;
     private final AccessPolicy access;
+    private final Clock clock;
 
     public ScreeningService(ScreeningItemRepository items, ScreeningResultRepository results,
-            ChildRepository children, ChildAccessLogRepository accessLog, AccessPolicy access) {
+            ChildRepository children, ChildAccessLogRepository accessLog, AccessPolicy access, Clock clock) {
         this.items = items;
         this.results = results;
         this.children = children;
         this.accessLog = accessLog;
         this.access = access;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -64,13 +70,26 @@ public class ScreeningService {
         int saved = 0;
         int duplicates = 0;
         Map<Long, Child> touched = new TreeMap<>();
+        LocalDate today = LocalDate.now(clock);
         for (ScreeningViews.Score s : scores) {
+            if (s == null || s.clientId() == null || s.clientId().isBlank() || s.clientId().length() > 64
+                    || s.childId() == null || s.itemCode() == null || s.screenedOn() == null) {
+                throw new IllegalArgumentException("Each score needs a clientId, childId, itemCode and screenedOn");
+            }
             if (results.existsByClientId(s.clientId())) {
                 duplicates++;
                 continue;
             }
+            // A date in the future would open a screening round that never closes. One day of slack for time zones.
+            if (s.screenedOn().isAfter(today.plusDays(1)) || s.screenedOn().isBefore(today.minusDays(MAX_BACKDATE_DAYS))) {
+                throw new IllegalArgumentException("Scores can be recorded for the last " + MAX_BACKDATE_DAYS
+                        + " days only");
+            }
             Child child = children.findById(s.childId()).orElseThrow(() -> new NotFoundException("Child", s.childId()));
             CurrentUser me = access.requireClassAccess(child.getSchoolClass());
+            if (child.getLeftOn() != null) {
+                throw new IllegalArgumentException("This child has left the school");
+            }
             ScreeningItem item = itemsByCode.get(s.itemCode());
             if (item == null) {
                 throw new IllegalArgumentException("Unknown screening item " + s.itemCode());

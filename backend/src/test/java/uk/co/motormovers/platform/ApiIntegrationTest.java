@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -85,7 +86,7 @@ class ApiIntegrationTest {
         Integer childId = firstChildOfTeacher(teacher);
         String clientId = UUID.randomUUID().toString();
         String score = "{\"clientId\":\"" + clientId + "\",\"childId\":" + childId
-                + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\"2026-10-15\"}";
+                + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\"" + LocalDate.now() + "\"}";
 
         mvc.perform(post("/api/screening/results").header("Authorization", bearer(teacher))
                 .contentType(MediaType.APPLICATION_JSON).content("[" + score + "," + score + "]"))
