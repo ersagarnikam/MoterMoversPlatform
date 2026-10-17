@@ -83,7 +83,7 @@ export default function TodayPage() {
             {today.sessionsDone} / {today.counterDays}
           </p>
           <p className="muted">daily sessions done</p>
-          <div className="counter-grid" aria-label={`${today.sessionsDone} of the last ${today.counterDays} school days`}>
+          <div className="counter-grid" role="img" aria-label={`${today.sessionsDone} of the last ${today.counterDays} school days`}>
             {today.counterGrid.map((done, i) => (
               <span key={i} className={done ? 'on' : ''} />
             ))}

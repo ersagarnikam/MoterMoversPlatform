@@ -83,9 +83,16 @@ Set `SEED_DEMO_DATA=true` to load the demo data into PostgreSQL. Flyway creates 
 cd backend && mvn verify       # unit and API integration tests
 cd frontend && npm run build   # type-check and production build
 cd mobile && npm run typecheck # parent app type-check
+cd frontend && npm run e2e     # browser tests; needs the API running with demo data (restart it between runs)
 ```
 
-GitHub Actions runs both on every push (`.github/workflows/ci.yml`).
+GitHub Actions runs all of these on every push (`.github/workflows/ci.yml`).
+
+### Production
+
+`deploy/docker-compose.prod.yml` runs the whole platform on one server with HTTPS, PostgreSQL and nightly
+backups. Settings go in `deploy/.env` (start from `deploy/.env.example`). See `deploy/RUNBOOK.md` for the
+first deployment, updates, backups and restores.
 
 ## What is built
 
