@@ -93,11 +93,12 @@ GitHub Actions runs both on every push (`.github/workflows/ci.yml`).
 
 | Role | What they can do |
 |---|---|
-| Class teacher | See their own class only: today's session, the half-term counter, screening, readiness profiles |
-| Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log |
+| Class teacher | See their own class only: today's session, the half-term counter, screening, readiness profiles. Take the one-hour induction and use the resource library |
+| Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log. Take the induction and use the resource library |
 | Trust lead | Each school's licence, renewal date and summary results. Never individual children, unless a school grants it |
-| Practitioner / parent | Live course catalogue, booking, attendance and certificate status |
-| Motor Movers team (admin) | Content approval, schools and licences, every class |
+| Practitioner | Live course catalogue, booking, attendance and certificate status. Can also take the induction |
+| Parent | The parent course and the parent app |
+| Motor Movers team (admin) | Content approval (sessions, home activities, guidance, resources, induction lessons), schools and licences, every class |
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
@@ -129,8 +130,8 @@ Access rules are enforced in the API (`security/service/AccessPolicy.java`), not
 
 ### Training
 The one-hour staff induction comes first (see *Induction gate* above), done online at the teacher's own
-pace. Then the live courses: professional track (4 × 90 min, certificate renewed yearly) and parent track (3 × 60 min, no
-certificate). Cohorts have UK-evening and UK-morning / AU-evening slots. The admin API records attendance
+pace. Then the live courses: professional track (4 × 90 min, certificate renewed yearly) and parent
+track (3 × 60 min, no certificate). Cohorts have UK-evening and UK-morning / AU-evening slots. The admin API records attendance
 and the assessment, and the certificate is issued automatically when both are complete.
 
 ### Safety built in
@@ -154,11 +155,11 @@ backend/
     security/     sign-in, JWT, who can see what
     school/       trusts, schools, classes, licences and plans
     child/        children, access log, retention
-    content/      programme sessions, approval, wording check
-    classroom/    today's session, completing a session
+    content/      programme sessions, resource library (rhymes, books, printables), approval, wording check
+    classroom/    today's session, the induction gate, completing a session
     screening/    screening items, results, readiness profile
     dashboard/    head teacher and trust dashboards, exports
-    training/     courses, cohorts, enrolments, certificates
+    training/     staff induction, courses, cohorts, enrolments, certificates
     family/       parent app: invite codes, parent links, progress, home activities, guidance
     seed/         demo data (dev profile only)
     common/       shared config, exceptions, enums and helpers
