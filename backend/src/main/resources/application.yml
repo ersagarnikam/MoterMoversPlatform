@@ -33,8 +33,15 @@ platform:
     # Parent app: stay signed in for 30 days on the parent's own phone.
     parent-ttl-minutes: 43200
   cors:
-    # 5173: web app (Vite). 8081: parent app in a browser (Expo web). The native apps do not need CORS.
-    allowed-origins: http://localhost:5173,http://localhost:8081
+    # 5173: web app (Vite). 4173: production build in vite preview (browser tests). 8081: parent app in a
+    # browser (Expo web). The native apps do not need CORS.
+    allowed-origins: http://localhost:5173,http://localhost:4173,http://localhost:8081
+  mail:
+    from: ${PLATFORM_MAIL_FROM:Motor Movers <no-reply@localhost>}
+    # Where links in emails point (password reset, staff invites).
+    web-url: ${PLATFORM_WEB_URL:http://localhost:5173}
+  # First Motor Movers team account on a new deployment, emailed a sign-in link (see AdminBootstrap).
+  admin-email: ${PLATFORM_ADMIN_EMAIL:}
 
 ---
 spring:

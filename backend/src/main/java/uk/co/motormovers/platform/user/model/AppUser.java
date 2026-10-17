@@ -34,6 +34,9 @@ public class AppUser {
     /** When this member of staff finished the one-hour induction. Sessions stay locked until then. */
     private LocalDate inductionCompletedOn;
 
+    /** A switched-off account cannot sign in, and its existing sign-ins stop working within a minute. */
+    private boolean enabled = true;
+
     protected AppUser() {
     }
 
@@ -76,6 +79,22 @@ public class AppUser {
 
     public LocalDate getInductionCompletedOn() {
         return inductionCompletedOn;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void changePassword(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void rename(String displayName) {
+        this.displayName = displayName;
     }
 
     public void completeInduction(LocalDate on) {

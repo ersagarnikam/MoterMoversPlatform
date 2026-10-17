@@ -72,4 +72,11 @@ public class SchoolClass {
     public void moveToStage(ColourStage stage) {
         this.stage = stage;
     }
+
+    public void update(String name, String yearGroup, AppUser teacher, ColourStage stage) {
+        this.name = name;
+        this.yearGroup = yearGroup;
+        this.teacher = teacher;
+        this.stage = stage;
+    }
 }

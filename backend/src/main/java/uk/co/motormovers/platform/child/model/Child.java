@@ -78,6 +78,16 @@ public class Child {
         this.leftOn = date;
     }
 
+    /** Only shown where the school has switched full names on. */
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public void moveTo(SchoolClass schoolClass) {
+        this.schoolClass = schoolClass;
+        this.yearGroup = schoolClass.getYearGroup();
+    }
+
     public Long getId() {
         return id;
     }

@@ -13,7 +13,12 @@ public record PlatformProperties(
         double participationFlagThreshold,
         boolean seedDemoData,
         Jwt jwt,
-        Cors cors) {
+        Cors cors,
+        Mail mail) {
+
+    /** {@code webUrl} is where links in emails point, e.g. https://app.motormovers.co.uk. */
+    public record Mail(String from, String webUrl) {
+    }
 
     /** {@code parentTtlMinutes} of 0 means parents get the same lifetime as everyone else. */
     public record Jwt(String secret, long ttlMinutes, long parentTtlMinutes) {

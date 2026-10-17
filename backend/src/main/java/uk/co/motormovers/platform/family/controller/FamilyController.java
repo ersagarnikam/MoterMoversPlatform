@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.family.controller;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,8 @@ import jakarta.validation.constraints.NotBlank;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.family.dto.FamilyViews;
 import uk.co.motormovers.platform.family.service.FamilyService;
+import uk.co.motormovers.platform.security.service.CurrentUserResolver;
+import uk.co.motormovers.platform.security.service.RateLimiter;
 
 /** The parent app's API. Mapped under /api/family (PARENT only, see SecurityConfig). */
 @RestController
@@ -26,9 +29,13 @@ import uk.co.motormovers.platform.family.service.FamilyService;
 public class FamilyController {
 
     private final FamilyService family;
+    private final RateLimiter rateLimiter;
+    private final CurrentUserResolver currentUser;
 
-    public FamilyController(FamilyService family) {
+    public FamilyController(FamilyService family, RateLimiter rateLimiter, CurrentUserResolver currentUser) {
         this.family = family;
+        this.rateLimiter = rateLimiter;
+        this.currentUser = currentUser;
     }
 
     public record RedeemRequest(@NotBlank String code) {
@@ -39,8 +46,10 @@ public class FamilyController {
         return family.children();
     }
 
+    /** Ten codes an hour per account, so codes cannot be guessed. */
     @PostMapping("/children")
     public FamilyViews.LinkedChild redeem(@Valid @RequestBody RedeemRequest request) {
+        rateLimiter.check("redeem", String.valueOf(currentUser.current().id()), 10, Duration.ofHours(1));
         return family.redeem(request.code());
     }
 
