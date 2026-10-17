@@ -68,8 +68,9 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 
 ## Current state (2026-10-17)
 
-All work is committed and pushed on branch `claude/java-springboot-repo-setup-yoyu6y`, and GitHub CI is
-green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
+All work is on `main` (created 2026-10-17 from the earlier working branch
+`claude/java-springboot-repo-setup-yoyu6y`, which can be deleted once `main` is GitHub's default branch).
+GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
 16/16 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
@@ -95,7 +96,8 @@ screens; accounts, password links, rate limits and school setup API; API input h
 
 Not started unless noted. Confirm priorities with the owner.
 
-1. Merge the branch into the main line once the owner is happy with it.
+1. Owner: make `main` the default branch on GitHub (Settings > General > Default branch), then delete the
+   old `claude/java-springboot-repo-setup-yoyu6y` branch. New work goes on branches merged into `main`.
 2. Real go-live inputs from the owner: UK server, domain and DNS, SMTP account with SPF/DKIM for the
    sending domain, then follow `deploy/RUNBOOK.md`.
 3. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address.
