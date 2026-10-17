@@ -1,0 +1,13 @@
+# HTTPS with an automatic Let's Encrypt certificate for APP_DOMAIN, and http redirected to https.
+{
+	email {$ACME_EMAIL}
+}
+
+{$APP_DOMAIN} {
+	encode gzip
+	reverse_proxy web:80
+	log {
+		output stdout
+		format json
+	}
+}

@@ -18,3 +18,11 @@ frontend/coverage/
 # Local env
 .env
 *.local
+
+# Deployment secrets and backups
+deploy/.env
+deploy/backups/
+
+# Browser tests
+frontend/e2e-results/
+frontend/playwright-report/

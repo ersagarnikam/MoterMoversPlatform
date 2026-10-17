@@ -71,3 +71,51 @@ spring:
 
 platform:
   seed-demo-data: ${SEED_DEMO_DATA:false}
+
+---
+# Production: PostgreSQL, real mail, behind a TLS-terminating proxy. ProductionChecks refuses to start
+# with development settings. Every value comes from the environment; see deploy/.env.example.
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DATABASE_POOL_SIZE:10}
+  mail:
+    host: ${SPRING_MAIL_HOST:}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+
+server:
+  # Trust X-Forwarded-* from the proxy in front, so client addresses (rate limits) and https are right.
+  forward-headers-strategy: native
+  shutdown: graceful
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+logging:
+  structured:
+    format:
+      console: ecs
+
+platform:
+  region: ${PLATFORM_REGION:UK}
+  seed-demo-data: false
+  jwt:
+    secret: ${PLATFORM_JWT_SECRET:}
+  cors:
+    allowed-origins: ${PLATFORM_WEB_URL}

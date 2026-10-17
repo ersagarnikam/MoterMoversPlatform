@@ -1,0 +1,103 @@
+# Production on one server: Caddy (HTTPS) -> web (nginx + app) -> api -> db, plus nightly backups.
+#   cp deploy/.env.example deploy/.env   # fill it in
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build
+# See deploy/RUNBOOK.md.
+name: motor-movers
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: motormovers
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d motormovers"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Not published: only the api can reach the database.
+
+  api:
+    build: ../backend
+    image: motor-movers-api:${APP_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://db:5432/motormovers
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      PLATFORM_REGION: ${PLATFORM_REGION:-UK}
+      PLATFORM_JWT_SECRET: ${PLATFORM_JWT_SECRET}
+      PLATFORM_WEB_URL: https://${APP_DOMAIN}
+      PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL:-}
+      PLATFORM_MAIL_FROM: ${PLATFORM_MAIL_FROM}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+
+  web:
+    build: ../frontend
+    image: motor-movers-web:${APP_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_UPSTREAM: http://api:8080
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  # Nightly compressed dump at 02:00, keeping 14 days. Copy ./backups off the server too (see RUNBOOK).
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: ${DATABASE_USERNAME}
+      PGPASSWORD: ${DATABASE_PASSWORD}
+      PGDATABASE: motormovers
+    volumes:
+      - ./backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          now=$$(date +%H%M)
+          if [ "$$now" = "0200" ]; then
+            f=/backups/motormovers-$$(date +%Y%m%d).sql.gz
+            pg_dump --no-owner | gzip > "$$f.tmp" && mv "$$f.tmp" "$$f" && echo "backup ok $$f"
+            find /backups -name 'motormovers-*.sql.gz' -mtime +14 -delete
+            sleep 60
+          fi
+          sleep 30
+        done
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
