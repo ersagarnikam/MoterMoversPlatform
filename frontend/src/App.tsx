@@ -12,6 +12,9 @@ import HeadDashboardPage from './pages/HeadDashboardPage'
 import TrustDashboardPage from './pages/TrustDashboardPage'
 import TrainingPage from './pages/TrainingPage'
 import ResourcesPage from './pages/ResourcesPage'
+import SchoolSetupPage from './pages/SchoolSetupPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import ContentPage from './pages/ContentPage'
 import SchoolsPage from './pages/SchoolsPage'
 
@@ -38,12 +41,15 @@ export default function App() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     )
   }
   return (
     <Routes>
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<Layout />}>
         <Route path="/classes" element={<ClassListPage />} />
         <Route path="/class/:classId/today" element={<TodayPage />} />
@@ -54,6 +60,8 @@ export default function App() {
         <Route path="/trust" element={<TrustDashboardPage />} />
         <Route path="/training" element={<TrainingPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/school/setup" element={<SchoolSetupPage />} />
+        <Route path="/admin/schools/:schoolId/setup" element={<SchoolSetupPage />} />
         <Route path="/admin/content" element={<ContentPage />} />
         <Route path="/admin/schools" element={<SchoolsPage />} />
         <Route path="*" element={<Navigate to={homeFor(user.role)} replace />} />

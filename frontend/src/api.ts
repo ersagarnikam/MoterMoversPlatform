@@ -214,6 +214,69 @@ export interface ParentLinkRow {
   linkedAt: string
 }
 
+export interface StaffMember {
+  id: number
+  email: string
+  displayName: string
+  role: Role
+  enabled: boolean
+  inductionCompletedOn: string | null
+}
+
+export interface SetupClass {
+  id: number
+  name: string
+  yearGroup: string
+  stage: ColourStage
+  teacherId: number | null
+  teacherName: string | null
+  children: number
+}
+
+export interface SchoolSettings {
+  fullNamesEnabled: boolean
+  videoEnabled: boolean
+  trustCanSeeChildren: boolean
+}
+
+export interface SchoolSetup {
+  schoolId: number
+  schoolName: string
+  settings: SchoolSettings
+  staff: StaffMember[]
+  classes: SetupClass[]
+}
+
+export interface SetupChild {
+  id: number
+  initials: string
+  fullName: string | null
+  yearGroup: string
+  currentStage: ColourStage | null
+}
+
+export interface ClassInput {
+  name: string
+  yearGroup: string
+  stage: ColourStage
+  teacherId: number | null
+}
+
+export interface NewSchool {
+  name: string
+  trustId: number | null
+  plan: string
+  stages: ColourStage[]
+  startsOn: string
+  endsOn: string
+}
+
+export interface TrustRow {
+  id: number
+  name: string
+  leads: StaffMember[]
+}
+
 /** The kinds of content Pat and Laura sign off. All share the ContentItem shape. */
 export type ContentKind = 'content' | 'home-activities' | 'guidance' | 'resources' | 'induction'
 
@@ -273,6 +336,34 @@ export const api = {
   login: (email: string, password: string) =>
     request<{ token: string; user: CurrentUser }>('POST', '/api/auth/login', { email, password }),
   me: () => request<CurrentUser>('GET', '/api/auth/me'),
+  requestPasswordReset: (email: string) => request<void>('POST', '/api/auth/password-reset', { email }),
+  setPassword: (token: string, password: string) =>
+    request<{ email: string }>('POST', '/api/auth/password', { token, password }),
+  schoolSetup: (schoolId: number) => request<SchoolSetup>('GET', `/api/schools/${schoolId}/setup`),
+  saveSchoolSettings: (schoolId: number, settings: SchoolSettings) =>
+    request<SchoolSettings>('PUT', `/api/schools/${schoolId}/settings`, settings),
+  addStaff: (schoolId: number, staff: { email: string; displayName: string; role: Role }) =>
+    request<StaffMember>('POST', `/api/schools/${schoolId}/staff`, staff),
+  setStaffEnabled: (schoolId: number, userId: number, enabled: boolean) =>
+    request<StaffMember>('POST', `/api/schools/${schoolId}/staff/${userId}/enabled`, { enabled }),
+  resendInvite: (schoolId: number, userId: number) =>
+    request<void>('POST', `/api/schools/${schoolId}/staff/${userId}/invite`),
+  addClass: (schoolId: number, c: ClassInput) => request<SetupClass>('POST', `/api/schools/${schoolId}/classes`, c),
+  updateClass: (schoolId: number, classId: number, c: ClassInput) =>
+    request<SetupClass>('PUT', `/api/schools/${schoolId}/classes/${classId}`, c),
+  classChildren: (schoolId: number, classId: number) =>
+    request<SetupChild[]>('GET', `/api/schools/${schoolId}/classes/${classId}/children`),
+  addChildren: (schoolId: number, classId: number, children: { initials: string; fullName: string | null }[]) =>
+    request<SetupChild[]>('POST', `/api/schools/${schoolId}/classes/${classId}/children`, { children }),
+  markChildLeft: (schoolId: number, childId: number, leftOn: string) =>
+    request<void>('POST', `/api/schools/${schoolId}/children/${childId}/left`, { leftOn }),
+  moveChild: (schoolId: number, childId: number, classId: number) =>
+    request<SetupChild>('POST', `/api/schools/${schoolId}/children/${childId}/move`, { classId }),
+  addSchool: (s: NewSchool) => request<SchoolRow>('POST', '/api/admin/schools', s),
+  trusts: () => request<TrustRow[]>('GET', '/api/admin/trusts'),
+  addTrust: (name: string) => request<TrustRow>('POST', '/api/admin/trusts', { name }),
+  addTrustLead: (trustId: number, lead: { email: string; displayName: string }) =>
+    request<StaffMember>('POST', `/api/admin/trusts/${trustId}/leads`, lead),
   classes: () => request<ClassSummary[]>('GET', '/api/classes'),
   today: (classId: number) => request<Today>('GET', `/api/classes/${classId}/today`),
   completeSession: (classId: number, sessionId: number, absentChildIds: number[]) =>

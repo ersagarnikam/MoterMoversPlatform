@@ -44,6 +44,7 @@ function RootStack() {
       <Stack.Protected guard={!user}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ title: 'Create an account' }} />
+        <Stack.Screen name="forgot-password" options={{ title: 'Reset your password' }} />
       </Stack.Protected>
     </Stack>
   )

@@ -59,6 +59,7 @@ export default function SignInScreen() {
           {error && <Banner tone="error">{error}</Banner>}
           <Button label="Sign in" onPress={submit} busy={busy} disabled={!email || !password} />
           <Button label="Create an account" variant="secondary" onPress={() => router.push('/register')} />
+          <Button label="Forgot your password?" variant="secondary" onPress={() => router.push('/forgot-password')} />
           {__DEV__ && <Muted>Demo: parent@example.test / password</Muted>}
         </View>
       </ScrollView>

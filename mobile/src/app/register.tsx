@@ -14,8 +14,8 @@ export default function RegisterScreen() {
     ? 'Enter your name'
     : !/^\S+@\S+\.\S+$/.test(email.trim())
       ? 'Enter a valid email address'
-      : password.length < 8
-        ? 'Use at least 8 characters for your password'
+      : password.length < 10
+        ? 'Use at least 10 characters for your password'
         : null
 
   async function submit() {
@@ -48,7 +48,7 @@ export default function RegisterScreen() {
       />
       <Field
         label="Password"
-        hint="At least 8 characters."
+        hint="At least 10 characters."
         value={password}
         onChangeText={setPassword}
         secureTextEntry

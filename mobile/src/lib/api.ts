@@ -177,6 +177,7 @@ export const api = {
   register: (displayName: string, email: string, password: string) =>
     request<{ token: string; user: CurrentUser }>('POST', '/api/auth/register', { displayName, email, password }),
   me: () => request<CurrentUser>('GET', '/api/auth/me'),
+  requestPasswordReset: (email: string) => request<void>('POST', '/api/auth/password-reset', { email }),
 
   children: () => request<LinkedChild[]>('GET', '/api/family/children'),
   linkChild: (code: string) => request<LinkedChild>('POST', '/api/family/children', { code }),

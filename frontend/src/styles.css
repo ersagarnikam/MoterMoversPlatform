@@ -147,6 +147,14 @@ code { background: var(--chip-bg); padding: 0 4px; border-radius: 4px; }
 .login-hero p { color: #c8d3de; max-width: 28rem; }
 .login-card { margin: auto; width: min(400px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 0.75rem; }
 label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; font-size: 0.9rem; }
+select, textarea { font: inherit; background: var(--paper); color: var(--ink); padding: 0.5rem 0.6rem; border: 1px solid var(--border-strong); border-radius: 8px; }
+.fine-link { font-size: 0.88rem; color: var(--teal); }
+.inline-form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-top: 1rem; }
+.inline-form label { min-width: 10rem; flex: 1 1 10rem; }
+.row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+.setup-class { border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem; }
+.setup-children { list-style: none; padding: 0; margin: 0.5rem 0; }
+.setup-children li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.35rem 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 input { font: inherit; background: var(--paper); color: var(--ink); padding: 0.55rem 0.7rem; border: 1px solid var(--border-strong); border-radius: 8px; }
 .demo-accounts { border-top: 1px solid var(--line); padding-top: 0.75rem; }
 
@@ -266,3 +274,4 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 .parent-links { margin-top: 1rem; }
 .toggle { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
 .profile .card + .card { margin-top: 1rem; }
+.stage-picker { border: 1px solid var(--line); border-radius: 8px; margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
