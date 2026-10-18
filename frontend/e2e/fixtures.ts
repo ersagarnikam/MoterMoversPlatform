@@ -41,5 +41,11 @@ export async function expectAccessible(page: Page) {
   expect(serious, 'accessibility problems').toEqual([])
 }
 
-/** Sessions can only be recorded on school days. */
-export const isWeekend = () => [0, 6].includes(new Date().getDay())
+/**
+ * Sessions can only be recorded on school days. The API decides by UK time (ClockConfig), so the test must
+ * too: CI runs in UTC, which is still Sunday for the first hour of a British Summer Time Monday.
+ */
+export const isWeekend = () =>
+  ['Sat', 'Sun'].includes(
+    new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(new Date()),
+  )
