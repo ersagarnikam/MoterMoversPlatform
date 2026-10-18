@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { homeFor } from '../App'
 import { useAuth } from '../auth'
 import StageStripe from '../components/StageStripe'
 import ThemeSwitch from '../components/ThemeSwitch'
+import { signInRole } from '../site'
 
 const DEMO_ACCOUNTS = [
   ['teacher@oakfield.test', 'Class teacher'],
@@ -18,7 +19,10 @@ const DEMO_ACCOUNTS = [
 export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState(import.meta.env.DEV ? 'teacher@oakfield.test' : '')
+  // The role chosen on the website (/sign-in) only changes the wording and, in development, the demo account.
+  const [params] = useSearchParams()
+  const role = signInRole(params.get('as'))
+  const [email, setEmail] = useState(import.meta.env.DEV ? (role?.demo ?? 'teacher@oakfield.test') : '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -43,12 +47,21 @@ export default function LoginPage() {
         <StageStripe />
         <h1>Motor Movers</h1>
         <p>Screening, daily sessions and progress for schools, practitioners and parents.</p>
-        <div>
+        <div className="login-hero-links">
           <ThemeSwitch />
+          <Link to="/" className="login-back">
+            Back to the website
+          </Link>
         </div>
       </div>
       <form className="card login-card" onSubmit={submit}>
         <h2>Sign in</h2>
+        <p className="muted">
+          {role ? `Signing in as ${role.label} · ` : ''}
+          <Link to="/sign-in" className="fine-link">
+            {role ? 'Change role' : 'Choose your role'}
+          </Link>
+        </p>
         <label>
           Email
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />

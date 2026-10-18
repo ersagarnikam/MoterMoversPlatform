@@ -29,7 +29,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 and pick a demo account on the sign-in page. Every account uses the
+Open http://localhost:5173 for the public website (home, about, programme, for schools, for families).
+**Sign in** asks for your role, then opens the sign-in page, where you can pick a demo account. Every account uses the
 password `password`:
 
 | Account | Who | Lands on |

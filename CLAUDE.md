@@ -46,7 +46,7 @@ cd backend  && mvn -B verify        # 43 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
-cd frontend && npm run e2e          # 16 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 46 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -71,10 +71,14 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 All work is on `main` (created 2026-10-17 from the earlier working branch
 `claude/java-springboot-repo-setup-yoyu6y`, which can be deleted once `main` is GitHub's default branch).
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-16/16 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+46/46 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 Built so far:
+- Public website (`frontend/src/pages/site`, `SiteLayout`, shared facts in `src/site.ts`): home, about and
+  research, the programme, for schools (licence, how to join, apply by email), for families, and a
+  role chooser at `/sign-in` that opens `/login?as=<role>`. Content is adapted from
+  movementforlearningproject.co.uk; the contact email and phone are theirs, so confirm them with the owner.
 - Teacher: today's session player with nursery rhymes, 20-day participation counter, screening one item at
   a time, readiness profiles, one-hour staff induction gate, resource library.
 - Head: progress dashboard, flagged classes, governor summary CSV, record access log, **School setup**

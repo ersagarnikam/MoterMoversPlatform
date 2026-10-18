@@ -17,6 +17,13 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ContentPage from './pages/ContentPage'
 import SchoolsPage from './pages/SchoolsPage'
+import SiteLayout from './components/SiteLayout'
+import HomePage from './pages/site/HomePage'
+import AboutPage from './pages/site/AboutPage'
+import ProgrammePage from './pages/site/ProgrammePage'
+import ForSchoolsPage from './pages/site/ForSchoolsPage'
+import ForFamiliesPage from './pages/site/ForFamiliesPage'
+import SignInChooserPage from './pages/site/SignInChooserPage'
 
 /** Where each kind of user lands after signing in. */
 export function homeFor(role: Role): string {
@@ -37,9 +44,21 @@ export function homeFor(role: Role): string {
 export default function App() {
   const { user, loading } = useAuth()
   if (loading) return <div className="page-loading">Loading…</div>
+  // The public website, the same whether or not someone is signed in.
+  const site = (
+    <Route element={<SiteLayout />}>
+      <Route index element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/programme" element={<ProgrammePage />} />
+      <Route path="/for-schools" element={<ForSchoolsPage />} />
+      <Route path="/for-families" element={<ForFamiliesPage />} />
+      <Route path="/sign-in" element={<SignInChooserPage />} />
+    </Route>
+  )
   if (!user) {
     return (
       <Routes>
+        {site}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -49,6 +68,7 @@ export default function App() {
   }
   return (
     <Routes>
+      {site}
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<Layout />}>
         <Route path="/classes" element={<ClassListPage />} />
