@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => {
     preview: {
       port: 4173,
       proxy,
+      // Lets a Cloudflare quick tunnel (cloudflared tunnel --url http://localhost:4173) reach the preview
+      // for demos over the internet.
+      allowedHosts: ['.trycloudflare.com'],
       headers: { 'Content-Security-Policy': CSP },
     },
   }
