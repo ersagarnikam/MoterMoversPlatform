@@ -25,7 +25,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/admin/schools', label: 'Schools & licences' },
     { to: '/classes', label: 'All classes' },
     { to: '/resources', label: 'Resources' },
-    { to: '/training', label: 'Courses' },
+    { to: '/admin/courses', label: 'Courses' },
   ],
 }
 

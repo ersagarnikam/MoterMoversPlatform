@@ -17,6 +17,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ContentPage from './pages/ContentPage'
 import SchoolsPage from './pages/SchoolsPage'
+import CoursesPage from './pages/CoursesPage'
 import SiteLayout from './components/SiteLayout'
 import HomePage from './pages/site/HomePage'
 import AboutPage from './pages/site/AboutPage'
@@ -84,6 +85,7 @@ export default function App() {
         <Route path="/admin/schools/:schoolId/setup" element={<SchoolSetupPage />} />
         <Route path="/admin/content" element={<ContentPage />} />
         <Route path="/admin/schools" element={<SchoolsPage />} />
+        <Route path="/admin/courses" element={<CoursesPage />} />
         <Route path="*" element={<Navigate to={homeFor(user.role)} replace />} />
       </Route>
     </Routes>

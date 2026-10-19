@@ -10,4 +10,6 @@ import uk.co.motormovers.platform.training.model.Cohort;
 public interface CohortRepository extends JpaRepository<Cohort, Long> {
 
     List<Cohort> findByCourseIdAndStartsOnGreaterThanEqualOrderByStartsOn(Long courseId, LocalDate from);
+
+    List<Cohort> findByCourseIdOrderByStartsOn(Long courseId);
 }

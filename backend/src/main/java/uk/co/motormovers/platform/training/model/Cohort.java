@@ -46,6 +46,16 @@ public class Cohort {
         this.recordingAgreed = recordingAgreed;
     }
 
+    public void revise(String name, LocalDate startsOn, String timeSlot, int capacity, String trainerName,
+            boolean recordingAgreed) {
+        this.name = name;
+        this.startsOn = startsOn;
+        this.timeSlot = timeSlot;
+        this.capacity = capacity;
+        this.trainerName = trainerName;
+        this.recordingAgreed = recordingAgreed;
+    }
+
     public Long getId() {
         return id;
     }

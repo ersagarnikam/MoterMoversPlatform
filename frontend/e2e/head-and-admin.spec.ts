@@ -89,6 +89,42 @@ test('the team writes a class session, which waits as a draft until approved', a
   await expect(item).toHaveCount(0)
 })
 
+test('the team sets up a course and opens a cohort for booking', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Courses' }).click()
+  await expect(page.getByRole('heading', { name: 'Courses', exact: true })).toBeVisible()
+
+  const title = `Browser course ${Date.now()}`
+  const setUp = page.locator('section', { has: page.getByRole('heading', { name: 'Set up a course' }) })
+  await setUp.getByLabel('Course title').fill(title)
+  await setUp.getByLabel('Description').fill('A short course for early-years staff.')
+  await setUp.getByLabel('Price (£)').fill('45')
+  await setUp.getByRole('button', { name: 'Set up course' }).click()
+  await expect(page.getByText(`${title} set up`)).toBeVisible()
+
+  const course = page.locator('.course-admin', { hasText: title })
+  await expect(course.getByText('No cohorts yet.')).toBeVisible()
+  await course.getByText('Open a cohort').click()
+  const startsOn = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
+  await course.getByLabel('Cohort name').fill('Browser cohort')
+  await course.getByLabel('Starts').fill(startsOn)
+  await course.getByLabel('Day and time').fill('Wednesdays 7:00 pm UK')
+  await course.getByLabel('Trainer').fill('Pat')
+  await expectAccessible(page)
+  await course.getByRole('button', { name: 'Open cohort' }).click()
+  await expect(course.getByText('0 of 30 places booked')).toBeVisible()
+
+  await course.getByRole('button', { name: 'Edit cohort' }).click()
+  const edit = course.locator('form', { has: page.getByRole('button', { name: 'Save cohort' }) })
+  await edit.getByLabel('Places').fill('12')
+  await edit.getByRole('button', { name: 'Save cohort' }).click()
+  await expect(course.getByText('0 of 12 places booked')).toBeVisible()
+
+  await page.getByRole('link', { name: 'See the catalogue as learners do' }).click()
+  const listed = page.locator('section', { has: page.getByRole('heading', { name: title }) })
+  await expect(listed.getByText('12 places left')).toBeVisible()
+})
+
 test('the team adds a trust and opens a school’s setup', async ({ page }) => {
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Schools & licences' }).click()

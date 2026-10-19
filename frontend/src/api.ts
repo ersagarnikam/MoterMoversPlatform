@@ -280,6 +280,34 @@ export interface TrustRow {
 /** The kinds of content Pat and Laura sign off. All share the ContentItem shape. */
 export type ContentKind = 'content' | 'home-activities' | 'guidance' | 'resources' | 'induction'
 
+export type CourseTrack = 'PROFESSIONAL' | 'PARENT'
+
+export interface CourseInput {
+  track: CourseTrack
+  title: string
+  description: string
+  liveSessions: number
+  sessionMinutes: number
+  pricePence: number
+  renewalPence: number | null
+  awardsCertificate: boolean
+}
+
+export interface CohortInput {
+  name: string
+  startsOn: string
+  timeSlot: string
+  capacity: number
+  trainerName: string
+  recordingAgreed: boolean
+}
+
+/** A course as the team manages it: every cohort, past ones too, with places booked. */
+export interface AdminCourse extends CourseInput {
+  id: number
+  cohorts: (CohortInput & { id: number; booked: number })[]
+}
+
 const TOKEN_KEY = 'mm.token'
 
 export function getToken(): string | null {
@@ -390,6 +418,12 @@ export const api = {
   /** New content is saved as a draft for sign-off. The fields depend on the kind (see ContentPage). */
   createContent: (kind: ContentKind, item: Record<string, unknown>) =>
     request<ContentItem>('POST', `/api/admin/${kind}`, item),
+  adminCourses: () => request<AdminCourse[]>('GET', '/api/admin/courses'),
+  addCourse: (c: CourseInput) => request<AdminCourse>('POST', '/api/admin/courses', c),
+  updateCourse: (id: number, c: CourseInput) => request<AdminCourse>('PUT', `/api/admin/courses/${id}`, c),
+  addCohort: (courseId: number, c: CohortInput) =>
+    request<AdminCourse>('POST', `/api/admin/courses/${courseId}/cohorts`, c),
+  updateCohort: (id: number, c: CohortInput) => request<AdminCourse>('PUT', `/api/admin/cohorts/${id}`, c),
   approve: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
   reject: (id: number, kind: ContentKind = 'content') =>

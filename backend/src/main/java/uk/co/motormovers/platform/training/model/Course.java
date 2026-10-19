@@ -46,6 +46,18 @@ public class Course {
         this.awardsCertificate = awardsCertificate;
     }
 
+    /** Everything but the track, which decides who may book and stays fixed once the course exists. */
+    public void revise(String title, String description, int liveSessions, int sessionMinutes, int pricePence,
+            Integer renewalPence, boolean awardsCertificate) {
+        this.title = title;
+        this.description = description;
+        this.liveSessions = liveSessions;
+        this.sessionMinutes = sessionMinutes;
+        this.pricePence = pricePence;
+        this.renewalPence = renewalPence;
+        this.awardsCertificate = awardsCertificate;
+    }
+
     public Long getId() {
         return id;
     }

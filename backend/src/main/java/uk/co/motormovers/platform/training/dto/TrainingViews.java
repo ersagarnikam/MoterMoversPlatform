@@ -26,6 +26,16 @@ public final class TrainingViews {
             List<CohortView> cohorts) {
     }
 
+    /** A cohort as the team manages it: past ones too, with places booked rather than places left. */
+    public record AdminCohortView(Long id, String name, LocalDate startsOn, String timeSlot, int capacity,
+            int booked, String trainerName, boolean recordingAgreed) {
+    }
+
+    public record AdminCourseView(Long id, CourseTrack track, String title, String description, int liveSessions,
+            int sessionMinutes, int pricePence, Integer renewalPence, boolean awardsCertificate,
+            List<AdminCohortView> cohorts) {
+    }
+
     public record LessonView(Long id, int position, String title, String summary, List<String> paragraphs,
             int minutes, String videoUrl, boolean done) {
 

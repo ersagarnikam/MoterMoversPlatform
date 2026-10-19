@@ -106,7 +106,7 @@ first deployment, updates, backups and restores.
 | Trust lead | Each school's licence, renewal date and summary results. Never individual children, unless a school grants it |
 | Practitioner | Live course catalogue, booking, attendance and certificate status. Can also take the induction |
 | Parent | The parent course and the parent app |
-| Motor Movers team (admin) | Content approval (sessions, home activities, guidance, resources, induction lessons), schools and licences, every class |
+| Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), setting up courses and cohorts, schools and licences, every class |
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
