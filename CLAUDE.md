@@ -90,6 +90,9 @@ Built so far:
   person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
   Heads see their school's payments, trust leads totals per school, parents and practitioners their own
   (Training page). Online payment is not connected.
+- Load test (`deploy/loadtest/`, k6): a school-day mix against the production stack with demo data. On one
+  laptop (2026-10-19): 500 people with pauses at 6 ms median and no errors; ceiling about 800-900 requests a
+  second with the machine's CPU saturated, never failing. Repeat from another machine against staging.
 - Flow guides (`docs/flow-guides/`): PDF guides per role plus an investor and partner overview, with
   screenshots of the demo data (October 2026). Regenerate them when screens change.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).

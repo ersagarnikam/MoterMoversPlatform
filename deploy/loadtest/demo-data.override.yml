@@ -1,0 +1,11 @@
+# Load testing only, never in production. Runs the production images and wiring, but starts the API on its
+# PostgreSQL profile with demo data, because the prod profile refuses demo data on purpose
+# (ProductionChecks). Nightly backups are switched off. See README.md in this folder.
+services:
+  api:
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SEED_DEMO_DATA: "true"
+      PLATFORM_CORS_ALLOWED_ORIGINS: https://${APP_DOMAIN}
+  backup:
+    profiles: ["off"]
