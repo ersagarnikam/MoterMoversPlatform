@@ -272,6 +272,11 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 /* Parent app: invite codes on a child's profile, links on the head dashboard */
 .invite-code { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.12em; margin: 0.5rem 0; }
 .parent-links { margin-top: 1rem; }
+/* Admin: new content and courses */
+.add-item { margin: 1rem 0; }
+.add-item > summary { cursor: pointer; }
+.inline-form label.form-wide, .inline-form .form-wide { flex: 1 1 100%; }
+.hint { font-weight: 400; font-size: 0.82rem; color: var(--muted); }
 .toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 0.35rem; cursor: pointer; }
 .profile .card + .card { margin-top: 1rem; }
 .stage-picker { border: 1px solid var(--line); border-radius: 8px; margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }

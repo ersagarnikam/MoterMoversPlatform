@@ -68,6 +68,27 @@ test('the team signs off a rhyme and blocks diagnostic wording', async ({ page }
   await expectAccessible(page)
 })
 
+test('the team writes a class session, which waits as a draft until approved', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+  const stamp = Date.now()
+  const title = `Browser session ${stamp}`
+  await page.getByText('Add a class session').click()
+  // Sessions are unique by stage, unit and day, so each run uses its own unit.
+  await page.getByLabel('Unit').fill(String(100 + (stamp % 100_000)))
+  await page.getByLabel('Title').fill(title)
+  await page.getByLabel('Focus').fill('Balance and control')
+  await page.getByLabel('Activities, one per line').fill('Stand on one leg\nHop to the line')
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Save as draft' }).click()
+
+  await expect(page.getByText(`“${title}” is saved as a draft`)).toBeVisible()
+  const item = page.locator('.content-item', { hasText: title })
+  await expect(item.getByText('draft')).toBeVisible()
+  await expect(item.getByText('Stand on one leg · Hop to the line')).toBeVisible()
+  await item.getByRole('button', { name: 'Approve' }).click()
+  await expect(item).toHaveCount(0)
+})
+
 test('the team adds a trust and opens a school’s setup', async ({ page }) => {
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Schools & licences' }).click()

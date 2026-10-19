@@ -387,6 +387,9 @@ export const api = {
     request<Induction>('POST', `/api/training/induction/lessons/${lessonId}/complete`),
   resources: () => request<LibraryResource[]>('GET', '/api/resources'),
   content: (kind: ContentKind = 'content') => request<ContentItem[]>('GET', `/api/admin/${kind}`),
+  /** New content is saved as a draft for sign-off. The fields depend on the kind (see ContentPage). */
+  createContent: (kind: ContentKind, item: Record<string, unknown>) =>
+    request<ContentItem>('POST', `/api/admin/${kind}`, item),
   approve: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
   reject: (id: number, kind: ContentKind = 'content') =>
