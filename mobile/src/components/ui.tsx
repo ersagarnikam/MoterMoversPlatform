@@ -218,8 +218,11 @@ export function Field({ label, hint, ...input }: TextInputProps & { label: strin
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ color: p.ink, fontSize: 14, fontWeight: '600' }}>{label}</Text>
+      {/* The visible label is a separate Text, so screen readers need it on the input itself. */}
       <TextInput
         placeholderTextColor={p.muted}
+        accessibilityLabel={label}
+        accessibilityHint={hint}
         {...input}
         style={{
           borderWidth: 1,
