@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type RosterEntry, type ScreeningItem, type Today } from '../api'
 import { enqueue, flush, pending } from '../outbox'
+import { rosterChild } from '../components/RosterChild'
 
 /** Screening replaces the paper booklet: watch one movement, tap a score, the platform does the rest. */
 export default function ScreeningPage() {
@@ -54,9 +55,8 @@ export default function ScreeningPage() {
         <p className="muted">Choose a child. Each screening takes five to eight minutes.</p>
         <div className="roster">
           {today.roster.map((c) => (
-            <button key={c.id} className="roster-child" onClick={() => setChild(c)}>
-              <span className="avatar">{c.name.replace(/\./g, '').slice(0, 2)}</span>
-              <span>{c.name}</span>
+            <button key={c.id} className="roster-child" onClick={() => setChild(c)} {...rosterChild(c, 'screen').props}>
+              {rosterChild(c, 'screen').content}
             </button>
           ))}
         </div>

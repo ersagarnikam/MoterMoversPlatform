@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
 import StageBadge from '../components/StageBadge'
+import { rosterChild } from '../components/RosterChild'
 
 /** A teacher's day starts with one button. */
 export default function TodayPage() {
@@ -98,9 +99,8 @@ export default function TodayPage() {
         </div>
         <div className="roster">
           {today.roster.map((c) => (
-            <Link key={c.id} to={`/child/${c.id}`} className="roster-child" title="Open readiness profile">
-              <span className="avatar">{c.name.replace(/\./g, '').slice(0, 2)}</span>
-              <span>{c.name}</span>
+            <Link key={c.id} to={`/child/${c.id}`} className="roster-child" {...rosterChild(c, 'open readiness profile').props}>
+              {rosterChild(c, 'open readiness profile').content}
             </Link>
           ))}
         </div>

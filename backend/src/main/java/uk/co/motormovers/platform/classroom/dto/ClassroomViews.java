@@ -44,10 +44,12 @@ public final class ClassroomViews {
         }
     }
 
-    public record RosterEntry(Long id, String name, String yearGroup, ColourStage currentStage) {
+    /** name is the full name when the school shows full names, otherwise the initials. */
+    public record RosterEntry(Long id, String name, String initials, String yearGroup, ColourStage currentStage) {
 
         public static RosterEntry of(Child c) {
-            return new RosterEntry(c.getId(), c.displayName(), c.getYearGroup(), c.getCurrentStage());
+            return new RosterEntry(c.getId(), c.displayName(), c.getInitials(), c.getYearGroup(),
+                    c.getCurrentStage());
         }
     }
 

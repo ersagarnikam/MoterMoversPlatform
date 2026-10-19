@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
+import { rosterChild } from '../components/RosterChild'
 
 /**
  * The class player. The video fills the screen and can be cast to the whiteboard; the side list
@@ -125,9 +126,9 @@ export default function PlayerPage() {
               className={`roster-child ${absent.has(c.id) ? 'absent' : ''}`}
               onClick={() => toggleAbsent(c.id)}
               aria-pressed={absent.has(c.id)}
+              {...rosterChild(c, 'absent today', absent.has(c.id) ? 'Absent' : undefined).props}
             >
-              <span className="avatar">{c.name.replace(/\./g, '').slice(0, 2)}</span>
-              <span>{absent.has(c.id) ? 'Absent' : c.name}</span>
+              {rosterChild(c, 'absent today', absent.has(c.id) ? 'Absent' : undefined).content}
             </button>
           ))}
         </div>

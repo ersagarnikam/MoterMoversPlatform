@@ -36,7 +36,9 @@ export interface SessionCard {
 
 export interface RosterEntry {
   id: number
+  /** The full name when the school shows full names, otherwise the initials. */
   name: string
+  initials: string
   yearGroup: string
   currentStage: ColourStage | null
 }

@@ -189,9 +189,16 @@ class GoLiveTest {
             send(head, children, withName).andExpect(status().isOk());
             assertThat(savedName(head, children)).isEqualTo("Rosa Smith");
 
+            // The class roster always sends initials, and the full name only while names are shown.
+            String today = "/api/classes/" + JsonPath.read(created, "$.id") + "/today";
+            assertThat((List<String>) JsonPath.read(fetch(head, today), "$.roster[?(@.initials == 'R.S.')].name"))
+                    .containsExactly("Rosa Smith");
+
             // Switched off, the saved name is kept but no longer sent; switched back on, it returns.
             setFullNames(head, false);
             assertThat(savedName(head, children)).isNull();
+            assertThat((List<String>) JsonPath.read(fetch(head, today), "$.roster[?(@.initials == 'R.S.')].name"))
+                    .containsExactly("R.S.");
             setFullNames(head, true);
             assertThat(savedName(head, children)).isEqualTo("Rosa Smith");
         } finally {

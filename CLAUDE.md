@@ -47,7 +47,7 @@ cd backend  && mvn -B verify        # 59 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
-cd frontend && npm run e2e          # 55 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 56 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -72,7 +72,7 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-55/55 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+56/56 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 Built so far:
