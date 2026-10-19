@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import {
   api,
+  type AdminCourse,
   type NewPayment,
   type Payment,
   type PaymentPurpose,
@@ -26,15 +27,17 @@ export default function PaymentsPage() {
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [payments, setPayments] = useState<Payment[]>([])
   const [schools, setSchools] = useState<SchoolRow[]>([])
+  const [courses, setCourses] = useState<AdminCourse[]>([])
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    Promise.all([api.paymentSummary(), api.payments(), api.schools()])
-      .then(([s, p, sc]) => {
+    Promise.all([api.paymentSummary(), api.payments(), api.schools(), api.adminCourses()])
+      .then(([s, p, sc, co]) => {
         setSummary(s)
         setPayments(p)
         setSchools(sc)
+        setCourses(co)
       })
       .catch((e) => setError(e.message))
   }, [])
@@ -117,6 +120,7 @@ export default function PaymentsPage() {
           date.
         </p>
         <NewPaymentForm
+          courses={courses}
           schools={schools}
           onSave={(p) => run(() => api.recordPayment(p), `${gbp(p.amountPence)} from ${p.payerEmail ?? 'the school'} recorded`)}
         />
@@ -198,7 +202,16 @@ function TotalsTable({ title, rows, empty }: { title: string; rows: TotalsRow[];
   )
 }
 
-function NewPaymentForm({ schools, onSave }: { schools: SchoolRow[]; onSave: (p: NewPayment) => Promise<boolean> }) {
+/** Choosing a school's licence or a course fills in its price and a description; both can still be edited. */
+function NewPaymentForm({
+  schools,
+  courses,
+  onSave,
+}: {
+  schools: SchoolRow[]
+  courses: AdminCourse[]
+  onSave: (p: NewPayment) => Promise<boolean>
+}) {
   const [payer, setPayer] = useState<'school' | 'person'>('school')
   const [schoolId, setSchoolId] = useState<number | ''>('')
   const [email, setEmail] = useState('')
@@ -209,6 +222,26 @@ function NewPaymentForm({ schools, onSave }: { schools: SchoolRow[]; onSave: (p:
   const [reference, setReference] = useState('')
   const [alreadyPaid, setAlreadyPaid] = useState(false)
   const [paidOn, setPaidOn] = useState(today())
+  const [course, setCourse] = useState('')
+
+  /** A school's licence invoice is its agreed yearly price (nothing to fill for a free trial). */
+  function fillLicence(id: number | '', forPurpose: PaymentPurpose) {
+    const school = schools.find((s) => s.id === id)
+    if (forPurpose !== 'LICENCE' || !school?.agreedPricePence) return
+    setAmount(String(school.agreedPricePence / 100))
+    setDescription(`${school.plan} licence`)
+  }
+
+  /** value is "<course id>:fee" or "<course id>:renewal". */
+  function fillCourse(value: string) {
+    setCourse(value)
+    const [id, kind] = value.split(':')
+    const c = courses.find((x) => String(x.id) === id)
+    if (!c) return
+    const renewal = kind === 'renewal' && c.renewalPence !== null
+    setAmount(String((renewal ? c.renewalPence! : c.pricePence) / 100))
+    setDescription(renewal ? `${c.title}, yearly renewal` : c.title)
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -227,6 +260,7 @@ function NewPaymentForm({ schools, onSave }: { schools: SchoolRow[]; onSave: (p:
       setAmount('')
       setReference('')
       setAlreadyPaid(false)
+      setCourse('')
     }
   }
 
@@ -245,7 +279,15 @@ function NewPaymentForm({ schools, onSave }: { schools: SchoolRow[]; onSave: (p:
       {payer === 'school' ? (
         <label>
           School
-          <select value={schoolId} onChange={(e) => setSchoolId(e.target.value ? Number(e.target.value) : '')} required>
+          <select
+            value={schoolId}
+            onChange={(e) => {
+              const id = e.target.value ? Number(e.target.value) : ''
+              setSchoolId(id)
+              fillLicence(id, purpose)
+            }}
+            required
+          >
             <option value="">Choose a school</option>
             {schools.map((s) => (
               <option key={s.id} value={s.id}>
@@ -262,7 +304,14 @@ function NewPaymentForm({ schools, onSave }: { schools: SchoolRow[]; onSave: (p:
       )}
       <label>
         For
-        <select value={purpose} onChange={(e) => setPurpose(e.target.value as PaymentPurpose)}>
+        <select
+          value={purpose}
+          onChange={(e) => {
+            const next = e.target.value as PaymentPurpose
+            setPurpose(next)
+            if (payer === 'school') fillLicence(schoolId, next)
+          }}
+        >
           {PURPOSES.map(([key, label]) => (
             <option key={key} value={key}>
               {label}
@@ -270,6 +319,26 @@ function NewPaymentForm({ schools, onSave }: { schools: SchoolRow[]; onSave: (p:
           ))}
         </select>
       </label>
+      {purpose === 'COURSE' && (
+        <label>
+          Course
+          <select value={course} onChange={(e) => fillCourse(e.target.value)}>
+            <option value="">Choose a course to fill in its price</option>
+            {courses.flatMap((c) => [
+              <option key={`${c.id}:fee`} value={`${c.id}:fee`}>
+                {c.title} ({gbp(c.pricePence)})
+              </option>,
+              ...(c.renewalPence
+                ? [
+                    <option key={`${c.id}:renewal`} value={`${c.id}:renewal`}>
+                      {c.title}, yearly renewal ({gbp(c.renewalPence)})
+                    </option>,
+                  ]
+                : []),
+            ])}
+          </select>
+        </label>
+      )}
       <label>
         Description
         <input

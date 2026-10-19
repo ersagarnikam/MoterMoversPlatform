@@ -24,6 +24,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
   ADMIN: [
     { to: '/admin/content', label: 'Content approval' },
     { to: '/admin/schools', label: 'Schools & licences' },
+    { to: '/admin/plans', label: 'Plans and prices' },
     { to: '/classes', label: 'All classes' },
     { to: '/resources', label: 'Resources' },
     { to: '/admin/courses', label: 'Courses' },

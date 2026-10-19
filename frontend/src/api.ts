@@ -191,10 +191,33 @@ export interface SchoolRow {
   trustName: string | null
   region: string
   plan: string | null
+  planCode: string | null
+  /** What the school pays a year on its current licence, and that plan's price today. */
+  agreedPricePence: number | null
+  listPricePence: number | null
   licenceStatus: string
   endsOn: string | null
   stages: ColourStage[]
   parentLinksEnabled: boolean
+}
+
+export interface PriceRow {
+  effectiveFrom: string
+  pricePence: number
+  changedBy: string
+  changedAt: string
+}
+
+/** A licence plan as the team manages it. nextPrice is a change scheduled for a later date. */
+export interface Plan {
+  code: string
+  label: string
+  freeTrial: boolean
+  active: boolean
+  currentPricePence: number
+  nextPrice: PriceRow | null
+  licences: number
+  history: PriceRow[]
 }
 
 export interface ParentInvite {
@@ -265,7 +288,9 @@ export interface ClassInput {
 export interface NewSchool {
   name: string
   trustId: number | null
+  /** A plan code. agreedPricePence null means the plan's price on the start date. */
   plan: string
+  agreedPricePence: number | null
   stages: ColourStage[]
   startsOn: string
   endsOn: string
@@ -442,6 +467,15 @@ export const api = {
   moveChild: (schoolId: number, childId: number, classId: number) =>
     request<SetupChild>('POST', `/api/schools/${schoolId}/children/${childId}/move`, { classId }),
   addSchool: (s: NewSchool) => request<SchoolRow>('POST', '/api/admin/schools', s),
+  agreeSchoolPrice: (schoolId: number, pricePence: number) =>
+    request<SchoolRow>('POST', `/api/admin/schools/${schoolId}/agreed-price`, { pricePence }),
+  plans: () => request<Plan[]>('GET', '/api/admin/plans'),
+  addPlan: (p: { label: string; freeTrial: boolean; pricePence: number }) =>
+    request<Plan>('POST', '/api/admin/plans', p),
+  updatePlan: (code: string, p: { label: string; active: boolean }) =>
+    request<Plan>('PUT', `/api/admin/plans/${code}`, p),
+  changePlanPrice: (code: string, pricePence: number, effectiveFrom: string) =>
+    request<Plan>('POST', `/api/admin/plans/${code}/prices`, { pricePence, effectiveFrom }),
   trusts: () => request<TrustRow[]>('GET', '/api/admin/trusts'),
   addTrust: (name: string) => request<TrustRow>('POST', '/api/admin/trusts', { name }),
   addTrustLead: (trustId: number, lead: { email: string; displayName: string }) =>

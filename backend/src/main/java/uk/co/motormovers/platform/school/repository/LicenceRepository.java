@@ -10,4 +10,6 @@ public interface LicenceRepository extends JpaRepository<Licence, Long> {
 
     /** The school's most recent licence. */
     Optional<Licence> findFirstBySchoolIdOrderByEndsOnDesc(Long schoolId);
+
+    long countByPlanCode(String planCode);
 }

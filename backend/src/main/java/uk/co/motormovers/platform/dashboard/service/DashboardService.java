@@ -87,7 +87,7 @@ public class DashboardService {
             Licence licence = licences.findFirstBySchoolIdOrderByEndsOnDesc(s.getId()).orElse(null);
             return new DashboardViews.TrustSchoolRow(s.getId(), s.getName(),
                     licence == null ? Licence.Status.EXPIRED : licence.statusOn(today),
-                    licence == null ? null : licence.getPlan().label(),
+                    licence == null ? null : licence.getPlan().getLabel(),
                     licence == null ? null : licence.getEndsOn(),
                     licence == null ? "" : describeStages(licence.getStages()),
                     d.childrenTotal() == 0 ? 0 : (double) d.childrenScreened() / d.childrenTotal(),

@@ -33,7 +33,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V5`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V6`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -43,11 +43,11 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && mvn -B verify        # 54 unit + API integration tests (H2)
+cd backend  && mvn -B verify        # 59 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
-cd frontend && npm run e2e          # 52 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 55 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -72,7 +72,7 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-52/52 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+55/55 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 Built so far:
@@ -91,6 +91,11 @@ Built so far:
   person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
   Heads see their school's payments, trust leads totals per school, parents and practitioners their own
   (Training page). Online payment is not connected.
+- Plans and prices (`/admin/plans`, `PlanService`, migration V6): licence plans live in the database with dated
+  prices (`licence_plan_price`); a change applies from today or later and never rewrites a price in force, and
+  each change records who made it. Plans can be added or retired. Each licence has an agreed price (default: the
+  plan price on its start date; editable on Schools & licences), and the payment form fills in licence and
+  course prices.
 - Load test (`deploy/loadtest/`, k6): a school-day mix against the production stack with demo data. On one
   laptop (2026-10-19): 500 people with pauses at 6 ms median and no errors; ceiling about 800-900 requests a
   second with the machine's CPU saturated, never failing. Repeat from another machine against staging.
@@ -125,5 +130,6 @@ Not started unless noted. Confirm priorities with the owner.
 8. Cohort bookings, attendance and assessment results have API endpoints (`/api/admin/cohorts/{id}/enrolments`,
    `/api/admin/enrolments/{id}/...`) but no screen yet, so certificates cannot be issued from the web app.
 9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same
-   `payment` records), refunds and credit notes (a paid payment is final), VAT, and linking a payment to a
+   `payment` records), refunds and credit notes (a paid payment is final), VAT (prices are the amounts charged,
+   with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.

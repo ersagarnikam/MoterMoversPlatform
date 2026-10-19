@@ -293,6 +293,14 @@ tfoot th { border-top: 1px solid var(--line); border-bottom: none; }
 .status-payment-paid { background: var(--teal-soft); color: var(--ok-ink); }
 .status-payment-due { background: var(--warn-bg); color: var(--warn-ink); }
 @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+
+/* Plans and prices */
+.btn-small { padding: 0.2rem 0.55rem; font-size: 0.82rem; }
+.price-edit { display: flex; gap: 0.4rem; align-items: center; }
+.price-edit input { width: 7rem; }
+.plan-card { margin-bottom: 1rem; }
+.plan-retired { opacity: 0.75; }
+.price-history { margin-top: 0.75rem; }
 .toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 0.35rem; cursor: pointer; }
 .profile .card + .card { margin-top: 1rem; }
 .stage-picker { border: 1px solid var(--line); border-radius: 8px; margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }

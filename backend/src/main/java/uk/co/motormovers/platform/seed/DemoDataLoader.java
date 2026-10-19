@@ -46,7 +46,6 @@ import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.repository.PaymentRepository;
 import uk.co.motormovers.platform.school.model.Licence;
-import uk.co.motormovers.platform.school.model.LicencePlan;
 import uk.co.motormovers.platform.school.model.School;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 import uk.co.motormovers.platform.school.model.Trust;
@@ -54,6 +53,7 @@ import uk.co.motormovers.platform.school.repository.LicenceRepository;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
 import uk.co.motormovers.platform.school.repository.SchoolRepository;
 import uk.co.motormovers.platform.school.repository.TrustRepository;
+import uk.co.motormovers.platform.school.service.PlanService;
 import uk.co.motormovers.platform.screening.model.MotorArea;
 import uk.co.motormovers.platform.screening.model.ScreeningItem;
 import uk.co.motormovers.platform.screening.model.ScreeningResult;
@@ -106,6 +106,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final InductionLessonRepository inductionLessons;
     private final InductionProgressRepository inductionProgress;
     private final PaymentRepository payments;
+    private final PlanService plans;
     private final PasswordEncoder passwordEncoder;
     private final PlatformProperties properties;
     private final Clock clock;
@@ -119,9 +120,10 @@ public class DemoDataLoader implements ApplicationRunner {
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
             HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
             InductionLessonRepository inductionLessons, InductionProgressRepository inductionProgress,
-            PaymentRepository payments, PasswordEncoder passwordEncoder, PlatformProperties properties,
+            PaymentRepository payments, PlanService plans, PasswordEncoder passwordEncoder, PlatformProperties properties,
             Clock clock) {
         this.payments = payments;
+        this.plans = plans;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.inductionProgress = inductionProgress;
@@ -162,13 +164,13 @@ public class DemoDataLoader implements ApplicationRunner {
         List<InductionLesson> induction = seedInduction();
 
         Trust trust = trusts.save(new Trust("Northbridge Academy Trust"));
-        School oakfield = school("Oakfield Primary", trust, LicencePlan.TRUST,
+        School oakfield = school("Oakfield Primary", trust, "TRUST",
                 EnumSet.range(ColourStage.RED, ColourStage.BLUE), today.minusMonths(3), today.plusMonths(9));
-        School marlow = school("Marlow Infants", trust, LicencePlan.TRUST,
+        School marlow = school("Marlow Infants", trust, "TRUST",
                 EnumSet.range(ColourStage.RED, ColourStage.YELLOW), today.minusMonths(5), today.plusMonths(7));
-        School brookhouse = school("Brookhouse", trust, LicencePlan.TRUST,
+        School brookhouse = school("Brookhouse", trust, "TRUST",
                 EnumSet.range(ColourStage.RED, ColourStage.GREEN), today.minusMonths(11), today.plusDays(30));
-        School ferrers = school("Ferrers Park", trust, LicencePlan.FREE_TRIAL,
+        School ferrers = school("Ferrers Park", trust, "FREE_TRIAL",
                 EnumSet.of(ColourStage.RED, ColourStage.ORANGE), today.minusMonths(1), today.plusMonths(2));
 
         users.save(new AppUser("admin@motormovers.test", "Laura Preedy-Maher", hash, Role.ADMIN, null, null));
@@ -213,10 +215,10 @@ public class DemoDataLoader implements ApplicationRunner {
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
     }
 
-    private School school(String name, Trust trust, LicencePlan plan, EnumSet<ColourStage> stages, LocalDate from,
+    private School school(String name, Trust trust, String plan, EnumSet<ColourStage> stages, LocalDate from,
             LocalDate to) {
         School school = schools.save(new School(name, trust, properties.region()));
-        licences.save(new Licence(school, plan, from, to, stages));
+        licences.save(new Licence(school, plans.find(plan), plans.priceOn(plan, from), from, to, stages));
         return school;
     }
 
@@ -612,7 +614,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private void seedPayments(School oakfield, School marlow, School brookhouse, AppUser practitioner,
             AppUser parent, LocalDate today) {
         String team = "admin@motormovers.test";
-        int trustLicence = LicencePlan.TRUST.annualPricePence();
+        int trustLicence = plans.priceOn("TRUST", today);
         List<Payment> list = new ArrayList<>();
         list.add(paid(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
                 today.minusMonths(11), "MM-1001", team, clock.instant()), today.minusMonths(11).plusDays(12)));

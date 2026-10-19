@@ -1,30 +1,26 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type ColourStage, type NewSchool, type SchoolRow, type TrustRow } from '../api'
+import { api, type ColourStage, type NewSchool, type Plan, type SchoolRow, type TrustRow } from '../api'
 import StageBadge from '../components/StageBadge'
+import { gbp } from '../money'
 import { STAGES } from '../stages'
 
-const PLANS = [
-  ['FREE_TRIAL', 'Free trial'],
-  ['EARLY_YEARS', 'Early years'],
-  ['PRIMARY_CORE', 'Primary core'],
-  ['FULL_PROGRAMME', 'Full programme'],
-  ['TRUST', 'Trust'],
-  ['FREE', 'Free'],
-] as const
+const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 
 /** The platform team signs schools up, sets licences, and adds trusts and trust leads. */
 export default function SchoolsPage() {
   const [schools, setSchools] = useState<SchoolRow[] | null>(null)
   const [trusts, setTrusts] = useState<TrustRow[]>([])
+  const [plans, setPlans] = useState<Plan[]>([])
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    Promise.all([api.schools(), api.trusts()])
-      .then(([s, t]) => {
+    Promise.all([api.schools(), api.trusts(), api.plans()])
+      .then(([s, t, p]) => {
         setSchools(s)
         setTrusts(t)
+        setPlans(p)
       })
       .catch((e) => setError(e.message))
   }, [])
@@ -59,6 +55,7 @@ export default function SchoolsPage() {
               <th>School</th>
               <th>Trust</th>
               <th>Plan</th>
+              <th title="What the school pays a year on its current licence">Yearly price</th>
               <th>Status</th>
               <th>Ends</th>
               <th>Stages</th>
@@ -72,6 +69,12 @@ export default function SchoolsPage() {
                 <td>{s.name}</td>
                 <td>{s.trustName ?? '-'}</td>
                 <td>{s.plan ?? '-'}</td>
+                <td>
+                  <PriceCell
+                    school={s}
+                    onSave={(p) => run(() => api.agreeSchoolPrice(s.id, p), `${s.name} now pays ${gbp(p)} a year`)}
+                  />
+                </td>
                 <td>{s.licenceStatus.replace('_', ' ').toLowerCase()}</td>
                 <td>{s.endsOn ?? '-'}</td>
                 <td className="stage-list">
@@ -110,7 +113,7 @@ export default function SchoolsPage() {
         <p className="muted">
           Then open <em>Set up</em> to add the head teacher, who adds their own staff and classes.
         </p>
-        <NewSchoolForm trusts={trusts} onAdd={(s) => run(() => api.addSchool(s), `${s.name} signed up`)} />
+        <NewSchoolForm trusts={trusts} plans={plans.filter((p) => p.active)} onAdd={(s) => run(() => api.addSchool(s), `${s.name} signed up`)} />
       </section>
 
       <section className="card">
@@ -132,19 +135,34 @@ export default function SchoolsPage() {
   )
 }
 
-function NewSchoolForm({ trusts, onAdd }: { trusts: TrustRow[]; onAdd: (s: NewSchool) => Promise<boolean> }) {
+function NewSchoolForm({
+  trusts,
+  plans,
+  onAdd,
+}: {
+  trusts: TrustRow[]
+  plans: Plan[]
+  onAdd: (s: NewSchool) => Promise<boolean>
+}) {
   const today = new Date().toISOString().slice(0, 10)
   const nextYear = new Date(Date.now() + 365 * 86_400_000).toISOString().slice(0, 10)
   const [name, setName] = useState('')
   const [trustId, setTrustId] = useState<number | null>(null)
   const [plan, setPlan] = useState<string>('FREE_TRIAL')
+  // Empty means the plan's price on the start date; a figure here is an agreed price, such as a discount.
+  const [price, setPrice] = useState('')
+  const chosen = plans.find((p) => p.code === plan)
   const [stages, setStages] = useState<ColourStage[]>(['RED', 'ORANGE', 'YELLOW'])
   const [startsOn, setStartsOn] = useState(today)
   const [endsOn, setEndsOn] = useState(nextYear)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
-    if (await onAdd({ name, trustId, plan, stages, startsOn, endsOn })) setName('')
+    const agreedPricePence = chosen?.freeTrial || price.trim() === '' ? null : pence(price)
+    if (await onAdd({ name, trustId, plan, agreedPricePence, stages, startsOn, endsOn })) {
+      setName('')
+      setPrice('')
+    }
   }
 
   return (
@@ -168,12 +186,24 @@ function NewSchoolForm({ trusts, onAdd }: { trusts: TrustRow[]; onAdd: (s: NewSc
         <label>
           Plan
           <select value={plan} onChange={(e) => setPlan(e.target.value)}>
-            {PLANS.map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
+            {plans.map((p) => (
+              <option key={p.code} value={p.code}>
+                {p.label} ({gbp(p.currentPricePence)})
               </option>
             ))}
           </select>
+        </label>
+        <label>
+          Agreed yearly price (£, optional)
+          <input
+            type="number"
+            min={0}
+            step={0.01}
+            value={chosen?.freeTrial ? '0' : price}
+            disabled={chosen?.freeTrial}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder={chosen ? `Plan price ${gbp(chosen.currentPricePence)}` : undefined}
+          />
         </label>
         <label>
           Starts
@@ -205,6 +235,55 @@ function NewSchoolForm({ trusts, onAdd }: { trusts: TrustRow[]; onAdd: (s: NewSc
         </button>
       </div>
     </form>
+  )
+}
+
+/** What the school pays a year, with the plan price beside it when a different price was agreed. */
+function PriceCell({ school: s, onSave }: { school: SchoolRow; onSave: (pence: number) => Promise<boolean> }) {
+  const [editing, setEditing] = useState(false)
+  const [price, setPrice] = useState('')
+  if (s.agreedPricePence === null) return <>-</>
+  if (editing) {
+    return (
+      <form
+        className="price-edit"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          if (await onSave(pence(price))) setEditing(false)
+        }}
+      >
+        <input
+          type="number"
+          min={0}
+          step={0.01}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          aria-label={`Yearly price for ${s.name} (£)`}
+          required
+        />
+        <button className="btn btn-primary">Save</button>
+        <button type="button" className="btn" onClick={() => setEditing(false)}>
+          Cancel
+        </button>
+      </form>
+    )
+  }
+  const discounted = s.listPricePence !== null && s.listPricePence !== s.agreedPricePence
+  return (
+    <span className="nowrap">
+      {gbp(s.agreedPricePence)}
+      {discounted && <span className="muted"> (plan {gbp(s.listPricePence!)})</span>}{' '}
+      <button
+        className="btn btn-small"
+        onClick={() => {
+          setPrice(String(s.agreedPricePence! / 100))
+          setEditing(true)
+        }}
+        aria-label={`Change the yearly price for ${s.name}`}
+      >
+        Change
+      </button>
+    </span>
   )
 }
 

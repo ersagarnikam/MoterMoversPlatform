@@ -37,8 +37,12 @@ public class Licence {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private School school;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "plan")
     private LicencePlan plan;
+
+    /** What the school pays each year: the plan price when the licence was sold, unless another was agreed. */
+    private int agreedPricePence;
 
     private LocalDate startsOn;
 
@@ -53,9 +57,11 @@ public class Licence {
     protected Licence() {
     }
 
-    public Licence(School school, LicencePlan plan, LocalDate startsOn, LocalDate endsOn, Set<ColourStage> stages) {
+    public Licence(School school, LicencePlan plan, int agreedPricePence, LocalDate startsOn, LocalDate endsOn,
+            Set<ColourStage> stages) {
         this.school = school;
         this.plan = plan;
+        this.agreedPricePence = agreedPricePence;
         this.startsOn = startsOn;
         this.endsOn = endsOn;
         this.stages = stages.isEmpty() ? EnumSet.noneOf(ColourStage.class) : EnumSet.copyOf(stages);
@@ -65,7 +71,7 @@ public class Licence {
         if (today.isAfter(endsOn)) {
             return Status.EXPIRED;
         }
-        if (plan == LicencePlan.FREE_TRIAL) {
+        if (plan.isFreeTrial()) {
             return Status.FREE_TRIAL;
         }
         if (!today.plusDays(RENEWAL_WINDOW_DAYS).isBefore(endsOn)) {
@@ -88,6 +94,14 @@ public class Licence {
 
     public LicencePlan getPlan() {
         return plan;
+    }
+
+    public int getAgreedPricePence() {
+        return agreedPricePence;
+    }
+
+    public void agreePrice(int pence) {
+        this.agreedPricePence = pence;
     }
 
     public LocalDate getStartsOn() {
