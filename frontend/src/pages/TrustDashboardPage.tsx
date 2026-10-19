@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, type TrustDashboard } from '../api'
 import { useAuth } from '../auth'
+import { gbp } from '../money'
 import { pct } from '../stages'
 
 const STATUS_LABEL = { ACTIVE: 'Active', RENEWAL_DUE: 'Renewal due', FREE_TRIAL: 'Free trial', EXPIRED: 'Expired' }
@@ -54,6 +55,51 @@ export default function TrustDashboardPage() {
         </table>
         <p className="fine">Individual children are not visible at trust level unless a school grants access.</p>
       </div>
+      <TrustSpending trustId={user.trustId} />
     </>
+  )
+}
+
+/** What the trust's schools have paid and owe Motor Movers, school by school. */
+function TrustSpending({ trustId }: { trustId: number }) {
+  const [data, setData] = useState<Awaited<ReturnType<typeof api.trustPayments>> | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.trustPayments(trustId).then(setData).catch((e) => setError(e.message))
+  }, [trustId])
+
+  if (error) return <p className="error">{error}</p>
+  if (!data) return null
+  return (
+    <section className="card table-wrap">
+      <h3>Spending</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>School</th>
+            <th className="num">Paid</th>
+            <th className="num">Outstanding</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.schools.map((s) => (
+            <tr key={s.schoolId}>
+              <td>{s.schoolName}</td>
+              <td className="num">{gbp(s.paidPence)}</td>
+              <td className="num">{s.outstandingPence ? gbp(s.outstandingPence) : '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>All schools</th>
+            <th className="num">{gbp(data.paidPence)}</th>
+            <th className="num">{data.outstandingPence ? gbp(data.outstandingPence) : '-'}</th>
+          </tr>
+        </tfoot>
+      </table>
+      <p className="fine">Licences and other invoices paid by each school.</p>
+    </section>
   )
 }

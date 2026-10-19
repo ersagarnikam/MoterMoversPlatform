@@ -42,6 +42,9 @@ import uk.co.motormovers.platform.family.model.ParentLink;
 import uk.co.motormovers.platform.family.repository.HomeSessionRecordRepository;
 import uk.co.motormovers.platform.family.repository.ParentInviteRepository;
 import uk.co.motormovers.platform.family.repository.ParentLinkRepository;
+import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentPurpose;
+import uk.co.motormovers.platform.payment.repository.PaymentRepository;
 import uk.co.motormovers.platform.school.model.Licence;
 import uk.co.motormovers.platform.school.model.LicencePlan;
 import uk.co.motormovers.platform.school.model.School;
@@ -102,6 +105,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final LibraryResourceRepository resources;
     private final InductionLessonRepository inductionLessons;
     private final InductionProgressRepository inductionProgress;
+    private final PaymentRepository payments;
     private final PasswordEncoder passwordEncoder;
     private final PlatformProperties properties;
     private final Clock clock;
@@ -115,7 +119,9 @@ public class DemoDataLoader implements ApplicationRunner {
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
             HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
             InductionLessonRepository inductionLessons, InductionProgressRepository inductionProgress,
-            PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock) {
+            PaymentRepository payments, PasswordEncoder passwordEncoder, PlatformProperties properties,
+            Clock clock) {
+        this.payments = payments;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.inductionProgress = inductionProgress;
@@ -169,7 +175,8 @@ public class DemoDataLoader implements ApplicationRunner {
         AppUser patel = users.save(new AppUser("head@oakfield.test", "Mr Patel", hash, Role.HEAD, oakfield.getId(),
                 trust.getId()));
         users.save(new AppUser("trust@northbridge.test", "Ms Okafor", hash, Role.TRUST_LEAD, null, trust.getId()));
-        users.save(new AppUser("practitioner@example.test", "Sam Rivers", hash, Role.PRACTITIONER, null, null));
+        AppUser sam = users.save(new AppUser("practitioner@example.test", "Sam Rivers", hash, Role.PRACTITIONER,
+                null, null));
         AppUser jo = users.save(new AppUser("parent@example.test", "Jo Bennett", hash, Role.PARENT, null, null));
         AppUser hardy = users.save(new AppUser("teacher@oakfield.test", "Ms Hardy", hash, Role.TEACHER,
                 oakfield.getId(), trust.getId()));
@@ -202,6 +209,7 @@ public class DemoDataLoader implements ApplicationRunner {
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
         seedTraining(today);
         seedParentApp(oakfield, y2r, jo, today);
+        seedPayments(oakfield, marlow, brookhouse, sam, jo, today);
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
     }
 
@@ -598,6 +606,34 @@ public class DemoDataLoader implements ApplicationRunner {
                 "Balancing tablets and TV with time on the move.",
                 "Draft for Pat and Laura to review.\n\nSuggest a movement break after every programme or game.",
                 null, 2));
+    }
+
+    /** Licence invoices for the trust's schools (Brookhouse's renewal still due) and two course fees. */
+    private void seedPayments(School oakfield, School marlow, School brookhouse, AppUser practitioner,
+            AppUser parent, LocalDate today) {
+        String team = "admin@motormovers.test";
+        int trustLicence = LicencePlan.TRUST.annualPricePence();
+        List<Payment> list = new ArrayList<>();
+        list.add(paid(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
+                today.minusMonths(11), "MM-1001", team, clock.instant()), today.minusMonths(11).plusDays(12)));
+        list.add(paid(Payment.bySchool(marlow, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
+                today.minusMonths(5), "MM-1014", team, clock.instant()), today.minusMonths(5).plusDays(20)));
+        list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
+                today.minusMonths(3), "MM-1020", team, clock.instant()), today.minusMonths(3).plusDays(9)));
+        list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.OTHER, "Printed session cards", 6_000,
+                today.minusMonths(2), "MM-1026", team, clock.instant()), today.minusMonths(2).plusDays(3)));
+        list.add(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 2", trustLicence,
+                today.minusDays(7), "MM-1031", team, clock.instant()));
+        list.add(paid(Payment.byPerson(practitioner, PaymentPurpose.COURSE, "Motor Movers practitioner course",
+                18_000, today.minusMonths(4), null, team, clock.instant()), today.minusMonths(4)));
+        list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Motor Movers parent course", 4_500,
+                today.minusMonths(1), null, team, clock.instant()), today.minusMonths(1)));
+        payments.saveAll(list);
+    }
+
+    private static Payment paid(Payment payment, LocalDate on) {
+        payment.markPaid(on);
+        return payment;
     }
 
     private void seedTraining(LocalDate today) {

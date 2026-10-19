@@ -138,3 +138,48 @@ test('the team adds a trust and opens a school’s setup', async ({ page }) => {
   await expect(page.getByText('Marlow Infants')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'School setup' })).toBeVisible()
 })
+
+test('the team records an invoice, marks it paid and sees spending', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Payments' }).click()
+  await expect(page.getByRole('heading', { name: 'Payments', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Received each month' })).toBeVisible()
+  await expectAccessible(page)
+
+  const description = `Browser licence ${Date.now()}`
+  const form = page.locator('section', { has: page.getByRole('heading', { name: 'Record a payment' }) })
+  await form.getByRole('combobox', { name: /^School/ }).selectOption({ label: 'Ferrers Park' })
+  await form.getByLabel('Description').fill(description)
+  await form.getByLabel('Amount (£)').fill('450')
+  await form.getByRole('button', { name: 'Record payment' }).click()
+  await expect(page.getByText('£450 from the school recorded')).toBeVisible()
+
+  const row = page.getByRole('row', { name: new RegExp(description) })
+  await expect(row.getByText('Due', { exact: true })).toBeVisible()
+  await row.getByRole('button', { name: 'Mark paid today' }).click()
+  await expect(page.getByText(`${description} marked paid`)).toBeVisible()
+  await expect(row.getByText('Paid', { exact: true })).toBeVisible()
+  await expect(row.getByRole('button', { name: 'Mark paid today' })).toHaveCount(0)
+})
+
+test('a head sees their school’s payments and a trust lead sees spending by school', async ({ page }) => {
+  await signIn(page, 'head@oakfield.test')
+  await page.getByRole('link', { name: 'Payments' }).click()
+  await expect(page.getByRole('heading', { name: 'Oakfield Primary · Payments' })).toBeVisible()
+  await expect(page.getByRole('cell', { name: /Printed session cards/ })).toBeVisible()
+  await expect(page.getByText('Motor Movers parent course')).toHaveCount(0)
+  await expectAccessible(page)
+
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await signIn(page, 'trust@northbridge.test')
+  const spending = page.locator('section', { has: page.getByRole('heading', { name: 'Spending' }) })
+  await expect(spending.getByRole('row', { name: /Brookhouse/ })).toContainText('£1,487.50')
+  await expect(spending.getByRole('row', { name: /All schools/ })).toBeVisible()
+})
+
+test('a parent sees what they have paid', async ({ page }) => {
+  await signIn(page, 'parent@example.test')
+  const mine = page.locator('section', { has: page.getByRole('heading', { name: 'Your payments' }) })
+  await expect(mine.getByRole('cell', { name: /Motor Movers parent course/ })).toBeVisible()
+  await expect(mine.getByText('£45 paid')).toBeVisible()
+})

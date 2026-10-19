@@ -308,6 +308,60 @@ export interface AdminCourse extends CourseInput {
   cohorts: (CohortInput & { id: number; booked: number })[]
 }
 
+export type PayerType = 'SCHOOL' | 'PARENT' | 'INDIVIDUAL'
+export type PaymentPurpose = 'LICENCE' | 'COURSE' | 'OTHER'
+
+/** One recorded payment. Amounts are in pence; payerEmail is null when a school pays. */
+export interface Payment {
+  id: number
+  payerType: PayerType
+  payerName: string
+  payerEmail: string | null
+  schoolId: number | null
+  purpose: PaymentPurpose
+  purposeLabel: string
+  description: string
+  amountPence: number
+  status: 'DUE' | 'PAID' | 'CANCELLED'
+  invoicedOn: string
+  paidOn: string | null
+  reference: string | null
+}
+
+/** "Paid" is money received; "outstanding" is invoiced and not yet paid. */
+export interface Totals {
+  paidPence: number
+  outstandingPence: number
+}
+
+export interface SchoolTotal extends Totals {
+  schoolId: number
+  schoolName: string
+  trustName: string | null
+}
+
+export interface PaymentSummary extends Totals {
+  paidLast12MonthsPence: number
+  byPayerType: (Totals & { key: PayerType; label: string; payments: number })[]
+  byPurpose: (Totals & { key: PaymentPurpose; label: string; payments: number })[]
+  /** The last 12 months, oldest first; month is YYYY-MM. */
+  byMonth: { month: string; paidPence: number }[]
+  bySchool: SchoolTotal[]
+  byTrust: (Totals & { trustId: number; trustName: string; schools: number })[]
+  byPerson: (Totals & { userId: number; name: string; email: string; payerType: PayerType })[]
+}
+
+export interface NewPayment {
+  schoolId: number | null
+  payerEmail: string | null
+  purpose: PaymentPurpose
+  description: string
+  amountPence: number
+  invoicedOn: string
+  reference: string | null
+  paidOn: string | null
+}
+
 const TOKEN_KEY = 'mm.token'
 
 export function getToken(): string | null {
@@ -428,6 +482,22 @@ export const api = {
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
   reject: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/reject`),
+  payments: () => request<Payment[]>('GET', '/api/admin/payments'),
+  paymentSummary: () => request<PaymentSummary>('GET', '/api/admin/payments/summary'),
+  recordPayment: (p: NewPayment) => request<Payment>('POST', '/api/admin/payments', p),
+  markPaid: (id: number, paidOn: string) => request<Payment>('POST', `/api/admin/payments/${id}/paid`, { paidOn }),
+  cancelPayment: (id: number) => request<Payment>('POST', `/api/admin/payments/${id}/cancel`),
+  schoolPayments: (schoolId: number) =>
+    request<Totals & { schoolId: number; schoolName: string; payments: Payment[] }>(
+      'GET',
+      `/api/schools/${schoolId}/payments`,
+    ),
+  trustPayments: (trustId: number) =>
+    request<Totals & { trustId: number; trustName: string; schools: SchoolTotal[] }>(
+      'GET',
+      `/api/trusts/${trustId}/payments`,
+    ),
+  myPayments: () => request<Totals & { payments: Payment[] }>('GET', '/api/payments/mine'),
   schools: () => request<SchoolRow[]>('GET', '/api/admin/schools'),
   setParentLinks: (schoolId: number, enabled: boolean) =>
     request<void>('POST', `/api/admin/schools/${schoolId}/parent-links`, { enabled }),

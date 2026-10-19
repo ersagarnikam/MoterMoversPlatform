@@ -18,6 +18,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import ContentPage from './pages/ContentPage'
 import SchoolsPage from './pages/SchoolsPage'
 import CoursesPage from './pages/CoursesPage'
+import PaymentsPage from './pages/PaymentsPage'
+import SchoolPaymentsPage from './pages/SchoolPaymentsPage'
 import SiteLayout from './components/SiteLayout'
 import HomePage from './pages/site/HomePage'
 import AboutPage from './pages/site/AboutPage'
@@ -86,6 +88,8 @@ export default function App() {
         <Route path="/admin/content" element={<ContentPage />} />
         <Route path="/admin/schools" element={<SchoolsPage />} />
         <Route path="/admin/courses" element={<CoursesPage />} />
+        <Route path="/admin/payments" element={<PaymentsPage />} />
+        <Route path="/school/payments" element={<SchoolPaymentsPage />} />
         <Route path="*" element={<Navigate to={homeFor(user.role)} replace />} />
       </Route>
     </Routes>

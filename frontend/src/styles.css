@@ -279,6 +279,20 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 .hint { font-weight: 400; font-size: 0.82rem; color: var(--muted); }
 .course-admin { margin-bottom: 1rem; }
 .course-admin h4 { margin-top: 1rem; }
+
+/* Payments */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.nowrap { white-space: nowrap; }
+.month-bars { width: 100%; height: auto; display: block; }
+.month-bars .axis { stroke: var(--line); }
+.month-bars .bar { fill: var(--bar); }
+.month-bars .hit { fill: transparent; }
+.month-bars g:hover .bar { fill: var(--teal); }
+.month-bars .tick { fill: var(--muted); font-size: 12px; text-anchor: middle; }
+tfoot th { border-top: 1px solid var(--line); border-bottom: none; }
+.status-payment-paid { background: var(--teal-soft); color: var(--ok-ink); }
+.status-payment-due { background: var(--warn-bg); color: var(--warn-ink); }
+@media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
 .toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 0.35rem; cursor: pointer; }
 .profile .card + .card { margin-top: 1rem; }
 .stage-picker { border: 1px solid var(--line); border-radius: 8px; margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }

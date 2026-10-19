@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api, type Course, type Enrolment, type Induction } from '../api'
+import { api, type Course, type Enrolment, type Induction, type Payment, type Totals } from '../api'
+import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
+import { gbp } from '../money'
 
-const gbp = (pence: number) => `£${(pence / 100).toFixed(pence % 100 === 0 ? 0 : 2)}`
 
 /** The one-hour induction school staff complete before running sessions. */
 function InductionSection() {
@@ -65,6 +66,29 @@ function InductionSection() {
           </details>
         ))}
       </div>
+    </section>
+  )
+}
+
+/** What the signed-in person has paid for themselves. Hidden until there is something to show. */
+function YourPayments() {
+  const [data, setData] = useState<(Totals & { payments: Payment[] }) | null>(null)
+
+  useEffect(() => {
+    // A failure here should not hide the courses, so it is left silent.
+    api.myPayments().then(setData).catch(() => setData(null))
+  }, [])
+
+  if (!data || data.payments.length === 0) return null
+  return (
+    <section className="card">
+      <div className="section-head">
+        <h3>Your payments</h3>
+        <span className="muted">
+          {gbp(data.paidPence)} paid{data.outstandingPence ? ` · ${gbp(data.outstandingPence)} due` : ''}
+        </span>
+      </div>
+      <PaymentTable payments={data.payments} />
     </section>
   )
 }
@@ -135,6 +159,8 @@ export default function TrainingPage() {
           ))}
         </section>
       )}
+
+      {user?.role !== 'ADMIN' && <YourPayments />}
 
       {courses.map((c) => (
         <section key={c.id} className="card">

@@ -102,11 +102,11 @@ first deployment, updates, backups and restores.
 | Role | What they can do |
 |---|---|
 | Class teacher | See their own class only: today's session, the half-term counter, screening, readiness profiles. Take the one-hour induction and use the resource library |
-| Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log. Take the induction and use the resource library |
-| Trust lead | Each school's licence, renewal date and summary results. Never individual children, unless a school grants it |
-| Practitioner | Live course catalogue, booking, attendance and certificate status. Can also take the induction |
-| Parent | The parent course and the parent app |
-| Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), setting up courses and cohorts, schools and licences, every class |
+| Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log, their school's payments. Take the induction and use the resource library |
+| Trust lead | Each school's licence, renewal date and summary results, spending per school. Never individual children, unless a school grants it |
+| Practitioner | Live course catalogue, booking, attendance and certificate status, their own payments. Can also take the induction |
+| Parent | The parent course (with their own payments) and the parent app |
+| Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), setting up courses and cohorts, recording payments and spending summaries, schools and licences, every class |
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 

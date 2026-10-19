@@ -32,7 +32,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V4`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V5`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -42,11 +42,11 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && mvn -B verify        # 47 unit + API integration tests (H2)
+cd backend  && mvn -B verify        # 53 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
-cd frontend && npm run e2e          # 48 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 51 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -71,7 +71,7 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-48/48 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+51/51 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 Built so far:
@@ -86,6 +86,10 @@ Built so far:
 - Trust lead: schools, licences, summary results. Practitioner: courses and bookings.
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
   and cohorts (`/admin/courses`; the wording check runs on save), schools and licences, trusts and trust leads.
+- Payments (`payment` package, `/admin/payments`): the team records invoices and payments (a school or a
+  person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
+  Heads see their school's payments, trust leads totals per school, parents and practitioners their own
+  (Training page). Online payment is not connected.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
 - Accounts: invite and reset links (hashed one-time tokens), 10-character minimum passwords, accounts
   switched off stop working within a minute (`ActiveUserFilter`), rate limits on sign-in, registration,
@@ -114,3 +118,6 @@ Not started unless noted. Confirm priorities with the owner.
    enters them through Content approval and Courses, or starter content is loaded with a migration.
 8. Cohort bookings, attendance and assessment results have API endpoints (`/api/admin/cohorts/{id}/enrolments`,
    `/api/admin/enrolments/{id}/...`) but no screen yet, so certificates cannot be issued from the web app.
+9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same
+   `payment` records), refunds and credit notes (a paid payment is final), VAT, and linking a payment to a
+   specific licence or course booking.

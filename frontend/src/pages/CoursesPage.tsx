@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type AdminCourse, type CohortInput, type CourseInput, type CourseTrack } from '../api'
+import { gbp } from '../money'
 
 const TRACKS: [CourseTrack, string][] = [
   ['PROFESSIONAL', 'Professionals (teachers, TAs, therapists)'],
   ['PARENT', 'Parents and carers'],
 ]
 
-const gbp = (pence: number) => `£${(pence / 100).toFixed(pence % 100 === 0 ? 0 : 2)}`
 const pounds = (pence: number | null) => (pence === null ? '' : (pence / 100).toString())
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 

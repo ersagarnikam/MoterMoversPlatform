@@ -15,6 +15,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/classes', label: 'Classes' },
     { to: '/resources', label: 'Resources' },
     { to: '/school/setup', label: 'School setup' },
+    { to: '/school/payments', label: 'Payments' },
     { to: '/training', label: 'Training' },
   ],
   TRUST_LEAD: [{ to: '/trust', label: 'Trust schools' }],
@@ -26,6 +27,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/classes', label: 'All classes' },
     { to: '/resources', label: 'Resources' },
     { to: '/admin/courses', label: 'Courses' },
+    { to: '/admin/payments', label: 'Payments' },
   ],
 }
 
