@@ -43,7 +43,9 @@ test('a head sees progress and can download the governor summary', async ({ page
 
 test('the trust lead sees schools but no children', async ({ page }) => {
   await signIn(page, 'trust@northbridge.test')
-  await expect(page.getByRole('cell', { name: 'Oakfield Primary' })).toBeVisible()
+  // The Spending table lists the same schools, so look only in the licences and results table.
+  const schools = page.getByRole('table').filter({ has: page.getByRole('columnheader', { name: 'Licence' }) })
+  await expect(schools.getByRole('cell', { name: 'Oakfield Primary' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'School setup' })).toHaveCount(0)
 })
 
