@@ -90,6 +90,8 @@ Built so far:
   person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
   Heads see their school's payments, trust leads totals per school, parents and practitioners their own
   (Training page). Online payment is not connected.
+- Flow guides (`docs/flow-guides/`): PDF guides per role plus an investor and partner overview, with
+  screenshots of the demo data (October 2026). Regenerate them when screens change.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
 - Accounts: invite and reset links (hashed one-time tokens), 10-character minimum passwords, accounts
   switched off stop working within a minute (`ActiveUserFilter`), rate limits on sign-in, registration,
