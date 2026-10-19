@@ -66,10 +66,10 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-17)
+## Current state (2026-10-19)
 
-All work is on `main` (created 2026-10-17 from the earlier working branch
-`claude/java-springboot-repo-setup-yoyu6y`, which can be deleted once `main` is GitHub's default branch).
+`main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
+into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
 46/46 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
@@ -100,14 +100,12 @@ screens; accounts, password links, rate limits and school setup API; API input h
 
 Not started unless noted. Confirm priorities with the owner.
 
-1. Owner: make `main` the default branch on GitHub (Settings > General > Default branch), then delete the
-   old `claude/java-springboot-repo-setup-yoyu6y` branch. New work goes on branches merged into `main`.
-2. Real go-live inputs from the owner: UK server, domain and DNS, SMTP account with SPF/DKIM for the
+1. Real go-live inputs from the owner: UK server, domain and DNS, SMTP account with SPF/DKIM for the
    sending domain, then follow `deploy/RUNBOOK.md`.
-3. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address.
-4. Session videos are timed placeholders until filmed sessions are uploaded (`programme_session.video_url`);
+2. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address.
+3. Session videos are timed placeholders until filmed sessions are uploaded (`programme_session.video_url`);
    content upload and hosting for videos/audio is still to be designed.
-5. Rate limits are per API instance (in memory). Move to a shared store (e.g. Redis) before running more
+4. Rate limits are per API instance (in memory). Move to a shared store (e.g. Redis) before running more
    than one API container.
-6. Off-server backup copies (RUNBOOK suggests rclone) and a tested restore.
-7. Nice to have: a Maven wrapper (`mvnw`) so builds do not depend on a local Maven install.
+5. Off-server backup copies (RUNBOOK suggests rclone) and a tested restore.
+6. Nice to have: a Maven wrapper (`mvnw`) so builds do not depend on a local Maven install.
