@@ -12,6 +12,8 @@ test('the sign-in page is accessible and rejects a wrong password', async ({ pag
 test('forgot password gives the same answer for any email', async ({ page }) => {
   await page.goto('/login')
   await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  // The sign-in page has an Email field too: wait for the reset form, or the email can land on the old page.
+  await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible()
   await page.getByLabel('Email').fill('nobody@nowhere.test')
   await page.getByRole('button', { name: 'Email me a link' }).click()
   await expect(page.getByText('If nobody@nowhere.test has a Motor Movers account')).toBeVisible()
