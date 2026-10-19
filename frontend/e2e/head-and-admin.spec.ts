@@ -33,6 +33,18 @@ test('a head sets up a class, adds children and invites a teacher', async ({ pag
   await expect(row.locator('.setup-children li')).toHaveCount(1)
 })
 
+test('a full name is refused while the school uses initials only, and the typed list is kept', async ({ page }) => {
+  await signIn(page, 'head@oakfield.test')
+  await page.getByRole('link', { name: 'School setup' }).click()
+  const row = page.locator('.setup-class', { hasText: 'Reception A' })
+  await row.getByRole('button', { name: 'Edit class and children' }).click()
+  const box = row.getByLabel(/initials only \(your school does not show full names\)/)
+  await box.fill('E.F., Eve Fox')
+  await row.getByRole('button', { name: 'Add children' }).click()
+  await expect(page.getByText(/uses initials only, so full names cannot be added/)).toBeVisible()
+  await expect(box).toHaveValue('E.F., Eve Fox')
+})
+
 test('a head sees progress and can download the governor summary', async ({ page }) => {
   await signIn(page, 'head@oakfield.test')
   await expect(page.getByRole('heading', { name: /Participation by class/ })).toBeVisible()

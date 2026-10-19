@@ -158,12 +158,20 @@ public class SchoolSetupService {
                 .stream().map(SchoolSetupViews.ChildRow::of).toList();
     }
 
-    /** Adds children to a class, by initials (and full name only if the school wants it). */
+    /**
+     * Adds children to a class, by initials. Full names are accepted only while the school shows them; otherwise
+     * the whole list is refused, so no name is stored that the school has said it does not want.
+     */
     @Transactional
     public List<SchoolSetupViews.ChildRow> addChildren(Long schoolId, Long classId, SchoolSetupViews.NewChildren request) {
         School school = school(schoolId);
         CurrentUser me = access.requireSchoolAccess(school);
         SchoolClass c = schoolClass(school, classId);
+        boolean namesGiven = request.children().stream().anyMatch(n -> n.fullName() != null && !n.fullName().isBlank());
+        if (namesGiven && !school.isFullNamesEnabled()) {
+            throw new IllegalArgumentException("This school uses initials only, so full names cannot be added. "
+                    + "Switch on full names in the privacy settings first, or add initials only.");
+        }
         return request.children().stream().map(n -> {
             Child child = new Child(c, n.initials().strip().toUpperCase(Locale.ROOT), c.getYearGroup());
             if (n.fullName() != null && !n.fullName().isBlank()) {

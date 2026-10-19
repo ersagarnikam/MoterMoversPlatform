@@ -28,7 +28,8 @@ school, screening, security, seed, training, user`.
   linked children. Every new endpoint must go through it; the UI hiding things is not enough.
 - **No diagnostic wording.** The platform screens motor readiness; it never diagnoses. Content approval
   blocks diagnostic terms (`WordingGuardTest`), and readiness profiles always say they are not a diagnosis.
-- **Children are identified by initials** unless a school switches full names on. Leavers are deleted
+- **Children are identified by initials** unless a school switches full names on. While it is off, the API
+  refuses new full names and never sends saved ones (they are kept, hidden, until it is on again). Leavers are deleted
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
@@ -42,11 +43,11 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && mvn -B verify        # 53 unit + API integration tests (H2)
+cd backend  && mvn -B verify        # 54 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
-cd frontend && npm run e2e          # 51 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 52 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -71,7 +72,7 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-51/51 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+52/52 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 Built so far:

@@ -49,10 +49,12 @@ public final class SchoolSetupViews {
         }
     }
 
+    /** fullName is null while the school shows initials only, even if a name was saved when it showed names. */
     public record ChildRow(Long id, String initials, String fullName, String yearGroup, ColourStage currentStage) {
 
         public static ChildRow of(Child c) {
-            return new ChildRow(c.getId(), c.getInitials(), c.getFullName(), c.getYearGroup(), c.getCurrentStage());
+            String fullName = c.getSchoolClass().getSchool().isFullNamesEnabled() ? c.getFullName() : null;
+            return new ChildRow(c.getId(), c.getInitials(), fullName, c.getYearGroup(), c.getCurrentStage());
         }
     }
 

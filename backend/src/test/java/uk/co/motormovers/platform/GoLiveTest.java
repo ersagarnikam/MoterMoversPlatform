@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -142,7 +144,7 @@ class GoLiveTest {
         Integer classId = JsonPath.read(created, "$.id");
 
         String added = send(head, "/api/schools/1/classes/" + classId + "/children",
-                "{\"children\":[{\"initials\":\"a.b.\"},{\"initials\":\"C.D.\",\"fullName\":\"Cara Dunn\"}]}")
+                "{\"children\":[{\"initials\":\"a.b.\"},{\"initials\":\"C.D.\"}]}")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].initials").value("A.B."))
                 .andReturn().getResponse().getContentAsString();
@@ -163,6 +165,56 @@ class GoLiveTest {
                 .andExpect(status().isForbidden());
         send(head, "/api/schools/1/staff", "{\"email\":\"x@y.test\",\"displayName\":\"X\",\"role\":\"ADMIN\"}")
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void fullNamesFollowTheSchoolsPrivacySetting() throws Exception {
+        String head = login("head@oakfield.test", "password");
+        boolean namesWereOn = JsonPath.read(fetch(head, "/api/schools/1/setup"), "$.settings.fullNamesEnabled");
+        String created = send(head, "/api/schools/1/classes",
+                "{\"name\":\"Privacy P\",\"yearGroup\":\"Year 1\",\"stage\":\"RED\"}")
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String children = "/api/schools/1/classes/" + JsonPath.read(created, "$.id") + "/children";
+        String withName = "{\"children\":[{\"initials\":\"P.Q.\"},{\"initials\":\"R.S.\",\"fullName\":\"Rosa Smith\"}]}";
+        try {
+            // Initials only: a list with a full name in it is refused whole, and nothing is saved.
+            setFullNames(head, false);
+            send(head, children, withName)
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.detail").value(containsString("initials only")));
+            mvc.perform(get(children).header("Authorization", bearer(head)))
+                    .andExpect(jsonPath("$.length()").value(0));
+
+            setFullNames(head, true);
+            send(head, children, withName).andExpect(status().isOk());
+            assertThat(savedName(head, children)).isEqualTo("Rosa Smith");
+
+            // Switched off, the saved name is kept but no longer sent; switched back on, it returns.
+            setFullNames(head, false);
+            assertThat(savedName(head, children)).isNull();
+            setFullNames(head, true);
+            assertThat(savedName(head, children)).isEqualTo("Rosa Smith");
+        } finally {
+            setFullNames(head, namesWereOn);
+        }
+    }
+
+    /** The full name the school setup list sends for the child R.S. */
+    private String savedName(String head, String children) throws Exception {
+        List<String> names = JsonPath.read(fetch(head, children), "$[?(@.initials == 'R.S.')].fullName");
+        assertThat(names).hasSize(1);
+        return names.getFirst();
+    }
+
+    /** Changes only the full-names setting, keeping the school's other privacy settings as they are. */
+    private void setFullNames(String head, boolean on) throws Exception {
+        String current = fetch(head, "/api/schools/1/setup");
+        mvc.perform(put("/api/schools/1/settings").header("Authorization", bearer(head))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fullNamesEnabled\":" + on + ",\"videoEnabled\":"
+                        + JsonPath.read(current, "$.settings.videoEnabled") + ",\"trustCanSeeChildren\":"
+                        + JsonPath.read(current, "$.settings.trustCanSeeChildren") + "}"))
+                .andExpect(status().isOk());
     }
 
     @Test

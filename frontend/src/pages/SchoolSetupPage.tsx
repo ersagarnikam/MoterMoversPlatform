@@ -128,6 +128,7 @@ export default function SchoolSetupPage() {
               onToggle={() => setOpenClass(openClass === c.id ? null : c.id)}
               onSave={(input) => run(() => api.updateClass(schoolId, c.id, input), 'Class saved')}
               schoolId={schoolId}
+              fullNamesEnabled={setup.settings.fullNamesEnabled}
               onChanged={load}
               onError={setError}
             />
@@ -266,6 +267,7 @@ function ClassRow({
   onToggle,
   onSave,
   schoolId,
+  fullNamesEnabled,
   onChanged,
   onError,
 }: {
@@ -276,6 +278,7 @@ function ClassRow({
   onToggle: () => void
   onSave: (input: ClassInput) => Promise<boolean>
   schoolId: number
+  fullNamesEnabled: boolean
   onChanged: () => void
   onError: (message: string) => void
 }) {
@@ -295,8 +298,10 @@ function ClassRow({
       await action()
       loadChildren()
       onChanged()
+      return true
     } catch (e) {
       onError(e instanceof Error ? e.message : 'Something went wrong')
+      return false
     }
   }
 
@@ -360,12 +365,20 @@ function ClassRow({
             onSubmit={(e) => {
               e.preventDefault()
               const list = parseChildren(text)
-              if (list.length) act(() => api.addChildren(schoolId, c.id, list)).then(() => setText(''))
+              // Keep what was typed if it is refused (for example a full name while the school uses initials only).
+              if (list.length) act(() => api.addChildren(schoolId, c.id, list)).then((saved) => saved && setText(''))
             }}
           >
             <label>
-              Add children, one per line: initials, then a full name only if your school shows full names
-              <textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder={'A.B.\nC.D., Cara Dunn'} />
+              {fullNamesEnabled
+                ? 'Add children, one per line: initials, then a comma and their full name if you want it shown'
+                : 'Add children, one per line: initials only (your school does not show full names)'}
+              <textarea
+                rows={4}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={fullNamesEnabled ? 'A.B.\nC.D., Cara Dunn' : 'A.B.\nC.D.'}
+              />
             </label>
             <div>
               <button className="btn btn-primary">Add children</button>
