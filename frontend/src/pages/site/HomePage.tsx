@@ -3,8 +3,8 @@ import { STAGES } from '../../stages'
 
 const STEPS = [
   {
-    title: 'Screen',
-    text: 'Staff screen each child one item at a time. Each child gets a readiness profile showing which colour stage to start at.',
+    title: 'Assess',
+    text: 'Staff assess each child one movement at a time. Each child gets a readiness profile showing which colour stage to start at.',
   },
   {
     title: 'Move every day',
@@ -12,14 +12,14 @@ const STEPS = [
   },
   {
     title: 'See progress',
-    text: 'Teachers, heads and trusts see participation and progress, so support goes where it is needed.',
+    text: 'Teachers, heads and trusts or school groups see participation and progress, so support goes where it is needed.',
   },
 ]
 
 const AUDIENCES = [
-  { title: 'Class teachers', text: "Today's session ready to play, screening, and each child's readiness profile.", to: '/programme' },
+  { title: 'Class teachers', text: "Today's session ready to play, ongoing assessment, and each child's readiness profile.", to: '/programme' },
   { title: 'Heads and SENCos', text: 'Progress across the school, classes that need support, and summaries for governors.', to: '/for-schools' },
-  { title: 'Trusts', text: 'Licences and summary results for every school in the trust.', to: '/for-schools' },
+  { title: 'Trusts and school groups', text: 'Licences and summary results for every school in the trust or group.', to: '/for-schools' },
   { title: 'Practitioners', text: 'Courses with live sessions to learn to run the programme well.', to: '/for-schools' },
   { title: 'Parents and carers', text: 'A parent course and an app with home activities at your child’s stage.', to: '/for-families' },
 ]
@@ -115,7 +115,7 @@ export default function HomePage() {
 
       <section className="site-section">
         <p className="eyebrow">How it works</p>
-        <h2>Screen, move every day, see progress</h2>
+        <h2>Assess, move every day, see progress</h2>
         <ol className="site-steps">
           {STEPS.map((s, i) => (
             <li key={s.title} className="card">
@@ -128,7 +128,7 @@ export default function HomePage() {
           ))}
         </ol>
         <p className="muted">
-          Screening shows readiness for the programme stages. It is not a diagnosis or a clinical assessment.
+          Assessment shows readiness for the programme stages. It is not a diagnosis or a clinical assessment.
         </p>
       </section>
 

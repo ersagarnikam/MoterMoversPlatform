@@ -6,7 +6,7 @@ import { pct } from '../stages'
 
 const STATUS_LABEL = { ACTIVE: 'Active', RENEWAL_DUE: 'Renewal due', FREE_TRIAL: 'Free trial', EXPIRED: 'Expired' }
 
-/** Trust leads see each school's licence and summary results only. */
+/** Trust or group leads see each school's licence and summary results only. */
 export default function TrustDashboardPage() {
   const { user } = useAuth()
   const [data, setData] = useState<TrustDashboard | null>(null)
@@ -26,7 +26,7 @@ export default function TrustDashboardPage() {
         <h1>
           {data.trustName} · {data.schools.length} schools
         </h1>
-        <span className="muted">Trust lead · summaries only</span>
+        <span className="muted">Trust or group lead · summaries only</span>
       </div>
       <div className="card table-wrap">
         <table>
@@ -36,7 +36,7 @@ export default function TrustDashboardPage() {
               <th>Licence</th>
               <th>Renewal</th>
               <th>Stages</th>
-              <th className="num">Screened</th>
+              <th className="num">Assessed</th>
               <th className="num">Participation</th>
             </tr>
           </thead>
@@ -53,14 +53,14 @@ export default function TrustDashboardPage() {
             ))}
           </tbody>
         </table>
-        <p className="fine">Individual children are not visible at trust level unless a school grants access.</p>
+        <p className="fine">Individual children are not visible at trust or group level unless a school grants access.</p>
       </div>
       <TrustSpending trustId={user.trustId} />
     </>
   )
 }
 
-/** What the trust's schools have paid and owe Motor Movers, school by school. */
+/** What the trust or group's schools have paid and owe Motor Movers, school by school. */
 function TrustSpending({ trustId }: { trustId: number }) {
   const [data, setData] = useState<Awaited<ReturnType<typeof api.trustPayments>> | null>(null)
   const [error, setError] = useState<string | null>(null)

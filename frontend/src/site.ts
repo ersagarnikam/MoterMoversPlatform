@@ -16,7 +16,7 @@ export const SIGN_IN_ROLES = [
   {
     key: 'teacher',
     label: 'Class teacher',
-    blurb: "Today's session, screening and your class's readiness profiles.",
+    blurb: "Today's session, assessing children and your class's readiness profiles.",
     demo: 'teacher@oakfield.test',
   },
   {
@@ -27,8 +27,8 @@ export const SIGN_IN_ROLES = [
   },
   {
     key: 'trust',
-    label: 'Trust lead',
-    blurb: 'Schools, licences and summary results across your trust.',
+    label: 'Trust or group lead',
+    blurb: 'Schools, licences and summary results across your trust or school group.',
     demo: 'trust@northbridge.test',
   },
   {

@@ -2,7 +2,7 @@ import { CONTACT_EMAIL, CONTACT_PHONE, ENQUIRY_BODY, mailto } from '../../site'
 
 const INCLUDED = [
   'An annual licence to run your chosen colour stages in your setting',
-  'The platform for all your staff: daily sessions, screening, profiles and dashboards',
+  'The platform for all your staff: daily sessions, assessment, profiles and dashboards',
   'A one-hour staff induction before the first session',
   'Session videos, rhymes and guidance for each stage',
   'An annual conference for participating schools',
@@ -83,9 +83,10 @@ export default function ForSchoolsPage() {
       <section className="site-section">
         <div className="site-cards site-cards-2">
           <div className="card">
-            <h3>Multi-academy trusts</h3>
+            <h3>Trusts and school groups</h3>
             <p>
-              Trust leads see every school’s licence and summary results in one place. Schools choose whether to share
+              Academy trusts, other groups of schools and independent groups: the group lead sees every school’s licence
+              and summary results in one place. Schools choose whether to share
               more than the summary.
             </p>
           </div>

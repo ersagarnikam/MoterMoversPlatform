@@ -1,18 +1,23 @@
 # Motor Movers Platform
 
 The digital platform for the Motor Movers programme: one website and app that runs the programme for a
-school, from screening each child to showing the head teacher the results, plus live training for
+school, from assessing each child to showing the head teacher the results, plus live training for
 practitioners and parents.
 
 Built from the *How the platform works* overview and the *Motor Movers, online* partnership proposal
 (15 October 2026).
 
+## Tech stack
+
 | Part | Tech |
 |---|---|
-| API (`backend/`) | Java 21, Spring Boot 4, Spring Security (JWT), Spring Data JPA, Flyway |
-| Database | H2 in memory for development, PostgreSQL for real environments |
-| Web app (`frontend/`) | React 19, TypeScript, Vite, React Router |
-| Parent app (`mobile/`) | Expo SDK 58, React Native, TypeScript, Expo Router (iOS, Android and web) |
+| API (`backend/`) | Java 21, Spring Boot 4, Spring Security (JWT), Spring Data JPA (Hibernate), Flyway migrations |
+| Database | H2 in memory for development, PostgreSQL 17 for real environments |
+| Web app (`frontend/`) | React 19, TypeScript, Vite 8, React Router 7; self-hosted fonts (`@fontsource`) and a strict content security policy |
+| Parent app (`mobile/`) | Expo SDK 58, React Native, TypeScript, Expo Router (iOS, Android and web via react-native-web) |
+| Production (`deploy/`) | Docker Compose: Caddy (HTTPS) -> nginx (web app) -> API -> PostgreSQL, plus a nightly backup; email over SMTP |
+| Tests | JUnit and Spring Boot integration tests (API), Playwright with accessibility checks (web), k6 load test (`deploy/loadtest/`) |
+| CI | GitHub Actions: backend, frontend, browser and parent app jobs on every push |
 
 ## Running it locally
 
@@ -38,7 +43,7 @@ password `password`:
 | `teacher@oakfield.test` | Class teacher (Ms Hardy, Year 2 R) | Today's session |
 | `newteacher@oakfield.test` | Class teacher who has not done the induction yet (Mr Lewis, Year 2 T) | Today's session, locked until the induction is done |
 | `head@oakfield.test` | Head teacher / SENCo, Oakfield Primary | Progress dashboard |
-| `trust@northbridge.test` | Trust lead, Northbridge Academy Trust | Trust schools |
+| `trust@northbridge.test` | Trust or group lead, Northbridge Academy Trust | Our schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
 | `admin@motormovers.test` | Motor Movers team | Content approval |
@@ -101,16 +106,16 @@ first deployment, updates, backups and restores.
 
 | Role | What they can do |
 |---|---|
-| Class teacher | See their own class only: today's session, the half-term counter, screening, readiness profiles. Take the one-hour induction and use the resource library |
+| Class teacher | See their own class only: today's session, the half-term counter, assessing children, readiness profiles. Take the one-hour induction and use the resource library |
 | Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log, their school's payments. Take the induction and use the resource library |
-| Trust lead | Each school's licence, renewal date and summary results, spending per school. Never individual children, unless a school grants it |
+| Trust or school group lead | Each school's licence, renewal date and summary results, spending per school. Never individual children, unless a school grants it |
 | Practitioner | Live course catalogue, booking, attendance and certificate status, their own payments. Can also take the induction |
 | Parent | The parent course (with their own payments) and the parent app |
 | Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), setting up courses and cohorts, licence plans and prices, recording payments and spending summaries, schools and licences (with each school's agreed price), every class |
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
-### Teacher screens
+### Teacher pages
 - **Today**: one button to start the daily 10-minute session, the next session in sequence for
   the class's colour stage, and a 20-day counter that shows when a class is quietly dropping off.
 - **Class player**: the session plan ticks along as the session runs. Tap a child to mark them absent,
@@ -123,18 +128,18 @@ Access rules are enforced in the API (`security/service/AccessPolicy.java`), not
   lock anyone out (`training/service/InductionService.java`).
 - **Resources**: rhyme recordings and words, the rhyme book and printables, for the stages on the
   school's licence. Files are URLs (`library_resource.file_url`) until uploads are built.
-- **Screening**: one item at a time with what to watch for and a 0 to 3 scale. Scores are queued on the
+- **Assessment** (the `screening` package in the code): one movement at a time with what to watch for and a 0 to 3 scale. Scores are queued on the
   device and sent when online. Each score carries a client id, so resending is safe.
 - **Readiness profile**: six areas (balance, gross motor, manual dexterity, aiming and catching, postural
   control, bilateral coordination) in programme terms (Emerging, Developing, Secure), the suggested stage
-  and the change since the first screening. The *Not a diagnosis* banner is permanent.
+  and the change since the first assessment. The *Not a diagnosis* banner is permanent.
 
 ### Dashboards
-- **Head teacher**: children screened, moved up a stage, daily participation, classes active, and
+- **Head teacher**: children assessed, moved up a stage, daily participation, classes active, and
   participation by class with classes below 70% flagged. CSV exports: governor summary and anonymised
   research data.
-- **Trust**: one row per school with licence status (Active, Renewal due, Free trial, Expired), stages,
-  screened rate and participation.
+- **Trust or school group**: one row per school with licence status (Active, Renewal due, Free trial, Expired), stages,
+  assessed rate and participation.
 
 ### Training
 The one-hour staff induction comes first (see *Induction gate* above), done online at the teacher's own
@@ -152,7 +157,7 @@ and the assessment, and the certificate is issued automatically when both are co
 | Wording check: content with diagnostic terms (ADHD, autism, diagnosis, centile…) cannot be approved | `content/util/WordingGuard.java` |
 | Nothing reaches teachers until Pat or Laura approve it: sessions, rhymes and resources, induction lessons | `content/model/ContentStatus.java` |
 | No one runs a session before finishing the induction | `training/service/InductionService.java` |
-| Trust leads see summaries only | `security/service/AccessPolicy.java` |
+| Trust or group leads see summaries only | `security/service/AccessPolicy.java` |
 | One data region per deployment (UK or AU) | `platform.region` |
 
 ## Project layout

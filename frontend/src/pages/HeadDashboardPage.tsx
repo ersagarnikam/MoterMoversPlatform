@@ -43,7 +43,7 @@ export default function HeadDashboardPage() {
       </div>
       <div className="kpis">
         <div className="card kpi">
-          <span className="muted">Children screened</span>
+          <span className="muted">Children assessed</span>
           <strong>
             {data.childrenScreened} / {data.childrenTotal}
           </strong>

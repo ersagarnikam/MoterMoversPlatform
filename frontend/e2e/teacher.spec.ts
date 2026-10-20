@@ -19,10 +19,10 @@ test('a trained teacher runs today’s session with its rhyme', async ({ page })
   }
 })
 
-test('a teacher screens a child, one item at a time', async ({ page }) => {
+test('a teacher assesses a child, one movement at a time', async ({ page }) => {
   await signIn(page, 'teacher@oakfield.test')
-  await page.getByRole('link', { name: 'Screening' }).click()
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Screening')
+  await page.getByRole('link', { name: 'Assess children' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Assessment')
   await page.locator('.roster-child').first().click()
   await expect(page.getByText(/Item 1 of \d+/)).toBeVisible()
   await page.getByRole('radio').nth(2).click()

@@ -424,7 +424,7 @@ public class DemoDataLoader implements ApplicationRunner {
                         + "up to a margin. The programme repeats the movements that help these reflexes fade."},
             {"The seven colour stages", "Matching the programme to where children are.",
                 "The programme has seven stages following the colours of the rainbow, from Red to Violet. Each "
-                        + "class works at one stage, chosen from screening, so the movements match what the "
+                        + "class works at one stage, chosen from assessment, so the movements match what the "
                         + "children are ready for rather than their age.\n\n"
                         + "Red, Orange and Yellow combine movement with nursery rhymes. You will find each rhyme's "
                         + "recording and words on the session screen and in Resources, along with the rhyme book."},
@@ -435,8 +435,8 @@ public class DemoDataLoader implements ApplicationRunner {
                         + "At the end, tap any child who was absent and press Complete session. The half-term "
                         + "counter on the Today screen shows how many school days the class has managed. Little "
                         + "and often is what makes the difference."},
-            {"Screening and the readiness profile", "What the scores tell you, and what they do not.",
-                "Screen each child at the start and again later in the year, one item at a time on a 0 to 3 "
+            {"Assessment and the readiness profile", "What the scores tell you, and what they do not.",
+                "Assess each child at the start and again later in the year, one movement at a time on a 0 to 3 "
                         + "scale. The readiness profile shows six areas as Emerging, Developing or Secure and "
                         + "suggests a colour stage.\n\n"
                         + "The profile describes movement readiness only. If a child is not moving on after a "

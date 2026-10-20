@@ -11,11 +11,11 @@ const SESSION = [
 const PLATFORM = [
   { title: "Today's session", text: 'The session video, the activity plan and the rhyme, ready to play to the class.' },
   { title: 'Participation counter', text: 'A 20-day counter so the class can see its daily habit building.' },
-  { title: 'Screening', text: 'One item at a time, on a tablet or laptop, saved even if the connection drops.' },
+  { title: 'Assessment', text: 'One movement at a time, on a tablet or laptop, saved even if the connection drops.' },
   { title: 'Readiness profiles', text: "Each child's stage and the areas that are secure or still emerging." },
   { title: 'Staff induction', text: 'A one-hour induction in short lessons before staff run their first session.' },
   { title: 'Resource library', text: 'Rhymes and guidance for every stage your setting holds.' },
-  { title: 'Dashboards', text: 'School and trust progress, flagged classes and a governor summary to download.' },
+  { title: 'Dashboards', text: 'School and trust or group progress, flagged classes and a governor summary to download.' },
   { title: 'Parent app', text: 'Home activities matched to each child’s stage, linked with a code from school.' },
 ]
 
@@ -34,7 +34,7 @@ export default function ProgrammePage() {
       <section className="site-section">
         <h2>Seven colour stages</h2>
         <p className="site-narrow">
-          The stages follow the order in which movement skills develop, for children from 6 months to 8 years. Screening
+          The stages follow the order in which movement skills develop, for children from 6 months to 8 years. Assessment
           shows where each child starts, and children move on when they are ready.
         </p>
         <ol className="stage-ladder">
@@ -74,12 +74,12 @@ export default function ProgrammePage() {
       </section>
 
       <section className="site-section">
-        <h2>Screening and readiness</h2>
+        <h2>Assessment and readiness</h2>
         <div className="site-split">
           <div>
             <p>
-              Staff screen each child against the programme stages, one item at a time. The result is a readiness
-              profile: the stage to work at, and which areas are secure or still emerging. Re-screening shows progress
+              Staff assess each child against the programme stages, one movement at a time. The result is a readiness
+              profile: the stage to work at, and which areas are secure or still emerging. Assessing again shows progress
               over the year.
             </p>
             <p>
@@ -87,7 +87,7 @@ export default function ProgrammePage() {
               with a child can see their record.
             </p>
           </div>
-          <NotADiagnosis text="Screening shows readiness for the programme stages. It is not a clinical assessment, and the platform never diagnoses." />
+          <NotADiagnosis text="Assessment shows readiness for the programme stages. It is not a clinical assessment, and the platform never diagnoses." />
         </div>
       </section>
 
@@ -107,7 +107,7 @@ export default function ProgrammePage() {
         <h2>Looking after children’s data</h2>
         <ul className="site-list site-narrow">
           <li>Data is held in the UK.</li>
-          <li>Teachers see their own class, heads their school, and trusts see summaries unless a school grants more.</li>
+          <li>Teachers see their own class, heads their school, and trusts or school groups see summaries unless a school grants more.</li>
           <li>Parents see only the children linked to them.</li>
           <li>Records of children who have left are deleted a year after they leave.</li>
         </ul>

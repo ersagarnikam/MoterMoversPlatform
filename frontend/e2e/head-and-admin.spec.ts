@@ -53,7 +53,7 @@ test('a head sees progress and can download the governor summary', async ({ page
   expect((await download).suggestedFilename()).toBe('governor-summary.csv')
 })
 
-test('the trust lead sees schools but no children', async ({ page }) => {
+test('the trust or group lead sees schools but no children', async ({ page }) => {
   await signIn(page, 'trust@northbridge.test')
   // The Spending table lists the same schools, so look only in the licences and results table.
   const schools = page.getByRole('table').filter({ has: page.getByRole('columnheader', { name: 'Licence' }) })
@@ -144,8 +144,8 @@ test('the team adds a trust and opens a school’s setup', async ({ page }) => {
   await page.getByRole('link', { name: 'Schools & licences' }).click()
   await expectAccessible(page)
   const name = `Browser Trust ${Date.now()}`
-  await page.getByLabel('New trust').fill(name)
-  await page.getByRole('button', { name: 'Add trust', exact: true }).click()
+  await page.getByLabel('New trust or school group').fill(name)
+  await page.getByRole('button', { name: 'Add trust or group', exact: true }).click()
   await expect(page.getByText(`${name} added`)).toBeVisible()
 
   await page.getByRole('row', { name: /Marlow Infants/ }).getByRole('link', { name: 'Set up' }).click()
@@ -176,7 +176,7 @@ test('the team records an invoice, marks it paid and sees spending', async ({ pa
   await expect(row.getByRole('button', { name: 'Mark paid today' })).toHaveCount(0)
 })
 
-test('a head sees their school’s payments and a trust lead sees spending by school', async ({ page }) => {
+test('a head sees their school’s payments and a trust or group lead sees spending by school', async ({ page }) => {
   await signIn(page, 'head@oakfield.test')
   await page.getByRole('link', { name: 'Payments' }).click()
   await expect(page.getByRole('heading', { name: 'Oakfield Primary · Payments' })).toBeVisible()

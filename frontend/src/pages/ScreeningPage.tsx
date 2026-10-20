@@ -4,7 +4,7 @@ import { api, type RosterEntry, type ScreeningItem, type Today } from '../api'
 import { enqueue, flush, pending } from '../outbox'
 import { rosterChild } from '../components/RosterChild'
 
-/** Screening replaces the paper booklet: watch one movement, tap a score, the platform does the rest. */
+/** Assessment replaces the paper booklet: watch one movement, tap a score, the platform does the rest. */
 export default function ScreeningPage() {
   const { classId } = useParams()
   const [today, setToday] = useState<Today | null>(null)
@@ -47,16 +47,16 @@ export default function ScreeningPage() {
     return (
       <>
         <div className="page-head">
-          <h1>Screening · {today.schoolClass.name}</h1>
+          <h1>Assessment · {today.schoolClass.name}</h1>
           <Link className="btn" to={`/class/${classId}/today`}>
             Back to today
           </Link>
         </div>
-        <p className="muted">Choose a child. Each screening takes five to eight minutes.</p>
+        <p className="muted">Choose a child. Each assessment takes five to eight minutes.</p>
         <div className="roster">
           {today.roster.map((c) => (
-            <button key={c.id} className="roster-child" onClick={() => setChild(c)} {...rosterChild(c, 'screen').props}>
-              {rosterChild(c, 'screen').content}
+            <button key={c.id} className="roster-child" onClick={() => setChild(c)} {...rosterChild(c, 'assess').props}>
+              {rosterChild(c, 'assess').content}
             </button>
           ))}
         </div>
@@ -92,7 +92,7 @@ export default function ScreeningPage() {
       <div className="card screening-card">
         <div className="section-head">
           <strong>
-            Screening · Child {childNumber} of {today.roster.length} ({child.name})
+            Assessment · Child {childNumber} of {today.roster.length} ({child.name})
           </strong>
           <span className={online ? 'muted' : 'offline-pill'}>
             {online ? 'Online' : 'Offline'} · {unsent} saved on this device

@@ -1,4 +1,4 @@
-/** Small line chart of change since the first screening. Values are fractions 0..1. */
+/** Small line chart of change since the first assessment. Values are fractions 0..1. */
 export default function Sparkline({ values, labels }: { values: number[]; labels: string[] }) {
   const w = 320
   const h = 70
@@ -8,7 +8,7 @@ export default function Sparkline({ values, labels }: { values: number[]; labels
   const y = (v: number) => h - pad - v * (h - 2 * pad)
   const points = values.map((v, i) => `${x(i)},${y(v)}`).join(' ')
   return (
-    <svg className="sparkline" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Change since the first screening">
+    <svg className="sparkline" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Change since the first assessment">
       <line x1={pad} x2={w - pad} y1={h - pad} y2={h - pad} className="axis" />
       <polyline points={points} className="line" />
       {values.map((v, i) => (

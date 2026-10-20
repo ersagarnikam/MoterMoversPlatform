@@ -10,7 +10,7 @@ const DEMO_ACCOUNTS = [
   ['teacher@oakfield.test', 'Class teacher'],
   ['newteacher@oakfield.test', 'New teacher'],
   ['head@oakfield.test', 'Head teacher'],
-  ['trust@northbridge.test', 'Trust lead'],
+  ['trust@northbridge.test', 'Trust or group lead'],
   ['practitioner@example.test', 'Practitioner'],
   ['parent@example.test', 'Parent'],
   ['admin@motormovers.test', 'Motor Movers team'],
@@ -46,7 +46,7 @@ export default function LoginPage() {
       <div className="login-hero">
         <StageStripe />
         <h1>Motor Movers</h1>
-        <p>Screening, daily sessions and progress for schools, practitioners and parents.</p>
+        <p>Assessment, daily sessions and progress for schools, practitioners and parents.</p>
         <div className="login-hero-links">
           <ThemeSwitch />
           <Link to="/" className="login-back">

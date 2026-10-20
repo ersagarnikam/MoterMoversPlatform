@@ -7,7 +7,7 @@ import { STAGES } from '../stages'
 
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 
-/** The platform team signs schools up, sets licences, and adds trusts and trust leads. */
+/** The platform team signs schools up, sets licences, and adds trusts or school groups and their leads. */
 export default function SchoolsPage() {
   const [schools, setSchools] = useState<SchoolRow[] | null>(null)
   const [trusts, setTrusts] = useState<TrustRow[]>([])
@@ -53,7 +53,7 @@ export default function SchoolsPage() {
           <thead>
             <tr>
               <th>School</th>
-              <th>Trust</th>
+              <th>Trust or group</th>
               <th>Plan</th>
               <th title="What the school pays a year on its current licence">Yearly price</th>
               <th>Status</th>
@@ -117,7 +117,7 @@ export default function SchoolsPage() {
       </section>
 
       <section className="card">
-        <h3>Trusts</h3>
+        <h3>Trusts and school groups</h3>
         <div className="list">
           {trusts.map((t) => (
             <TrustCard
@@ -173,9 +173,9 @@ function NewSchoolForm({
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} required />
         </label>
         <label>
-          Trust
+          Trust or group
           <select value={trustId ?? ''} onChange={(e) => setTrustId(e.target.value ? Number(e.target.value) : null)}>
-            <option value="">No trust</option>
+            <option value="">None</option>
             {trusts.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -300,7 +300,7 @@ function TrustCard({
     <div className="setup-class">
       <strong>{trust.name}</strong>
       <p className="muted">
-        Trust leads:{' '}
+        Leads:{' '}
         {trust.leads.length ? trust.leads.map((l) => `${l.displayName} (${l.email})`).join(', ') : 'none yet'}
       </p>
       <form
@@ -321,7 +321,7 @@ function TrustCard({
           Email
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={200} required />
         </label>
-        <button className="btn">Add trust lead</button>
+        <button className="btn">Add lead</button>
       </form>
     </div>
   )
@@ -338,10 +338,10 @@ function NewTrustForm({ onAdd }: { onAdd: (name: string) => Promise<boolean> }) 
       }}
     >
       <label>
-        New trust
+        New trust or school group
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} required />
       </label>
-      <button className="btn btn-primary">Add trust</button>
+      <button className="btn btn-primary">Add trust or group</button>
     </form>
   )
 }

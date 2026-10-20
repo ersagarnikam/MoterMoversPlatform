@@ -22,7 +22,7 @@ const PAYER_TYPE = { SCHOOL: 'School', PARENT: 'Parent or carer', INDIVIDUAL: 'P
 const today = () => new Date().toISOString().slice(0, 10)
 const count = (n: number, thing: string) => `${n} ${thing}${n === 1 ? '' : 's'}`
 
-/** The team records invoices and payments, and sees spend by school, trust, person and month. */
+/** The team records invoices and payments, and sees spend by school, trust or group, person and month. */
 export default function PaymentsPage() {
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [payments, setPayments] = useState<Payment[]>([])
@@ -100,12 +100,12 @@ export default function PaymentsPage() {
         />
       </div>
       <TotalsTable
-        title="Trusts"
+        title="Trusts and school groups"
         rows={summary.byTrust.map((t) => row(t.trustId, t.trustName, count(t.schools, 'school'), t))}
       />
       <TotalsTable
         title="Schools"
-        rows={summary.bySchool.map((s) => row(s.schoolId, s.schoolName, s.trustName ?? 'No trust', s))}
+        rows={summary.bySchool.map((s) => row(s.schoolId, s.schoolName, s.trustName ?? 'No trust or group', s))}
       />
       <TotalsTable
         title="Parents, practitioners and staff"

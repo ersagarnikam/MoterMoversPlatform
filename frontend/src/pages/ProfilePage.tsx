@@ -31,7 +31,7 @@ export default function ProfilePage() {
         </div>
         <NotADiagnosis />
         {!profile.screened ? (
-          <p className="muted">Not screened yet.</p>
+          <p className="muted">Not assessed yet.</p>
         ) : (
           <>
             <p className="muted">Suggested starting stage</p>
@@ -52,10 +52,10 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
-            <h3>Change since the first screening</h3>
+            <h3>Change since the first assessment</h3>
             <Sparkline
               values={profile.history.map((h) => h.overallFraction)}
-              labels={profile.history.map((h) => `Screening ${h.round} · ${h.screenedOn}`)}
+              labels={profile.history.map((h) => `Assessment ${h.round} · ${h.screenedOn}`)}
             />
           </>
         )}

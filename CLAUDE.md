@@ -26,8 +26,11 @@ school, screening, security, seed, training, user`.
 - **Access control lives in the API**, in `security/service/AccessPolicy.java`. Teachers see only their own
   class, heads their school, trust leads summaries only (unless the school grants more), parents only
   linked children. Every new endpoint must go through it; the UI hiding things is not enough.
-- **No diagnostic wording.** The platform screens motor readiness; it never diagnoses. Content approval
+- **No diagnostic wording.** The platform assesses motor readiness; it never diagnoses. Content approval
   blocks diagnostic terms (`WordingGuardTest`), and readiness profiles always say they are not a diagnosis.
+  On screen it is always "assess" / "assessment", never "screen" / "screening" (Pat, 2026-10-20: screening
+  sounds diagnostic). Code and API paths still say `screening`. The `TRUST_LEAD` role is shown as "Trust or
+  group lead", since it covers academy trusts, other school groups and independent groups.
 - **Children are identified by initials** unless a school switches full names on. While it is off, the API
   refuses new full names and never sends saved ones (they are kept, hidden, until it is on again). Leavers are deleted
   365 days after leaving (`RetentionJob`).
@@ -84,7 +87,7 @@ Built so far:
   a time, readiness profiles, one-hour staff induction gate, resource library.
 - Head: progress dashboard, flagged classes, governor summary CSV, record access log, **School setup**
   (invite staff, switch accounts off, classes, add children, leavers, move children, privacy settings).
-- Trust lead: schools, licences, summary results. Practitioner: courses and bookings.
+- Trust or group lead: schools, licences, summary results. Practitioner: courses and bookings.
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
   and cohorts (`/admin/courses`; the wording check runs on save), schools and licences, trusts and trust leads.
 - Payments (`payment` package, `/admin/payments`): the team records invoices and payments (a school or a

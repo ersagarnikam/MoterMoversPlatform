@@ -157,7 +157,7 @@ function SettingsCard({ settings, onSave }: { settings: SchoolSettings; onSave: 
         </label>
         <label className="toggle">
           <input type="checkbox" checked={settings.trustCanSeeChildren} onChange={() => toggle('trustCanSeeChildren')} /> Let
-          the trust lead see individual children (otherwise summaries only)
+          the trust or group lead see individual children (otherwise summaries only)
         </label>
       </div>
     </section>

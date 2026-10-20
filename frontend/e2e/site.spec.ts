@@ -12,7 +12,7 @@ const PAGES = [
     h1: 'Movement that gets children ready to learn',
     headings: [
       'Many children start school without the movement skills learning relies on',
-      'Screen, move every day, see progress',
+      'Assess, move every day, see progress',
       'Stages follow development, not age',
       'More than physical skills',
       'Who Motor Movers is for',
@@ -29,13 +29,13 @@ const PAGES = [
     path: '/programme',
     nav: 'The programme',
     h1: 'A few minutes of the right movement, every day',
-    headings: ['Seven colour stages', 'The daily session', 'Screening and readiness', 'What the platform gives you'],
+    headings: ['Seven colour stages', 'The daily session', 'Assessment and readiness', 'What the platform gives you'],
   },
   {
     path: '/for-schools',
     nav: 'For schools',
     h1: 'Bring Motor Movers to your setting',
-    headings: ['The licence', 'What is included', 'How to join', 'Multi-academy trusts', 'Apply for Motor Movers'],
+    headings: ['The licence', 'What is included', 'How to join', 'Trusts and school groups', 'Apply for Motor Movers'],
   },
   {
     path: '/for-families',
@@ -49,7 +49,7 @@ const PAGES = [
 const ROLES = [
   { label: 'Class teacher', key: 'teacher', email: 'teacher@oakfield.test', home: /\/class(es|\/\d+\/today)$/ },
   { label: 'Head teacher or SENCo', key: 'head', email: 'head@oakfield.test', home: /\/dashboard$/ },
-  { label: 'Trust lead', key: 'trust', email: 'trust@northbridge.test', home: /\/trust$/ },
+  { label: 'Trust or group lead', key: 'trust', email: 'trust@northbridge.test', home: /\/trust$/ },
   { label: 'Practitioner', key: 'practitioner', email: 'practitioner@example.test', home: /\/training$/ },
   { label: 'Parent or carer', key: 'parent', email: 'parent@example.test', home: /\/training$/ },
   { label: 'Motor Movers team', key: 'team', email: 'admin@motormovers.test', home: /\/admin\/content$/ },

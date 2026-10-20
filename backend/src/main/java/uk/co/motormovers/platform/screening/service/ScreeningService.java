@@ -92,7 +92,7 @@ public class ScreeningService {
             }
             ScreeningItem item = itemsByCode.get(s.itemCode());
             if (item == null) {
-                throw new IllegalArgumentException("Unknown screening item " + s.itemCode());
+                throw new IllegalArgumentException("Unknown assessment item " + s.itemCode());
             }
             if (s.score() < 0 || s.score() > ScreeningItem.MAX_SCORE) {
                 throw new IllegalArgumentException("Score must be between 0 and " + ScreeningItem.MAX_SCORE);

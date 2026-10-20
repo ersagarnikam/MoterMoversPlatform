@@ -28,7 +28,7 @@ export default function TodayPage() {
         </div>
         <div className="tabs">
           <Link to={`/class/${schoolClass.id}/screening`} className="btn">
-            Screening
+            Assess children
           </Link>
         </div>
       </div>
