@@ -7,7 +7,7 @@ full feature description and demo accounts; `deploy/RUNBOOK.md` has production o
 ## What this is
 
 The platform for the Motor Movers programme (motor-skills programme for primary schools): teachers run a
-daily 10-minute session and screen children, heads see progress, trusts see summaries, practitioners and
+daily 10-minute session and assess children, heads see progress, trusts and school groups see summaries, practitioners and
 parents take courses, and parents use a phone app. UK schools first; one data region per deployment.
 
 | Part | Where | Tech |
@@ -70,7 +70,7 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-19)
+## Current state (2026-10-21)
 
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
@@ -83,13 +83,13 @@ Built so far:
   research, the programme, for schools (licence, how to join, apply by email), for families, and a
   role chooser at `/sign-in` that opens `/login?as=<role>`. Content is adapted from
   movementforlearningproject.co.uk; the contact email and phone are theirs, so confirm them with the owner.
-- Teacher: today's session player with nursery rhymes, 20-day participation counter, screening one item at
+- Teacher: today's session player with nursery rhymes, 20-day participation counter, assessment one item at
   a time, readiness profiles, one-hour staff induction gate, resource library.
 - Head: progress dashboard, flagged classes, governor summary CSV, record access log, **School setup**
   (invite staff, switch accounts off, classes, add children, leavers, move children, privacy settings).
 - Trust or group lead: schools, licences, summary results. Practitioner: courses and bookings.
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
-  and cohorts (`/admin/courses`; the wording check runs on save), schools and licences, trusts and trust leads.
+  and cohorts (`/admin/courses`; the wording check runs on save), schools and licences, trusts or school groups and their leads.
 - Payments (`payment` package, `/admin/payments`): the team records invoices and payments (a school or a
   person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
   Heads see their school's payments, trust leads totals per school, parents and practitioners their own
@@ -136,3 +136,11 @@ Not started unless noted. Confirm priorities with the owner.
    `payment` records), refunds and credit notes (a paid payment is final), VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
+10. **Assessment rebuild (waiting on Pat, asked 2026-10-21).** Pat's model replaces today's single 0-3
+   check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
+   from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
+   when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,
+   Developing, Nearly there, Confident and accurate) at the start, at the end of each module (our "unit") it
+   appears in, and at the end of the colour. Waiting for: the full charts, the exercises per module with
+   their descriptors, what "Start" means, whether schools accept month and year of birth (the platform
+   holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
