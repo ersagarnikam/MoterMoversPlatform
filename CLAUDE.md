@@ -95,7 +95,9 @@ Built so far:
 - Payments (`payment` package, `/admin/payments`): the team records invoices and payments (a school or a
   person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
   Heads see their school's payments, trust leads totals per school, parents and practitioners their own
-  (Training page). Online payment is not connected.
+  on a Payments page (`/payments`: due now with references and how to pay, then the history; a reminder on
+  the Training page while anything is due), and parents the same in the parent app (`app/payments.tsx`, linked
+  from Account and a reminder on Today). Staff see their own on the Training page. Online payment is not connected.
 - Plans and prices (`/admin/plans`, `PlanService`, migration V6): licence plans live in the database with dated
   prices (`licence_plan_price`); a change applies from today or later and never rewrites a price in force, and
   each change records who made it. Plans can be added or retired. Each licence has an agreed price (default: the

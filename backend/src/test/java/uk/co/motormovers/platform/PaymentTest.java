@@ -137,8 +137,10 @@ class PaymentTest {
         String parent = login("parent@example.test");
         String mine = fetch(parent, "/api/payments/mine");
         assertThat((Integer) JsonPath.read(mine, "$.paidPence")).isEqualTo(4_500);
+        assertThat((Integer) JsonPath.read(mine, "$.outstandingPence")).isEqualTo(1_500);
         assertThat((List<String>) JsonPath.read(mine, "$.payments[*].description"))
-                .containsExactly("Motor Movers parent course");
+                .containsExactly("Motor Movers rhyme book and CD", "Motor Movers parent course");
+        assertThat((List<String>) JsonPath.read(mine, "$.payments[*].reference")).contains("MM-1033");
 
         mvc.perform(get("/api/payments/mine").header("Authorization", bearer(login("practitioner@example.test"))))
                 .andExpect(jsonPath("$.paidPence").value(18_000));

@@ -104,6 +104,25 @@ export interface Enrolment {
   liveSessions: number
 }
 
+/** One of the signed-in person's own payments. Amounts are in pence. */
+export interface Payment {
+  id: number
+  purposeLabel: string
+  description: string
+  amountPence: number
+  status: 'DUE' | 'PAID' | 'CANCELLED'
+  invoicedOn: string
+  paidOn: string | null
+  reference: string | null
+}
+
+/** "Paid" is money received; "outstanding" is invoiced and not yet paid. */
+export interface MyPayments {
+  paidPence: number
+  outstandingPence: number
+  payments: Payment[]
+}
+
 /**
  * Where the API lives. Set EXPO_PUBLIC_API_URL for real environments. In development the app uses
  * the machine running the Expo dev server, so a phone on the same Wi-Fi finds the local API.
@@ -201,6 +220,13 @@ export const api = {
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
+
+  myPayments: () => request<MyPayments>('GET', '/api/payments/mine'),
+}
+
+/** 4500 -> "£45", 1550 -> "£15.50" */
+export function gbp(pence: number): string {
+  return `£${pence % 100 === 0 ? pence / 100 : (pence / 100).toFixed(2)}`
 }
 
 /** Today's date on this phone, as the API expects it (YYYY-MM-DD). */

@@ -72,6 +72,29 @@ function InductionSection() {
 }
 
 /** What the signed-in person has paid for themselves. Hidden until there is something to show. */
+/** Parents and practitioners have their own Payments page; staff see their payments here. */
+const OWN_PAYMENTS_PAGE = ['PARENT', 'PRACTITIONER']
+
+/** A reminder at the top of the page while anything is still to pay. */
+function PaymentDue() {
+  const [due, setDue] = useState(0)
+
+  useEffect(() => {
+    // A failure here should not hide the courses, so it is left silent.
+    api
+      .myPayments()
+      .then((p) => setDue(p.outstandingPence))
+      .catch(() => setDue(0))
+  }, [])
+
+  if (due === 0) return null
+  return (
+    <p className="banner-warn">
+      You have {gbp(due)} to pay. <Link to="/payments">See what it is for and how to pay</Link>
+    </p>
+  )
+}
+
 function YourPayments() {
   const [data, setData] = useState<(Totals & { payments: Payment[] }) | null>(null)
 
@@ -133,6 +156,7 @@ export default function TrainingPage() {
     <>
       <h1>Training</h1>
       {error && <p className="error">{error}</p>}
+      {user && OWN_PAYMENTS_PAGE.includes(user.role) && <PaymentDue />}
       {user && ['TEACHER', 'HEAD', 'PRACTITIONER'].includes(user.role) && <InductionSection />}
 
       {mine.length > 0 && (
@@ -166,7 +190,7 @@ export default function TrainingPage() {
         </section>
       )}
 
-      {user?.role !== 'ADMIN' && <YourPayments />}
+      {user && user.role !== 'ADMIN' && !OWN_PAYMENTS_PAGE.includes(user.role) && <YourPayments />}
 
       {courses.map((c) => (
         <section key={c.id} className="card">

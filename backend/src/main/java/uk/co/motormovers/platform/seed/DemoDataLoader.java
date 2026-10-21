@@ -332,7 +332,7 @@ public class DemoDataLoader implements ApplicationRunner {
         }
     }
 
-    /** Licence invoices for the trust's schools (Brookhouse's renewal still due) and two course fees. */
+    /** Licence invoices for the trust's schools (Brookhouse's renewal still due), two course fees and a book. */
     private void seedPayments(School oakfield, School marlow, School brookhouse, AppUser practitioner,
             AppUser parent, LocalDate today) {
         String team = "admin@motormovers.test";
@@ -352,6 +352,9 @@ public class DemoDataLoader implements ApplicationRunner {
                 18_000, today.minusMonths(4), null, team, clock.instant()), today.minusMonths(4)));
         list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Motor Movers parent course", 4_500,
                 today.minusMonths(1), null, team, clock.instant()), today.minusMonths(1)));
+        // Still to pay, so the parent sees what is due.
+        list.add(Payment.byPerson(parent, PaymentPurpose.OTHER, "Motor Movers rhyme book and CD", 1_500,
+                today.minusDays(5), "MM-1033", team, clock.instant()));
         payments.saveAll(list);
     }
 

@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { Banner, Body, Button, Card, Chip, CounterGrid, ErrorState, H1, H2, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
-import { api, type ColourStage, type Home, type LinkedChild } from '@/lib/api'
+import { api, gbp, type ColourStage, type Home, type LinkedChild } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useNicknames } from '@/lib/nicknames'
 import { flush, pending } from '@/lib/outbox'
@@ -39,7 +39,9 @@ export default function TodayScreen() {
             ? { childId: children[0].childId }
             : {}
     const home = await api.home(params)
-    return { children, home, forChild: ('childId' in params ? params.childId : null) ?? null }
+    // A payment problem must not hide the activities, so it falls back to nothing due.
+    const due = await api.myPayments().then((m) => m.outstandingPence, () => 0)
+    return { children, home, due, forChild: ('childId' in params ? params.childId : null) ?? null }
   }, [choice])
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function TodayScreen() {
 
   if (error && !data) return <ErrorState message={error} onRetry={() => reload()} />
   if (!data) return <Loading />
-  const { children, home, forChild } = data
+  const { children, home, due, forChild } = data
 
   return (
     <Screen refreshing={refreshing} onRefresh={() => reload(true)}>
@@ -67,6 +69,12 @@ export default function TodayScreen() {
           {unsent === 1 ? '1 session is' : `${unsent} sessions are`} saved on this phone and will be sent when you
           are back online.
         </Banner>
+      )}
+
+      {due > 0 && (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/payments')}>
+          <Banner>You have {gbp(due)} to pay. Tap to see what it is for and how to pay.</Banner>
+        </Pressable>
       )}
 
       <WhoFor linked={children} forChild={forChild} stage={home.stage} nameFor={nameFor} onChoose={choose} />

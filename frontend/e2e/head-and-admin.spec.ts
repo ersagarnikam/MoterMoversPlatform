@@ -229,11 +229,20 @@ test('a head sees their school’s payments and a trust or group lead sees spend
   await expect(spending.getByRole('row', { name: /All schools/ })).toBeVisible()
 })
 
-test('a parent sees what they have paid', async ({ page }) => {
+test('a parent sees what is due, how to pay it, and what they have paid', async ({ page }) => {
   await signIn(page, 'parent@example.test')
-  const mine = page.locator('section', { has: page.getByRole('heading', { name: 'Your payments' }) })
-  await expect(mine.getByRole('cell', { name: /Motor Movers parent course/ })).toBeVisible()
-  await expect(mine.getByText('£45 paid')).toBeVisible()
+  await expect(page.getByText('You have £15 to pay.')).toBeVisible()
+  await page.getByRole('link', { name: 'See what it is for and how to pay' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Payments', level: 1 })).toBeVisible()
+  await expect(page.locator('.kpi', { hasText: 'Paid in total' })).toContainText('£45')
+  await expect(page.locator('.kpi', { hasText: 'Due now' })).toContainText('£15')
+  const toPay = page.locator('section', { has: page.getByRole('heading', { name: 'To pay' }) })
+  await expect(toPay.getByText('Motor Movers rhyme book and CD')).toBeVisible()
+  await expect(toPay.getByText(/reference MM-1033/)).toBeVisible()
+  const history = page.locator('section', { has: page.getByRole('heading', { name: 'Payment history' }) })
+  await expect(history.getByRole('cell', { name: /Motor Movers parent course/ })).toBeVisible()
+  await expectAccessible(page)
 })
 
 test('the team schedules a price rise, and past prices stay in the history', async ({ page }) => {
