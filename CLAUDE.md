@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V6`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V7`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,11 +46,11 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 62 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 68 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
-cd frontend && npm run e2e          # 57 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 58 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -75,29 +75,8 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-57/57 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+58/58 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
-
-**In progress (branch `zoom-live-sessions`, not merged): live course sessions on Zoom inside the platform.**
-Pat (or any team account) starts a live session from a Live sessions page and the Zoom meeting shows in the
-page (Meeting SDK component view, loaded from Zoom's CDN, so only that page gets a looser CSP); learners booked
-on the cohort join from 15 minutes before. Done so far (compiles): migration `V7__live_sessions` (cohort
-`start_time`, dated `cohort_session` rows, `session_attendance` register), `training/zoom` (`ZoomProperties`
-`platform.zoom.*`, `ZoomApiClient` with Server-to-Server OAuth, `ZoomSignature`), `LiveSessionService` and
-`LiveSessionController` (`/api/training/live`, `/join`, `/api/admin/live/{id}/register`), the old +/- attendance
-endpoints removed in favour of the per-session register, demo data with Pat's account (pat@motormovers.test) and a
-parent cohort starting ten minutes after start-up with Jo booked. Backend tests done and passing (68:
-`LiveSessionTest`, `ZoomLiveSessionTest` with a stand-in Zoom, `ZoomClientTest` for the API calls and signature;
-`GoLiveTest`/`ApiIntegrationTest` now take dates from the platform clock, as they failed when the laptop's date
-was ahead of UK time). Web done: `/live` (team list, nav "Live sessions"), `/live/:id` room (`LiveRoomPage`:
-Zoom component view, rules, register for the team; reached by a full page load), "Your live sessions" with Join on
-the Training page, start time in the cohort form, per-session ticks in the bookings panel. The SDK and the six
-libraries it needs as globals load from Zoom's CDN, pinned to 6.5.0 with SRI hashes (`src/live.ts`); checked in
-Chrome that they load and the client initialises under the live page's policy. Per-path CSP and
-Permissions-Policy (camera, microphone) for `/live/<id>` only, in `vite.config.ts` and `frontend/nginx.conf`.
-Zoom settings in `application.yml`, compose, `.env.example` and RUNBOOK (Live sessions on Zoom). 58 browser tests
-pass. Still to do: commit, push and merge; a real test call once the owner has created the two Zoom apps (video
-cannot be tested without keys). The parent app does not join live sessions yet (it would open the web room).
 
 DigitalOcean deployment was discussed (2026-10-21) but not started: the owner stopped before choosing how to
 connect, the server size, the web address and email. Nothing was created.
@@ -113,6 +92,19 @@ Built so far:
   (invite staff, switch accounts off, classes, add children, leavers, move children, privacy settings).
 - Trust or group lead: schools, licences, summary results. Practitioner: courses, bookings and a printable
   certificate (`/training/certificate/:id`).
+- Live course sessions on Zoom inside the platform (merged 2026-10-22; `training/zoom`, `LiveSessionService`,
+  migration V7). Each cohort has a start time and weekly dated sessions (`cohort_session`); the register is per
+  session (`session_attendance`) and feeds `enrolment.sessions_attended` and the certificate. The team (demo: Pat,
+  pat@motormovers.test) starts a session at `/live` and the room `/live/:id` shows the Zoom meeting (Meeting SDK
+  component view), the rules and the register; learners booked on the cohort join from their Training page from
+  15 minutes before the start, without a Zoom account. The API creates each Zoom meeting on first use
+  (Server-to-Server OAuth), signs the SDK JWT and passes the host ZAK; keys are `ZOOM_*` (RUNBOOK, Live sessions on
+  Zoom), and without them sessions run without video. The SDK and its six global libraries load from Zoom's CDN,
+  pinned to 6.5.0 with SRI hashes (`src/live.ts`); only `/live/<id>` has the looser CSP and camera/microphone
+  permission (`vite.config.ts` and `frontend/nginx.conf`, kept the same). Reach the room with a full page load
+  (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. Not yet tested with
+  real Zoom keys; the parent app does not join live sessions. Demo: a parent cohort starts ten minutes after start-up
+  with Jo booked.
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
   and cohorts (`/admin/courses`; the wording check runs on save; each cohort has a bookings panel to mark
   live sessions attended, with undo, and the assessment, and the certificate is then issued and locked), schools and licences, trusts or school groups and their leads.
@@ -163,7 +155,7 @@ Not started unless noted. Confirm priorities with the owner.
    (`seed/StarterContent`, shared with the demo) as drafts for the team to approve. Still to do: the daily
    session plans (the demo ones are generated filler and are not in the starter set), and replacing the
    placeholder assessment items once Pat sends the real ones (step 10). Approving drafts is one at a time.
-8. Done 2026-10-21: bookings, attendance and certificates have a screen. Not built: emailing the learner when
+8. Done 2026-10-21: bookings, attendance and certificates have a screen (per-session register since 2026-10-22). Not built: emailing the learner when
    their certificate is issued, and reminders before it expires.
 9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same
    `payment` records), refunds and credit notes (a paid payment is final), VAT (prices are the amounts charged,
@@ -179,3 +171,7 @@ Not started unless noted. Confirm priorities with the owner.
    holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
    Storage, screens and suggested defaults: `docs/assessment-design.md`. Screens already say "Module" for a
    unit (the API field is still `unit`).
+11. Zoom live sessions: the owner creates the two Zoom apps and sets `ZOOM_*`, then one real test call (host start,
+   a learner joining on another device, recording if the cohort records). Tighten the live page CSP from what the
+   browser actually loads. Parent app: a Join button that opens the web room. Optional: email learners a reminder
+   before each session.
