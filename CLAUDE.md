@@ -148,3 +148,5 @@ Not started unless noted. Confirm priorities with the owner.
    appears in, and at the end of the colour. Waiting for: the full charts, the exercises per module with
    their descriptors, what "Start" means, whether schools accept month and year of birth (the platform
    holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
+   Storage, screens and suggested defaults: `docs/assessment-design.md`. Screens already say "Module" for a
+   unit (the API field is still `unit`).

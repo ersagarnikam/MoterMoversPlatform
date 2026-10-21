@@ -35,7 +35,7 @@ const FORMS: Record<ContentKind, { heading: string; fields: Field[] }> = {
     heading: 'Add a class session',
     fields: [
       { name: 'stage', label: 'Stage', type: 'stage', required: true, initial: 'RED' },
-      { name: 'unit', label: 'Unit', type: 'number', required: true, initial: '1' },
+      { name: 'unit', label: 'Module', type: 'number', required: true, initial: '1' },
       { name: 'day', label: 'Day', type: 'number', required: true, initial: '1' },
       { name: 'durationMinutes', label: 'Minutes', type: 'number', required: true, initial: '10' },
       TITLE,

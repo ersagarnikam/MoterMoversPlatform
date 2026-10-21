@@ -93,9 +93,9 @@ public class ProgrammeSession {
         this.reviewedAt = Instant.now();
     }
 
-    /** e.g. "Stage 3 · Yellow · Unit 2 · Day 8". */
+    /** e.g. "Stage 3 · Yellow · Module 2 · Day 8". The schema calls a module a unit. */
     public String label() {
-        return stage.displayName() + " · Unit " + unit + " · Day " + day;
+        return stage.displayName() + " · Module " + unit + " · Day " + day;
     }
 
     public Long getId() {

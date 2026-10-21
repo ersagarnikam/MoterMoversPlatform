@@ -87,8 +87,8 @@ test('the team writes a class session, which waits as a draft until approved', a
   const stamp = Date.now()
   const title = `Browser session ${stamp}`
   await page.getByText('Add a class session').click()
-  // Sessions are unique by stage, unit and day, so each run uses its own unit.
-  await page.getByLabel('Unit').fill(String(100 + (stamp % 100_000)))
+  // Sessions are unique by stage, module and day, so each run uses its own module.
+  await page.getByLabel('Module').fill(String(100 + (stamp % 100_000)))
   await page.getByLabel('Title').fill(title)
   await page.getByLabel('Focus').fill('Balance and control')
   await page.getByLabel('Activities, one per line').fill('Stand on one leg\nHop to the line')
