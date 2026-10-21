@@ -110,6 +110,64 @@ class CourseAdminTest {
     }
 
     @Test
+    void theTeamMarksAttendanceAndTheAssessmentAndTheCertificateFollows() throws Exception {
+        String admin = login("admin@motormovers.test");
+        String course = send(admin, post("/api/admin/courses"), courseJson("PROFESSIONAL", "Certificate course",
+                "Four live sessions and an assessment.", true))
+                .andReturn().getResponse().getContentAsString();
+        String withCohort = send(admin, post("/api/admin/courses/" + JsonPath.read(course, "$.id") + "/cohorts"),
+                cohortJson("Autumn cohort", LocalDate.now(clock).plusDays(7).toString(), 5))
+                .andReturn().getResponse().getContentAsString();
+        Integer cohortId = JsonPath.read(withCohort, "$.cohorts[0].id");
+
+        String practitioner = login("practitioner@example.test");
+        String booking = mvc.perform(post("/api/training/cohorts/" + cohortId + "/enrol")
+                        .header("Authorization", bearer(practitioner)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        Integer enrolmentId = JsonPath.read(booking, "$.id");
+
+        mvc.perform(get("/api/admin/cohorts/" + cohortId + "/enrolments").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].learnerEmail").value("practitioner@example.test"))
+                .andExpect(jsonPath("$[0].sessionsAttended").value(0));
+
+        String attendance = "/api/admin/enrolments/" + enrolmentId + "/attendance";
+        mvc.perform(post(attendance).header("Authorization", bearer(admin)));
+        mvc.perform(post(attendance).header("Authorization", bearer(admin)))
+                .andExpect(jsonPath("$.sessionsAttended").value(2));
+        // A session marked by mistake can be taken back off.
+        mvc.perform(post(attendance + "/undo").header("Authorization", bearer(admin)))
+                .andExpect(jsonPath("$.sessionsAttended").value(1));
+        for (int i = 0; i < 4; i++) {
+            mvc.perform(post(attendance).header("Authorization", bearer(admin)));
+        }
+        // Attendance stops at the number of live sessions; the certificate waits for the assessment.
+        mvc.perform(post(attendance).header("Authorization", bearer(admin)))
+                .andExpect(jsonPath("$.sessionsAttended").value(4))
+                .andExpect(jsonPath("$.certificateIssuedOn").doesNotExist());
+
+        send(admin, post("/api/admin/enrolments/" + enrolmentId + "/assessment"), "{\"passed\":true}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.certificateIssuedOn").value(LocalDate.now(clock).toString()))
+                .andExpect(jsonPath("$.certificateExpiresOn").value(LocalDate.now(clock).plusYears(1).toString()));
+
+        // Once issued, the certificate stands.
+        mvc.perform(post(attendance + "/undo").header("Authorization", bearer(admin)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("certificate has been issued")));
+        send(admin, post("/api/admin/enrolments/" + enrolmentId + "/assessment"), "{\"passed\":false}")
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(get("/api/training/enrolments/mine").header("Authorization", bearer(practitioner)))
+                .andExpect(jsonPath("$[?(@.cohortName == 'Autumn cohort')].certificateIssuedOn")
+                        .value(LocalDate.now(clock).toString()));
+        // Learners cannot mark their own attendance.
+        mvc.perform(post(attendance).header("Authorization", bearer(practitioner)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void onlyTheTeamManagesCourses() throws Exception {
         String head = login("head@oakfield.test");
         mvc.perform(get("/api/admin/courses").header("Authorization", bearer(head)))
@@ -135,7 +193,12 @@ class CourseAdminTest {
     }
 
     private String login(String email) throws Exception {
-        String body = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+        // Signs in from an address of its own, so these sign-ins do not count towards the per-address limit
+        // that the other test classes share.
+        String body = mvc.perform(post("/api/auth/login").with(r -> {
+                    r.setRemoteAddr("10.0.0.21");
+                    return r;
+                }).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + email + "\",\"password\":\"password\"}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();

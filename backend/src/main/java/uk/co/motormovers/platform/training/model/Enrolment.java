@@ -50,7 +50,20 @@ public class Enrolment {
         }
     }
 
+    /** Corrects a session marked by mistake. A certificate already issued stands, so it is refused then. */
+    public void undoAttendance() {
+        if (certificateIssuedOn != null) {
+            throw new IllegalStateException("The certificate has been issued, so attendance can no longer be changed");
+        }
+        if (sessionsAttended > 0) {
+            sessionsAttended--;
+        }
+    }
+
     public void recordAssessment(boolean passed) {
+        if (!passed && certificateIssuedOn != null) {
+            throw new IllegalStateException("The certificate has been issued, so the assessment can no longer be changed");
+        }
         this.assessmentPassed = passed;
     }
 

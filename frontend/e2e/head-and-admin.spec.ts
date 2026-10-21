@@ -139,6 +139,44 @@ test('the team sets up a course and opens a cohort for booking', async ({ page }
   await expect(listed.getByText('12 places left')).toBeVisible()
 })
 
+test('the team marks attendance and the assessment, and the learner gets a certificate', async ({ page }) => {
+  const cohortName = 'Cohort B · UK morning / AU evening'
+  await signIn(page, 'practitioner@example.test')
+  await page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Book a place' }).click()
+  await expect(page.locator('.cohort', { hasText: cohortName }).getByText('Booked')).toBeVisible()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Courses' }).click()
+  const cohort = page.locator('.cohort-block', { hasText: cohortName })
+  await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
+  const mark = cohort.getByRole('button', { name: 'Mark a session attended for Sam Rivers' })
+  await mark.click()
+  await mark.click()
+  await expect(cohort.getByText('2 of 4')).toBeVisible()
+  // A session marked by mistake comes back off.
+  await cohort.getByRole('button', { name: 'Take a session off Sam Rivers' }).click()
+  await expect(cohort.getByText('1 of 4')).toBeVisible()
+  for (let i = 0; i < 3; i++) await mark.click()
+  await expect(cohort.getByText('4 of 4')).toBeVisible()
+  await expect(cohort.getByText('the assessment to go')).toBeVisible()
+  await expectAccessible(page)
+  const passed = cohort.getByLabel('Sam Rivers passed the assessment')
+  await passed.click()
+  await expect(cohort.getByText(/^Issued \d{4}-\d{2}-\d{2}, valid until/)).toBeVisible()
+  // Once issued, the certificate cannot be taken back here.
+  await expect(passed).toBeDisabled()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'practitioner@example.test')
+  await page.getByRole('link', { name: 'View your certificate' }).click()
+  await expect(page.getByRole('heading', { name: 'Certificate of completion' })).toBeVisible()
+  const certificate = page.getByRole('article', { name: 'Certificate' })
+  await expect(certificate.getByText('Sam Rivers')).toBeVisible()
+  await expect(certificate.getByText('Motor Movers practitioner course')).toBeVisible()
+  await expectAccessible(page)
+})
+
 test('the team adds a trust and opens a school’s setup', async ({ page }) => {
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Schools & licences' }).click()

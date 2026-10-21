@@ -234,6 +234,23 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 .price { font-weight: 600; color: var(--teal); }
 .cohorts { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
 .cohort, .enrolment { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.75rem; border: 1px solid var(--line); border-radius: 8px; flex-wrap: wrap; }
+/* A practitioner certificate, on screen and printed */
+.certificate { max-width: 720px; margin: 0 auto; padding: 2.5rem 2rem; text-align: center; border: 2px solid var(--line); border-radius: 12px; background: var(--paper); }
+.certificate h1 { margin: 0.5rem 0 1.5rem; }
+.certificate p { margin: 0.4rem 0; }
+.certificate-name, .certificate-course { font-family: var(--serif); font-size: 1.6rem; font-weight: 700; }
+.certificate-dates { display: flex; justify-content: center; gap: 3rem; margin-top: 2rem; }
+.certificate-dates dt { font-size: 0.85rem; color: var(--muted); }
+.certificate-dates dd { margin: 0.2rem 0 0; font-weight: 600; }
+@media print {
+  .topbar, .sidenav, .no-print { display: none !important; }
+  .content { padding: 0; max-width: none; }
+  .certificate { border-color: #999; }
+}
+.cohort-block { display: flex; flex-direction: column; gap: 0.5rem; }
+.bookings { padding: 0 0.75rem 0.75rem; }
+.stepper { display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .enrolment-status { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; font-size: 0.9rem; }
 .lesson { padding: 0.75rem; border: 1px solid var(--line); border-radius: 8px; }
 .lesson summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; }

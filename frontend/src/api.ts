@@ -144,6 +144,7 @@ export interface Enrolment {
   certificateIssuedOn: string | null
   certificateExpiresOn: string | null
   learnerName: string
+  learnerEmail: string
 }
 
 export interface Induction {
@@ -514,6 +515,11 @@ export const api = {
   addCohort: (courseId: number, c: CohortInput) =>
     request<AdminCourse>('POST', `/api/admin/courses/${courseId}/cohorts`, c),
   updateCohort: (id: number, c: CohortInput) => request<AdminCourse>('PUT', `/api/admin/cohorts/${id}`, c),
+  cohortBookings: (cohortId: number) => request<Enrolment[]>('GET', `/api/admin/cohorts/${cohortId}/enrolments`),
+  markAttendance: (id: number) => request<Enrolment>('POST', `/api/admin/enrolments/${id}/attendance`),
+  undoAttendance: (id: number) => request<Enrolment>('POST', `/api/admin/enrolments/${id}/attendance/undo`),
+  recordAssessment: (id: number, passed: boolean) =>
+    request<Enrolment>('POST', `/api/admin/enrolments/${id}/assessment`, { passed }),
   approve: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
   reject: (id: number, kind: ContentKind = 'content') =>

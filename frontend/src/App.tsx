@@ -11,6 +11,7 @@ import ClassListPage from './pages/ClassListPage'
 import HeadDashboardPage from './pages/HeadDashboardPage'
 import TrustDashboardPage from './pages/TrustDashboardPage'
 import TrainingPage from './pages/TrainingPage'
+import CertificatePage from './pages/CertificatePage'
 import ResourcesPage from './pages/ResourcesPage'
 import SchoolSetupPage from './pages/SchoolSetupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/dashboard" element={<HeadDashboardPage />} />
         <Route path="/trust" element={<TrustDashboardPage />} />
         <Route path="/training" element={<TrainingPage />} />
+        <Route path="/training/certificate/:enrolmentId" element={<CertificatePage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/school/setup" element={<SchoolSetupPage />} />
         <Route path="/admin/schools/:schoolId/setup" element={<SchoolSetupPage />} />

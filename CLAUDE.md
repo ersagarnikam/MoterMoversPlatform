@@ -46,11 +46,11 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && mvn -B verify        # 59 unit + API integration tests (H2)
+cd backend  && mvn -B verify        # 60 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
-cd frontend && npm run e2e          # 56 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 57 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -75,7 +75,7 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-56/56 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+57/57 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 Built so far:
@@ -87,9 +87,11 @@ Built so far:
   a time, readiness profiles, one-hour staff induction gate, resource library.
 - Head: progress dashboard, flagged classes, governor summary CSV, record access log, **School setup**
   (invite staff, switch accounts off, classes, add children, leavers, move children, privacy settings).
-- Trust or group lead: schools, licences, summary results. Practitioner: courses and bookings.
+- Trust or group lead: schools, licences, summary results. Practitioner: courses, bookings and a printable
+  certificate (`/training/certificate/:id`).
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
-  and cohorts (`/admin/courses`; the wording check runs on save), schools and licences, trusts or school groups and their leads.
+  and cohorts (`/admin/courses`; the wording check runs on save; each cohort has a bookings panel to mark
+  live sessions attended, with undo, and the assessment, and the certificate is then issued and locked), schools and licences, trusts or school groups and their leads.
 - Payments (`payment` package, `/admin/payments`): the team records invoices and payments (a school or a
   person pays; due, paid or cancelled) and sees spend by month, payer type, purpose, trust, school and person.
   Heads see their school's payments, trust leads totals per school, parents and practitioners their own
@@ -130,8 +132,8 @@ Not started unless noted. Confirm priorities with the owner.
 6. Nice to have: a Maven wrapper (`mvnw`) so builds do not depend on a local Maven install.
 7. A real deployment starts with no programme content or courses (demo data is off in `prod`). The team
    enters them through Content approval and Courses, or starter content is loaded with a migration.
-8. Cohort bookings, attendance and assessment results have API endpoints (`/api/admin/cohorts/{id}/enrolments`,
-   `/api/admin/enrolments/{id}/...`) but no screen yet, so certificates cannot be issued from the web app.
+8. Done 2026-10-21: bookings, attendance and certificates have a screen. Not built: emailing the learner when
+   their certificate is issued, and reminders before it expires.
 9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same
    `payment` records), refunds and credit notes (a paid payment is final), VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a

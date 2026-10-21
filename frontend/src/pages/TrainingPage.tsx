@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api, type Course, type Enrolment, type Induction, type Payment, type Totals } from '../api'
 import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
@@ -150,7 +151,12 @@ export default function TrainingPage() {
                   {e.sessionsAttended} of {e.liveSessions} live sessions attended
                 </span>
                 {e.certificateIssuedOn ? (
-                  <span className="badge badge-ok">Certified until {e.certificateExpiresOn}</span>
+                  <>
+                    <span className="badge badge-ok">Certified until {e.certificateExpiresOn}</span>
+                    <Link className="fine-link" to={`/training/certificate/${e.id}`}>
+                      View your certificate
+                    </Link>
+                  </>
                 ) : e.track === 'PROFESSIONAL' ? (
                   <span className="muted">Certificate after all sessions and the assessment</span>
                 ) : null}

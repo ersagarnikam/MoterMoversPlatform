@@ -102,6 +102,13 @@ public class TrainingService {
     }
 
     @Transactional
+    public TrainingViews.EnrolmentView undoAttendance(Long enrolmentId) {
+        Enrolment e = findEnrolment(enrolmentId);
+        e.undoAttendance();
+        return TrainingViews.EnrolmentView.of(e);
+    }
+
+    @Transactional
     public TrainingViews.EnrolmentView recordAssessment(Long enrolmentId, boolean passed) {
         Enrolment e = findEnrolment(enrolmentId);
         e.recordAssessment(passed);

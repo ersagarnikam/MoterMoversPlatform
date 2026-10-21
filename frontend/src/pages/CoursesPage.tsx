@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type AdminCourse, type CohortInput, type CourseInput, type CourseTrack } from '../api'
+import { api, type AdminCourse, type CohortInput, type CourseInput, type CourseTrack, type Enrolment } from '../api'
 import { gbp } from '../money'
 
 const TRACKS: [CourseTrack, string][] = [
@@ -75,6 +75,7 @@ type Run = (action: () => Promise<AdminCourse>, done: string) => Promise<boolean
 function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
   const [editing, setEditing] = useState(false)
   const [editingCohort, setEditingCohort] = useState<number | null>(null)
+  const [showingBookings, setShowingBookings] = useState<number | null>(null)
   const [adding, setAdding] = useState(false)
 
   return (
@@ -130,19 +131,33 @@ function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
               />
             </div>
           ) : (
-            <div key={h.id} className="cohort">
-              <div>
-                <strong>{h.name}</strong>
-                <p className="muted">
-                  Starts {h.startsOn} · {h.timeSlot} · led by {h.trainerName}
-                </p>
-                <p className="muted">
-                  {h.booked} of {h.capacity} places booked · {h.recordingAgreed ? 'sessions recorded' : 'not recorded'}
-                </p>
+            <div key={h.id} className="cohort-block">
+              <div className="cohort">
+                <div>
+                  <strong>{h.name}</strong>
+                  <p className="muted">
+                    Starts {h.startsOn} · {h.timeSlot} · led by {h.trainerName}
+                  </p>
+                  <p className="muted">
+                    {h.booked} of {h.capacity} places booked · {h.recordingAgreed ? 'sessions recorded' : 'not recorded'}
+                  </p>
+                </div>
+                <div className="actions">
+                  <button
+                    className="btn"
+                    aria-expanded={showingBookings === h.id}
+                    onClick={() => setShowingBookings(showingBookings === h.id ? null : h.id)}
+                  >
+                    {showingBookings === h.id ? 'Hide bookings' : 'Bookings and attendance'}
+                  </button>
+                  <button className="btn" onClick={() => setEditingCohort(h.id)}>
+                    Edit cohort
+                  </button>
+                </div>
               </div>
-              <button className="btn" onClick={() => setEditingCohort(h.id)}>
-                Edit cohort
-              </button>
+              {showingBookings === h.id && (
+                <CohortBookings cohortId={h.id} cohortName={h.name} certificate={course.awardsCertificate} />
+              )}
             </div>
           ),
         )}
@@ -159,6 +174,142 @@ function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
         />
       </details>
     </section>
+  )
+}
+
+/**
+ * Who has booked a cohort. The team marks each live session attended and the assessment result; the
+ * platform issues the certificate once both are complete, and then it can no longer be taken back.
+ */
+function CohortBookings({ cohortId, cohortName, certificate }: { cohortId: number; cohortName: string; certificate: boolean }) {
+  const [bookings, setBookings] = useState<Enrolment[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api
+      .cohortBookings(cohortId)
+      .then(setBookings)
+      .catch((e) => setError(e.message))
+  }, [cohortId])
+
+  async function change(action: () => Promise<Enrolment>) {
+    setError(null)
+    try {
+      const saved = await action()
+      setBookings((all) => all?.map((b) => (b.id === saved.id ? saved : b)) ?? null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong')
+    }
+  }
+
+  if (!bookings) return error ? <p className="error">{error}</p> : <p className="muted">Loading bookings…</p>
+
+  return (
+    <div className="bookings">
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
+      {bookings.length === 0 ? (
+        <p className="muted">No one has booked this cohort yet.</p>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <caption className="visually-hidden">Bookings for {cohortName}</caption>
+            <thead>
+              <tr>
+                <th>Learner</th>
+                <th>Live sessions attended</th>
+                {certificate && (
+                  <>
+                    <th>Assessment</th>
+                    <th>Certificate</th>
+                  </>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((b) => {
+                const issued = b.certificateIssuedOn !== null
+                const sessionsLeft = b.liveSessions - b.sessionsAttended
+                return (
+                  <tr key={b.id}>
+                    <td>
+                      <strong>{b.learnerName}</strong>
+                      <br />
+                      <span className="muted">{b.learnerEmail}</span>
+                    </td>
+                    <td>
+                      <div className="stepper">
+                        <button
+                          className="btn btn-small"
+                          aria-label={`Take a session off ${b.learnerName}`}
+                          disabled={issued || b.sessionsAttended === 0}
+                          onClick={() => change(() => api.undoAttendance(b.id))}
+                        >
+                          −
+                        </button>
+                        <span>
+                          {b.sessionsAttended} of {b.liveSessions}
+                        </span>
+                        <button
+                          className="btn btn-small"
+                          aria-label={`Mark a session attended for ${b.learnerName}`}
+                          disabled={sessionsLeft === 0}
+                          onClick={() => change(() => api.markAttendance(b.id))}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                    {certificate && (
+                      <>
+                        <td>
+                          <label className="toggle">
+                            <input
+                              type="checkbox"
+                              checked={b.assessmentPassed}
+                              disabled={issued}
+                              aria-label={`${b.learnerName} passed the assessment`}
+                              onChange={() => change(() => api.recordAssessment(b.id, !b.assessmentPassed))}
+                            />{' '}
+                            Passed
+                          </label>
+                        </td>
+                        <td>
+                          {issued ? (
+                            <span className="badge badge-ok">
+                              Issued {b.certificateIssuedOn}, valid until {b.certificateExpiresOn}
+                            </span>
+                          ) : (
+                            <span className="muted">
+                              {[
+                                sessionsLeft > 0 && `${sessionsLeft} ${sessionsLeft === 1 ? 'session' : 'sessions'}`,
+                                !b.assessmentPassed && 'the assessment',
+                              ]
+                                .filter(Boolean)
+                                .join(' and ')}{' '}
+                              to go
+                            </span>
+                          )}
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {certificate && (
+        <p className="fine">
+          The certificate is issued when every live session is attended and the assessment is passed. It lasts a year,
+          and once issued it cannot be taken back here.
+        </p>
+      )}
+    </div>
   )
 }
 

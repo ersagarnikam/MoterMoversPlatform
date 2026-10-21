@@ -51,14 +51,14 @@ public final class TrainingViews {
 
     public record EnrolmentView(Long id, Long cohortId, String courseTitle, CourseTrack track, String cohortName,
             LocalDate startsOn, String timeSlot, int sessionsAttended, int liveSessions, boolean assessmentPassed,
-            LocalDate certificateIssuedOn, LocalDate certificateExpiresOn, String learnerName) {
+            LocalDate certificateIssuedOn, LocalDate certificateExpiresOn, String learnerName, String learnerEmail) {
 
         public static EnrolmentView of(Enrolment e) {
             Cohort c = e.getCohort();
             return new EnrolmentView(e.getId(), c.getId(), c.getCourse().getTitle(), c.getCourse().getTrack(),
                     c.getName(), c.getStartsOn(), c.getTimeSlot(), e.getSessionsAttended(),
                     c.getCourse().getLiveSessions(), e.isAssessmentPassed(), e.getCertificateIssuedOn(),
-                    e.getCertificateExpiresOn(), e.getUser().getDisplayName());
+                    e.getCertificateExpiresOn(), e.getUser().getDisplayName(), e.getUser().getEmail());
         }
     }
 }
