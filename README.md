@@ -21,12 +21,13 @@ Built from the *How the platform works* overview and the *Motor Movers, online* 
 
 ## Running it locally
 
-You need Java 21, Maven 3.9+ and Node 22+.
+You need Java 21 and Node 22+. Maven is not needed: `backend/mvnw` (`mvnw.cmd` on Windows) downloads
+Maven 3.9.16 on first use.
 
 ```bash
 # 1. API on http://localhost:8080, with demo data in an in-memory database
 cd backend
-mvn spring-boot:run
+./mvnw spring-boot:run
 
 # 2. Web app on http://localhost:5173 (proxies /api to the API)
 cd frontend
@@ -77,7 +78,7 @@ Android blocks plain `http://` outside development.
 ```bash
 docker compose up -d db
 cd backend
-SPRING_PROFILES_ACTIVE=postgres PLATFORM_JWT_SECRET=$(openssl rand -hex 32) mvn spring-boot:run
+SPRING_PROFILES_ACTIVE=postgres PLATFORM_JWT_SECRET=$(openssl rand -hex 32) ./mvnw spring-boot:run
 ```
 
 Set `SEED_DEMO_DATA=true` to load the demo data into PostgreSQL. Flyway creates the schema
@@ -88,7 +89,7 @@ only the programme content (no demo people or schools) as drafts for the team to
 ### Tests
 
 ```bash
-cd backend && mvn verify       # unit and API integration tests
+cd backend && ./mvnw verify     # unit and API integration tests
 cd frontend && npm run build   # type-check and production build
 cd mobile && npm run typecheck # parent app type-check
 cd frontend && npm run e2e     # browser tests; needs the API running with demo data (restart it between runs)

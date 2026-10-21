@@ -46,10 +46,10 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && mvn -B verify        # 62 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 62 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
-# Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
+# Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
 cd frontend && npm run e2e          # 57 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
@@ -61,9 +61,9 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 
 - Default `java` is JDK 17, which cannot run the tests (the code targets 21). Use JDK 26:
   `C:\Users\ersag\.jdks\openjdk-26.0.1` (set `JAVA_HOME` and `PATH` for the command).
-- `mvn` is not on PATH and there is no `mvnw`. Use
-  `C:\Users\ersag\.m2\wrapper\dists\apache-maven-3.9.16-bin\5grr65jo27hi51sujmtcldfovl\apache-maven-3.9.16\bin\mvn.cmd`
-  from PowerShell.
+- `mvn` is not on PATH: use `backend\mvnw.cmd` (wrapper, Maven 3.9.16) from PowerShell, with `JAVA_HOME` set as
+  above. Ports 8080 and 5173 may be taken by another project of the owner's: then run the API with
+  `--server.port=8090` and the browser tests with `API_URL=http://localhost:8090`.
 - Docker Desktop is installed but may need starting (`C:\Program Files\Docker\Docker\Docker Desktop.exe`).
 - To try the production stack locally: write a throwaway env file with `APP_DOMAIN=localhost` (Caddy then
   issues a local certificate) and any `SPRING_MAIL_HOST`, then
@@ -128,8 +128,10 @@ Not started unless noted. Confirm priorities with the owner.
    content upload and hosting for videos/audio is still to be designed.
 4. Rate limits are per API instance (in memory). Move to a shared store (e.g. Redis) before running more
    than one API container.
-5. Off-server backup copies (RUNBOOK suggests rclone) and a tested restore.
-6. Nice to have: a Maven wrapper (`mvnw`) so builds do not depend on a local Maven install.
+5. Done 2026-10-21: off-server copies (`offsite` compose profile, rclone to an S3-compatible bucket) and
+   `deploy/restore-test.sh`, tested against a demo dump. Still to do on the real server: create the bucket,
+   fill in `BACKUP_OFFSITE_*`, and run the restore test after the first night.
+6. Done 2026-10-21: Maven wrapper (`backend/mvnw`); CI uses it.
 7. Done 2026-10-21: `SEED_STARTER_CONTENT=true` gives an empty deployment the starter content
    (`seed/StarterContent`, shared with the demo) as drafts for the team to approve. Still to do: the daily
    session plans (the demo ones are generated filler and are not in the starter set), and replacing the

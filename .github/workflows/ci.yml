@@ -17,7 +17,7 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - run: mvn -B verify
+      - run: ./mvnw -B verify
 
   frontend:
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
       - name: Start the API
         working-directory: backend
         run: |
-          mvn -B -q package -DskipTests
+          ./mvnw -B -q package -DskipTests
           nohup java -jar target/motor-movers-platform-*.jar > api.log 2>&1 &
           for i in $(seq 1 60); do curl -sf localhost:8080/actuator/health && break; sleep 2; done
       - working-directory: frontend
