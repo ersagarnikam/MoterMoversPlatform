@@ -71,6 +71,7 @@ spring:
 
 platform:
   seed-demo-data: ${SEED_DEMO_DATA:false}
+  seed-starter-content: ${SEED_STARTER_CONTENT:false}
 
 ---
 # Production: PostgreSQL, real mail, behind a TLS-terminating proxy. ProductionChecks refuses to start
@@ -115,6 +116,8 @@ logging:
 platform:
   region: ${PLATFORM_REGION:UK}
   seed-demo-data: false
+  # Starter content as drafts on an empty platform (seed/StarterContentLoader).
+  seed-starter-content: ${SEED_STARTER_CONTENT:false}
   jwt:
     secret: ${PLATFORM_JWT_SECRET:}
   cors:

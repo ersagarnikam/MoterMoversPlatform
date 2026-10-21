@@ -46,7 +46,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && mvn -B verify        # 60 unit + API integration tests (H2)
+cd backend  && mvn -B verify        # 62 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && mvn spring-boot:run), then
@@ -130,8 +130,10 @@ Not started unless noted. Confirm priorities with the owner.
    than one API container.
 5. Off-server backup copies (RUNBOOK suggests rclone) and a tested restore.
 6. Nice to have: a Maven wrapper (`mvnw`) so builds do not depend on a local Maven install.
-7. A real deployment starts with no programme content or courses (demo data is off in `prod`). The team
-   enters them through Content approval and Courses, or starter content is loaded with a migration.
+7. Done 2026-10-21: `SEED_STARTER_CONTENT=true` gives an empty deployment the starter content
+   (`seed/StarterContent`, shared with the demo) as drafts for the team to approve. Still to do: the daily
+   session plans (the demo ones are generated filler and are not in the starter set), and replacing the
+   placeholder assessment items once Pat sends the real ones (step 10). Approving drafts is one at a time.
 8. Done 2026-10-21: bookings, attendance and certificates have a screen. Not built: emailing the learner when
    their certificate is issued, and reminders before it expires.
 9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same

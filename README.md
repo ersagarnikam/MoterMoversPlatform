@@ -81,7 +81,9 @@ SPRING_PROFILES_ACTIVE=postgres PLATFORM_JWT_SECRET=$(openssl rand -hex 32) mvn 
 ```
 
 Set `SEED_DEMO_DATA=true` to load the demo data into PostgreSQL. Flyway creates the schema
-(`backend/src/main/resources/db/migration`).
+(`backend/src/main/resources/db/migration`). For a real deployment, `SEED_STARTER_CONTENT=true` instead loads
+only the programme content (no demo people or schools) as drafts for the team to approve; see
+`deploy/RUNBOOK.md`.
 
 ### Tests
 

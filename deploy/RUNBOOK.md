@@ -28,6 +28,11 @@ Only Caddy is published. The database is not reachable from outside the server.
    `https://<APP_DOMAIN>` loads with a valid certificate.
 6. The address in `PLATFORM_ADMIN_EMAIL` receives a sign-in link. Choose a password, sign in, then add
    trusts, schools and heads from the admin screens. Heads invite their own teachers.
+7. Programme content. With `SEED_STARTER_CONTENT=true` on the first start, the platform begins with the
+   starter content as drafts: approve each item in **Content approval** (or edit it first). Then write the
+   daily session plans for each licensed colour stage in Content approval, and open course cohorts in
+   **Courses**. Teachers see nothing until it is approved. Without the setting, the team enters everything
+   from scratch.
 
 If the API will not start, read its log first: `docker compose -f deploy/docker-compose.prod.yml logs api`.
 "Not safe to start in production" lists exactly which settings are missing.
