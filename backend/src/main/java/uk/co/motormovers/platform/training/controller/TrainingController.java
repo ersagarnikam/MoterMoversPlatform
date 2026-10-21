@@ -44,16 +44,6 @@ public class TrainingController {
         return training.cohortEnrolments(cohortId);
     }
 
-    @PostMapping("/api/admin/enrolments/{enrolmentId}/attendance")
-    public TrainingViews.EnrolmentView attendance(@PathVariable Long enrolmentId) {
-        return training.recordAttendance(enrolmentId);
-    }
-
-    @PostMapping("/api/admin/enrolments/{enrolmentId}/attendance/undo")
-    public TrainingViews.EnrolmentView undoAttendance(@PathVariable Long enrolmentId) {
-        return training.undoAttendance(enrolmentId);
-    }
-
     @PostMapping("/api/admin/enrolments/{enrolmentId}/assessment")
     public TrainingViews.EnrolmentView assessment(@PathVariable Long enrolmentId,
             @RequestBody AssessmentRequest request) {

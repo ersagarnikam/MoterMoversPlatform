@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform.training.dto;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -22,8 +23,9 @@ public final class CourseInputs {
             @Min(0) @Max(10_000_000) Integer renewalPence, boolean awardsCertificate) {
     }
 
+    /** {@code startTime} is when each weekly live session starts, in UK time for a UK deployment. */
     public record CohortInput(@NotBlank @Size(max = 100) String name, @NotNull LocalDate startsOn,
-            @NotBlank @Size(max = 100) String timeSlot, @Min(1) @Max(1000) int capacity,
+            @NotNull LocalTime startTime, @NotBlank @Size(max = 100) String timeSlot, @Min(1) @Max(1000) int capacity,
             @NotBlank @Size(max = 200) String trainerName, boolean recordingAgreed) {
     }
 }

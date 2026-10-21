@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type Course, type Enrolment, type Induction, type Payment, type Totals } from '../api'
+import { api, type Course, type Enrolment, type Induction, type LiveSession, type Payment, type Totals } from '../api'
+import { sessionTime } from '../live'
 import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
 import { gbp } from '../money'
@@ -74,6 +75,45 @@ function InductionSection() {
 /** What the signed-in person has paid for themselves. Hidden until there is something to show. */
 /** Parents and practitioners have their own Payments page; staff see their payments here. */
 const OWN_PAYMENTS_PAGE = ['PARENT', 'PRACTITIONER']
+
+/** The learner's coming live sessions, with Join once a session opens (15 minutes before the start). */
+function YourLiveSessions() {
+  const [sessions, setSessions] = useState<LiveSession[]>([])
+
+  useEffect(() => {
+    // A failure here should not hide the courses, so it is left silent.
+    api.liveSessions().then(setSessions).catch(() => setSessions([]))
+  }, [])
+
+  if (sessions.length === 0) return null
+  return (
+    <section className="card">
+      <h3>Your live sessions</h3>
+      <ul className="live-list">
+        {sessions.slice(0, 4).map((s) => (
+          <li key={s.id}>
+            <div>
+              <strong>
+                {s.courseTitle} · session {s.number} of {s.of}
+              </strong>
+              <p className="muted">
+                {sessionTime(s.startsAt)} · {s.durationMinutes} minutes on Zoom, here in Motor Movers
+              </p>
+            </div>
+            {s.open ? (
+              // A full page load: only the session page allows Zoom's scripts.
+              <a className="btn btn-primary" href={`/live/${s.id}`}>
+                Join live session
+              </a>
+            ) : (
+              <span className="muted">Opens 15 minutes before the start</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
 
 /** A reminder at the top of the page while anything is still to pay. */
 function PaymentDue() {
@@ -157,6 +197,7 @@ export default function TrainingPage() {
       <h1>Training</h1>
       {error && <p className="error">{error}</p>}
       {user && OWN_PAYMENTS_PAGE.includes(user.role) && <PaymentDue />}
+      {user?.role !== 'ADMIN' && <YourLiveSessions />}
       {user && ['TEACHER', 'HEAD', 'PRACTITIONER'].includes(user.role) && <InductionSection />}
 
       {mine.length > 0 && (

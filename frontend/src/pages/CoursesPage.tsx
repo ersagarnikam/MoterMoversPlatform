@@ -1,6 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type AdminCourse, type CohortInput, type CourseInput, type CourseTrack, type Enrolment } from '../api'
+import {
+  api,
+  type AdminCourse,
+  type CohortInput,
+  type CourseInput,
+  type CourseTrack,
+  type Enrolment,
+  type SessionSummary,
+} from '../api'
+import { sessionTime } from '../live'
 import { gbp } from '../money'
 
 const TRACKS: [CourseTrack, string][] = [
@@ -156,7 +165,12 @@ function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
                 </div>
               </div>
               {showingBookings === h.id && (
-                <CohortBookings cohortId={h.id} cohortName={h.name} certificate={course.awardsCertificate} />
+                <CohortBookings
+                  cohortId={h.id}
+                  cohortName={h.name}
+                  sessions={h.sessions}
+                  certificate={course.awardsCertificate}
+                />
               )}
             </div>
           ),
@@ -178,10 +192,20 @@ function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
 }
 
 /**
- * Who has booked a cohort. The team marks each live session attended and the assessment result; the
- * platform issues the certificate once both are complete, and then it can no longer be taken back.
+ * Who has booked a cohort. The team ticks who attended each live session (as in the live session's register) and
+ * the assessment result; the platform issues the certificate once both are complete, and then it is locked.
  */
-function CohortBookings({ cohortId, cohortName, certificate }: { cohortId: number; cohortName: string; certificate: boolean }) {
+function CohortBookings({
+  cohortId,
+  cohortName,
+  sessions,
+  certificate,
+}: {
+  cohortId: number
+  cohortName: string
+  sessions: SessionSummary[]
+  certificate: boolean
+}) {
   const [bookings, setBookings] = useState<Enrolment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -241,26 +265,22 @@ function CohortBookings({ cohortId, cohortName, certificate }: { cohortId: numbe
                       <span className="muted">{b.learnerEmail}</span>
                     </td>
                     <td>
-                      <div className="stepper">
-                        <button
-                          className="btn btn-small"
-                          aria-label={`Take a session off ${b.learnerName}`}
-                          disabled={issued || b.sessionsAttended === 0}
-                          onClick={() => change(() => api.undoAttendance(b.id))}
-                        >
-                          −
-                        </button>
-                        <span>
+                      <div className="session-ticks">
+                        {sessions.map((s) => (
+                          <label key={s.id} className="toggle" title={sessionTime(s.startsAt)}>
+                            <input
+                              type="checkbox"
+                              checked={b.attendedSessions.includes(s.number)}
+                              disabled={issued}
+                              aria-label={`${b.learnerName} attended session ${s.number}`}
+                              onChange={(e) => change(() => api.markPresent(s.id, b.id, e.target.checked))}
+                            />
+                            {s.number}
+                          </label>
+                        ))}
+                        <span className="muted">
                           {b.sessionsAttended} of {b.liveSessions}
                         </span>
-                        <button
-                          className="btn btn-small"
-                          aria-label={`Mark a session attended for ${b.learnerName}`}
-                          disabled={sessionsLeft === 0}
-                          onClick={() => change(() => api.markAttendance(b.id))}
-                        >
-                          +
-                        </button>
                       </div>
                     </td>
                     {certificate && (
@@ -430,6 +450,7 @@ function CohortForm({
   const today = new Date().toISOString().slice(0, 10)
   const [name, setName] = useState(initial?.name ?? '')
   const [startsOn, setStartsOn] = useState(initial?.startsOn ?? '')
+  const [startTime, setStartTime] = useState(initial?.startTime?.slice(0, 5) ?? '19:00')
   const [timeSlot, setTimeSlot] = useState(initial?.timeSlot ?? '')
   const [capacity, setCapacity] = useState(String(initial?.capacity ?? 30))
   const [trainerName, setTrainerName] = useState(initial?.trainerName ?? '')
@@ -440,6 +461,7 @@ function CohortForm({
     const saved = await onSave({
       name: name.trim(),
       startsOn,
+      startTime,
       timeSlot: timeSlot.trim(),
       capacity: Number(capacity),
       trainerName: trainerName.trim(),
@@ -448,6 +470,7 @@ function CohortForm({
     if (saved && !initial) {
       setName('')
       setStartsOn('')
+      setStartTime('19:00')
       setTimeSlot('')
       setTrainerName('')
       setRecordingAgreed(false)
@@ -469,6 +492,10 @@ function CohortForm({
           onChange={(e) => setStartsOn(e.target.value)}
           required
         />
+      </label>
+      <label>
+        Start time (UK)
+        <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
       </label>
       <label>
         Day and time

@@ -145,6 +145,8 @@ export interface Enrolment {
   certificateExpiresOn: string | null
   learnerName: string
   learnerEmail: string
+  /** The numbers of the live sessions the learner was marked present at, e.g. [1, 2]. */
+  attendedSessions: number[]
 }
 
 export interface Induction {
@@ -324,6 +326,8 @@ export interface CourseInput {
 export interface CohortInput {
   name: string
   startsOn: string
+  /** "19:00": when each weekly live session starts, UK time. */
+  startTime: string
   timeSlot: string
   capacity: number
   trainerName: string
@@ -333,7 +337,57 @@ export interface CohortInput {
 /** A course as the team manages it: every cohort, past ones too, with places booked. */
 export interface AdminCourse extends CourseInput {
   id: number
-  cohorts: (CohortInput & { id: number; booked: number })[]
+  cohorts: (CohortInput & { id: number; booked: number; sessions: SessionSummary[] })[]
+}
+
+/** One dated live session of a cohort. startsAt is an ISO instant. */
+export interface SessionSummary {
+  id: number
+  number: number
+  startsAt: string
+  durationMinutes: number
+}
+
+/** A live session as someone who may join it sees it. host is true for the Motor Movers team. */
+export interface LiveSession {
+  id: number
+  cohortId: number
+  courseTitle: string
+  cohortName: string
+  number: number
+  of: number
+  startsAt: string
+  durationMinutes: number
+  trainerName: string
+  open: boolean
+  host: boolean
+}
+
+/** What the room needs. Without Zoom connected, the Zoom fields are null and the session runs without video. */
+export interface LiveJoin {
+  session: LiveSession
+  zoomConnected: boolean
+  sdkKey: string | null
+  signature: string | null
+  meetingNumber: string | null
+  passcode: string | null
+  zak: string | null
+  userName: string
+  userEmail: string
+  rules: string
+  recorded: boolean
+}
+
+export interface LiveRegister {
+  session: LiveSession
+  learners: {
+    enrolmentId: number
+    learnerName: string
+    learnerEmail: string
+    present: boolean
+    sessionsAttended: number
+    certificateIssued: boolean
+  }[]
 }
 
 export type PayerType = 'SCHOOL' | 'PARENT' | 'INDIVIDUAL'
@@ -516,8 +570,11 @@ export const api = {
     request<AdminCourse>('POST', `/api/admin/courses/${courseId}/cohorts`, c),
   updateCohort: (id: number, c: CohortInput) => request<AdminCourse>('PUT', `/api/admin/cohorts/${id}`, c),
   cohortBookings: (cohortId: number) => request<Enrolment[]>('GET', `/api/admin/cohorts/${cohortId}/enrolments`),
-  markAttendance: (id: number) => request<Enrolment>('POST', `/api/admin/enrolments/${id}/attendance`),
-  undoAttendance: (id: number) => request<Enrolment>('POST', `/api/admin/enrolments/${id}/attendance/undo`),
+  liveSessions: () => request<LiveSession[]>('GET', '/api/training/live'),
+  joinLive: (sessionId: number) => request<LiveJoin>('POST', `/api/training/live/${sessionId}/join`),
+  liveRegister: (sessionId: number) => request<LiveRegister>('GET', `/api/admin/live/${sessionId}/register`),
+  markPresent: (sessionId: number, enrolmentId: number, present: boolean) =>
+    request<Enrolment>('PUT', `/api/admin/live/${sessionId}/register/${enrolmentId}`, { present }),
   recordAssessment: (id: number, passed: boolean) =>
     request<Enrolment>('POST', `/api/admin/enrolments/${id}/assessment`, { passed }),
   approve: (id: number, kind: ContentKind = 'content') =>

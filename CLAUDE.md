@@ -70,13 +70,37 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-21)
+## Current state (2026-10-22)
 
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
 57/57 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
+
+**In progress (branch `zoom-live-sessions`, not merged): live course sessions on Zoom inside the platform.**
+Pat (or any team account) starts a live session from a Live sessions page and the Zoom meeting shows in the
+page (Meeting SDK component view, loaded from Zoom's CDN, so only that page gets a looser CSP); learners booked
+on the cohort join from 15 minutes before. Done so far (compiles): migration `V7__live_sessions` (cohort
+`start_time`, dated `cohort_session` rows, `session_attendance` register), `training/zoom` (`ZoomProperties`
+`platform.zoom.*`, `ZoomApiClient` with Server-to-Server OAuth, `ZoomSignature`), `LiveSessionService` and
+`LiveSessionController` (`/api/training/live`, `/join`, `/api/admin/live/{id}/register`), the old +/- attendance
+endpoints removed in favour of the per-session register, demo data with Pat's account (pat@motormovers.test) and a
+parent cohort starting ten minutes after start-up with Jo booked. Backend tests done and passing (68:
+`LiveSessionTest`, `ZoomLiveSessionTest` with a stand-in Zoom, `ZoomClientTest` for the API calls and signature;
+`GoLiveTest`/`ApiIntegrationTest` now take dates from the platform clock, as they failed when the laptop's date
+was ahead of UK time). Web done: `/live` (team list, nav "Live sessions"), `/live/:id` room (`LiveRoomPage`:
+Zoom component view, rules, register for the team; reached by a full page load), "Your live sessions" with Join on
+the Training page, start time in the cohort form, per-session ticks in the bookings panel. The SDK and the six
+libraries it needs as globals load from Zoom's CDN, pinned to 6.5.0 with SRI hashes (`src/live.ts`); checked in
+Chrome that they load and the client initialises under the live page's policy. Per-path CSP and
+Permissions-Policy (camera, microphone) for `/live/<id>` only, in `vite.config.ts` and `frontend/nginx.conf`.
+Zoom settings in `application.yml`, compose, `.env.example` and RUNBOOK (Live sessions on Zoom). 58 browser tests
+pass. Still to do: commit, push and merge; a real test call once the owner has created the two Zoom apps (video
+cannot be tested without keys). The parent app does not join live sessions yet (it would open the web room).
+
+DigitalOcean deployment was discussed (2026-10-21) but not started: the owner stopped before choosing how to
+connect, the server size, the web address and email. Nothing was created.
 
 Built so far:
 - Public website (`frontend/src/pages/site`, `SiteLayout`, shared facts in `src/site.ts`): home, about and
@@ -116,8 +140,9 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first): browser tests + CI; production deployment; web/app setup and password
-screens; accounts, password links, rate limits and school setup API; API input hardening.
+Recent commits (newest first): parent payments page and app screen; Maven wrapper; off-server backups and
+restore test; assessment design note and Module wording; starter content; course attendance and certificates;
+assess wording and trust or school group.
 
 ## Next steps
 

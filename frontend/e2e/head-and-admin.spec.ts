@@ -139,6 +139,36 @@ test('the team sets up a course and opens a cohort for booking', async ({ page }
   await expect(listed.getByText('12 places left')).toBeVisible()
 })
 
+test('Pat starts a live session, keeps the register, and a parent joins it', async ({ page }) => {
+  // The demo has a parent cohort whose first session starts ten minutes after the API starts, with Jo booked.
+  await signIn(page, 'pat@motormovers.test')
+  await page.getByRole('link', { name: 'Live sessions' }).click()
+  const now = page.locator('.live-list li', { hasText: 'Cohort A · starting now' }).filter({ hasText: 'Session 1 of 3' })
+  await expectAccessible(page)
+  await now.getByRole('link', { name: 'Start session' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Live session 1 of 3' })).toBeVisible()
+  // Without the Zoom keys (as here), the room runs without video and says so.
+  await expect(page.getByText('Zoom is not connected yet')).toBeVisible()
+  await expect(page.getByText(/Adults only on camera/)).toBeVisible()
+  const jo = page.getByLabel('Jo Bennett')
+  await jo.click()
+  await expect(jo).toBeChecked()
+  await expect(page.locator('.register')).toContainText('1 attended')
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Leave session' }).click()
+  await expect(page.getByRole('heading', { name: 'Live sessions' })).toBeVisible()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'parent@example.test')
+  const mine = page.locator('section', { has: page.getByRole('heading', { name: 'Your live sessions' }) })
+  await mine.getByRole('link', { name: 'Join live session' }).click()
+  await expect(page.getByRole('heading', { name: 'Live session 1 of 3' })).toBeVisible()
+  await expect(page.getByText(/Adults only on camera/)).toBeVisible()
+  // Only the team keeps the register.
+  await expect(page.getByRole('heading', { name: 'Register' })).toHaveCount(0)
+})
+
 test('the team marks attendance and the assessment, and the learner gets a certificate', async ({ page }) => {
   const cohortName = 'Cohort B · UK morning / AU evening'
   await signIn(page, 'practitioner@example.test')
@@ -150,14 +180,19 @@ test('the team marks attendance and the assessment, and the learner gets a certi
   await page.getByRole('link', { name: 'Courses' }).click()
   const cohort = page.locator('.cohort-block', { hasText: cohortName })
   await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
-  const mark = cohort.getByRole('button', { name: 'Mark a session attended for Sam Rivers' })
-  await mark.click()
-  await mark.click()
+  const session = (n: number) => cohort.getByLabel(`Sam Rivers attended session ${n}`)
+  // The box shows the saved register, so it ticks once the server has saved it.
+  await session(1).click()
+  await expect(session(1)).toBeChecked()
+  await session(2).click()
   await expect(cohort.getByText('2 of 4')).toBeVisible()
-  // A session marked by mistake comes back off.
-  await cohort.getByRole('button', { name: 'Take a session off Sam Rivers' }).click()
+  // A learner ticked by mistake can be unticked.
+  await session(2).click()
   await expect(cohort.getByText('1 of 4')).toBeVisible()
-  for (let i = 0; i < 3; i++) await mark.click()
+  for (const n of [2, 3, 4]) {
+    await session(n).click()
+    await expect(session(n)).toBeChecked()
+  }
   await expect(cohort.getByText('4 of 4')).toBeVisible()
   await expect(cohort.getByText('the assessment to go')).toBeVisible()
   await expectAccessible(page)

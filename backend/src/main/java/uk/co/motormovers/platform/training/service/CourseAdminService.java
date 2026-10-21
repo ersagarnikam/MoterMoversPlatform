@@ -30,14 +30,16 @@ public class CourseAdminService {
     private final CohortRepository cohorts;
     private final EnrolmentRepository enrolments;
     private final WordingGuard wordingGuard;
+    private final LiveSessionService live;
     private final Clock clock;
 
     public CourseAdminService(CourseRepository courses, CohortRepository cohorts, EnrolmentRepository enrolments,
-            WordingGuard wordingGuard, Clock clock) {
+            WordingGuard wordingGuard, LiveSessionService live, Clock clock) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
         this.wordingGuard = wordingGuard;
+        this.live = live;
         this.clock = clock;
     }
 
@@ -63,6 +65,8 @@ public class CourseAdminService {
         check(r);
         course.revise(r.title().strip(), r.description().strip(), r.liveSessions(), r.sessionMinutes(),
                 r.pricePence(), r.renewalPence(), r.awardsCertificate());
+        // The number and length of live sessions may have changed.
+        cohorts.findByCourseIdOrderByStartsOn(courseId).forEach(live::schedule);
         return view(course);
     }
 
@@ -72,8 +76,8 @@ public class CourseAdminService {
         if (r.startsOn().isBefore(LocalDate.now(clock))) {
             throw new IllegalArgumentException("A new cohort cannot start in the past");
         }
-        cohorts.save(new Cohort(course, r.name().strip(), r.startsOn(), r.timeSlot().strip(), r.capacity(),
-                r.trainerName().strip(), r.recordingAgreed()));
+        live.schedule(cohorts.save(new Cohort(course, r.name().strip(), r.startsOn(), r.startTime(),
+                r.timeSlot().strip(), r.capacity(), r.trainerName().strip(), r.recordingAgreed())));
         return view(course);
     }
 
@@ -85,8 +89,9 @@ public class CourseAdminService {
             throw new IllegalArgumentException(
                     "This cohort already has " + booked + " places booked, so it needs at least that many places");
         }
-        cohort.revise(r.name().strip(), r.startsOn(), r.timeSlot().strip(), r.capacity(), r.trainerName().strip(),
-                r.recordingAgreed());
+        cohort.revise(r.name().strip(), r.startsOn(), r.startTime(), r.timeSlot().strip(), r.capacity(),
+                r.trainerName().strip(), r.recordingAgreed());
+        live.schedule(cohort);
         return view(cohort.getCourse());
     }
 
@@ -107,8 +112,9 @@ public class CourseAdminService {
                 c.isAwardsCertificate(),
                 cohorts.findByCourseIdOrderByStartsOn(c.getId()).stream()
                         .map(h -> new TrainingViews.AdminCohortView(h.getId(), h.getName(), h.getStartsOn(),
-                                h.getTimeSlot(), h.getCapacity(), (int) enrolments.countByCohortId(h.getId()),
-                                h.getTrainerName(), h.isRecordingAgreed()))
+                                h.getStartTime(), h.getTimeSlot(), h.getCapacity(),
+                                (int) enrolments.countByCohortId(h.getId()), h.getTrainerName(), h.isRecordingAgreed(),
+                                live.summaries(h.getId())))
                         .toList());
     }
 }

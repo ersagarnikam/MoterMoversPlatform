@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -45,6 +46,10 @@ class GoLiveTest {
     @Autowired
     MockMvc mvc;
 
+    /** The platform's clock (UK time), so dates match what the API calls today wherever the tests run. */
+    @Autowired
+    Clock clock;
+
     @Autowired
     ChildRepository children;
 
@@ -66,10 +71,10 @@ class GoLiveTest {
         String[] bad = {
             "{\"clientId\":\"g1\",\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2}",
             "{\"clientId\":\"g2\",\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\""
-                    + LocalDate.now().plusYears(1) + "\"}",
-            "{\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\"" + LocalDate.now() + "\"}",
+                    + LocalDate.now(clock).plusYears(1) + "\"}",
+            "{\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\"" + LocalDate.now(clock) + "\"}",
             "{\"clientId\":\"g3\",\"childId\":" + childId + ",\"itemCode\":\"NOPE\",\"score\":2,\"screenedOn\":\""
-                    + LocalDate.now() + "\"}",
+                    + LocalDate.now(clock) + "\"}",
         };
         for (String score : bad) {
             send(teacher, "/api/screening/results", "[" + score + "]").andExpect(status().isBadRequest());
@@ -150,11 +155,11 @@ class GoLiveTest {
                 .andReturn().getResponse().getContentAsString();
         List<Integer> ids = JsonPath.read(added, "$[*].id");
 
-        send(head, "/api/schools/1/children/" + ids.get(0) + "/left", "{\"leftOn\":\"" + LocalDate.now() + "\"}")
+        send(head, "/api/schools/1/children/" + ids.get(0) + "/left", "{\"leftOn\":\"" + LocalDate.now(clock) + "\"}")
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/schools/1/classes/" + classId + "/children").header("Authorization", bearer(head)))
                 .andExpect(jsonPath("$.length()").value(1));
-        send(head, "/api/schools/1/children/" + ids.get(1) + "/left", "{\"leftOn\":\"" + LocalDate.now().plusDays(5) + "\"}")
+        send(head, "/api/schools/1/children/" + ids.get(1) + "/left", "{\"leftOn\":\"" + LocalDate.now(clock).plusDays(5) + "\"}")
                 .andExpect(status().isBadRequest());
 
         // Another school's head, a teacher and a trust lead cannot.
@@ -247,7 +252,7 @@ class GoLiveTest {
                 "{\"children\":[{\"initials\":\"L.V.\"}]}").andReturn().getResponse().getContentAsString();
         Long childId = ((Integer) JsonPath.read(added, "$[0].id")).longValue();
         send(head, "/api/schools/1/children/" + childId + "/left",
-                "{\"leftOn\":\"" + LocalDate.now().minusYears(2) + "\"}").andExpect(status().isNoContent());
+                "{\"leftOn\":\"" + LocalDate.now(clock).minusYears(2) + "\"}").andExpect(status().isNoContent());
 
         assertThat(retention.purgeLeavers()).isGreaterThanOrEqualTo(1);
         assertThat(children.findById(childId)).isEmpty();

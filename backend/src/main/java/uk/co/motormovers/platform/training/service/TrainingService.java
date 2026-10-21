@@ -17,6 +17,7 @@ import uk.co.motormovers.platform.training.model.Enrolment;
 import uk.co.motormovers.platform.training.repository.CohortRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
+import uk.co.motormovers.platform.training.repository.SessionAttendanceRepository;
 import uk.co.motormovers.platform.user.model.Role;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
@@ -31,15 +32,18 @@ public class TrainingService {
     private final CourseRepository courses;
     private final CohortRepository cohorts;
     private final EnrolmentRepository enrolments;
+    private final SessionAttendanceRepository attendance;
     private final AppUserRepository users;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
 
     public TrainingService(CourseRepository courses, CohortRepository cohorts, EnrolmentRepository enrolments,
-            AppUserRepository users, CurrentUserResolver currentUser, Clock clock) {
+            SessionAttendanceRepository attendance, AppUserRepository users, CurrentUserResolver currentUser,
+            Clock clock) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
+        this.attendance = attendance;
         this.users = users;
         this.currentUser = currentUser;
         this.clock = clock;
@@ -71,41 +75,26 @@ public class TrainingService {
             throw new IllegalArgumentException("This course is not open to your account type");
         }
         return enrolments.findByCohortIdAndUserId(cohortId, me.id())
-                .map(TrainingViews.EnrolmentView::of)
+                .map(this::view)
                 .orElseGet(() -> {
                     if (enrolments.countByCohortId(cohortId) >= cohort.getCapacity()) {
                         throw new IllegalStateException("This cohort is full");
                     }
                     Enrolment e = new Enrolment(cohort, users.getReferenceById(me.id()));
-                    return TrainingViews.EnrolmentView.of(enrolments.save(e));
+                    return view(enrolments.save(e));
                 });
     }
 
     @Transactional(readOnly = true)
     public List<TrainingViews.EnrolmentView> mine() {
         return enrolments.findByUserIdOrderByEnrolledAtDesc(currentUser.current().id()).stream()
-                .map(TrainingViews.EnrolmentView::of).toList();
+                .map(this::view).toList();
     }
 
     @Transactional(readOnly = true)
     public List<TrainingViews.EnrolmentView> cohortEnrolments(Long cohortId) {
         return enrolments.findByCohortIdOrderByEnrolledAt(cohortId).stream()
-                .map(TrainingViews.EnrolmentView::of).toList();
-    }
-
-    @Transactional
-    public TrainingViews.EnrolmentView recordAttendance(Long enrolmentId) {
-        Enrolment e = findEnrolment(enrolmentId);
-        e.recordAttendance();
-        e.issueCertificateIfEligible(LocalDate.now(clock));
-        return TrainingViews.EnrolmentView.of(e);
-    }
-
-    @Transactional
-    public TrainingViews.EnrolmentView undoAttendance(Long enrolmentId) {
-        Enrolment e = findEnrolment(enrolmentId);
-        e.undoAttendance();
-        return TrainingViews.EnrolmentView.of(e);
+                .map(this::view).toList();
     }
 
     @Transactional
@@ -113,7 +102,11 @@ public class TrainingService {
         Enrolment e = findEnrolment(enrolmentId);
         e.recordAssessment(passed);
         e.issueCertificateIfEligible(LocalDate.now(clock));
-        return TrainingViews.EnrolmentView.of(e);
+        return view(e);
+    }
+
+    private TrainingViews.EnrolmentView view(Enrolment e) {
+        return TrainingViews.EnrolmentView.of(e, attendance.attendedNumbers(e.getId()));
     }
 
     private Enrolment findEnrolment(Long id) {

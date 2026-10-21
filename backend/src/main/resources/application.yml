@@ -42,6 +42,14 @@ platform:
     web-url: ${PLATFORM_WEB_URL:http://localhost:5173}
   # First Motor Movers team account on a new deployment, emailed a sign-in link (see AdminBootstrap).
   admin-email: ${PLATFORM_ADMIN_EMAIL:}
+  # Live course sessions on Zoom (training/zoom/ZoomProperties). Without every key, sessions run without video.
+  zoom:
+    account-id: ${ZOOM_ACCOUNT_ID:}
+    client-id: ${ZOOM_CLIENT_ID:}
+    client-secret: ${ZOOM_CLIENT_SECRET:}
+    sdk-key: ${ZOOM_SDK_KEY:}
+    sdk-secret: ${ZOOM_SDK_SECRET:}
+    host-email: ${ZOOM_HOST_EMAIL:}
 
 ---
 spring:

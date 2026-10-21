@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,19 +134,20 @@ class CourseAdminTest {
                 .andExpect(jsonPath("$[0].learnerEmail").value("practitioner@example.test"))
                 .andExpect(jsonPath("$[0].sessionsAttended").value(0));
 
-        String attendance = "/api/admin/enrolments/" + enrolmentId + "/attendance";
-        mvc.perform(post(attendance).header("Authorization", bearer(admin)));
-        mvc.perform(post(attendance).header("Authorization", bearer(admin)))
-                .andExpect(jsonPath("$.sessionsAttended").value(2));
-        // A session marked by mistake can be taken back off.
-        mvc.perform(post(attendance + "/undo").header("Authorization", bearer(admin)))
-                .andExpect(jsonPath("$.sessionsAttended").value(1));
-        for (int i = 0; i < 4; i++) {
-            mvc.perform(post(attendance).header("Authorization", bearer(admin)));
+        // The cohort has one dated session per live session of the course, weekly from its start date.
+        List<Integer> sessions = JsonPath.read(withCohort, "$.cohorts[0].sessions[*].id");
+        assertThat(sessions).hasSize(4);
+        mark(admin, sessions.get(0), enrolmentId, true);
+        mark(admin, sessions.get(1), enrolmentId, true).andExpect(jsonPath("$.sessionsAttended").value(2));
+        // A learner ticked by mistake can be unticked.
+        mark(admin, sessions.get(1), enrolmentId, false).andExpect(jsonPath("$.sessionsAttended").value(1));
+        for (Integer session : sessions) {
+            mark(admin, session, enrolmentId, true);
         }
-        // Attendance stops at the number of live sessions; the certificate waits for the assessment.
-        mvc.perform(post(attendance).header("Authorization", bearer(admin)))
+        // Ticking the same session twice counts once; the certificate waits for the assessment.
+        mark(admin, sessions.get(3), enrolmentId, true)
                 .andExpect(jsonPath("$.sessionsAttended").value(4))
+                .andExpect(jsonPath("$.attendedSessions").value(org.hamcrest.Matchers.contains(1, 2, 3, 4)))
                 .andExpect(jsonPath("$.certificateIssuedOn").doesNotExist());
 
         send(admin, post("/api/admin/enrolments/" + enrolmentId + "/assessment"), "{\"passed\":true}")
@@ -153,7 +156,7 @@ class CourseAdminTest {
                 .andExpect(jsonPath("$.certificateExpiresOn").value(LocalDate.now(clock).plusYears(1).toString()));
 
         // Once issued, the certificate stands.
-        mvc.perform(post(attendance + "/undo").header("Authorization", bearer(admin)))
+        mark(admin, sessions.get(0), enrolmentId, false)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value(containsString("certificate has been issued")));
         send(admin, post("/api/admin/enrolments/" + enrolmentId + "/assessment"), "{\"passed\":false}")
@@ -162,9 +165,8 @@ class CourseAdminTest {
         mvc.perform(get("/api/training/enrolments/mine").header("Authorization", bearer(practitioner)))
                 .andExpect(jsonPath("$[?(@.cohortName == 'Autumn cohort')].certificateIssuedOn")
                         .value(LocalDate.now(clock).toString()));
-        // Learners cannot mark their own attendance.
-        mvc.perform(post(attendance).header("Authorization", bearer(practitioner)))
-                .andExpect(status().isForbidden());
+        // Learners cannot keep the register.
+        mark(practitioner, sessions.get(0), enrolmentId, true).andExpect(status().isForbidden());
     }
 
     @Test
@@ -183,8 +185,15 @@ class CourseAdminTest {
     }
 
     private static String cohortJson(String name, String startsOn, int capacity) {
-        return "{\"name\":\"" + name + "\",\"startsOn\":\"" + startsOn + "\",\"timeSlot\":\"Mondays 7:00 pm UK\","
+        return "{\"name\":\"" + name + "\",\"startsOn\":\"" + startsOn + "\",\"startTime\":\"19:00\","
+                + "\"timeSlot\":\"Mondays 7:00 pm UK\","
                 + "\"capacity\":" + capacity + ",\"trainerName\":\"Pat\",\"recordingAgreed\":false}";
+    }
+
+    private ResultActions mark(String token, Integer sessionId, Integer enrolmentId, boolean present)
+            throws Exception {
+        return send(token, put("/api/admin/live/" + sessionId + "/register/" + enrolmentId),
+                "{\"present\":" + present + "}");
     }
 
     private ResultActions send(String token, MockHttpServletRequestBuilder request, String json) throws Exception {

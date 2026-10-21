@@ -2,6 +2,9 @@ package uk.co.motormovers.platform.seed;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -59,10 +62,13 @@ import uk.co.motormovers.platform.screening.model.ScreeningResult;
 import uk.co.motormovers.platform.screening.repository.ScreeningItemRepository;
 import uk.co.motormovers.platform.screening.repository.ScreeningResultRepository;
 import uk.co.motormovers.platform.training.model.Cohort;
+import uk.co.motormovers.platform.training.model.Enrolment;
 import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.InductionLesson;
 import uk.co.motormovers.platform.training.model.InductionProgress;
+import uk.co.motormovers.platform.training.service.LiveSessionService;
 import uk.co.motormovers.platform.training.repository.CohortRepository;
+import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
 import uk.co.motormovers.platform.training.repository.InductionProgressRepository;
 import uk.co.motormovers.platform.user.model.AppUser;
 import uk.co.motormovers.platform.user.model.Role;
@@ -92,6 +98,8 @@ public class DemoDataLoader implements ApplicationRunner {
     private final ScreeningItemRepository items;
     private final ScreeningResultRepository results;
     private final CohortRepository cohorts;
+    private final EnrolmentRepository enrolments;
+    private final LiveSessionService live;
     private final HomeActivityRepository homeActivities;
     private final GuidanceArticleRepository guidance;
     private final ParentLinkRepository parentLinks;
@@ -110,7 +118,8 @@ public class DemoDataLoader implements ApplicationRunner {
     public DemoDataLoader(TrustRepository trusts, SchoolRepository schools, LicenceRepository licences,
             SchoolClassRepository classes, AppUserRepository users, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, ScreeningItemRepository items,
-            ScreeningResultRepository results, CohortRepository cohorts,
+            ScreeningResultRepository results, CohortRepository cohorts, EnrolmentRepository enrolments,
+            LiveSessionService live,
             HomeActivityRepository homeActivities, GuidanceArticleRepository guidance,
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
             HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
@@ -137,6 +146,8 @@ public class DemoDataLoader implements ApplicationRunner {
         this.items = items;
         this.results = results;
         this.cohorts = cohorts;
+        this.enrolments = enrolments;
+        this.live = live;
         this.passwordEncoder = passwordEncoder;
         this.properties = properties;
         this.clock = clock;
@@ -167,6 +178,8 @@ public class DemoDataLoader implements ApplicationRunner {
                 EnumSet.of(ColourStage.RED, ColourStage.ORANGE), today.minusMonths(1), today.plusMonths(2));
 
         users.save(new AppUser("admin@motormovers.test", "Laura Preedy-Maher", hash, Role.ADMIN, null, null));
+        // Pat runs live course sessions on Zoom from the Live sessions page.
+        users.save(new AppUser("pat@motormovers.test", "Pat Preedy", hash, Role.ADMIN, null, null));
         AppUser patel = users.save(new AppUser("head@oakfield.test", "Mr Patel", hash, Role.HEAD, oakfield.getId(),
                 trust.getId()));
         users.save(new AppUser("trust@northbridge.test", "Ms Okafor", hash, Role.TRUST_LEAD, null, trust.getId()));
@@ -202,7 +215,7 @@ public class DemoDataLoader implements ApplicationRunner {
         classWithHistory(ferrers, "Reception F", "Reception", null, ColourStage.RED, 24, 12, sessions, today);
 
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
-        seedCohorts(starter.professional(), starter.parent(), today);
+        seedCohorts(starter.professional(), starter.parent(), jo, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today);
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
@@ -382,12 +395,21 @@ public class DemoDataLoader implements ApplicationRunner {
                 null, 2));
     }
 
-    private void seedCohorts(Course professional, Course parent, LocalDate today) {
-        cohorts.save(new Cohort(professional, "Cohort A · UK evening", today.plusDays(10), "Tuesdays 7:00 pm UK", 30,
-                "Pat Preedy", true));
-        cohorts.save(new Cohort(professional, "Cohort B · UK morning / AU evening", today.plusDays(24),
-                "Wednesdays 9:00 am UK", 30, "Laura Preedy-Maher", false));
-        cohorts.save(new Cohort(parent, "Cohort B · three weeks", today.plusDays(7), "Thursdays 7:30 pm UK", 50,
-                "Laura Preedy-Maher", true));
+    /**
+     * Three cohorts opening soon, and a parent cohort whose first session starts ten minutes after the demo
+     * loads, with Jo booked on it, so joining a live session can be tried straight away.
+     */
+    private void seedCohorts(Course professional, Course parent, AppUser jo, LocalDate today) {
+        live.schedule(cohorts.save(new Cohort(professional, "Cohort A · UK evening", today.plusDays(10),
+                LocalTime.of(19, 0), "Tuesdays 7:00 pm UK", 30, "Pat Preedy", true)));
+        live.schedule(cohorts.save(new Cohort(professional, "Cohort B · UK morning / AU evening", today.plusDays(24),
+                LocalTime.of(9, 0), "Wednesdays 9:00 am UK", 30, "Laura Preedy-Maher", false)));
+        live.schedule(cohorts.save(new Cohort(parent, "Cohort B · three weeks", today.plusDays(7), LocalTime.of(19, 30),
+                "Thursdays 7:30 pm UK", 50, "Laura Preedy-Maher", true)));
+        LocalDateTime soon = LocalDateTime.now(clock).plusMinutes(10).truncatedTo(ChronoUnit.MINUTES);
+        Cohort now = cohorts.save(new Cohort(parent, "Cohort A · starting now", soon.toLocalDate(),
+                soon.toLocalTime(), "Weekly at " + soon.toLocalTime() + " UK", 50, "Pat Preedy", false));
+        live.schedule(now);
+        enrolments.save(new Enrolment(now, jo));
     }
 }

@@ -44,20 +44,12 @@ public class Enrolment {
         this.enrolledAt = Instant.now();
     }
 
-    public void recordAttendance() {
-        if (sessionsAttended < cohort.getCourse().getLiveSessions()) {
-            sessionsAttended++;
-        }
-    }
-
-    /** Corrects a session marked by mistake. A certificate already issued stands, so it is refused then. */
-    public void undoAttendance() {
+    /** Takes the count from the session register. A certificate already issued stands, so it is refused then. */
+    public void attendanceChanged(int sessionsMarked) {
         if (certificateIssuedOn != null) {
             throw new IllegalStateException("The certificate has been issued, so attendance can no longer be changed");
         }
-        if (sessionsAttended > 0) {
-            sessionsAttended--;
-        }
+        this.sessionsAttended = sessionsMarked;
     }
 
     public void recordAssessment(boolean passed) {

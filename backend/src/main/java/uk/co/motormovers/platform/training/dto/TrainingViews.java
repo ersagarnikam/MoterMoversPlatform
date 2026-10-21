@@ -1,6 +1,8 @@
 package uk.co.motormovers.platform.training.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import uk.co.motormovers.platform.training.model.Cohort;
@@ -27,8 +29,32 @@ public final class TrainingViews {
     }
 
     /** A cohort as the team manages it: past ones too, with places booked rather than places left. */
-    public record AdminCohortView(Long id, String name, LocalDate startsOn, String timeSlot, int capacity,
-            int booked, String trainerName, boolean recordingAgreed) {
+    public record AdminCohortView(Long id, String name, LocalDate startsOn, LocalTime startTime, String timeSlot,
+            int capacity, int booked, String trainerName, boolean recordingAgreed, List<SessionSummary> sessions) {
+    }
+
+    public record SessionSummary(Long id, int number, Instant startsAt, int durationMinutes) {
+    }
+
+    /** A live session as someone who may join it sees it. {@code host} is true for the Motor Movers team. */
+    public record LiveSessionView(Long id, Long cohortId, String courseTitle, String cohortName, int number,
+            int of, Instant startsAt, int durationMinutes, String trainerName, boolean open, boolean host) {
+    }
+
+    /**
+     * Everything the browser needs to show the meeting. With {@code zoomConnected} false the other Zoom fields
+     * are null, and the page runs the session without video.
+     */
+    public record JoinView(LiveSessionView session, boolean zoomConnected, String sdkKey, String signature,
+            String meetingNumber, String passcode, String zak, String userName, String userEmail, String rules,
+            boolean recorded) {
+    }
+
+    public record RegisterRow(Long enrolmentId, String learnerName, String learnerEmail, boolean present,
+            int sessionsAttended, boolean certificateIssued) {
+    }
+
+    public record RegisterView(LiveSessionView session, List<RegisterRow> learners) {
     }
 
     public record AdminCourseView(Long id, CourseTrack track, String title, String description, int liveSessions,
@@ -51,14 +77,15 @@ public final class TrainingViews {
 
     public record EnrolmentView(Long id, Long cohortId, String courseTitle, CourseTrack track, String cohortName,
             LocalDate startsOn, String timeSlot, int sessionsAttended, int liveSessions, boolean assessmentPassed,
-            LocalDate certificateIssuedOn, LocalDate certificateExpiresOn, String learnerName, String learnerEmail) {
+            LocalDate certificateIssuedOn, LocalDate certificateExpiresOn, String learnerName, String learnerEmail,
+            List<Integer> attendedSessions) {
 
-        public static EnrolmentView of(Enrolment e) {
+        public static EnrolmentView of(Enrolment e, List<Integer> attendedSessions) {
             Cohort c = e.getCohort();
             return new EnrolmentView(e.getId(), c.getId(), c.getCourse().getTitle(), c.getCourse().getTrack(),
                     c.getName(), c.getStartsOn(), c.getTimeSlot(), e.getSessionsAttended(),
                     c.getCourse().getLiveSessions(), e.isAssessmentPassed(), e.getCertificateIssuedOn(),
-                    e.getCertificateExpiresOn(), e.getUser().getDisplayName(), e.getUser().getEmail());
+                    e.getCertificateExpiresOn(), e.getUser().getDisplayName(), e.getUser().getEmail(), attendedSessions);
         }
     }
 }

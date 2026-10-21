@@ -94,6 +94,29 @@ deploy/restore-test.sh /path/to/motormovers-YYYYMMDD.sql.gz   # e.g. one downloa
 It ends with "Restore test passed." and exits non-zero if the dump will not load. Tested 2026-10-21 against a
 dump of the demo data on PostgreSQL 17: schema V6, every table restored.
 
+## Live sessions on Zoom
+
+Live course sessions run as Zoom meetings shown inside the platform (Zoom's Meeting SDK). The team starts a
+session from **Live sessions**; learners booked on the cohort join from their Training page, from 15 minutes before
+the start, without a Zoom account. Without the keys below, sessions still run (register, rules) without video.
+
+In the Motor Movers Zoom account (a paid plan, since sessions are longer than 40 minutes), at
+[marketplace.zoom.us](https://marketplace.zoom.us) > Develop > Build App:
+
+1. **Server-to-Server OAuth app.** Note the Account ID, Client ID and Client Secret into `ZOOM_ACCOUNT_ID`,
+   `ZOOM_CLIENT_ID` and `ZOOM_CLIENT_SECRET`. Add the scopes for creating meetings (`meeting:write:meeting:admin`)
+   and reading a user's token (`user:read:token:admin`), then activate the app.
+2. **General app with the Meeting SDK turned on** (Features > Embed > Meeting SDK). Its Client ID and Client Secret
+   go in `ZOOM_SDK_KEY` and `ZOOM_SDK_SECRET`. Meetings stay in the Motor Movers account, so the app does not need
+   to be published.
+3. `ZOOM_HOST_EMAIL`: the licensed Zoom user who hosts every session (e.g. Pat's Zoom login).
+
+Restart the API (`up -d`). A session's Zoom meeting is created the first time someone starts or joins it, and
+recorded to Zoom's cloud when the cohort says sessions are recorded. Test with a session a few days away: the
+team can open it at any time. The live page alone allows Zoom's scripts and the camera and microphone
+(`frontend/nginx.conf`); if the browser console reports a blocked Zoom address there, add it to that policy and
+to `LIVE_CSP` in `frontend/vite.config.ts`.
+
 ## Everyday operations
 
 | Task | How |

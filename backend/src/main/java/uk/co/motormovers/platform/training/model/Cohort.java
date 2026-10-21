@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform.training.model;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,6 +27,9 @@ public class Cohort {
 
     private String timeSlot;
 
+    /** When each live session starts, in the region's time (UK time for a UK deployment). */
+    private LocalTime startTime;
+
     private int capacity;
 
     private String trainerName;
@@ -35,21 +39,23 @@ public class Cohort {
     protected Cohort() {
     }
 
-    public Cohort(Course course, String name, LocalDate startsOn, String timeSlot, int capacity, String trainerName,
-            boolean recordingAgreed) {
+    public Cohort(Course course, String name, LocalDate startsOn, LocalTime startTime, String timeSlot, int capacity,
+            String trainerName, boolean recordingAgreed) {
         this.course = course;
         this.name = name;
         this.startsOn = startsOn;
+        this.startTime = startTime;
         this.timeSlot = timeSlot;
         this.capacity = capacity;
         this.trainerName = trainerName;
         this.recordingAgreed = recordingAgreed;
     }
 
-    public void revise(String name, LocalDate startsOn, String timeSlot, int capacity, String trainerName,
-            boolean recordingAgreed) {
+    public void revise(String name, LocalDate startsOn, LocalTime startTime, String timeSlot, int capacity,
+            String trainerName, boolean recordingAgreed) {
         this.name = name;
         this.startsOn = startsOn;
+        this.startTime = startTime;
         this.timeSlot = timeSlot;
         this.capacity = capacity;
         this.trainerName = trainerName;
@@ -70,6 +76,10 @@ public class Cohort {
 
     public LocalDate getStartsOn() {
         return startsOn;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
     }
 
     public String getTimeSlot() {

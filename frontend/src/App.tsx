@@ -13,6 +13,8 @@ import TrustDashboardPage from './pages/TrustDashboardPage'
 import TrainingPage from './pages/TrainingPage'
 import CertificatePage from './pages/CertificatePage'
 import MyPaymentsPage from './pages/MyPaymentsPage'
+import LiveRoomPage from './pages/LiveRoomPage'
+import LiveSessionsPage from './pages/LiveSessionsPage'
 import ResourcesPage from './pages/ResourcesPage'
 import SchoolSetupPage from './pages/SchoolSetupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -87,6 +89,8 @@ export default function App() {
         <Route path="/training" element={<TrainingPage />} />
         <Route path="/training/certificate/:enrolmentId" element={<CertificatePage />} />
         <Route path="/payments" element={<MyPaymentsPage />} />
+        <Route path="/live" element={<LiveSessionsPage />} />
+        <Route path="/live/:sessionId" element={<LiveRoomPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/school/setup" element={<SchoolSetupPage />} />
         <Route path="/admin/schools/:schoolId/setup" element={<SchoolSetupPage />} />

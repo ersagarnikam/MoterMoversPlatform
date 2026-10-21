@@ -48,6 +48,7 @@ password `password`:
 | `practitioner@example.test` | Practitioner | Practitioner course |
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
 | `admin@motormovers.test` | Motor Movers team | Content approval |
+| `pat@motormovers.test` | Motor Movers team (Pat, trainer) | Content approval; Live sessions to start a course session |
 
 Names, schools and figures in the demo data are examples only.
 
@@ -147,9 +148,12 @@ Access rules are enforced in the API (`security/service/AccessPolicy.java`), not
 ### Training
 The one-hour staff induction comes first (see *Induction gate* above), done online at the teacher's own
 pace. Then the live courses: professional track (4 × 90 min, certificate renewed yearly) and parent
-track (3 × 60 min, no certificate). Cohorts have UK-evening and UK-morning / AU-evening slots. On the Courses page the team marks attendance
-and the assessment for each booking; the certificate is issued automatically when both are complete, and the
-learner can print it or save it as a PDF from the Training page.
+track (3 × 60 min, no certificate). Cohorts have UK-evening and UK-morning / AU-evening slots. Each cohort has a start time and dated
+weekly sessions. **Live sessions run on Zoom inside the platform**: the team starts one from Live sessions, with
+the register beside the meeting, and learners booked on the cohort press Join on their Training page from 15
+minutes before the start, with no Zoom account (setup: `deploy/RUNBOOK.md`, Live sessions on Zoom). Ticks in the
+register, or on the Courses page, count as attendance; with the assessment passed the certificate is issued
+automatically, and the learner can print it or save it as a PDF from the Training page.
 
 ### Safety built in
 | Rule | Where |
