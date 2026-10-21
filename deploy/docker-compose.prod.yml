@@ -98,6 +98,39 @@ services:
           sleep 30
         done
 
+  # Copies the nightly dumps off the server: once at start, so a wrong setting shows straight away, then
+  # daily at 03:00. Off unless started with the offsite profile; the remote is set in .env (see RUNBOOK).
+  offsite:
+    image: rclone/rclone:1.68.2
+    restart: unless-stopped
+    profiles: [offsite]
+    environment:
+      RCLONE_CONFIG_OFFSITE_TYPE: ${BACKUP_OFFSITE_TYPE:-s3}
+      RCLONE_CONFIG_OFFSITE_PROVIDER: ${BACKUP_OFFSITE_PROVIDER:-Other}
+      RCLONE_CONFIG_OFFSITE_ENDPOINT: ${BACKUP_OFFSITE_ENDPOINT:-}
+      RCLONE_CONFIG_OFFSITE_REGION: ${BACKUP_OFFSITE_REGION:-}
+      RCLONE_CONFIG_OFFSITE_ACCESS_KEY_ID: ${BACKUP_OFFSITE_ACCESS_KEY_ID:-}
+      RCLONE_CONFIG_OFFSITE_SECRET_ACCESS_KEY: ${BACKUP_OFFSITE_SECRET_ACCESS_KEY:-}
+      BACKUP_OFFSITE_PATH: ${BACKUP_OFFSITE_PATH:-}
+    volumes:
+      - ./backups:/backups:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        copy() {
+          if rclone copy /backups "offsite:$$BACKUP_OFFSITE_PATH" --include "motormovers-*.sql.gz" \
+              --retries 2 --low-level-retries 3 --contimeout 20s --timeout 2m -v; then
+            echo "offsite copy ok $$(date +%F)"
+          else
+            echo "offsite copy FAILED $$(date +%F)"
+          fi
+        }
+        copy
+        while true; do
+          if [ "$$(date +%H%M)" = "0300" ]; then copy; sleep 60; fi
+          sleep 30
+        done
+
 volumes:
   pgdata:
   caddy_data:

@@ -53,12 +53,20 @@ Rollback: start the previous version's images with `APP_VERSION=<previous>` and 
 ## Backups
 
 The `backup` service writes `deploy/backups/motormovers-YYYYMMDD.sql.gz` at 02:00 UTC every night and keeps
-14 days. Those copies are on the same server, so also copy them somewhere else every day, e.g.:
+14 days. Those copies are on the same server, so also copy them off it.
+
+**Off-server copies.** Create a bucket with any S3-compatible storage in the UK, fill in the `BACKUP_OFFSITE_*`
+settings in `deploy/.env`, and start the `offsite` service:
 
 ```bash
-# crontab on the server, 03:00
-0 3 * * * rclone copy /path/to/motor-movers/deploy/backups remote:motor-movers-backups
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env --profile offsite up -d
+docker compose -f deploy/docker-compose.prod.yml logs offsite   # expect "offsite copy ok"
 ```
+
+It copies once when it starts, so a wrong setting shows straight away ("offsite copy FAILED" with the reason
+above it), then every night at 03:00 UTC. It only adds files, so the bucket keeps dumps the server has already
+deleted: set a lifecycle rule on the bucket (e.g. delete after 90 days) to keep storage in check. Always add
+`--profile offsite` when running `up` so the service keeps running after updates.
 
 Manual backup now:
 
@@ -75,7 +83,16 @@ gunzip -c motormovers-YYYYMMDD.sql.gz | docker compose -f deploy/docker-compose.
 docker compose -f deploy/docker-compose.prod.yml start api
 ```
 
-Test a restore on a spare machine at least once a term.
+**Test a restore** after the first night in production and then at least once a term. The script loads a backup
+into a throwaway database (never the live one), checks the schema version and row counts, and removes it:
+
+```bash
+deploy/restore-test.sh                                  # the newest dump in deploy/backups
+deploy/restore-test.sh /path/to/motormovers-YYYYMMDD.sql.gz   # e.g. one downloaded from the bucket
+```
+
+It ends with "Restore test passed." and exits non-zero if the dump will not load. Tested 2026-10-21 against a
+dump of the demo data on PostgreSQL 17: schema V6, every table restored.
 
 ## Everyday operations
 
