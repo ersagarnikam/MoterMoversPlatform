@@ -106,7 +106,7 @@ Built so far:
   as host), learners the meeting's `join_url` (stored, migration V8). With a separate Meeting SDK app's keys (a General
   app; a Server-to-Server app's keys cannot sign the SDK) it shows inside the page instead. Keys are `ZOOM_*` (RUNBOOK,
   Live sessions on Zoom); without them sessions run without video. Tested for real 2026-10-22 with the owner's
-  testApp: meetings created, host start link issued, parent and teacher join links accepted by Zoom. The SDK and its six global libraries load from Zoom's CDN,
+  Zoom account in both modes: in the portal (host start) and opening in Zoom (parent and teacher join links). The SDK and its six global libraries load from Zoom's CDN,
   pinned to 6.5.0 with SRI hashes (`src/live.ts`); only `/live/<id>` has the looser CSP and camera/microphone
   permission (`vite.config.ts` and `frontend/nginx.conf`, kept the same). Reach the room with a full page load
   (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. The parent app does
@@ -178,8 +178,12 @@ Not started unless noted. Confirm priorities with the owner.
    holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
    Storage, screens and suggested defaults: `docs/assessment-design.md`. Screens already say "Module" for a
    unit (the API field is still `unit`).
-11. Zoom live sessions: working with the owner's Server-to-Server app only (testApp; sessions open in Zoom). Keys
-   in `backend/.env` (host sagarnikam@ihau.au for testing); `backend/run-local.ps1` says which mode is on. For go-live:
-   the same `ZOOM_*` in `deploy/.env`, with a licensed host. Still to do: a full call with real people (host and two
-   learners on other devices), recording if a cohort records, the parent app's Join (open the join link), and
-   optional reminder emails. A General app with the Meeting SDK would put the meeting back inside the page.
+11. Zoom live sessions: **working inside the portal** (tested 2026-10-22 with the owner's Zoom account). Two apps in
+   that account: testApp (Server-to-Server OAuth: creates meetings, host token; scopes `meeting:write:meeting:admin`,
+   `user:read:token:admin`) and "General app 239" (Meeting SDK on, under Embed; its Client ID and Secret are
+   `ZOOM_SDK_KEY`/`ZOOM_SDK_SECRET`). Keys in `backend/.env` only; host sagarnikam@ihau.au for testing. Pat started a
+   session as host and the meeting showed in `/live/:id` beside the rules and register. Without the General app's keys
+   it falls back to opening Zoom in a new tab (also tested: parent and teacher join links accepted). Still to do: the
+   video shows at Zoom's small default size (a `customize.video.viewSizes` attempt did not take effect; it is in
+   `git stash`, unverified); a call with real people on other devices; recording; the parent app's Join; for
+   go-live the same keys in `deploy/.env` and the General app's production credentials.
