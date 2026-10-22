@@ -36,6 +36,8 @@ public class CohortSession {
 
     private String zoomPasscode;
 
+    private String zoomJoinUrl;
+
     protected CohortSession() {
     }
 
@@ -51,9 +53,10 @@ public class CohortSession {
         this.durationMinutes = durationMinutes;
     }
 
-    public void attachMeeting(String meetingId, String passcode) {
+    public void attachMeeting(String meetingId, String passcode, String joinUrl) {
         this.zoomMeetingId = meetingId;
         this.zoomPasscode = passcode;
+        this.zoomJoinUrl = joinUrl;
     }
 
     public Instant endsAt() {
@@ -91,6 +94,10 @@ public class CohortSession {
 
     public String getZoomMeetingId() {
         return zoomMeetingId;
+    }
+
+    public String getZoomJoinUrl() {
+        return zoomJoinUrl;
     }
 
     public String getZoomPasscode() {

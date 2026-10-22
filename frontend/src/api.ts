@@ -363,10 +363,15 @@ export interface LiveSession {
   host: boolean
 }
 
-/** What the room needs. Without Zoom connected, the Zoom fields are null and the session runs without video. */
+/**
+ * What the room needs. Without Zoom connected, the Zoom fields are null and the session runs without video. With
+ * embedded, the meeting shows in the page (Meeting SDK); otherwise zoomUrl opens it in Zoom.
+ */
 export interface LiveJoin {
   session: LiveSession
   zoomConnected: boolean
+  embedded: boolean
+  zoomUrl: string | null
   sdkKey: string | null
   signature: string | null
   meetingNumber: string | null

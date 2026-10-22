@@ -25,6 +25,18 @@ declare global {
 
 let sdk: Promise<NonNullable<Window['ZoomMtgEmbedded']>> | null = null
 
+/** One join request per session per page load (React runs effects twice in development). */
+const joining = new Map<number, Promise<LiveJoin>>()
+function joinOnce(sessionId: number) {
+  let request = joining.get(sessionId)
+  if (!request) {
+    request = api.joinLive(sessionId)
+    joining.set(sessionId, request)
+    request.catch(() => joining.delete(sessionId))
+  }
+  return request
+}
+
 function loadScript(src: string, integrity: string) {
   return new Promise<void>((resolve, reject) => {
     const script = document.createElement('script')
@@ -64,14 +76,13 @@ export default function LiveRoomPage() {
   const client = useRef<ZoomEmbeddedClient | null>(null)
 
   useEffect(() => {
-    api
-      .joinLive(Number(sessionId))
+    joinOnce(Number(sessionId))
       .then(setJoin)
       .catch((e) => setError(e.message))
   }, [sessionId])
 
   useEffect(() => {
-    if (!join?.zoomConnected || !root.current || client.current) return
+    if (!join?.embedded || !root.current || client.current) return
     const element = root.current
     loadZoom()
       .then(async (Zoom) => {
@@ -136,7 +147,25 @@ export default function LiveRoomPage() {
 
       <div className="live-room">
         <section className="card live-video" aria-label="Zoom meeting">
-          {join.zoomConnected ? (
+          {join.zoomConnected && !join.embedded ? (
+            <div className="zoom-offline">
+              <strong>This session runs in Zoom</strong>
+              <p className="muted">
+                {s.host
+                  ? 'Start the meeting in Zoom: it opens in a new tab, already signed in as the host. Keep this page open for the register.'
+                  : 'Join the meeting in Zoom: it opens in a new tab, in the Zoom app or your browser. You do not need a Zoom account.'}
+              </p>
+              <p>
+                <a className="btn btn-primary" href={join.zoomUrl ?? undefined} target="_blank" rel="noopener noreferrer">
+                  {s.host ? 'Start the meeting in Zoom' : 'Join the meeting in Zoom'}
+                </a>
+              </p>
+              <p className="fine">
+                Meeting ID {join.meetingNumber}
+                {join.passcode ? ` · passcode ${join.passcode}` : ''}
+              </p>
+            </div>
+          ) : join.zoomConnected ? (
             <>
               {zoom === 'loading' && <p className="muted">Connecting to Zoom…</p>}
               {zoom === 'failed' && (

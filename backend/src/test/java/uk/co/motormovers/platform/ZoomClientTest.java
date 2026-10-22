@@ -49,7 +49,8 @@ class ZoomClientTest {
                         org.hamcrest.Matchers.containsString("\"start_time\":\"2026-11-03T19:00:00Z\""),
                         org.hamcrest.Matchers.containsString("\"duration\":90"),
                         org.hamcrest.Matchers.containsString("\"auto_recording\":\"cloud\""))))
-                .andRespond(withSuccess("{\"id\":81234567890,\"password\":\"abc123\"}", MediaType.APPLICATION_JSON));
+                .andRespond(withSuccess("{\"id\":81234567890,\"password\":\"abc123\","
+                        + "\"join_url\":\"https://zoom.us/j/81234567890?pwd=enc\"}", MediaType.APPLICATION_JSON));
         zoom.expect(requestTo("https://api.zoom.us/v2/users/pat%40motormovers.test/token?type=zak"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("Authorization", "Bearer t1"))
@@ -58,8 +59,40 @@ class ZoomClientTest {
         ZoomApiClient client = new ZoomApiClient(builder, KEYS, Clock.systemUTC());
         ZoomClient.Meeting meeting = client.createMeeting("pat@motormovers.test", "Parent course · session 1",
                 Instant.parse("2026-11-03T19:00:00Z"), 90, ZoneId.of("Europe/London"), true);
-        assertThat(meeting).isEqualTo(new ZoomClient.Meeting("81234567890", "abc123"));
+        assertThat(meeting).isEqualTo(
+                new ZoomClient.Meeting("81234567890", "abc123", "https://zoom.us/j/81234567890?pwd=enc"));
         assertThat(client.hostToken("pat@motormovers.test")).isEqualTo("zak-1");
+        zoom.verify();
+    }
+
+    @Test
+    void aRefusalSaysWhyAndTheNextCallGetsAFreshToken() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer zoom = MockRestServiceServer.bindTo(builder).build();
+        zoom.expect(requestTo(org.hamcrest.Matchers.startsWith("https://zoom.us/oauth/token")))
+                .andRespond(withSuccess("{\"access_token\":\"old\",\"expires_in\":3600}", MediaType.APPLICATION_JSON));
+        zoom.expect(requestTo("https://api.zoom.us/v2/users/pat%40motormovers.test/meetings"))
+                .andRespond(org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"code\":4711,\"message\":\"Invalid access token, does not contain scopes:"
+                                + "[meeting:write:meeting, meeting:write:meeting:admin].\"}"));
+        // Once the scopes are fixed in Zoom, a new token carries them.
+        zoom.expect(requestTo(org.hamcrest.Matchers.startsWith("https://zoom.us/oauth/token")))
+                .andRespond(withSuccess("{\"access_token\":\"new\",\"expires_in\":3600}", MediaType.APPLICATION_JSON));
+        zoom.expect(requestTo("https://api.zoom.us/v2/users/pat%40motormovers.test/meetings"))
+                .andExpect(header("Authorization", "Bearer new"))
+                .andRespond(withSuccess("{\"id\":81234567890,\"password\":\"abc\"}", MediaType.APPLICATION_JSON));
+
+        ZoomApiClient client = new ZoomApiClient(builder, KEYS, Clock.systemUTC());
+        Instant start = Instant.parse("2026-11-03T19:00:00Z");
+        ZoneId london = ZoneId.of("Europe/London");
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> client.createMeeting("pat@motormovers.test", "t", start, 60, london, false))
+                .isInstanceOf(ZoomApiClient.ZoomException.class)
+                .hasMessageContaining("Zoom refused to create the meeting")
+                .hasMessageContaining("does not contain scopes");
+        assertThat(client.createMeeting("pat@motormovers.test", "t", start, 60, london, false).id())
+                .isEqualTo("81234567890");
         zoom.verify();
     }
 

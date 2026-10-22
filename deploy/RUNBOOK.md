@@ -106,9 +106,10 @@ In the Motor Movers Zoom account (a paid plan, since sessions are longer than 40
 1. **Server-to-Server OAuth app.** Note the Account ID, Client ID and Client Secret into `ZOOM_ACCOUNT_ID`,
    `ZOOM_CLIENT_ID` and `ZOOM_CLIENT_SECRET`. Add the scopes for creating meetings (`meeting:write:meeting:admin`)
    and reading a user's token (`user:read:token:admin`), then activate the app.
-2. **General app with the Meeting SDK turned on** (Features > Embed > Meeting SDK). Its Client ID and Client Secret
-   go in `ZOOM_SDK_KEY` and `ZOOM_SDK_SECRET`. Meetings stay in the Motor Movers account, so the app does not need
-   to be published.
+2. Optional: **General app with the Meeting SDK turned on** (Features > Embed > Meeting SDK), to show the meeting
+   inside the platform. Its own Client ID and Client Secret go in `ZOOM_SDK_KEY` and `ZOOM_SDK_SECRET` (not the
+   Server-to-Server app's: Zoom rejects those for the SDK). Without it, the session page opens the meeting in Zoom
+   in a new tab: the host signed in as host, learners with the meeting's join link. The app need not be published.
 3. `ZOOM_HOST_EMAIL`: the licensed Zoom user who hosts every session (e.g. Pat's Zoom login).
 
 Restart the API (`up -d`). A session's Zoom meeting is created the first time someone starts or joins it, and

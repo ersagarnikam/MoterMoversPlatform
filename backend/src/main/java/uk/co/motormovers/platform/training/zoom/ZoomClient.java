@@ -6,7 +6,8 @@ import java.time.ZoneId;
 /** What the platform needs from Zoom's API. */
 public interface ZoomClient {
 
-    record Meeting(String id, String passcode) {
+    /** {@code joinUrl} is the link participants open to join in Zoom. */
+    record Meeting(String id, String passcode, String joinUrl) {
     }
 
     /** Schedules a meeting hosted by {@code hostUser} (a Zoom user's email or id). */

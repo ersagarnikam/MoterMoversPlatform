@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V7`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V8`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,7 +46,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 68 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 70 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
@@ -64,6 +64,9 @@ CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on e
 - `mvn` is not on PATH: use `backend\mvnw.cmd` (wrapper, Maven 3.9.16) from PowerShell, with `JAVA_HOME` set as
   above. Ports 8080 and 5173 may be taken by another project of the owner's: then run the API with
   `--server.port=8090` and the browser tests with `API_URL=http://localhost:8090`.
+- Local secrets (Zoom keys, `JAVA_HOME`) live in `backend/.env`, which git ignores; never read or print it.
+  `powershell -File backend\run-local.ps1` loads it and starts the API with demo data (it says which Zoom keys are
+  set, not their values). Tests do not read it.
 - Docker Desktop is installed but may need starting (`C:\Program Files\Docker\Docker\Docker Desktop.exe`).
 - To try the production stack locally: write a throwaway env file with `APP_DOMAIN=localhost` (Caddy then
   issues a local certificate) and any `SPRING_MAIL_HOST`, then
@@ -98,12 +101,16 @@ Built so far:
   pat@motormovers.test) starts a session at `/live` and the room `/live/:id` shows the Zoom meeting (Meeting SDK
   component view), the rules and the register; learners booked on the cohort join from their Training page from
   15 minutes before the start, without a Zoom account. The API creates each Zoom meeting on first use
-  (Server-to-Server OAuth), signs the SDK JWT and passes the host ZAK; keys are `ZOOM_*` (RUNBOOK, Live sessions on
-  Zoom), and without them sessions run without video. The SDK and its six global libraries load from Zoom's CDN,
+  (Server-to-Server OAuth). Two modes (`ZoomProperties`): with only the Server-to-Server app (the owner's choice,
+  2026-10-22) the meeting **opens in Zoom** in a new tab: the host gets `https://zoom.us/s/<id>?zak=<ZAK>` (signed in
+  as host), learners the meeting's `join_url` (stored, migration V8). With a separate Meeting SDK app's keys (a General
+  app; a Server-to-Server app's keys cannot sign the SDK) it shows inside the page instead. Keys are `ZOOM_*` (RUNBOOK,
+  Live sessions on Zoom); without them sessions run without video. Tested for real 2026-10-22 with the owner's
+  testApp: meetings created, host start link issued, parent and teacher join links accepted by Zoom. The SDK and its six global libraries load from Zoom's CDN,
   pinned to 6.5.0 with SRI hashes (`src/live.ts`); only `/live/<id>` has the looser CSP and camera/microphone
   permission (`vite.config.ts` and `frontend/nginx.conf`, kept the same). Reach the room with a full page load
-  (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. Not yet tested with
-  real Zoom keys; the parent app does not join live sessions. Demo: a parent cohort starts ten minutes after start-up
+  (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. The parent app does
+  not join live sessions. Demo: a parent cohort starts ten minutes after start-up
   with Jo booked.
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
   and cohorts (`/admin/courses`; the wording check runs on save; each cohort has a bookings panel to mark
@@ -171,7 +178,8 @@ Not started unless noted. Confirm priorities with the owner.
    holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
    Storage, screens and suggested defaults: `docs/assessment-design.md`. Screens already say "Module" for a
    unit (the API field is still `unit`).
-11. Zoom live sessions: the owner creates the two Zoom apps and sets `ZOOM_*`, then one real test call (host start,
-   a learner joining on another device, recording if the cohort records). Tighten the live page CSP from what the
-   browser actually loads. Parent app: a Join button that opens the web room. Optional: email learners a reminder
-   before each session.
+11. Zoom live sessions: working with the owner's Server-to-Server app only (testApp; sessions open in Zoom). Keys
+   in `backend/.env` (host sagarnikam@ihau.au for testing); `backend/run-local.ps1` says which mode is on. For go-live:
+   the same `ZOOM_*` in `deploy/.env`, with a licensed host. Still to do: a full call with real people (host and two
+   learners on other devices), recording if a cohort records, the parent app's Join (open the join link), and
+   optional reminder emails. A General app with the Meeting SDK would put the meeting back inside the page.

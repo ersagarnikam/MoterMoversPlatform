@@ -117,21 +117,32 @@ public class LiveSessionService {
         TrainingViews.LiveSessionView view = view(session, me, now);
         Cohort cohort = session.getCohort();
         if (!zoomProperties.configured()) {
-            return new TrainingViews.JoinView(view, false, null, null, null, null, null, me.displayName(),
+            return new TrainingViews.JoinView(view, false, false, null, null, null, null, null, null, me.displayName(),
                     me.email(), TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
         }
-        CohortSession locked = sessions.findForUpdate(sessionId).orElseThrow();
         String hostUser = hostUser(me);
+        // The host's token first, before locking the session: if Zoom refuses it, no meeting is created for nothing.
+        String zak = host ? zoom.hostToken(hostUser) : null;
+        CohortSession locked = sessions.findForUpdate(sessionId).orElseThrow();
         if (locked.getZoomMeetingId() == null) {
             ZoomClient.Meeting meeting = zoom.createMeeting(hostUser,
                     cohort.getCourse().getTitle() + " · " + cohort.getName() + " · session " + locked.getNumber(),
                     locked.getStartsAt(), locked.getDurationMinutes(), clock.getZone(), cohort.isRecordingAgreed());
-            locked.attachMeeting(meeting.id(), meeting.passcode());
+            locked.attachMeeting(meeting.id(), meeting.passcode(), meeting.joinUrl());
         }
-        String signature = ZoomSignature.sign(zoomProperties.sdkKey(), zoomProperties.sdkSecret(),
-                locked.getZoomMeetingId(), host ? ZoomSignature.HOST : ZoomSignature.PARTICIPANT, now);
-        return new TrainingViews.JoinView(view, true, zoomProperties.sdkKey(), signature, locked.getZoomMeetingId(),
-                locked.getZoomPasscode(), host ? zoom.hostToken(hostUser) : null, me.displayName(), me.email(),
+        String meetingId = locked.getZoomMeetingId();
+        if (!zoomProperties.embedded()) {
+            // No Meeting SDK app: the session opens in Zoom. The host starts it with their token, signed in as
+            // the host without a Zoom password; learners use the meeting's join link.
+            String url = host ? "https://zoom.us/s/" + meetingId + "?zak=" + zak
+                    : locked.getZoomJoinUrl() != null ? locked.getZoomJoinUrl() : "https://zoom.us/j/" + meetingId;
+            return new TrainingViews.JoinView(view, true, false, url, null, null, meetingId, locked.getZoomPasscode(),
+                    null, me.displayName(), me.email(), TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
+        }
+        String signature = ZoomSignature.sign(zoomProperties.sdkKey(), zoomProperties.sdkSecret(), meetingId,
+                host ? ZoomSignature.HOST : ZoomSignature.PARTICIPANT, now);
+        return new TrainingViews.JoinView(view, true, true, null, zoomProperties.sdkKey(), signature, meetingId,
+                locked.getZoomPasscode(), zak, me.displayName(), me.email(),
                 TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
     }
 

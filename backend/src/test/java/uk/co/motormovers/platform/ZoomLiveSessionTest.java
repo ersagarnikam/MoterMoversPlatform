@@ -29,7 +29,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import uk.co.motormovers.platform.training.zoom.ZoomClient;
 
-/** With the Zoom keys set: the meeting is created once, the team starts it as host, learners join it. */
+/** With both Zoom apps set: the meeting is created once and shows in the page; the team hosts, learners join. */
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:zoomtest;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
     "platform.zoom.account-id=acc", "platform.zoom.client-id=cid", "platform.zoom.client-secret=csecret",
@@ -48,7 +48,7 @@ class ZoomLiveSessionTest {
     @Test
     void theMeetingIsCreatedOnceAndTheTeamStartsItAsHost() throws Exception {
         when(zoom.createMeeting(anyString(), anyString(), any(), anyInt(), any(), anyBoolean()))
-                .thenReturn(new ZoomClient.Meeting("81234567890", "pass1"));
+                .thenReturn(new ZoomClient.Meeting("81234567890", "pass1", "https://zoom.us/j/81234567890?pwd=x"));
         when(zoom.hostToken("host@motormovers.test")).thenReturn("zak-token");
 
         String parent = login("parent@example.test");
@@ -56,6 +56,8 @@ class ZoomLiveSessionTest {
 
         String asHost = join(login("pat@motormovers.test"), session);
         assertThat((Boolean) JsonPath.read(asHost, "$.zoomConnected")).isTrue();
+        // A separate Meeting SDK app is set, so the meeting shows inside the page.
+        assertThat((Boolean) JsonPath.read(asHost, "$.embedded")).isTrue();
         assertThat((String) JsonPath.read(asHost, "$.meetingNumber")).isEqualTo("81234567890");
         assertThat((String) JsonPath.read(asHost, "$.passcode")).isEqualTo("pass1");
         assertThat((String) JsonPath.read(asHost, "$.zak")).isEqualTo("zak-token");

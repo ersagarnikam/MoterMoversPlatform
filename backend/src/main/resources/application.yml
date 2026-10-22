@@ -57,7 +57,8 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:h2:mem:motormovers;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    # LOCK_TIMEOUT: wait for a row lock (e.g. a live session's meeting being created) as PostgreSQL does.
+    url: jdbc:h2:mem:motormovers;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;LOCK_TIMEOUT=10000
     username: sa
     password:
   h2:

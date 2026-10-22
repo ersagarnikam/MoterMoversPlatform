@@ -42,10 +42,13 @@ public final class TrainingViews {
     }
 
     /**
-     * Everything the browser needs to show the meeting. With {@code zoomConnected} false the other Zoom fields
-     * are null, and the page runs the session without video.
+     * Everything the browser needs for the meeting. With {@code zoomConnected} false the Zoom fields are null and
+     * the page runs the session without video. With {@code embedded} the meeting shows inside the page (Meeting SDK:
+     * sdkKey, signature, zak); otherwise {@code zoomUrl} opens it in Zoom (for the host, a start link that signs
+     * them in as host).
      */
-    public record JoinView(LiveSessionView session, boolean zoomConnected, String sdkKey, String signature,
+    public record JoinView(LiveSessionView session, boolean zoomConnected, boolean embedded, String zoomUrl,
+            String sdkKey, String signature,
             String meetingNumber, String passcode, String zak, String userName, String userEmail, String rules,
             boolean recorded) {
     }
