@@ -200,16 +200,31 @@ export default function LiveRoomPage() {
   )
 }
 
-/** Tick who is here. Each tick counts towards the learner's attendance and certificate. */
+const clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+/**
+ * Who has joined, and the register. Joining is recorded when a booked learner opens the session here; it shows
+ * they joined, not how long they stayed, so the host still confirms attendance by ticking. Refreshes every 15
+ * seconds while the page is open, so new arrivals appear without reloading.
+ */
 function Register({ sessionId }: { sessionId: number }) {
   const [register, setRegister] = useState<LiveRegister | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    api
-      .liveRegister(sessionId)
-      .then(setRegister)
-      .catch((e) => setError(e.message))
+    let stopped = false
+    const load = () =>
+      api
+        .liveRegister(sessionId)
+        .then((r) => !stopped && setRegister(r))
+        .catch((e) => !stopped && setError(e.message))
+    load()
+    const timer = setInterval(load, 15_000)
+    return () => {
+      stopped = true
+      clearInterval(timer)
+    }
   }, [sessionId])
 
   async function mark(enrolmentId: number, present: boolean) {
@@ -229,6 +244,22 @@ function Register({ sessionId }: { sessionId: number }) {
     }
   }
 
+  async function tickJoined() {
+    setError(null)
+    setBusy(true)
+    try {
+      setRegister(await api.markJoinedPresent(sessionId))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const learners = register?.learners ?? []
+  const joined = learners.filter((l) => l.joinedAt)
+  const toTick = joined.filter((l) => !l.present && !l.certificateIssued)
+
   return (
     <section className="card">
       <h3>Register</h3>
@@ -239,25 +270,44 @@ function Register({ sessionId }: { sessionId: number }) {
       )}
       {!register ? (
         <p className="muted">Loading…</p>
-      ) : register.learners.length === 0 ? (
+      ) : learners.length === 0 ? (
         <p className="muted">No one has booked this cohort.</p>
       ) : (
-        <ul className="register">
-          {register.learners.map((l) => (
-            <li key={l.enrolmentId}>
-              <label className="toggle">
-                <input
-                  type="checkbox"
-                  checked={l.present}
-                  disabled={l.certificateIssued}
-                  onChange={(e) => mark(l.enrolmentId, e.target.checked)}
-                />{' '}
-                {l.learnerName}
-              </label>
-              <span className="muted">{l.sessionsAttended} attended</span>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="joined-count" aria-live="polite">
+            <strong>
+              Joined: {joined.length} of {learners.length}
+            </strong>{' '}
+            <span className="muted">booked</span>
+          </p>
+          <ul className="register">
+            {learners.map((l) => (
+              <li key={l.enrolmentId}>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={l.present}
+                    disabled={l.certificateIssued}
+                    onChange={(e) => mark(l.enrolmentId, e.target.checked)}
+                  />{' '}
+                  {l.learnerName}
+                </label>
+                <span className={l.joinedAt ? 'joined' : 'muted'}>
+                  {l.joinedAt ? `joined ${clock.format(new Date(l.joinedAt))}` : 'not joined yet'}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {toTick.length > 0 && (
+            <button className="btn" disabled={busy} onClick={tickJoined}>
+              Tick everyone who joined ({toTick.length})
+            </button>
+          )}
+          <p className="fine">
+            Ticks count towards attendance and the certificate. Joined means they opened the session here, so check
+            they stayed before ticking.
+          </p>
+        </>
       )}
     </section>
   )

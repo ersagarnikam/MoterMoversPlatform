@@ -40,6 +40,11 @@ public class LiveSessionController {
         return live.register(sessionId);
     }
 
+    @PostMapping("/api/admin/live/{sessionId}/register/mark-joined")
+    public TrainingViews.RegisterView markJoinedPresent(@PathVariable Long sessionId) {
+        return live.markJoinedPresent(sessionId);
+    }
+
     @PutMapping("/api/admin/live/{sessionId}/register/{enrolmentId}")
     public TrainingViews.EnrolmentView mark(@PathVariable Long sessionId, @PathVariable Long enrolmentId,
             @RequestBody Presence request) {

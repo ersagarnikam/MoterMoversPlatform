@@ -126,6 +126,35 @@ class LiveSessionTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void theRegisterShowsWhoJoinedAndTicksThemAllInOneGo() throws Exception {
+        String parent = login("parent@example.test");
+        String pat = login("pat@motormovers.test");
+        List<Integer> now = JsonPath.read(fetch(pat, "/api/training/live"),
+                "$[?(@.cohortName == 'Cohort A · starting now' && @.number == 1)].id");
+        String register = "/api/admin/live/" + now.getFirst() + "/register";
+
+        mvc.perform(post("/api/training/live/" + now.getFirst() + "/join").header("Authorization", bearer(parent)))
+                .andExpect(status().isOk());
+        String afterJoin = fetch(pat, register);
+        String joinedAt = ((List<String>) JsonPath.read(afterJoin,
+                "$.learners[?(@.learnerName == 'Jo Bennett')].joinedAt")).getFirst();
+        assertThat(joinedAt).isNotBlank();
+
+        // Opening the session again keeps the first time and updates the latest.
+        mvc.perform(post("/api/training/live/" + now.getFirst() + "/join").header("Authorization", bearer(parent)));
+        String again = fetch(pat, register);
+        assertThat((List<String>) JsonPath.read(again, "$.learners[?(@.learnerName == 'Jo Bennett')].joinedAt"))
+                .containsExactly(joinedAt);
+
+        // Ticks everyone who joined; the register is the attendance that counts.
+        mvc.perform(post(register + "/mark-joined").header("Authorization", bearer(pat)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.learners[?(@.learnerName == 'Jo Bennett')].present").value(true));
+        mvc.perform(post(register + "/mark-joined").header("Authorization", bearer(parent)))
+                .andExpect(status().isForbidden());
+    }
+
     private String cohort(LocalDate startsOn, String time) {
         return "{\"name\":\"Dated cohort\",\"startsOn\":\"" + startsOn + "\",\"startTime\":\"" + time + "\","
                 + "\"timeSlot\":\"Weekly\",\"capacity\":10,\"trainerName\":\"Pat Preedy\",\"recordingAgreed\":false}";

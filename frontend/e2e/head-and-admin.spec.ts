@@ -154,7 +154,9 @@ test('Pat starts a live session, keeps the register, and a parent joins it', asy
   const jo = page.getByLabel('Jo Bennett')
   await jo.click()
   await expect(jo).toBeChecked()
-  await expect(page.locator('.register')).toContainText('1 attended')
+  // Nobody has opened the session yet.
+  await expect(page.getByText('Joined: 0 of 1')).toBeVisible()
+  await expect(page.locator('.register')).toContainText('not joined yet')
   await expectAccessible(page)
   await page.getByRole('button', { name: 'Leave session' }).click()
   await expect(page.getByRole('heading', { name: 'Live sessions' })).toBeVisible()
@@ -167,6 +169,18 @@ test('Pat starts a live session, keeps the register, and a parent joins it', asy
   await expect(page.getByText(/Adults only on camera/)).toBeVisible()
   // Only the team keeps the register.
   await expect(page.getByRole('heading', { name: 'Register' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  // Pat sees who has joined, and when.
+  await signIn(page, 'pat@motormovers.test')
+  await page.getByRole('link', { name: 'Live sessions' }).click()
+  await page
+    .locator('.live-list li', { hasText: 'Cohort A · starting now' })
+    .filter({ hasText: 'Session 1 of 3' })
+    .getByRole('link', { name: 'Start session' })
+    .click()
+  await expect(page.getByText('Joined: 1 of 1')).toBeVisible()
+  await expect(page.locator('.register')).toContainText(/joined \d{2}:\d{2}/)
 })
 
 test('the team marks attendance and the assessment, and the learner gets a certificate', async ({ page }) => {

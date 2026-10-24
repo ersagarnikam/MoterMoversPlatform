@@ -392,6 +392,9 @@ export interface LiveRegister {
     present: boolean
     sessionsAttended: number
     certificateIssued: boolean
+    /** When the learner first opened this session; null if they have not. */
+    joinedAt: string | null
+    lastJoinedAt: string | null
   }[]
 }
 
@@ -578,6 +581,8 @@ export const api = {
   liveSessions: () => request<LiveSession[]>('GET', '/api/training/live'),
   joinLive: (sessionId: number) => request<LiveJoin>('POST', `/api/training/live/${sessionId}/join`),
   liveRegister: (sessionId: number) => request<LiveRegister>('GET', `/api/admin/live/${sessionId}/register`),
+  markJoinedPresent: (sessionId: number) =>
+    request<LiveRegister>('POST', `/api/admin/live/${sessionId}/register/mark-joined`),
   markPresent: (sessionId: number, enrolmentId: number, present: boolean) =>
     request<Enrolment>('PUT', `/api/admin/live/${sessionId}/register/${enrolmentId}`, { present }),
   recordAssessment: (id: number, passed: boolean) =>

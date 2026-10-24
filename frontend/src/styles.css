@@ -261,6 +261,8 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 .zoom-offline { display: flex; flex-direction: column; justify-content: center; gap: 0.4rem; min-height: 380px; padding: 1rem; border: 2px dashed var(--line); border-radius: 8px; text-align: center; }
 .live-side { display: flex; flex-direction: column; gap: 1rem; }
 .register { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.joined-count { margin: 0 0 0.5rem; }
+.register .joined { color: var(--ok-ink); font-size: 0.9rem; }
 .register li { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
 .cohort-block { display: flex; flex-direction: column; gap: 0.5rem; }
 .bookings { padding: 0 0.75rem 0.75rem; }

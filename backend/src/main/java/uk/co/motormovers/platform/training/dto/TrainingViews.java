@@ -53,8 +53,9 @@ public final class TrainingViews {
             boolean recorded) {
     }
 
+    /** {@code joinedAt} is when the learner first opened this session (null: not yet), {@code lastJoinedAt} the latest. */
     public record RegisterRow(Long enrolmentId, String learnerName, String learnerEmail, boolean present,
-            int sessionsAttended, boolean certificateIssued) {
+            int sessionsAttended, boolean certificateIssued, Instant joinedAt, Instant lastJoinedAt) {
     }
 
     public record RegisterView(LiveSessionView session, List<RegisterRow> learners) {

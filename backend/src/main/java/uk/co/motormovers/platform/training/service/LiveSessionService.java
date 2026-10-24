@@ -21,9 +21,11 @@ import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.CohortSession;
 import uk.co.motormovers.platform.training.model.Enrolment;
 import uk.co.motormovers.platform.training.model.SessionAttendance;
+import uk.co.motormovers.platform.training.model.SessionJoin;
 import uk.co.motormovers.platform.training.repository.CohortSessionRepository;
 import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
 import uk.co.motormovers.platform.training.repository.SessionAttendanceRepository;
+import uk.co.motormovers.platform.training.repository.SessionJoinRepository;
 import uk.co.motormovers.platform.training.zoom.ZoomClient;
 import uk.co.motormovers.platform.training.zoom.ZoomProperties;
 import uk.co.motormovers.platform.training.zoom.ZoomSignature;
@@ -38,6 +40,7 @@ public class LiveSessionService {
 
     private final CohortSessionRepository sessions;
     private final SessionAttendanceRepository attendance;
+    private final SessionJoinRepository joins;
     private final EnrolmentRepository enrolments;
     private final CurrentUserResolver currentUser;
     private final ZoomClient zoom;
@@ -45,10 +48,11 @@ public class LiveSessionService {
     private final Clock clock;
 
     public LiveSessionService(CohortSessionRepository sessions, SessionAttendanceRepository attendance,
-            EnrolmentRepository enrolments, CurrentUserResolver currentUser, ZoomClient zoom,
+            SessionJoinRepository joins, EnrolmentRepository enrolments, CurrentUserResolver currentUser, ZoomClient zoom,
             ZoomProperties zoomProperties, Clock clock) {
         this.sessions = sessions;
         this.attendance = attendance;
+        this.joins = joins;
         this.enrolments = enrolments;
         this.currentUser = currentUser;
         this.zoom = zoom;
@@ -105,7 +109,7 @@ public class LiveSessionService {
         CohortSession session = find(sessionId);
         boolean host = me.is(Role.ADMIN);
         if (!host) {
-            enrolments.findByCohortIdAndUserId(session.getCohort().getId(), me.id())
+            Enrolment booked = enrolments.findByCohortIdAndUserId(session.getCohort().getId(), me.id())
                     .orElseThrow(() -> new AccessDeniedException("You are not booked on this course"));
             if (session.isOverAt(now)) {
                 throw new IllegalStateException("This session has finished");
@@ -113,6 +117,7 @@ public class LiveSessionService {
             if (!session.isOpenAt(now)) {
                 throw new IllegalStateException("This session opens 15 minutes before it starts");
             }
+            recordJoin(sessionId, booked.getId(), now);
         }
         TrainingViews.LiveSessionView view = view(session, me, now);
         Cohort cohort = session.getCohort();
@@ -153,10 +158,17 @@ public class LiveSessionService {
         CohortSession session = find(sessionId);
         Set<Long> present = attendance.findByIdSessionId(sessionId).stream().map(a -> a.getId().enrolmentId())
                 .collect(Collectors.toSet());
+        Map<Long, SessionJoin> joined = joins.findByIdSessionId(sessionId).stream()
+                .collect(Collectors.toMap(j -> j.getId().enrolmentId(), j -> j));
         List<TrainingViews.RegisterRow> rows = enrolments.findByCohortIdOrderByEnrolledAt(session.getCohort().getId())
                 .stream()
-                .map(e -> new TrainingViews.RegisterRow(e.getId(), e.getUser().getDisplayName(), e.getUser().getEmail(),
-                        present.contains(e.getId()), e.getSessionsAttended(), e.getCertificateIssuedOn() != null))
+                .map(e -> {
+                    SessionJoin j = joined.get(e.getId());
+                    return new TrainingViews.RegisterRow(e.getId(), e.getUser().getDisplayName(),
+                            e.getUser().getEmail(), present.contains(e.getId()), e.getSessionsAttended(),
+                            e.getCertificateIssuedOn() != null, j == null ? null : j.getFirstJoinedAt(),
+                            j == null ? null : j.getLastJoinedAt());
+                })
                 .toList();
         return new TrainingViews.RegisterView(view(session, me, clock.instant()), rows);
     }
@@ -187,6 +199,30 @@ public class LiveSessionService {
         enrolment.attendanceChanged((int) attendance.countByIdEnrolmentId(enrolmentId));
         enrolment.issueCertificateIfEligible(LocalDate.now(clock));
         return TrainingViews.EnrolmentView.of(enrolment, attendance.attendedNumbers(enrolmentId));
+    }
+
+    /**
+     * Ticks everyone who opened this session and is not ticked yet, leaving anyone whose certificate is already
+     * issued as it is. The team only.
+     */
+    @Transactional
+    public TrainingViews.RegisterView markJoinedPresent(Long sessionId) {
+        requireTeam();
+        Set<Long> present = attendance.findByIdSessionId(sessionId).stream().map(a -> a.getId().enrolmentId())
+                .collect(Collectors.toSet());
+        for (SessionJoin j : joins.findByIdSessionId(sessionId)) {
+            Long enrolmentId = j.getId().enrolmentId();
+            boolean locked = enrolments.findById(enrolmentId).map(e -> e.getCertificateIssuedOn() != null).orElse(true);
+            if (!present.contains(enrolmentId) && !locked) {
+                mark(sessionId, enrolmentId, true);
+            }
+        }
+        return register(sessionId);
+    }
+
+    private void recordJoin(Long sessionId, Long enrolmentId, Instant now) {
+        joins.findById(new SessionAttendance.Key(sessionId, enrolmentId))
+                .ifPresentOrElse(j -> j.joinedAgain(now), () -> joins.save(new SessionJoin(sessionId, enrolmentId, now)));
     }
 
     public List<TrainingViews.SessionSummary> summaries(Long cohortId) {

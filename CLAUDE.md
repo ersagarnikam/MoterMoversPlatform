@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V8`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V9`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,7 +46,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 70 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 71 unit + API integration tests (H2)
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
@@ -106,7 +106,12 @@ Built so far:
   as host), learners the meeting's `join_url` (stored, migration V8). With a separate Meeting SDK app's keys (a General
   app; a Server-to-Server app's keys cannot sign the SDK) it shows inside the page instead. Keys are `ZOOM_*` (RUNBOOK,
   Live sessions on Zoom); without them sessions run without video. Tested for real 2026-10-22 with the owner's
-  Zoom account in both modes: in the portal (host start) and opening in Zoom (parent and teacher join links). The SDK and its six global libraries load from Zoom's CDN,
+  Zoom account in both modes: in the portal (host start) and opening in Zoom (parent and teacher join links).
+  Who has joined (2026-10-24, migration V9 `session_join`): when a booked learner opens a session it is recorded;
+  the host's register shows "Joined: X of Y", each learner's join time, refreshes every 15 seconds, and "Tick everyone
+  who joined" (`POST /api/admin/live/{id}/register/mark-joined`). It records opening the session, not time in the
+  call, so ticking stays the host's decision. Zoom's own attendance (report API after the meeting, or webhooks)
+  is not built: next step if wanted. The SDK and its six global libraries load from Zoom's CDN,
   pinned to 6.5.0 with SRI hashes (`src/live.ts`); only `/live/<id>` has the looser CSP and camera/microphone
   permission (`vite.config.ts` and `frontend/nginx.conf`, kept the same). Reach the room with a full page load
   (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. The parent app does

@@ -151,8 +151,9 @@ pace. Then the live courses: professional track (4 × 90 min, certificate renewe
 track (3 × 60 min, no certificate). Cohorts have UK-evening and UK-morning / AU-evening slots. Each cohort has a start time and dated
 weekly sessions. **Live sessions run on Zoom inside the platform**: the team starts one from Live sessions, with
 the register beside the meeting, and learners booked on the cohort press Join on their Training page from 15
-minutes before the start, with no Zoom account (setup: `deploy/RUNBOOK.md`, Live sessions on Zoom). Ticks in the
-register, or on the Courses page, count as attendance; with the assessment passed the certificate is issued
+minutes before the start, with no Zoom account (setup: `deploy/RUNBOOK.md`, Live sessions on Zoom). The register shows who has joined so far and when
+("Joined: 7 of 9"), with one click to tick them all. Ticks in the register, or on the Courses page, count as
+attendance; with the assessment passed the certificate is issued
 automatically, and the learner can print it or save it as a PDF from the Training page.
 
 ### Safety built in
