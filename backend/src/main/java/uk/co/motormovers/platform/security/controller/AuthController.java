@@ -3,6 +3,7 @@ package uk.co.motormovers.platform.security.controller;
 import java.time.Duration;
 import java.util.Locale;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,11 +42,15 @@ public class AuthController {
     private final CurrentUserResolver currentUser;
     private final RateLimiter rateLimiter;
     private final PasswordService passwords;
+    /** Sign-ins per network address per window: 50. Raised only for load tests (LOGIN_LIMIT_PER_IP). */
+    private final int loginsPerAddress;
     /** Checked when the email is unknown, so a wrong email takes as long as a wrong password. */
     private final String dummyHash;
 
     public AuthController(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens,
-            CurrentUserResolver currentUser, RateLimiter rateLimiter, PasswordService passwords) {
+            CurrentUserResolver currentUser, RateLimiter rateLimiter, PasswordService passwords,
+            @Value("${platform.login-limit-per-ip:50}") int loginsPerAddress) {
+        this.loginsPerAddress = loginsPerAddress;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
@@ -65,7 +70,7 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         String email = request.email().strip();
-        rateLimiter.check("login-ip", http.getRemoteAddr(), 50, WINDOW);
+        rateLimiter.check("login-ip", http.getRemoteAddr(), loginsPerAddress, WINDOW);
         rateLimiter.check("login", email, 10, WINDOW);
         AppUser user = users.findByEmailIgnoreCase(email).orElse(null);
         boolean matches = passwordEncoder.matches(request.password(), user == null ? dummyHash : user.getPasswordHash());

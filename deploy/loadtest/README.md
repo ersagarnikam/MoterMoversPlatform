@@ -48,7 +48,36 @@ data (below).
 To test a staging server, start it the same way with the override, then add `-e BASE=https://<its address>`.
 Run k6 from a different machine, or the load tool competes with the server for the processor.
 
-## Results so far (2026-10-19)
+## Live session rush (`live-session.js`)
+
+The busiest moment for a live course session: every booked learner opens their Training page and presses Join
+within a minute, while the host's register refreshes every 15 seconds. It tests the platform only, so run the API
+**without Zoom keys** (no real meetings are created). Zoom's own limit is the host's plan: 100 participants on
+the owner's plan, so up to 99 learners per session.
+
+```
+# API on this machine with demo data, 500 extra learners booked, and a sign-in limit the test will not hit
+LOAD_TEST_LEARNERS=500 LOGIN_LIMIT_PER_IP=2000 ./mvnw spring-boot:run     # from backend/, within the hour
+k6 run -e LEARNERS=99 live-session.js              # 99 learners arriving over 60 s
+k6 run -e LEARNERS=500 -e RUSH=5 live-session.js   # 500 within 5 s
+```
+
+It checks that every join succeeds and that the register shows every learner as joined at the end. Production
+refuses to start with `LOGIN_LIMIT_PER_IP` raised, and `LOAD_TEST_LEARNERS` only acts with demo data.
+
+Results on the same laptop (2026-10-24, API on H2 in development mode, k6 on the same machine):
+
+| Learners | Arriving over | Requests | Failed | Join, 95% within | Register, 95% within | All shown as joined |
+|---|---|---|---|---|---|---|
+| 50 | 60 s | 309 | 0 | 5 ms | 59 ms | 50 of 50 |
+| 99 (a full session) | 60 s | 603 | 0 | 4 ms | 18 ms | 99 of 99 |
+| 500 | 60 s | 3,009 | 0 | 3 ms | 26 ms | 500 of 500 |
+| 500 | 5 s | 3,006 | 0 | 3 ms | 67 ms | 500 of 500 |
+
+The platform side of joining is light: far below the ceiling found in the school-day test. Repeat against
+staging (PostgreSQL, a separate machine for k6) before go-live, and run a pilot with real people for the Zoom side.
+
+## School day results (2026-10-19)
 
 All on one 16-core laptop running both the stack and k6, with the demo data (4 schools, 261 children).
 

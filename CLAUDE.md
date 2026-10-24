@@ -111,7 +111,10 @@ Built so far:
   the host's register shows "Joined: X of Y", each learner's join time, refreshes every 15 seconds, and "Tick everyone
   who joined" (`POST /api/admin/live/{id}/register/mark-joined`). It records opening the session, not time in the
   call, so ticking stays the host's decision. Zoom's own attendance (report API after the meeting, or webhooks)
-  is not built: next step if wanted. The SDK and its six global libraries load from Zoom's CDN,
+  is not built: next step if wanted. Load test `deploy/loadtest/live-session.js` (2026-10-24): 50, 99 and 500
+  learners joining within a minute, and 500 within 5 s: no failures, Join under 5 ms (95%), every join on the
+  register. Load-test-only settings `LOAD_TEST_LEARNERS`, `LOGIN_LIMIT_PER_IP` (production refuses a raised limit).
+  The owner's Zoom plan allows 100 participants: up to 99 learners per session. The SDK and its six global libraries load from Zoom's CDN,
   pinned to 6.5.0 with SRI hashes (`src/live.ts`); only `/live/<id>` has the looser CSP and camera/microphone
   permission (`vite.config.ts` and `frontend/nginx.conf`, kept the same). Reach the room with a full page load
   (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. The parent app does

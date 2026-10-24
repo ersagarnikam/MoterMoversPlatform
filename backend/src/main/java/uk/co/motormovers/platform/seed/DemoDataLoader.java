@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -114,6 +115,8 @@ public class DemoDataLoader implements ApplicationRunner {
     private final PlatformProperties properties;
     private final Clock clock;
     private final Random random = new Random(42);
+    /** Extra parents booked on the live cohort, for deploy/loadtest/live-session.js. Normally 0. */
+    private final int loadTestLearners;
 
     public DemoDataLoader(TrustRepository trusts, SchoolRepository schools, LicenceRepository licences,
             SchoolClassRepository classes, AppUserRepository users, ChildRepository children,
@@ -124,7 +127,9 @@ public class DemoDataLoader implements ApplicationRunner {
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
             HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
             InductionProgressRepository inductionProgress, PaymentRepository payments, PlanService plans,
-            StarterContent starterContent, PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock) {
+            StarterContent starterContent, PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock,
+            @Value("${platform.load-test-learners:0}") int loadTestLearners) {
+        this.loadTestLearners = loadTestLearners;
         this.payments = payments;
         this.plans = plans;
         this.starterContent = starterContent;
@@ -215,7 +220,7 @@ public class DemoDataLoader implements ApplicationRunner {
         classWithHistory(ferrers, "Reception F", "Reception", null, ColourStage.RED, 24, 12, sessions, today);
 
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
-        seedCohorts(starter.professional(), starter.parent(), jo, today);
+        seedCohorts(starter.professional(), starter.parent(), jo, hash, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today);
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
@@ -399,7 +404,7 @@ public class DemoDataLoader implements ApplicationRunner {
      * Three cohorts opening soon, and a parent cohort whose first session starts ten minutes after the demo
      * loads, with Jo booked on it, so joining a live session can be tried straight away.
      */
-    private void seedCohorts(Course professional, Course parent, AppUser jo, LocalDate today) {
+    private void seedCohorts(Course professional, Course parent, AppUser jo, String hash, LocalDate today) {
         live.schedule(cohorts.save(new Cohort(professional, "Cohort A · UK evening", today.plusDays(10),
                 LocalTime.of(19, 0), "Tuesdays 7:00 pm UK", 30, "Pat Preedy", true)));
         live.schedule(cohorts.save(new Cohort(professional, "Cohort B · UK morning / AU evening", today.plusDays(24),
@@ -408,8 +413,18 @@ public class DemoDataLoader implements ApplicationRunner {
                 "Thursdays 7:30 pm UK", 50, "Laura Preedy-Maher", true)));
         LocalDateTime soon = LocalDateTime.now(clock).plusMinutes(10).truncatedTo(ChronoUnit.MINUTES);
         Cohort now = cohorts.save(new Cohort(parent, "Cohort A · starting now", soon.toLocalDate(),
-                soon.toLocalTime(), "Weekly at " + soon.toLocalTime() + " UK", 50, "Pat Preedy", false));
+                soon.toLocalTime(), "Weekly at " + soon.toLocalTime() + " UK", Math.max(50, loadTestLearners + 10),
+                "Pat Preedy", false));
         live.schedule(now);
         enrolments.save(new Enrolment(now, jo));
+        // Load tests only: learner001@loadtest.test and on, password "password", all booked on this cohort.
+        for (int i = 1; i <= loadTestLearners; i++) {
+            AppUser learner = users.save(new AppUser(String.format("learner%03d@loadtest.test", i),
+                    "Load test learner " + i, hash, Role.PARENT, null, null));
+            enrolments.save(new Enrolment(now, learner));
+        }
+        if (loadTestLearners > 0) {
+            log.info("Load test: {} extra learners booked on {}", loadTestLearners, now.getName());
+        }
     }
 }

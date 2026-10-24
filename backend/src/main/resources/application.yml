@@ -42,6 +42,10 @@ platform:
     web-url: ${PLATFORM_WEB_URL:http://localhost:5173}
   # First Motor Movers team account on a new deployment, emailed a sign-in link (see AdminBootstrap).
   admin-email: ${PLATFORM_ADMIN_EMAIL:}
+  # Load tests only (deploy/loadtest/live-session.js): sign-ins allowed per network address every 15 minutes, and
+  # how many extra parent accounts the demo data books on its live cohort. Production refuses a raised limit.
+  login-limit-per-ip: ${LOGIN_LIMIT_PER_IP:50}
+  load-test-learners: ${LOAD_TEST_LEARNERS:0}
   # Live course sessions on Zoom (training/zoom/ZoomProperties). Without every key, sessions run without video.
   zoom:
     account-id: ${ZOOM_ACCOUNT_ID:}

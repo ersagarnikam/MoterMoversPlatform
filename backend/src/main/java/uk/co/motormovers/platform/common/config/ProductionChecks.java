@@ -44,6 +44,9 @@ public class ProductionChecks {
         if (properties.mail().webUrl() == null || !properties.mail().webUrl().startsWith("https://")) {
             problems.add("PLATFORM_WEB_URL must be the https:// address of the web app");
         }
+        if (env.getProperty("platform.login-limit-per-ip", Integer.class, 50) > 50) {
+            problems.add("LOGIN_LIMIT_PER_IP is for load tests only: leave it unset");
+        }
         properties.cors().allowedOrigins().stream()
                 .filter(o -> !o.startsWith("https://"))
                 .forEach(o -> problems.add("CORS origin " + o + " must be https://"));
