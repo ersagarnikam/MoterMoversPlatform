@@ -5,7 +5,13 @@ import { sessionTime, ZOOM_SDK } from '../live'
 
 /** The parts of Zoom's Meeting SDK (component view) the room uses. */
 interface ZoomEmbeddedClient {
-  init(options: { zoomAppRoot: HTMLElement; language: string; patchJsMedia: boolean; leaveOnPageUnload: boolean }): Promise<unknown>
+  init(options: {
+    zoomAppRoot: HTMLElement
+    language: string
+    patchJsMedia: boolean
+    leaveOnPageUnload: boolean
+    customize?: Record<string, unknown>
+  }): Promise<unknown>
   join(options: {
     signature: string
     meetingNumber: string
@@ -70,10 +76,11 @@ export default function LiveRoomPage() {
   const { sessionId } = useParams()
   const [join, setJoin] = useState<LiveJoin | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [zoom, setZoom] = useState<'loading' | 'in' | 'failed'>('loading')
+  const [zoom, setZoom] = useState<'loading' | 'waiting' | 'busy' | 'in' | 'failed'>('loading')
   const [zoomError, setZoomError] = useState<string | null>(null)
   const root = useRef<HTMLDivElement>(null)
   const client = useRef<ZoomEmbeddedClient | null>(null)
+  const started = useRef(false)
 
   useEffect(() => {
     joinOnce(Number(sessionId))
@@ -82,13 +89,19 @@ export default function LiveRoomPage() {
   }, [sessionId])
 
   useEffect(() => {
-    if (!join?.embedded || !root.current || client.current) return
+    // started is set at once (client only after Zoom loads), so React running this twice in development starts
+    // one client. Leaving reloads the page, so there is nothing to clean up here.
+    if (!join?.embedded || !root.current || started.current) return
+    started.current = true
     const element = root.current
-    loadZoom()
-      .then(async (Zoom) => {
-        const c = Zoom.createClient()
-        client.current = c
-        await c.init({ zoomAppRoot: element, language: 'en-US', patchJsMedia: true, leaveOnPageUnload: true })
+
+    // Zoom's window floats and can be dragged by default; pin it to the top-left of our box at our box's size.
+    const width = Math.max(320, element.clientWidth)
+    const height = Math.min(Math.round((width * 9) / 16), Math.round(window.innerHeight * 0.65))
+    element.style.minHeight = `${height}px`
+
+    const enter = async (c: ZoomEmbeddedClient) => {
+      try {
         await c.join({
           signature: join.signature!,
           meetingNumber: join.meetingNumber!,
@@ -98,6 +111,40 @@ export default function LiveRoomPage() {
           ...(join.zak ? { zak: join.zak } : {}),
         })
         setZoom('in')
+      } catch (e: unknown) {
+        const reason = String((e as { reason?: string })?.reason ?? (e instanceof Error ? e.message : ''))
+        if (/not started/i.test(reason)) {
+          // Normal for learners who arrive before the host: try again until the host starts the meeting.
+          setZoom('waiting')
+          setTimeout(() => enter(c), 10_000)
+        } else if (/other meetings in progress/i.test(reason)) {
+          setZoom('busy')
+        } else {
+          setZoom('failed')
+          setZoomError(reason || 'Zoom did not start')
+        }
+      }
+    }
+
+    loadZoom()
+      .then(async (Zoom) => {
+        const c = Zoom.createClient()
+        client.current = c
+        await c.init({
+          zoomAppRoot: element,
+          language: 'en-US',
+          patchJsMedia: true,
+          leaveOnPageUnload: true,
+          customize: {
+            video: {
+              isResizable: false,
+              popper: { disableDraggable: true, anchorPosition: { top: 0, left: 0 } },
+              viewSizes: { default: { width, height } },
+            },
+            meeting: { popper: { anchorElement: element, placement: 'top-start' } },
+          },
+        })
+        await enter(c)
       })
       .catch((e: unknown) => {
         setZoom('failed')
@@ -168,6 +215,16 @@ export default function LiveRoomPage() {
           ) : join.zoomConnected ? (
             <>
               {zoom === 'loading' && <p className="muted">Connecting to Zoom…</p>}
+              {zoom === 'waiting' && (
+                <p className="banner-teal" role="status">
+                  Waiting for {s.trainerName} to start the session. You will be let in automatically.
+                </p>
+              )}
+              {zoom === 'busy' && (
+                <p className="error" role="alert">
+                  You already have a Zoom meeting running. End it in Zoom (End meeting for all), then reload this page.
+                </p>
+              )}
               {zoom === 'failed' && (
                 <p className="error" role="alert">
                   Zoom did not start: {zoomError}. Check your connection, allow the camera and microphone, and reload
