@@ -46,7 +46,8 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 71 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 86 unit + API integration tests (H2)
+cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
@@ -55,7 +56,9 @@ cd frontend && npm run e2e          # 58 Playwright tests; locally add PW_CHANNE
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
 The mobile lock file is written with npm 11 (Node 24); npm 10 rejects it, so CI's mobile job uses Node 24.
-CI (`.github/workflows/ci.yml`) runs backend, frontend, e2e and mobile jobs on every push.
+CI (`.github/workflows/ci.yml`) runs backend, frontend (unit tests and build), e2e, loadtest and mobile jobs on every
+push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `deploy/loadtest/live-session.js` with
+50 learners joining within 10 s (k6 v2.3.0); any failed, slow or unrecorded join fails the build.
 
 ### On the owner's Windows machine
 

@@ -32,6 +32,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      # Unit tests of the web app's logic (Vitest): money, session times, the offline queue, the API client.
+      - run: npm test
       - run: npm run build
 
   # Browser tests: the production web build (with the production CSP) against the API with demo data.
@@ -68,6 +70,39 @@ jobs:
             frontend/playwright-report
             frontend/e2e-results
             backend/api.log
+
+  # A short live-session rush with k6: learners pressing Join together while the host's register refreshes.
+  # Fails the build if any join fails, is slow, or is missing from the register. Zoom is not connected here.
+  loadtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Start the API with load-test learners
+        working-directory: backend
+        env:
+          LOAD_TEST_LEARNERS: '100'
+          LOGIN_LIMIT_PER_IP: '500'
+        run: |
+          ./mvnw -B -q package -DskipTests
+          nohup java -jar target/motor-movers-platform-*.jar > api.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:8080/actuator/health && break; sleep 2; done
+      - name: Install k6
+        run: |
+          curl -sSL https://github.com/grafana/k6/releases/download/v2.3.0/k6-v2.3.0-linux-amd64.tar.gz | tar xz
+          sudo mv k6-v2.3.0-linux-amd64/k6 /usr/local/bin/k6
+      - name: Live session rush
+        working-directory: deploy/loadtest
+        run: k6 run -e LEARNERS=50 -e RUSH=10 live-session.js
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: loadtest-api-log
+          path: backend/api.log
 
   mobile:
     runs-on: ubuntu-latest

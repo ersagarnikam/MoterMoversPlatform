@@ -91,6 +91,7 @@ only the programme content (no demo people or schools) as drafts for the team to
 
 ```bash
 cd backend && ./mvnw verify     # unit and API integration tests
+cd frontend && npm test        # web app unit tests (Vitest)
 cd frontend && npm run build   # type-check and production build
 cd mobile && npm run typecheck # parent app type-check
 cd frontend && npm run e2e     # browser tests; needs the API running with demo data (restart it between runs)

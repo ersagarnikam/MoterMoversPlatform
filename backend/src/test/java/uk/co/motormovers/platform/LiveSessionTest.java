@@ -155,6 +155,96 @@ class LiveSessionTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void sessionsKeepTheirUkTimeWhenTheClocksChange() throws Exception {
+        String admin = login("admin@motormovers.test");
+        Integer courseId = newCourse(admin, "Clock change course", 3);
+        // Start three days before the next clock change, so the first session is before it and the rest after.
+        LocalDate change = LocalDate.ofInstant(clock.getZone().getRules().nextTransition(clock.instant().plusSeconds(
+                7 * 24 * 3600)).getInstant(), clock.getZone());
+        LocalDate start = change.minusDays(3);
+        String opened = send(admin, post("/api/admin/courses/" + courseId + "/cohorts"), cohort(start, "18:30"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        List<String> startsAt = JsonPath.read(opened, "$.cohorts[0].sessions[*].startsAt");
+        for (String s : startsAt) {
+            assertThat(Instant.parse(s).atZone(clock.getZone()).toLocalTime()).isEqualTo(LocalTime.of(18, 30));
+        }
+        // So the gap across the change is a week plus or minus the hour the clocks moved.
+        long hours = java.time.Duration.between(Instant.parse(startsAt.get(0)), Instant.parse(startsAt.get(1))).toHours();
+        assertThat(hours).isIn(167L, 169L);
+    }
+
+    @Test
+    void changingACoursesNumberOfSessionsAddsOrRemovesDatedSessions() throws Exception {
+        String admin = login("admin@motormovers.test");
+        Integer courseId = newCourse(admin, "Resized course", 3);
+        send(admin, post("/api/admin/courses/" + courseId + "/cohorts"),
+                cohort(LocalDate.now(clock).plusDays(20), "19:00"));
+
+        String four = send(admin, put("/api/admin/courses/" + courseId), courseJson("Resized course", 4))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat((List<Integer>) JsonPath.read(four, "$.cohorts[0].sessions[*].number")).containsExactly(1, 2, 3, 4);
+
+        String two = send(admin, put("/api/admin/courses/" + courseId), courseJson("Resized course", 2))
+                .andReturn().getResponse().getContentAsString();
+        assertThat((List<Integer>) JsonPath.read(two, "$.cohorts[0].sessions[*].number")).containsExactly(1, 2);
+    }
+
+    @Test
+    void onlyTheTeamSeesOrKeepsTheRegister() throws Exception {
+        String pat = login("pat@motormovers.test");
+        List<Integer> now = JsonPath.read(fetch(pat, "/api/training/live"),
+                "$[?(@.cohortName == 'Cohort A · starting now' && @.number == 1)].id");
+        String register = "/api/admin/live/" + now.getFirst() + "/register";
+        for (String email : List.of("teacher@oakfield.test", "head@oakfield.test", "parent@example.test",
+                "practitioner@example.test")) {
+            String token = login(email);
+            mvc.perform(get(register).header("Authorization", bearer(token))).andExpect(status().isForbidden());
+            mvc.perform(post(register + "/mark-joined").header("Authorization", bearer(token)))
+                    .andExpect(status().isForbidden());
+        }
+        mvc.perform(get(register)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void learnersNeverSeeOtherCohortsSessions() throws Exception {
+        // A learner's live sessions all come from cohorts they booked (other tests may book this practitioner).
+        String practitioner = login("practitioner@example.test");
+        List<Integer> booked = JsonPath.read(fetch(practitioner, "/api/training/enrolments/mine"), "$[*].cohortId");
+        List<Integer> seen = JsonPath.read(fetch(practitioner, "/api/training/live"), "$[*].cohortId");
+        assertThat(booked).containsAll(seen);
+        assertThat((List<String>) JsonPath.read(fetch(practitioner, "/api/training/live"), "$[*].cohortName"))
+                .doesNotContain("Cohort A · starting now");
+        // Jo sees only the cohort she booked.
+        assertThat((List<String>) JsonPath.read(fetch(login("parent@example.test"), "/api/training/live"),
+                "$[*].cohortName")).containsOnly("Cohort A · starting now");
+    }
+
+    @Test
+    void anUnknownSessionIsNotFound() throws Exception {
+        String pat = login("pat@motormovers.test");
+        mvc.perform(post("/api/training/live/999999/join").header("Authorization", bearer(pat)))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/admin/live/999999/register").header("Authorization", bearer(pat)))
+                .andExpect(status().isNotFound());
+    }
+
+    private Integer newCourse(String admin, String title, int sessions) throws Exception {
+        String course = send(admin, post("/api/admin/courses"), courseJson(title, sessions))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(course, "$.id");
+    }
+
+    private static String courseJson(String title, int sessions) {
+        return "{\"track\":\"PROFESSIONAL\",\"title\":\"" + title + "\",\"description\":\"For tests.\","
+                + "\"liveSessions\":" + sessions + ",\"sessionMinutes\":60,\"pricePence\":1000,"
+                + "\"renewalPence\":null,\"awardsCertificate\":false}";
+    }
+
     private String cohort(LocalDate startsOn, String time) {
         return "{\"name\":\"Dated cohort\",\"startsOn\":\"" + startsOn + "\",\"startTime\":\"" + time + "\","
                 + "\"timeSlot\":\"Weekly\",\"capacity\":10,\"trainerName\":\"Pat Preedy\",\"recordingAgreed\":false}";

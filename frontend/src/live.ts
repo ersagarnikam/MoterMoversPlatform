@@ -1,17 +1,22 @@
 /** Live course sessions: showing their times, and the Zoom Meeting SDK the room loads. */
 
-const when = new Intl.DateTimeFormat('en-GB', {
+const FORMAT: Intl.DateTimeFormatOptions = {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
   hour: '2-digit',
   minute: '2-digit',
   timeZoneName: 'short',
-})
+}
+const when = new Intl.DateTimeFormat('en-GB', FORMAT)
 
-/** "Tue 3 Nov, 19:00 GMT", in the viewer's own time zone (learners in Australia see their evening). */
-export function sessionTime(iso: string): string {
-  return when.format(new Date(iso))
+/**
+ * "Tue 3 Nov, 19:00 GMT", in the viewer's own time zone (learners in Australia see their evening), or in
+ * {@code timeZone} when given.
+ */
+export function sessionTime(iso: string, timeZone?: string): string {
+  const format = timeZone ? new Intl.DateTimeFormat('en-GB', { ...FORMAT, timeZone }) : when
+  return format.format(new Date(iso))
 }
 
 const VENDOR = 'https://source.zoom.us/6.5.0/lib/vendor/'
