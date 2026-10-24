@@ -123,7 +123,7 @@ test('the team sets up a course and opens a cohort for booking', async ({ page }
   await course.getByLabel('Cohort name').fill('Browser cohort')
   await course.getByLabel('Starts').fill(startsOn)
   await course.getByLabel('Day and time').fill('Wednesdays 7:00 pm UK')
-  await course.getByLabel('Trainer').fill('Pat')
+  await course.getByLabel('Trainer').selectOption({ label: 'Amy Clarke' })
   await expectAccessible(page)
   await course.getByRole('button', { name: 'Open cohort' }).click()
   await expect(course.getByText('0 of 30 places booked')).toBeVisible()
@@ -181,6 +181,35 @@ test('Pat starts a live session, keeps the register, and a parent joins it', asy
     .click()
   await expect(page.getByText('Joined: 1 of 1')).toBeVisible()
   await expect(page.locator('.register')).toContainText(/joined \d{2}:\d{2}/)
+})
+
+test('a trainer runs only the sessions of the cohorts given to them', async ({ page }) => {
+  await signIn(page, 'trainer@motormovers.test')
+  await expect(page.getByRole('heading', { name: 'Live sessions' })).toBeVisible()
+  // The only page a trainer has.
+  await expect(page.getByRole('link', { name: 'Courses' })).toHaveCount(0)
+  const sessions = page.locator('.live-list li')
+  await expect(sessions.first()).toContainText('Cohort B · UK morning / AU evening')
+  await expect(page.locator('.live-list li', { hasText: 'Cohort A · starting now' })).toHaveCount(0)
+  await expectAccessible(page)
+  await sessions.first().getByRole('link', { name: 'Start session' }).click()
+  await expect(page.getByRole('heading', { name: 'Register' })).toBeVisible()
+})
+
+test('the team adds a trainer with their own Zoom login', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Courses' }).click()
+  const team = page.locator('section', { has: page.getByRole('heading', { name: 'Trainers' }) })
+  await expect(team.getByRole('cell', { name: 'Amy Clarke' })).toBeVisible()
+  const name = `Trainer ${Date.now()}`
+  await team.getByText('Add a trainer').click()
+  await team.getByLabel('Name').fill(name)
+  await team.getByLabel('Email', { exact: true }).fill(`${Date.now()}@trainers.test`)
+  await team.getByLabel('Zoom login (optional)').fill('zoom.host@trainers.test')
+  await expectAccessible(page)
+  await team.getByRole('button', { name: 'Add trainer' }).click()
+  await expect(team.getByText(`${name} added`)).toBeVisible()
+  await expect(team.getByLabel(`Zoom login for ${name}`)).toHaveValue('zoom.host@trainers.test')
 })
 
 test('the team marks attendance and the assessment, and the learner gets a certificate', async ({ page }) => {

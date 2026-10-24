@@ -182,9 +182,13 @@ public class DemoDataLoader implements ApplicationRunner {
         School ferrers = school("Ferrers Park", trust, "FREE_TRIAL",
                 EnumSet.of(ColourStage.RED, ColourStage.ORANGE), today.minusMonths(1), today.plusMonths(2));
 
-        users.save(new AppUser("admin@motormovers.test", "Laura Preedy-Maher", hash, Role.ADMIN, null, null));
+        AppUser laura = users.save(new AppUser("admin@motormovers.test", "Laura Preedy-Maher", hash, Role.ADMIN,
+                null, null));
         // Pat runs live course sessions on Zoom from the Live sessions page.
-        users.save(new AppUser("pat@motormovers.test", "Pat Preedy", hash, Role.ADMIN, null, null));
+        AppUser pat = users.save(new AppUser("pat@motormovers.test", "Pat Preedy", hash, Role.ADMIN, null, null));
+        // A trainer in Pat's team: runs the sessions of the cohorts assigned to her, and nothing else.
+        AppUser amy = users.save(new AppUser("trainer@motormovers.test", "Amy Clarke", hash, Role.TRAINER, null,
+                null));
         AppUser patel = users.save(new AppUser("head@oakfield.test", "Mr Patel", hash, Role.HEAD, oakfield.getId(),
                 trust.getId()));
         users.save(new AppUser("trust@northbridge.test", "Ms Okafor", hash, Role.TRUST_LEAD, null, trust.getId()));
@@ -220,7 +224,7 @@ public class DemoDataLoader implements ApplicationRunner {
         classWithHistory(ferrers, "Reception F", "Reception", null, ColourStage.RED, 24, 12, sessions, today);
 
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
-        seedCohorts(starter.professional(), starter.parent(), jo, hash, today);
+        seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today);
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
@@ -404,17 +408,21 @@ public class DemoDataLoader implements ApplicationRunner {
      * Three cohorts opening soon, and a parent cohort whose first session starts ten minutes after the demo
      * loads, with Jo booked on it, so joining a live session can be tried straight away.
      */
-    private void seedCohorts(Course professional, Course parent, AppUser jo, String hash, LocalDate today) {
-        live.schedule(cohorts.save(new Cohort(professional, "Cohort A · UK evening", today.plusDays(10),
-                LocalTime.of(19, 0), "Tuesdays 7:00 pm UK", 30, "Pat Preedy", true)));
-        live.schedule(cohorts.save(new Cohort(professional, "Cohort B · UK morning / AU evening", today.plusDays(24),
-                LocalTime.of(9, 0), "Wednesdays 9:00 am UK", 30, "Laura Preedy-Maher", false)));
-        live.schedule(cohorts.save(new Cohort(parent, "Cohort B · three weeks", today.plusDays(7), LocalTime.of(19, 30),
-                "Thursdays 7:30 pm UK", 50, "Laura Preedy-Maher", true)));
+    private record Trainers(AppUser pat, AppUser laura, AppUser amy) {
+    }
+
+    private void seedCohorts(Course professional, Course parent, Trainers t, AppUser jo, String hash,
+            LocalDate today) {
+        live.schedule(cohort(new Cohort(professional, "Cohort A · UK evening", today.plusDays(10),
+                LocalTime.of(19, 0), "Tuesdays 7:00 pm UK", 30, null, true), t.pat()));
+        live.schedule(cohort(new Cohort(professional, "Cohort B · UK morning / AU evening", today.plusDays(24),
+                LocalTime.of(9, 0), "Wednesdays 9:00 am UK", 30, null, false), t.amy()));
+        live.schedule(cohort(new Cohort(parent, "Cohort B · three weeks", today.plusDays(7), LocalTime.of(19, 30),
+                "Thursdays 7:30 pm UK", 50, null, true), t.laura()));
         LocalDateTime soon = LocalDateTime.now(clock).plusMinutes(10).truncatedTo(ChronoUnit.MINUTES);
-        Cohort now = cohorts.save(new Cohort(parent, "Cohort A · starting now", soon.toLocalDate(),
+        Cohort now = cohort(new Cohort(parent, "Cohort A · starting now", soon.toLocalDate(),
                 soon.toLocalTime(), "Weekly at " + soon.toLocalTime() + " UK", Math.max(50, loadTestLearners + 10),
-                "Pat Preedy", false));
+                null, false), t.pat());
         live.schedule(now);
         enrolments.save(new Enrolment(now, jo));
         // Load tests only: learner001@loadtest.test and on, password "password", all booked on this cohort.
@@ -426,5 +434,10 @@ public class DemoDataLoader implements ApplicationRunner {
         if (loadTestLearners > 0) {
             log.info("Load test: {} extra learners booked on {}", loadTestLearners, now.getName());
         }
+    }
+
+    private Cohort cohort(Cohort cohort, AppUser trainer) {
+        cohort.assignTrainer(trainer);
+        return cohorts.save(cohort);
     }
 }

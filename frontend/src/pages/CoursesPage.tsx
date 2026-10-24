@@ -8,6 +8,7 @@ import {
   type CourseTrack,
   type Enrolment,
   type SessionSummary,
+  type Trainer,
 } from '../api'
 import { sessionTime } from '../live'
 import { gbp } from '../money'
@@ -20,9 +21,13 @@ const TRACKS: [CourseTrack, string][] = [
 const pounds = (pence: number | null) => (pence === null ? '' : (pence / 100).toString())
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 
-/** The team sets up live courses and opens cohorts; learners book them on the Training page. */
+/**
+ * The team sets up live courses, opens cohorts and gives each a trainer who runs its live sessions; learners book
+ * them on the Training page.
+ */
 export default function CoursesPage() {
   const [courses, setCourses] = useState<AdminCourse[] | null>(null)
+  const [trainers, setTrainers] = useState<Trainer[]>([])
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -30,6 +35,10 @@ export default function CoursesPage() {
     api
       .adminCourses()
       .then(setCourses)
+      .catch((e) => setError(e.message))
+    api
+      .trainers()
+      .then(setTrainers)
       .catch((e) => setError(e.message))
   }, [])
 
@@ -65,7 +74,7 @@ export default function CoursesPage() {
       {courses.length === 0 && <p className="muted">No courses yet. Set one up below.</p>}
 
       {courses.map((c) => (
-        <CourseCard key={c.id} course={c} run={run} />
+        <CourseCard key={c.id} course={c} trainers={trainers} run={run} />
       ))}
 
       <section className="card">
@@ -75,13 +84,15 @@ export default function CoursesPage() {
         </p>
         <CourseForm submitLabel="Set up course" onSave={(input) => run(() => api.addCourse(input), `${input.title} set up`)} />
       </section>
+
+      <Trainers trainers={trainers} onChange={setTrainers} />
     </>
   )
 }
 
 type Run = (action: () => Promise<AdminCourse>, done: string) => Promise<boolean>
 
-function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
+function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: Trainer[]; run: Run }) {
   const [editing, setEditing] = useState(false)
   const [editingCohort, setEditingCohort] = useState<number | null>(null)
   const [showingBookings, setShowingBookings] = useState<number | null>(null)
@@ -130,6 +141,7 @@ function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
             <div key={h.id} className="setup-class">
               <CohortForm
                 initial={h}
+                trainers={trainers}
                 submitLabel="Save cohort"
                 onCancel={() => setEditingCohort(null)}
                 onSave={async (input) => {
@@ -179,6 +191,7 @@ function CourseCard({ course, run }: { course: AdminCourse; run: Run }) {
       <details className="add-item" open={adding} onToggle={(e) => setAdding(e.currentTarget.open)}>
         <summary className="btn">Open a cohort</summary>
         <CohortForm
+          trainers={trainers}
           submitLabel="Open cohort"
           onSave={async (input) => {
             const saved = await run(() => api.addCohort(course.id, input), `${input.name} opened for booking`)
@@ -438,11 +451,13 @@ function CourseForm({
 
 function CohortForm({
   initial,
+  trainers,
   submitLabel,
   onSave,
   onCancel,
 }: {
   initial?: CohortInput & { booked: number }
+  trainers: Trainer[]
   submitLabel: string
   onSave: (c: CohortInput) => Promise<boolean>
   onCancel?: () => void
@@ -453,18 +468,21 @@ function CohortForm({
   const [startTime, setStartTime] = useState(initial?.startTime?.slice(0, 5) ?? '19:00')
   const [timeSlot, setTimeSlot] = useState(initial?.timeSlot ?? '')
   const [capacity, setCapacity] = useState(String(initial?.capacity ?? 30))
-  const [trainerName, setTrainerName] = useState(initial?.trainerName ?? '')
+  const [trainerId, setTrainerId] = useState(initial?.trainerUserId ? String(initial.trainerUserId) : '')
   const [recordingAgreed, setRecordingAgreed] = useState(initial?.recordingAgreed ?? false)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
+    const trainer = trainers.find((t) => String(t.id) === trainerId)
     const saved = await onSave({
       name: name.trim(),
       startsOn,
       startTime,
       timeSlot: timeSlot.trim(),
       capacity: Number(capacity),
-      trainerName: trainerName.trim(),
+      // The API names the cohort after its trainer; a cohort set up before trainers keeps its free-text name.
+      trainerName: trainer?.displayName ?? initial?.trainerName ?? '',
+      trainerUserId: trainer?.id ?? null,
       recordingAgreed,
     })
     if (saved && !initial) {
@@ -472,7 +490,7 @@ function CohortForm({
       setStartsOn('')
       setStartTime('19:00')
       setTimeSlot('')
-      setTrainerName('')
+      setTrainerId('')
       setRecordingAgreed(false)
     }
   }
@@ -520,7 +538,17 @@ function CohortForm({
       </label>
       <label>
         Trainer
-        <input value={trainerName} onChange={(e) => setTrainerName(e.target.value)} maxLength={200} required />
+        <select value={trainerId} onChange={(e) => setTrainerId(e.target.value)} required={!initial?.trainerName}>
+          <option value="">{initial?.trainerName && !initial.trainerUserId ? initial.trainerName : 'Choose…'}</option>
+          {trainers
+            .filter((t) => t.enabled)
+            .map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.displayName}
+                {t.team ? ' (team)' : ''}
+              </option>
+            ))}
+        </select>
       </label>
       <label className="toggle">
         <input type="checkbox" checked={recordingAgreed} onChange={(e) => setRecordingAgreed(e.target.checked)} />{' '}
@@ -534,6 +562,141 @@ function CohortForm({
         )}
         <button className="btn btn-primary">{submitLabel}</button>
       </div>
+    </form>
+  )
+}
+
+/**
+ * Pat's training team. Trainers sign in to run the live sessions of the cohorts given to them, and nothing else.
+ * Each can host with their own Zoom login, so sessions can run at the same time; without one they use the
+ * platform's Zoom host.
+ */
+function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: Trainer[]) => void }) {
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [email, setEmail] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [zoomEmail, setZoomEmail] = useState('')
+
+  async function save(action: () => Promise<Trainer>, done: (t: Trainer) => string) {
+    setError(null)
+    setNotice(null)
+    try {
+      const saved = await action()
+      onChange(
+        trainers.some((t) => t.id === saved.id)
+          ? trainers.map((t) => (t.id === saved.id ? saved : t))
+          : [...trainers, saved].sort((a, b) => a.displayName.localeCompare(b.displayName)),
+      )
+      setNotice(done(saved))
+      return true
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong')
+      return false
+    }
+  }
+
+  async function add(e: FormEvent) {
+    e.preventDefault()
+    const added = await save(
+      () => api.addTrainer({ email: email.trim(), displayName: displayName.trim(), zoomEmail: zoomEmail.trim() }),
+      (t) => `${t.displayName} added. They have been emailed a link to choose a password.`,
+    )
+    if (added) {
+      setEmail('')
+      setDisplayName('')
+      setZoomEmail('')
+    }
+  }
+
+  return (
+    <section className="card">
+      <h3>Trainers</h3>
+      <p className="muted">
+        Trainers run the live sessions of the cohorts given to them, with the register, and see nothing else. The team
+        can run any session. Give someone their own Zoom login so their sessions can run at the same time as others.
+      </p>
+      {error && <p className="error">{error}</p>}
+      {notice && <p className="banner-teal">{notice}</p>}
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Zoom login</th>
+            </tr>
+          </thead>
+          <tbody>
+            {trainers.map((t) => (
+              <tr key={t.id}>
+                <td>
+                  {t.displayName}
+                  {t.team ? ' (team)' : ''}
+                  {t.enabled ? '' : ' (switched off)'}
+                </td>
+                <td>{t.email}</td>
+                <td>
+                  <ZoomLogin
+                    trainer={t}
+                    onSave={(value) =>
+                      save(
+                        () => api.setTrainerZoomEmail(t.id, value),
+                        (s) => `${s.displayName} ${s.zoomEmail ? `hosts as ${s.zoomEmail}` : 'uses the platform Zoom host'}`,
+                      )
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <details className="add-item">
+        <summary className="btn">Add a trainer</summary>
+        <form className="inline-form" onSubmit={add}>
+          <label>
+            Name
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} required />
+          </label>
+          <label>
+            Email
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={200} required />
+          </label>
+          <label>
+            Zoom login (optional)
+            <input type="email" value={zoomEmail} onChange={(e) => setZoomEmail(e.target.value)} maxLength={200} />
+          </label>
+          <div className="actions form-wide">
+            <button className="btn btn-primary">Add trainer</button>
+          </div>
+        </form>
+      </details>
+    </section>
+  )
+}
+
+function ZoomLogin({ trainer, onSave }: { trainer: Trainer; onSave: (zoomEmail: string) => Promise<boolean> }) {
+  const [value, setValue] = useState(trainer.zoomEmail ?? '')
+  const changed = value.trim().toLowerCase() !== (trainer.zoomEmail ?? '')
+
+  return (
+    <form
+      className="row-form"
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSave(value.trim())
+      }}
+    >
+      <input
+        type="email"
+        aria-label={`Zoom login for ${trainer.displayName}`}
+        placeholder="Platform Zoom host"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        maxLength={200}
+      />
+      {changed && <button className="btn">Save</button>}
     </form>
   )
 }

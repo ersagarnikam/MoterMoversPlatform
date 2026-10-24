@@ -68,6 +68,8 @@ public class SecurityConfig {
                                 "/api/auth/password-reset", "/api/auth/password").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/h2-console/**", "/error")
                         .permitAll()
+                        // Trainers keep the register for their own sessions (checked in LiveSessionService).
+                        .requestMatchers("/api/admin/live/**").hasAnyRole("ADMIN", "TRAINER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/family/**").hasRole("PARENT")
                         .requestMatchers("/api/**").authenticated()

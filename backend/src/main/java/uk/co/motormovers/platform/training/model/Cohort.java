@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
+import uk.co.motormovers.platform.user.model.AppUser;
+
 /** One run of a course: a start date, a time slot (UK evening or UK morning / AU evening) and a trainer. */
 @Entity
 public class Cohort {
@@ -33,6 +35,10 @@ public class Cohort {
     private int capacity;
 
     private String trainerName;
+
+    /** The account that runs this cohort's live sessions (a trainer or the team). Null: the team only. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private AppUser trainer;
 
     private boolean recordingAgreed;
 
@@ -88,6 +94,18 @@ public class Cohort {
 
     public int getCapacity() {
         return capacity;
+    }
+
+    /** Makes {@code trainer} this cohort's trainer, shown to learners by name; null leaves it to the team. */
+    public void assignTrainer(AppUser trainer) {
+        this.trainer = trainer;
+        if (trainer != null) {
+            this.trainerName = trainer.getDisplayName();
+        }
+    }
+
+    public AppUser getTrainer() {
+        return trainer;
     }
 
     public String getTrainerName() {

@@ -49,6 +49,7 @@ password `password`:
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
 | `admin@motormovers.test` | Motor Movers team | Content approval |
 | `pat@motormovers.test` | Motor Movers team (Pat, trainer) | Content approval; Live sessions to start a course session |
+| `trainer@motormovers.test` | Trainer in Pat's team (Amy Clarke) | Live sessions for her own cohorts only |
 
 Names, schools and figures in the demo data are examples only.
 

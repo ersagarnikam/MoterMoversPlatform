@@ -14,6 +14,7 @@ const DEMO_ACCOUNTS = [
   ['practitioner@example.test', 'Practitioner'],
   ['parent@example.test', 'Parent'],
   ['admin@motormovers.test', 'Motor Movers team'],
+  ['trainer@motormovers.test', 'Trainer'],
 ]
 
 export default function LoginPage() {

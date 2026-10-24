@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { api, type LiveSession } from '../api'
+import { useAuth } from '../auth'
 import { sessionTime } from '../live'
 
-/** The Motor Movers team's upcoming live course sessions, to start on Zoom and keep the register. */
+/**
+ * Upcoming live course sessions, to start on Zoom and keep the register: every session for the Motor Movers team,
+ * and a trainer's own cohorts for a trainer.
+ */
 export default function LiveSessionsPage() {
+  const { user } = useAuth()
   const [sessions, setSessions] = useState<LiveSession[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,7 +30,11 @@ export default function LiveSessionsPage() {
         join from 15 minutes before the start.
       </p>
       {sessions.length === 0 ? (
-        <p className="muted">No live sessions coming up. Open a cohort on the Courses page.</p>
+        <p className="muted">
+          {user?.role === 'ADMIN'
+            ? 'No live sessions coming up. Open a cohort on the Courses page.'
+            : 'No live sessions coming up. The team will let you know when a cohort is given to you.'}
+        </p>
       ) : (
         <ul className="live-list">
           {sessions.map((s) => (

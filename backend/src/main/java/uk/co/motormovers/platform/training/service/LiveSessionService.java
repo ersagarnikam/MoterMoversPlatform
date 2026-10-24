@@ -84,7 +84,10 @@ public class LiveSessionService {
         existing.values().stream().filter(s -> !attendance.existsByIdSessionId(s.getId())).forEach(sessions::delete);
     }
 
-    /** The team sees every session still to come; anyone else sees the sessions of cohorts they booked. */
+    /**
+     * The team sees every session still to come, a trainer the sessions of their own cohorts, and a learner the
+     * sessions of cohorts they booked.
+     */
     @Transactional(readOnly = true)
     public List<TrainingViews.LiveSessionView> upcoming() {
         CurrentUser me = currentUser.current();
@@ -93,6 +96,9 @@ public class LiveSessionService {
         List<CohortSession> list;
         if (me.is(Role.ADMIN)) {
             list = sessions.findByStartsAtAfterOrderByStartsAt(from);
+        } else if (me.is(Role.TRAINER)) {
+            list = sessions.findByStartsAtAfterOrderByStartsAt(from).stream()
+                    .filter(s -> runs(me, s.getCohort())).toList();
         } else {
             Set<Long> cohortIds = enrolments.findByUserIdOrderByEnrolledAtDesc(me.id()).stream()
                     .map(e -> e.getCohort().getId()).collect(Collectors.toSet());
@@ -107,7 +113,10 @@ public class LiveSessionService {
         CurrentUser me = currentUser.current();
         Instant now = clock.instant();
         CohortSession session = find(sessionId);
-        boolean host = me.is(Role.ADMIN);
+        boolean host = canHost(me, session.getCohort());
+        if (!host && me.is(Role.TRAINER)) {
+            throw new AccessDeniedException("This session belongs to another trainer's cohort");
+        }
         if (!host) {
             Enrolment booked = enrolments.findByCohortIdAndUserId(session.getCohort().getId(), me.id())
                     .orElseThrow(() -> new AccessDeniedException("You are not booked on this course"));
@@ -125,7 +134,7 @@ public class LiveSessionService {
             return new TrainingViews.JoinView(view, false, false, null, null, null, null, null, null, me.displayName(),
                     me.email(), TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
         }
-        String hostUser = hostUser(me);
+        String hostUser = hostUser(cohort, me);
         // The host's token first, before locking the session: if Zoom refuses it, no meeting is created for nothing.
         String zak = host ? zoom.hostToken(hostUser) : null;
         CohortSession locked = sessions.findForUpdate(sessionId).orElseThrow();
@@ -151,11 +160,11 @@ public class LiveSessionService {
                 TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
     }
 
-    /** Who is booked, and who has been marked present at this session. The team only. */
+    /** Who is booked, and who has been marked present at this session. The team, or the cohort's trainer. */
     @Transactional(readOnly = true)
     public TrainingViews.RegisterView register(Long sessionId) {
-        CurrentUser me = requireTeam();
         CohortSession session = find(sessionId);
+        CurrentUser me = requireHost(session);
         Set<Long> present = attendance.findByIdSessionId(sessionId).stream().map(a -> a.getId().enrolmentId())
                 .collect(Collectors.toSet());
         Map<Long, SessionJoin> joined = joins.findByIdSessionId(sessionId).stream()
@@ -175,12 +184,12 @@ public class LiveSessionService {
 
     /**
      * Marks a learner present (or not) at a session, updates their sessions attended, and issues the
-     * certificate once every session is attended and the assessment passed. The team only.
+     * certificate once every session is attended and the assessment passed. The team, or the cohort's trainer.
      */
     @Transactional
     public TrainingViews.EnrolmentView mark(Long sessionId, Long enrolmentId, boolean present) {
-        CurrentUser me = requireTeam();
         CohortSession session = find(sessionId);
+        CurrentUser me = requireHost(session);
         Enrolment enrolment = enrolments.findById(enrolmentId)
                 .orElseThrow(() -> new NotFoundException("Enrolment", enrolmentId));
         if (!enrolment.getCohort().getId().equals(session.getCohort().getId())) {
@@ -203,11 +212,11 @@ public class LiveSessionService {
 
     /**
      * Ticks everyone who opened this session and is not ticked yet, leaving anyone whose certificate is already
-     * issued as it is. The team only.
+     * issued as it is. The team, or the cohort's trainer.
      */
     @Transactional
     public TrainingViews.RegisterView markJoinedPresent(Long sessionId) {
-        requireTeam();
+        requireHost(find(sessionId));
         Set<Long> present = attendance.findByIdSessionId(sessionId).stream().map(a -> a.getId().enrolmentId())
                 .collect(Collectors.toSet());
         for (SessionJoin j : joins.findByIdSessionId(sessionId)) {
@@ -232,17 +241,33 @@ public class LiveSessionService {
                 .toList();
     }
 
-    private String hostUser(CurrentUser me) {
+    /**
+     * The Zoom user a cohort's meetings belong to: its trainer's own Zoom login when set (so trainers can run
+     * sessions at the same time), then the platform's default host, then whoever is starting it.
+     */
+    private String hostUser(Cohort cohort, CurrentUser me) {
+        if (cohort.getTrainer() != null && cohort.getTrainer().getZoomEmail() != null) {
+            return cohort.getTrainer().getZoomEmail();
+        }
         String configured = zoomProperties.hostEmail();
         return configured == null || configured.isBlank() ? me.email() : configured.strip();
     }
 
-    private CurrentUser requireTeam() {
+    private CurrentUser requireHost(CohortSession session) {
         CurrentUser me = currentUser.current();
-        if (!me.is(Role.ADMIN)) {
-            throw new AccessDeniedException("Only the Motor Movers team keeps the register");
+        if (!canHost(me, session.getCohort())) {
+            throw new AccessDeniedException("Only the session's trainer or the Motor Movers team keeps the register");
         }
         return me;
+    }
+
+    /** The team can run any session; a trainer only the sessions of cohorts assigned to them. */
+    private static boolean canHost(CurrentUser me, Cohort cohort) {
+        return me.is(Role.ADMIN) || runs(me, cohort);
+    }
+
+    private static boolean runs(CurrentUser me, Cohort cohort) {
+        return me.is(Role.TRAINER) && cohort.getTrainer() != null && cohort.getTrainer().getId().equals(me.id());
     }
 
     private CohortSession find(Long id) {
@@ -251,7 +276,7 @@ public class LiveSessionService {
 
     private static TrainingViews.LiveSessionView view(CohortSession s, CurrentUser me, Instant now) {
         Cohort c = s.getCohort();
-        boolean host = me.is(Role.ADMIN);
+        boolean host = canHost(me, c);
         return new TrainingViews.LiveSessionView(s.getId(), c.getId(), c.getCourse().getTitle(), c.getName(),
                 s.getNumber(), c.getCourse().getLiveSessions(), s.getStartsAt(), s.getDurationMinutes(),
                 c.getTrainerName(), host ? !s.isOverAt(now) : s.isOpenAt(now), host);

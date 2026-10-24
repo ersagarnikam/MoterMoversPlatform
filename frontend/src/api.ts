@@ -1,6 +1,6 @@
 // Thin client for the Spring Boot API. The token is kept in sessionStorage so it ends with the tab.
 
-export type Role = 'TEACHER' | 'HEAD' | 'TRUST_LEAD' | 'PRACTITIONER' | 'PARENT' | 'ADMIN'
+export type Role = 'TEACHER' | 'HEAD' | 'TRUST_LEAD' | 'PRACTITIONER' | 'PARENT' | 'ADMIN' | 'TRAINER'
 export type ColourStage = 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'INDIGO' | 'VIOLET'
 
 export interface CurrentUser {
@@ -332,6 +332,19 @@ export interface CohortInput {
   capacity: number
   trainerName: string
   recordingAgreed: boolean
+  /** The trainer or team member who runs the live sessions; null: the team. */
+  trainerUserId: number | null
+}
+
+/** Someone who can run live sessions: a trainer, or a member of the team (team: true). */
+export interface Trainer {
+  id: number
+  displayName: string
+  email: string
+  /** The Zoom login they host with; null: the platform's default Zoom host. */
+  zoomEmail: string | null
+  team: boolean
+  enabled: boolean
 }
 
 /** A course as the team manages it: every cohort, past ones too, with places booked. */
@@ -577,6 +590,11 @@ export const api = {
   addCohort: (courseId: number, c: CohortInput) =>
     request<AdminCourse>('POST', `/api/admin/courses/${courseId}/cohorts`, c),
   updateCohort: (id: number, c: CohortInput) => request<AdminCourse>('PUT', `/api/admin/cohorts/${id}`, c),
+  trainers: () => request<Trainer[]>('GET', '/api/admin/trainers'),
+  addTrainer: (t: { email: string; displayName: string; zoomEmail: string }) =>
+    request<Trainer>('POST', '/api/admin/trainers', t),
+  setTrainerZoomEmail: (userId: number, zoomEmail: string) =>
+    request<Trainer>('PUT', `/api/admin/trainers/${userId}/zoom-email`, { zoomEmail }),
   cohortBookings: (cohortId: number) => request<Enrolment[]>('GET', `/api/admin/cohorts/${cohortId}/enrolments`),
   liveSessions: () => request<LiveSession[]>('GET', '/api/training/live'),
   joinLive: (sessionId: number) => request<LiveJoin>('POST', `/api/training/live/${sessionId}/join`),

@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentPurpose;
+import uk.co.motormovers.platform.payment.repository.PaymentRepository;
+import uk.co.motormovers.platform.school.repository.SchoolRepository;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
@@ -24,7 +28,7 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
 /**
  * Live courses for professionals and parents. Phase 0 runs on an off-the-shelf course platform; this
  * module takes over enrolment, attendance and certificates when learners move onto the platform.
- * Online payment is not integrated yet.
+ * Online payment is not integrated yet. A place booked by school staff is invoiced to their school.
  */
 @Service
 public class TrainingService {
@@ -34,17 +38,21 @@ public class TrainingService {
     private final EnrolmentRepository enrolments;
     private final SessionAttendanceRepository attendance;
     private final AppUserRepository users;
+    private final PaymentRepository payments;
+    private final SchoolRepository schools;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
 
     public TrainingService(CourseRepository courses, CohortRepository cohorts, EnrolmentRepository enrolments,
-            SessionAttendanceRepository attendance, AppUserRepository users, CurrentUserResolver currentUser,
-            Clock clock) {
+            SessionAttendanceRepository attendance, AppUserRepository users, PaymentRepository payments,
+            SchoolRepository schools, CurrentUserResolver currentUser, Clock clock) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
         this.attendance = attendance;
         this.users = users;
+        this.payments = payments;
+        this.schools = schools;
         this.currentUser = currentUser;
         this.clock = clock;
     }
@@ -81,6 +89,7 @@ public class TrainingService {
                         throw new IllegalStateException("This cohort is full");
                     }
                     Enrolment e = new Enrolment(cohort, users.getReferenceById(me.id()));
+                    invoiceSchool(me, cohort);
                     return view(enrolments.save(e));
                 });
     }
@@ -107,6 +116,17 @@ public class TrainingService {
 
     private TrainingViews.EnrolmentView view(Enrolment e) {
         return TrainingViews.EnrolmentView.of(e, attendance.attendedNumbers(e.getId()));
+    }
+
+    /** Staff places are paid by their school: the booking adds a payment due on the school's account. */
+    private void invoiceSchool(CurrentUser me, Cohort cohort) {
+        int price = cohort.getCourse().getPricePence();
+        if (me.schoolId() == null || price <= 0) {
+            return;
+        }
+        payments.save(Payment.bySchool(schools.getReferenceById(me.schoolId()), PaymentPurpose.COURSE,
+                cohort.getCourse().getTitle() + " · " + me.displayName() + " (" + cohort.getName() + ")", price,
+                LocalDate.now(clock), null, me.displayName() + " (booking)", clock.instant()));
     }
 
     private Enrolment findEnrolment(Long id) {

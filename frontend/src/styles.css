@@ -310,6 +310,8 @@ td { padding: 0.5rem; border-bottom: 1px solid var(--row-line); }
 /* Admin: new content and courses */
 .add-item { margin: 1rem 0; }
 .add-item > summary { cursor: pointer; }
+.row-form { display: flex; gap: 0.5rem; align-items: center; }
+.row-form input { min-width: 12rem; }
 .inline-form label.form-wide, .inline-form .form-wide { flex: 1 1 100%; }
 .hint { font-weight: 400; font-size: 0.82rem; color: var(--muted); }
 .course-admin { margin-bottom: 1rem; }

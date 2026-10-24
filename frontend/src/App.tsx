@@ -44,6 +44,8 @@ export function homeFor(role: Role): string {
       return '/trust'
     case 'ADMIN':
       return '/admin/content'
+    case 'TRAINER':
+      return '/live'
     default:
       return '/training'
   }

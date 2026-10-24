@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V9`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V10`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,12 +46,12 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 86 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 92 unit + API integration tests (H2)
 cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
-cd frontend && npm run e2e          # 58 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 60 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -81,8 +81,18 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-58/58 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+60/60 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
+
+**Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
+runs and keeps the register of the cohorts assigned to them (`cohort.trainer_id`, migration V10); the team (ADMIN)
+can run any session and reassign cohorts. Each trainer or team member can have their own Zoom login
+(`app_user.zoom_email`), so sessions can run at the same time; without one, `ZOOM_HOST_EMAIL` hosts. The team adds
+trainers (emailed an invite) and sets Zoom logins in the Trainers section of `/admin/courses`
+(`AdminTrainerController`), and the cohort form picks a trainer. A place booked by school staff (anyone with a school)
+creates a payment due on the school's account (`TrainingService.invoiceSchool`). Demo trainer:
+trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its own licensed
+Zoom user on the owner's account.
 
 DigitalOcean deployment was discussed (2026-10-21) but not started: the owner stopped before choosing how to
 connect, the server size, the web address and email. Nothing was created.

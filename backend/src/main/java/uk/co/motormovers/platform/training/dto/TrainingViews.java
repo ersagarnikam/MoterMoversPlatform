@@ -30,7 +30,8 @@ public final class TrainingViews {
 
     /** A cohort as the team manages it: past ones too, with places booked rather than places left. */
     public record AdminCohortView(Long id, String name, LocalDate startsOn, LocalTime startTime, String timeSlot,
-            int capacity, int booked, String trainerName, boolean recordingAgreed, List<SessionSummary> sessions) {
+            int capacity, int booked, String trainerName, Long trainerUserId, boolean recordingAgreed,
+            List<SessionSummary> sessions) {
     }
 
     public record SessionSummary(Long id, int number, Instant startsAt, int durationMinutes) {

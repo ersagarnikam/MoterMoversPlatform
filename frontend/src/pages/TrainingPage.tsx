@@ -233,6 +233,9 @@ export default function TrainingPage() {
 
       {user && user.role !== 'ADMIN' && !OWN_PAYMENTS_PAGE.includes(user.role) && <YourPayments />}
 
+      {user?.schoolId != null && (
+        <p className="banner-teal">Places you book are invoiced to your school, and show on its Payments page.</p>
+      )}
       {courses.map((c) => (
         <section key={c.id} className="card">
           <div className="section-head">

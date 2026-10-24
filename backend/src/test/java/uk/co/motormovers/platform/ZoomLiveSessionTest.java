@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
@@ -73,6 +74,25 @@ class ZoomLiveSessionTest {
                 eq(false));
         List<String> rules = List.of((String) JsonPath.read(asLearner, "$.rules"));
         assertThat(rules.getFirst()).contains("Adults only on camera");
+    }
+
+    @Test
+    void aTrainerWithTheirOwnZoomLoginHostsUnderIt() throws Exception {
+        when(zoom.createMeeting(anyString(), anyString(), any(), anyInt(), any(), anyBoolean()))
+                .thenReturn(new ZoomClient.Meeting("89999999999", "pass2", "https://zoom.us/j/89999999999?pwd=y"));
+        when(zoom.hostToken("amy@zoom.example")).thenReturn("amy-zak");
+
+        String admin = login("admin@motormovers.test");
+        Integer amy = JsonPath.read(fetch(login("trainer@motormovers.test"), "/api/auth/me"), "$.id");
+        mvc.perform(put("/api/admin/trainers/" + amy + "/zoom-email").header("Authorization", "Bearer " + admin)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"zoomEmail\":\"amy@zoom.example\"}"))
+                .andExpect(status().isOk());
+
+        String trainer = login("trainer@motormovers.test");
+        Integer session = JsonPath.read(fetch(trainer, "/api/training/live"), "$[0].id");
+        String asHost = join(trainer, session);
+        assertThat((String) JsonPath.read(asHost, "$.zak")).isEqualTo("amy-zak");
+        verify(zoom).createMeeting(eq("amy@zoom.example"), anyString(), any(), anyInt(), any(), anyBoolean());
     }
 
     private String join(String token, Integer session) throws Exception {

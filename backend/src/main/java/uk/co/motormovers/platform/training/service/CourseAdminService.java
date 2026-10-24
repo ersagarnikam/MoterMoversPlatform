@@ -18,6 +18,9 @@ import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.repository.CohortRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
+import uk.co.motormovers.platform.user.model.AppUser;
+import uk.co.motormovers.platform.user.model.Role;
+import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
  * The team sets up live courses and opens cohorts for them. Courses go live as soon as they are saved, so the
@@ -31,15 +34,17 @@ public class CourseAdminService {
     private final EnrolmentRepository enrolments;
     private final WordingGuard wordingGuard;
     private final LiveSessionService live;
+    private final AppUserRepository users;
     private final Clock clock;
 
     public CourseAdminService(CourseRepository courses, CohortRepository cohorts, EnrolmentRepository enrolments,
-            WordingGuard wordingGuard, LiveSessionService live, Clock clock) {
+            WordingGuard wordingGuard, LiveSessionService live, AppUserRepository users, Clock clock) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
         this.wordingGuard = wordingGuard;
         this.live = live;
+        this.users = users;
         this.clock = clock;
     }
 
@@ -76,8 +81,10 @@ public class CourseAdminService {
         if (r.startsOn().isBefore(LocalDate.now(clock))) {
             throw new IllegalArgumentException("A new cohort cannot start in the past");
         }
-        live.schedule(cohorts.save(new Cohort(course, r.name().strip(), r.startsOn(), r.startTime(),
-                r.timeSlot().strip(), r.capacity(), r.trainerName().strip(), r.recordingAgreed())));
+        Cohort cohort = new Cohort(course, r.name().strip(), r.startsOn(), r.startTime(), r.timeSlot().strip(),
+                r.capacity(), r.trainerName().strip(), r.recordingAgreed());
+        cohort.assignTrainer(trainer(r.trainerUserId()));
+        live.schedule(cohorts.save(cohort));
         return view(course);
     }
 
@@ -91,6 +98,7 @@ public class CourseAdminService {
         }
         cohort.revise(r.name().strip(), r.startsOn(), r.startTime(), r.timeSlot().strip(), r.capacity(),
                 r.trainerName().strip(), r.recordingAgreed());
+        cohort.assignTrainer(trainer(r.trainerUserId()));
         live.schedule(cohort);
         return view(cohort.getCourse());
     }
@@ -100,6 +108,18 @@ public class CourseAdminService {
             throw new IllegalArgumentException("Parent courses do not award a certificate");
         }
         wordingGuard.requireClean(List.of(r.title(), r.description()));
+    }
+
+    /** The account chosen to run a cohort: a trainer or a member of the team. Null: none chosen. */
+    private AppUser trainer(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        AppUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("Trainer", userId));
+        if (user.getRole() != Role.TRAINER && user.getRole() != Role.ADMIN) {
+            throw new IllegalArgumentException("Choose a trainer or a member of the Motor Movers team");
+        }
+        return user;
     }
 
     private Course findCourse(Long id) {
@@ -113,7 +133,8 @@ public class CourseAdminService {
                 cohorts.findByCourseIdOrderByStartsOn(c.getId()).stream()
                         .map(h -> new TrainingViews.AdminCohortView(h.getId(), h.getName(), h.getStartsOn(),
                                 h.getStartTime(), h.getTimeSlot(), h.getCapacity(),
-                                (int) enrolments.countByCohortId(h.getId()), h.getTrainerName(), h.isRecordingAgreed(),
+                                (int) enrolments.countByCohortId(h.getId()), h.getTrainerName(),
+                                h.getTrainer() == null ? null : h.getTrainer().getId(), h.isRecordingAgreed(),
                                 live.summaries(h.getId())))
                         .toList());
     }

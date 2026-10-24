@@ -37,6 +37,9 @@ public class AppUser {
     /** A switched-off account cannot sign in, and its existing sign-ins stop working within a minute. */
     private boolean enabled = true;
 
+    /** The Zoom login this person hosts live sessions with, when it differs from their email. Null: not set. */
+    private String zoomEmail;
+
     protected AppUser() {
     }
 
@@ -79,6 +82,15 @@ public class AppUser {
 
     public LocalDate getInductionCompletedOn() {
         return inductionCompletedOn;
+    }
+
+    public String getZoomEmail() {
+        return zoomEmail;
+    }
+
+    /** Blank clears it, so the platform's default Zoom host is used. */
+    public void setZoomEmail(String zoomEmail) {
+        this.zoomEmail = zoomEmail == null || zoomEmail.isBlank() ? null : zoomEmail.strip().toLowerCase(java.util.Locale.ROOT);
     }
 
     public boolean isEnabled() {

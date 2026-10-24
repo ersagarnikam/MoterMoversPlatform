@@ -14,6 +14,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     boolean existsByRole(Role role);
 
+    List<AppUser> findByRoleInOrderByDisplayName(java.util.Collection<Role> roles);
+
     List<AppUser> findBySchoolIdOrderByDisplayName(Long schoolId);
 
     List<AppUser> findByTrustIdAndRoleOrderByDisplayName(Long trustId, Role role);

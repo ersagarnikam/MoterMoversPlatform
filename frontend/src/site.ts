@@ -49,6 +49,12 @@ export const SIGN_IN_ROLES = [
     blurb: 'Content approval, schools, licences and trusts.',
     demo: 'admin@motormovers.test',
   },
+  {
+    key: 'trainer',
+    label: 'Trainer',
+    blurb: 'The live course sessions you run, and their registers.',
+    demo: 'trainer@motormovers.test',
+  },
 ] as const
 
 export type SignInRole = (typeof SIGN_IN_ROLES)[number]

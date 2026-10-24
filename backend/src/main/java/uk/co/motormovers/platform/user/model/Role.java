@@ -13,5 +13,7 @@ public enum Role {
     /** Parent or carer. */
     PARENT,
     /** Pat, Laura and the platform team: content approval, schools, licences, trainers. */
-    ADMIN
+    ADMIN,
+    /** Runs live course sessions: the Live sessions page and the register, for the cohorts assigned to them only. */
+    TRAINER
 }

@@ -27,6 +27,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/training', label: 'Parent course' },
     { to: '/payments', label: 'Payments' },
   ],
+  TRAINER: [{ to: '/live', label: 'Live sessions' }],
   ADMIN: [
     { to: '/admin/content', label: 'Content approval' },
     { to: '/admin/schools', label: 'Schools & licences' },
@@ -46,6 +47,7 @@ const ROLE_LABEL: Record<Role, string> = {
   PRACTITIONER: 'Practitioner',
   PARENT: 'Parent or carer',
   ADMIN: 'Motor Movers team',
+  TRAINER: 'Trainer',
 }
 
 export default function Layout() {
