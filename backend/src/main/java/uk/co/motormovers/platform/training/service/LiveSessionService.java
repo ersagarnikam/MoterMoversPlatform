@@ -155,7 +155,10 @@ public class LiveSessionService {
         }
         String signature = ZoomSignature.sign(zoomProperties.sdkKey(), zoomProperties.sdkSecret(), meetingId,
                 host ? ZoomSignature.HOST : ZoomSignature.PARTICIPANT, now);
-        return new TrainingViews.JoinView(view, true, true, null, zoomProperties.sdkKey(), signature, meetingId,
+        // Learners also get the join link, for the parent app, which opens the meeting in the Zoom app.
+        String joinUrl = host ? null
+                : locked.getZoomJoinUrl() != null ? locked.getZoomJoinUrl() : "https://zoom.us/j/" + meetingId;
+        return new TrainingViews.JoinView(view, true, true, joinUrl, zoomProperties.sdkKey(), signature, meetingId,
                 locked.getZoomPasscode(), zak, me.displayName(), me.email(),
                 TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
     }
@@ -262,7 +265,7 @@ public class LiveSessionService {
     }
 
     /** The team can run any session; a trainer only the sessions of cohorts assigned to them. */
-    private static boolean canHost(CurrentUser me, Cohort cohort) {
+    public static boolean canHost(CurrentUser me, Cohort cohort) {
         return me.is(Role.ADMIN) || runs(me, cohort);
     }
 

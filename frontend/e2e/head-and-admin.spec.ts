@@ -194,6 +194,43 @@ test('a trainer runs only the sessions of the cohorts given to them', async ({ p
   await expectAccessible(page)
   await sessions.first().getByRole('link', { name: 'Start session' }).click()
   await expect(page.getByRole('heading', { name: 'Register' })).toBeVisible()
+
+  // Her cohorts, with their bookings and assessments.
+  await page.goto('/trainer/cohorts')
+  await expect(page.getByRole('heading', { name: 'My cohorts' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Motor Movers practitioner course · Cohort B · UK morning / AU evening' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Cohort A · starting now/ })).toHaveCount(0)
+  await expectAccessible(page)
+})
+
+test('a teacher asks for a course place, the head approves it, and the teacher can cancel it', async ({ page }) => {
+  const cohortName = 'Cohort A · UK evening'
+  await signIn(page, 'newteacher@oakfield.test')
+  await page.getByRole('link', { name: 'Training' }).click()
+  await expect(page.getByText('your head approves each one')).toBeVisible()
+  await page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Ask for a place' }).click()
+  await expect(page.getByText('Request sent')).toBeVisible()
+  await expect(page.locator('.cohort', { hasText: cohortName }).getByText('Waiting for approval')).toBeVisible()
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'head@oakfield.test')
+  await page.getByRole('link', { name: 'Payments' }).click()
+  const toApprove = page.locator('section', { has: page.getByRole('heading', { name: 'Course places to approve' }) })
+  const request = toApprove.locator('.cohort', { hasText: 'Mr Lewis' })
+  await expectAccessible(page)
+  await request.getByRole('button', { name: 'Approve' }).click()
+  await expect(page.getByText("Mr Lewis's place on Motor Movers practitioner course is booked")).toBeVisible()
+  await expect(page.getByRole('cell', { name: /Mr Lewis \(Cohort A · UK evening\)/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'newteacher@oakfield.test')
+  await page.getByRole('link', { name: 'Training' }).click()
+  const place = page.locator('.enrolment', { hasText: cohortName })
+  page.once('dialog', (d) => d.accept())
+  await place.getByRole('button', { name: 'Cancel place' }).click()
+  await expect(page.getByText(/is cancelled\. The school's invoice for it is cancelled/)).toBeVisible()
+  await expect(page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Ask for a place' })).toBeVisible()
 })
 
 test('the team adds a trainer with their own Zoom login', async ({ page }) => {
@@ -210,6 +247,11 @@ test('the team adds a trainer with their own Zoom login', async ({ page }) => {
   await team.getByRole('button', { name: 'Add trainer' }).click()
   await expect(team.getByText(`${name} added`)).toBeVisible()
   await expect(team.getByLabel(`Zoom login for ${name}`)).toHaveValue('zoom.host@trainers.test')
+
+  // Switched off, they can no longer sign in.
+  await team.getByRole('row', { name: new RegExp(name) }).getByRole('button', { name: 'Switch off' }).click()
+  await expect(team.getByText(`${name} is switched off`)).toBeVisible()
+  await expect(team.getByRole('row', { name: new RegExp(name) })).toContainText('(switched off)')
 })
 
 test('the team marks attendance and the assessment, and the learner gets a certificate', async ({ page }) => {

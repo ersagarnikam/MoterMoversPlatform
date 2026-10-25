@@ -162,6 +162,17 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
                   <p className="muted">
                     {h.booked} of {h.capacity} places booked · {h.recordingAgreed ? 'sessions recorded' : 'not recorded'}
                   </p>
+                  {h.clashes.length > 0 && (
+                    <div className="banner-warn" role="status">
+                      <strong>Zoom clash:</strong> one Zoom login runs one meeting at a time. Give this cohort a trainer
+                      with their own Zoom login, or move it.
+                      <ul>
+                        {h.clashes.map((c) => (
+                          <li key={c}>{c}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
                 <div className="actions">
                   <button
@@ -182,6 +193,7 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
                   cohortName={h.name}
                   sessions={h.sessions}
                   certificate={course.awardsCertificate}
+                  canCancel
                 />
               )}
             </div>
@@ -205,22 +217,37 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
 }
 
 /**
- * Who has booked a cohort. The team ticks who attended each live session (as in the live session's register) and
- * the assessment result; the platform issues the certificate once both are complete, and then it is locked.
+ * Who has booked a cohort. The team (or the cohort's trainer) ticks who attended each live session (as in the live
+ * session's register) and the assessment result; the platform issues the certificate once both are complete, and
+ * then it is locked. The team can also cancel a place, which cancels the school's invoice for it while still due.
  */
-function CohortBookings({
+export function CohortBookings({
   cohortId,
   cohortName,
   sessions,
   certificate,
+  canCancel = false,
 }: {
   cohortId: number
   cohortName: string
   sessions: SessionSummary[]
   certificate: boolean
+  canCancel?: boolean
 }) {
   const [bookings, setBookings] = useState<Enrolment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+
+  async function cancel(b: Enrolment) {
+    if (!window.confirm(`Cancel ${b.learnerName}'s place on ${cohortName}?`)) return
+    setError(null)
+    try {
+      setNotice((await api.cancelPlace(b.id)).message)
+      setBookings((all) => all?.filter((x) => x.id !== b.id) ?? null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong')
+    }
+  }
 
   useEffect(() => {
     api
@@ -248,6 +275,11 @@ function CohortBookings({
           {error}
         </p>
       )}
+      {notice && (
+        <p className="banner-teal" role="status">
+          {notice}
+        </p>
+      )}
       {bookings.length === 0 ? (
         <p className="muted">No one has booked this cohort yet.</p>
       ) : (
@@ -264,6 +296,7 @@ function CohortBookings({
                     <th>Certificate</th>
                   </>
                 )}
+                {canCancel && <th>Place</th>}
               </tr>
             </thead>
             <tbody>
@@ -328,6 +361,15 @@ function CohortBookings({
                           )}
                         </td>
                       </>
+                    )}
+                    {canCancel && (
+                      <td>
+                        {!issued && (
+                          <button className="btn" onClick={() => cancel(b)}>
+                            Cancel place
+                          </button>
+                        )}
+                      </td>
                     )}
                   </tr>
                 )
@@ -541,11 +583,12 @@ function CohortForm({
         <select value={trainerId} onChange={(e) => setTrainerId(e.target.value)} required={!initial?.trainerName}>
           <option value="">{initial?.trainerName && !initial.trainerUserId ? initial.trainerName : 'Choose…'}</option>
           {trainers
-            .filter((t) => t.enabled)
+            .filter((t) => t.enabled || String(t.id) === trainerId)
             .map((t) => (
               <option key={t.id} value={t.id}>
                 {t.displayName}
                 {t.team ? ' (team)' : ''}
+                {t.enabled ? '' : ' (switched off)'}
               </option>
             ))}
         </select>
@@ -635,7 +678,28 @@ function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: T
                   {t.team ? ' (team)' : ''}
                   {t.enabled ? '' : ' (switched off)'}
                 </td>
-                <td>{t.email}</td>
+                <td>
+                  {t.email}
+                  {!t.team && (
+                    <>
+                      <br />
+                      <button
+                        className="btn btn-small"
+                        onClick={() =>
+                          save(
+                            () => api.setTrainerEnabled(t.id, !t.enabled),
+                            (s) =>
+                              s.enabled
+                                ? `${s.displayName} can sign in again`
+                                : `${s.displayName} is switched off. Give their cohorts to someone else.`,
+                          )
+                        }
+                      >
+                        {t.enabled ? 'Switch off' : 'Switch on'}
+                      </button>
+                    </>
+                  )}
+                </td>
                 <td>
                   <ZoomLogin
                     trainer={t}

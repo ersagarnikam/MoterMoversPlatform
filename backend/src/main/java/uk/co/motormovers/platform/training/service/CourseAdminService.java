@@ -1,21 +1,30 @@
 package uk.co.motormovers.platform.training.service;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.content.util.WordingGuard;
+import uk.co.motormovers.platform.security.model.CurrentUser;
+import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.CourseInputs.CohortInput;
 import uk.co.motormovers.platform.training.dto.CourseInputs.CourseInput;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
 import uk.co.motormovers.platform.training.model.Cohort;
+import uk.co.motormovers.platform.training.model.CohortSession;
 import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.repository.CohortRepository;
+import uk.co.motormovers.platform.training.repository.CohortSessionRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
 import uk.co.motormovers.platform.user.model.AppUser;
@@ -24,7 +33,8 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
  * The team sets up live courses and opens cohorts for them. Courses go live as soon as they are saved, so the
- * wording check runs on save rather than at a separate sign-off. Mapped under /api/admin (ADMIN only).
+ * wording check runs on save rather than at a separate sign-off. Mapped under /api/admin (ADMIN only), except
+ * {@link #trainerCohorts}, a trainer's own cohorts.
  */
 @Service
 public class CourseAdminService {
@@ -35,22 +45,38 @@ public class CourseAdminService {
     private final WordingGuard wordingGuard;
     private final LiveSessionService live;
     private final AppUserRepository users;
+    private final CohortSessionRepository sessions;
+    private final CurrentUserResolver currentUser;
     private final Clock clock;
 
     public CourseAdminService(CourseRepository courses, CohortRepository cohorts, EnrolmentRepository enrolments,
-            WordingGuard wordingGuard, LiveSessionService live, AppUserRepository users, Clock clock) {
+            WordingGuard wordingGuard, LiveSessionService live, AppUserRepository users,
+            CohortSessionRepository sessions, CurrentUserResolver currentUser, Clock clock) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
         this.wordingGuard = wordingGuard;
         this.live = live;
         this.users = users;
+        this.sessions = sessions;
+        this.currentUser = currentUser;
         this.clock = clock;
     }
 
     @Transactional(readOnly = true)
     public List<TrainingViews.AdminCourseView> all() {
         return courses.findAllByOrderByTrackAscTitleAsc().stream().map(this::view).toList();
+    }
+
+    /** The courses a trainer runs cohorts of, with only their own cohorts, for their bookings and assessments. */
+    @Transactional(readOnly = true)
+    public List<TrainingViews.AdminCourseView> trainerCohorts() {
+        CurrentUser me = currentUser.current();
+        Predicate<Cohort> mine = h -> LiveSessionService.canHost(me, h);
+        return courses.findAllByOrderByTrackAscTitleAsc().stream()
+                .map(c -> view(c, mine))
+                .filter(c -> !c.cohorts().isEmpty())
+                .toList();
     }
 
     @Transactional
@@ -127,15 +153,51 @@ public class CourseAdminService {
     }
 
     private TrainingViews.AdminCourseView view(Course c) {
+        return view(c, h -> true);
+    }
+
+    private TrainingViews.AdminCourseView view(Course c, Predicate<Cohort> shown) {
+        List<CohortSession> upcoming = sessions.findByStartsAtAfterOrderByStartsAt(clock.instant());
         return new TrainingViews.AdminCourseView(c.getId(), c.getTrack(), c.getTitle(), c.getDescription(),
                 c.getLiveSessions(), c.getSessionMinutes(), c.getPricePence(), c.getRenewalPence(),
                 c.isAwardsCertificate(),
                 cohorts.findByCourseIdOrderByStartsOn(c.getId()).stream()
+                        .filter(shown)
                         .map(h -> new TrainingViews.AdminCohortView(h.getId(), h.getName(), h.getStartsOn(),
                                 h.getStartTime(), h.getTimeSlot(), h.getCapacity(),
                                 (int) enrolments.countByCohortId(h.getId()), h.getTrainerName(),
                                 h.getTrainer() == null ? null : h.getTrainer().getId(), h.isRecordingAgreed(),
-                                live.summaries(h.getId())))
+                                live.summaries(h.getId()), clashes(h, upcoming)))
                         .toList());
+    }
+
+    /**
+     * A Zoom login can run one meeting at a time, so sessions still to come that overlap another cohort's on the
+     * same login (the trainer's own, or the platform's Zoom host for everyone without one) are named here.
+     */
+    private List<String> clashes(Cohort cohort, List<CohortSession> upcoming) {
+        DateTimeFormatter when = DateTimeFormatter.ofPattern("EEE d MMM, HH:mm", Locale.UK).withZone(clock.getZone());
+        String login = zoomLogin(cohort);
+        return upcoming.stream()
+                .filter(s -> s.getCohort().getId().equals(cohort.getId()))
+                .flatMap(s -> upcoming.stream()
+                        .filter(o -> !o.getCohort().getId().equals(cohort.getId()))
+                        .filter(o -> Objects.equals(zoomLogin(o.getCohort()), login))
+                        .filter(o -> overlap(s, o))
+                        .map(o -> "Session " + s.getNumber() + " (" + when.format(s.getStartsAt()) + ") overlaps "
+                                + o.getCohort().getCourse().getTitle() + " · " + o.getCohort().getName()
+                                + " on the same Zoom login"))
+                .toList();
+    }
+
+    /** The Zoom login a cohort's meetings run on; null for the platform's Zoom host. */
+    private static String zoomLogin(Cohort cohort) {
+        return cohort.getTrainer() == null ? null : cohort.getTrainer().getZoomEmail();
+    }
+
+    private static boolean overlap(CohortSession a, CohortSession b) {
+        Instant aEnd = a.endsAt();
+        Instant bEnd = b.endsAt();
+        return a.getStartsAt().isBefore(bEnd) && b.getStartsAt().isBefore(aEnd);
     }
 }

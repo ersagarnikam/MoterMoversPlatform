@@ -70,6 +70,10 @@ public class SecurityConfig {
                         .permitAll()
                         // Trainers keep the register for their own sessions (checked in LiveSessionService).
                         .requestMatchers("/api/admin/live/**").hasAnyRole("ADMIN", "TRAINER")
+                        // ...and the bookings and assessments of their own cohorts (checked in TrainingService).
+                        .requestMatchers("/api/admin/cohorts/*/enrolments", "/api/admin/enrolments/*/assessment")
+                        .hasAnyRole("ADMIN", "TRAINER")
+                        .requestMatchers("/api/trainer/**").hasRole("TRAINER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/family/**").hasRole("PARENT")
                         .requestMatchers("/api/**").authenticated()

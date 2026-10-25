@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
+import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.user.model.AppUser;
 
 @Entity
@@ -34,6 +35,10 @@ public class Enrolment {
     private LocalDate certificateIssuedOn;
 
     private LocalDate certificateExpiresOn;
+
+    /** The school's invoice for a staff place; null when nothing was invoiced with the booking. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Payment payment;
 
     protected Enrolment() {
     }
@@ -103,5 +108,13 @@ public class Enrolment {
 
     public LocalDate getCertificateExpiresOn() {
         return certificateExpiresOn;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void invoicedWith(Payment payment) {
+        this.payment = payment;
     }
 }

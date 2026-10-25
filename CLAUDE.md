@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V10`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V11`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,12 +46,12 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 92 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 98 unit + API integration tests (H2)
 cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
-cd frontend && npm run e2e          # 60 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 61 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -76,12 +76,12 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-22)
+## Current state (2026-10-26)
 
 `main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
 into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
 GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-60/60 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+61/61 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -89,10 +89,21 @@ runs and keeps the register of the cohorts assigned to them (`cohort.trainer_id`
 can run any session and reassign cohorts. Each trainer or team member can have their own Zoom login
 (`app_user.zoom_email`), so sessions can run at the same time; without one, `ZOOM_HOST_EMAIL` hosts. The team adds
 trainers (emailed an invite) and sets Zoom logins in the Trainers section of `/admin/courses`
-(`AdminTrainerController`), and the cohort form picks a trainer. A place booked by school staff (anyone with a school)
-creates a payment due on the school's account (`TrainingService.invoiceSchool`). Demo trainer:
-trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its own licensed
-Zoom user on the owner's account.
+(`AdminTrainerController`, which also switches a trainer's account off), and the cohort form picks a trainer. The
+Courses page warns when a cohort's sessions overlap another cohort's on the same Zoom login (`AdminCohortView.clashes`;
+a warning, not a refusal). Trainers also have **My cohorts** (`/trainer/cohorts`, `GET /api/trainer/cohorts`): the
+bookings, attendance and the end-of-course assessment of their own cohorts (`LiveSessionService.canHost` decides).
+Demo trainer: trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its
+own licensed Zoom user on the owner's account.
+
+**Staff course places (2026-10-26, migration V11).** A school pays for its staff's places, so staff other than heads
+**ask for a place** (`course_request`); the school's heads are emailed and approve or decline on the school's Payments
+page. Approving books the place and adds the school's payment, linked to the place (`enrolment.payment_id`); a head
+books their own place directly (and is invoiced). Places can be **cancelled** (`POST /api/training/enrolments/{id}/cancel`):
+by the learner or their head until the first session starts, by the team any time before a certificate; a linked
+invoice still due is cancelled, a paid one is left for the team to refund by hand. **Reminder emails**
+(`SessionReminderJob`, every 10 minutes) go to everyone booked, and the trainer, once per session a day ahead
+(`cohort_session.reminder_sent_at`; moving a session sends a new one).
 
 DigitalOcean deployment was discussed (2026-10-21) but not started: the owner stopped before choosing how to
 connect, the server size, the web address and email. Nothing was created.
@@ -130,8 +141,9 @@ Built so far:
   The owner's Zoom plan allows 100 participants: up to 99 learners per session. The SDK and its six global libraries load from Zoom's CDN,
   pinned to 6.5.0 with SRI hashes (`src/live.ts`); only `/live/<id>` has the looser CSP and camera/microphone
   permission (`vite.config.ts` and `frontend/nginx.conf`, kept the same). Reach the room with a full page load
-  (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. The parent app does
-  not join live sessions. Demo: a parent cohort starts ten minutes after start-up
+  (`<a href>`), never client-side routing, or the strict CSP stays in force and Zoom is blocked. The parent app
+  (2026-10-26) lists live sessions on its Course tab and joins in the **Zoom app** (Join in Zoom opens the meeting's
+  join link, which the API now returns to learners in both modes; Today shows a banner while a session is open). Demo: a parent cohort starts ten minutes after start-up
   with Jo booked.
 - Team (admin): writing new content (saved as drafts) and content approval with wording checks, courses
   and cohorts (`/admin/courses`; the wording check runs on save; each cohort has a bookings panel to mark
@@ -183,8 +195,9 @@ Not started unless noted. Confirm priorities with the owner.
    (`seed/StarterContent`, shared with the demo) as drafts for the team to approve. Still to do: the daily
    session plans (the demo ones are generated filler and are not in the starter set), and replacing the
    placeholder assessment items once Pat sends the real ones (step 10). Approving drafts is one at a time.
-8. Done 2026-10-21: bookings, attendance and certificates have a screen (per-session register since 2026-10-22). Not built: emailing the learner when
-   their certificate is issued, and reminders before it expires.
+8. Done 2026-10-21: bookings, attendance and certificates have a screen (per-session register since 2026-10-22).
+   Session reminder emails done 2026-10-26. Not built: emailing the learner when their certificate is issued, and
+   reminders before it expires.
 9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same
    `payment` records), refunds and credit notes (a paid payment is final), VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
@@ -205,6 +218,8 @@ Not started unless noted. Confirm priorities with the owner.
    `ZOOM_SDK_KEY`/`ZOOM_SDK_SECRET`). Keys in `backend/.env` only; host sagarnikam@ihau.au for testing. Pat started a
    session as host and the meeting showed in `/live/:id` beside the rules and register. Without the General app's keys
    it falls back to opening Zoom in a new tab (also tested: parent and teacher join links accepted). Still to do: the
-   video shows at Zoom's small default size (a `customize.video.viewSizes` attempt did not take effect; it is in
-   `git stash`, unverified); a call with real people on other devices; recording; the parent app's Join; for
-   go-live the same keys in `deploy/.env` and the General app's production credentials.
+   video showed at Zoom's small default size; since 2026-10-26 the room starts in speaker view
+   (`defaultViewType`) and resizes with `updateVideoOptions` after joining (from the SDK 6.5 types), **not yet seen in
+   a real meeting**; the old `git stash` attempt is superseded. Also: a call with real people on other devices
+   (including the parent app's Join in the Zoom app); recording; for go-live the same keys in `deploy/.env` and the
+   General app's production credentials.

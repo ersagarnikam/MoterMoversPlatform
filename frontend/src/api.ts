@@ -149,6 +149,23 @@ export interface Enrolment {
   attendedSessions: number[]
 }
 
+/** A member of staff's request for a course place their school pays for; their head approves or declines it. */
+export interface CourseRequest {
+  id: number
+  cohortId: number
+  courseTitle: string
+  cohortName: string
+  startsOn: string
+  timeSlot: string
+  pricePence: number
+  learnerName: string
+  learnerEmail: string
+  status: 'REQUESTED' | 'APPROVED' | 'DECLINED' | 'WITHDRAWN'
+  requestedAt: string
+  decidedBy: string | null
+  decidedAt: string | null
+}
+
 export interface Induction {
   lessons: {
     id: number
@@ -350,7 +367,8 @@ export interface Trainer {
 /** A course as the team manages it: every cohort, past ones too, with places booked. */
 export interface AdminCourse extends CourseInput {
   id: number
-  cohorts: (CohortInput & { id: number; booked: number; sessions: SessionSummary[] })[]
+  /** clashes: sessions still to come that overlap another cohort's on the same Zoom login. */
+  cohorts: (CohortInput & { id: number; booked: number; sessions: SessionSummary[]; clashes: string[] })[]
 }
 
 /** One dated live session of a cohort. startsAt is an ISO instant. */
@@ -576,6 +594,15 @@ export const api = {
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
+  requestPlace: (cohortId: number) => request<CourseRequest>('POST', `/api/training/cohorts/${cohortId}/request`),
+  myRequests: () => request<CourseRequest[]>('GET', '/api/training/requests/mine'),
+  withdrawRequest: (id: number) => request<CourseRequest>('POST', `/api/training/requests/${id}/withdraw`),
+  schoolRequests: (schoolId: number) => request<CourseRequest[]>('GET', `/api/schools/${schoolId}/course-requests`),
+  approveRequest: (id: number) => request<CourseRequest>('POST', `/api/course-requests/${id}/approve`),
+  declineRequest: (id: number) => request<CourseRequest>('POST', `/api/course-requests/${id}/decline`),
+  cancelPlace: (enrolmentId: number) =>
+    request<{ message: string }>('POST', `/api/training/enrolments/${enrolmentId}/cancel`),
+  trainerCohorts: () => request<AdminCourse[]>('GET', '/api/trainer/cohorts'),
   induction: () => request<Induction>('GET', '/api/training/induction'),
   completeLesson: (lessonId: number) =>
     request<Induction>('POST', `/api/training/induction/lessons/${lessonId}/complete`),
@@ -593,6 +620,8 @@ export const api = {
   trainers: () => request<Trainer[]>('GET', '/api/admin/trainers'),
   addTrainer: (t: { email: string; displayName: string; zoomEmail: string }) =>
     request<Trainer>('POST', '/api/admin/trainers', t),
+  setTrainerEnabled: (userId: number, enabled: boolean) =>
+    request<Trainer>('PUT', `/api/admin/trainers/${userId}/enabled`, { enabled }),
   setTrainerZoomEmail: (userId: number, zoomEmail: string) =>
     request<Trainer>('PUT', `/api/admin/trainers/${userId}/zoom-email`, { zoomEmail }),
   cohortBookings: (cohortId: number) => request<Enrolment[]>('GET', `/api/admin/cohorts/${cohortId}/enrolments`),

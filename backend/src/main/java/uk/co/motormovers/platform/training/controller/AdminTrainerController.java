@@ -90,6 +90,24 @@ public class AdminTrainerController {
         return TrainerRow.of(trainer);
     }
 
+    public record Enabled(boolean enabled) {
+    }
+
+    /**
+     * Switches a trainer's account off (or back on). Off, they can no longer sign in, within a minute; their cohorts
+     * stay assigned to them until the team gives them to someone else. Team accounts are managed elsewhere.
+     */
+    @PutMapping("/{userId}/enabled")
+    @Transactional
+    public TrainerRow setEnabled(@PathVariable Long userId, @RequestBody Enabled request) {
+        AppUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("Trainer", userId));
+        if (user.getRole() != Role.TRAINER) {
+            throw new IllegalArgumentException("Only trainers' accounts are switched off here");
+        }
+        user.setEnabled(request.enabled());
+        return TrainerRow.of(user);
+    }
+
     /** The Zoom login this trainer hosts with; blank goes back to the platform's default Zoom host. */
     @PutMapping("/{userId}/zoom-email")
     @Transactional

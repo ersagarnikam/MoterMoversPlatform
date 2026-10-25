@@ -15,6 +15,7 @@ import CertificatePage from './pages/CertificatePage'
 import MyPaymentsPage from './pages/MyPaymentsPage'
 import LiveRoomPage from './pages/LiveRoomPage'
 import LiveSessionsPage from './pages/LiveSessionsPage'
+import TrainerCohortsPage from './pages/TrainerCohortsPage'
 import ResourcesPage from './pages/ResourcesPage'
 import SchoolSetupPage from './pages/SchoolSetupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -93,6 +94,7 @@ export default function App() {
         <Route path="/payments" element={<MyPaymentsPage />} />
         <Route path="/live" element={<LiveSessionsPage />} />
         <Route path="/live/:sessionId" element={<LiveRoomPage />} />
+        <Route path="/trainer/cohorts" element={<TrainerCohortsPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/school/setup" element={<SchoolSetupPage />} />
         <Route path="/admin/schools/:schoolId/setup" element={<SchoolSetupPage />} />

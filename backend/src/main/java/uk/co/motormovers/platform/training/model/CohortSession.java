@@ -38,6 +38,9 @@ public class CohortSession {
 
     private String zoomJoinUrl;
 
+    /** When learners were reminded of this session by email; null: not yet. */
+    private Instant reminderSentAt;
+
     protected CohortSession() {
     }
 
@@ -49,6 +52,10 @@ public class CohortSession {
     }
 
     public void reschedule(Instant startsAt, int durationMinutes) {
+        if (!startsAt.equals(this.startsAt)) {
+            // Moved: remind learners of the new time.
+            this.reminderSentAt = null;
+        }
         this.startsAt = startsAt;
         this.durationMinutes = durationMinutes;
     }
@@ -57,6 +64,14 @@ public class CohortSession {
         this.zoomMeetingId = meetingId;
         this.zoomPasscode = passcode;
         this.zoomJoinUrl = joinUrl;
+    }
+
+    public void reminderSent(Instant at) {
+        this.reminderSentAt = at;
+    }
+
+    public Instant getReminderSentAt() {
+        return reminderSentAt;
     }
 
     public Instant endsAt() {

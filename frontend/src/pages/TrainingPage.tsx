@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type Course, type Enrolment, type Induction, type LiveSession, type Payment, type Totals } from '../api'
+import {
+  api,
+  type Course,
+  type CourseRequest,
+  type Enrolment,
+  type Induction,
+  type LiveSession,
+  type Payment,
+  type Totals,
+} from '../api'
 import { sessionTime } from '../live'
 import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
@@ -163,15 +172,18 @@ export default function TrainingPage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [rules, setRules] = useState('')
   const [mine, setMine] = useState<Enrolment[]>([])
+  const [requests, setRequests] = useState<CourseRequest[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
-    Promise.all([api.courses(), api.myEnrolments()])
-      .then(([c, m]) => {
+    Promise.all([api.courses(), api.myEnrolments(), api.myRequests()])
+      .then(([c, m, r]) => {
         setCourses(c.courses)
         setRules(c.rules)
         setMine(m)
+        setRequests(r)
         setLoaded(true)
       })
       .catch((e) => setError(e.message))
@@ -179,23 +191,35 @@ export default function TrainingPage() {
 
   useEffect(load, [load])
 
-  async function enrol(cohortId: number) {
+  async function act(action: () => Promise<unknown>, done: string | ((result: unknown) => string)) {
     setError(null)
+    setNotice(null)
     try {
-      await api.enrol(cohortId)
+      const result = await action()
+      setNotice(typeof done === 'string' ? done : done(result))
       load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not enrol')
+      setError(e instanceof Error ? e.message : 'Something went wrong')
     }
+  }
+
+  function cancel(e: Enrolment) {
+    if (!window.confirm(`Cancel your place on ${e.courseTitle} (${e.cohortName})?`)) return
+    act(() => api.cancelPlace(e.id), (r) => (r as { message: string }).message)
   }
 
   if (!loaded && !error) return <p className="muted">Loading…</p>
   const enrolledCohorts = new Set(mine.map((m) => m.cohortId))
+  const waiting = new Map(requests.filter((r) => r.status === 'REQUESTED').map((r) => [r.cohortId, r]))
+  // A school pays for its staff's places, so staff other than heads ask their head first.
+  const needsApproval = (c: Course) => user?.schoolId != null && user.role !== 'HEAD' && c.pricePence > 0
+  const undecided = requests.filter((r) => r.status === 'REQUESTED' || r.status === 'DECLINED')
 
   return (
     <>
       <h1>Training</h1>
       {error && <p className="error">{error}</p>}
+      {notice && <p className="banner-teal">{notice}</p>}
       {user && OWN_PAYMENTS_PAGE.includes(user.role) && <PaymentDue />}
       {user?.role !== 'ADMIN' && <YourLiveSessions />}
       {user && ['TEACHER', 'HEAD', 'PRACTITIONER'].includes(user.role) && <InductionSection />}
@@ -225,6 +249,39 @@ export default function TrainingPage() {
                 ) : e.track === 'PROFESSIONAL' ? (
                   <span className="muted">Certificate after all sessions and the assessment</span>
                 ) : null}
+                {!e.certificateIssuedOn && e.sessionsAttended === 0 && (
+                  <button className="btn" onClick={() => cancel(e)}>
+                    Cancel place
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {undecided.length > 0 && (
+        <section className="card">
+          <h3>Your requests</h3>
+          {undecided.map((r) => (
+            <div key={r.id} className="enrolment">
+              <div>
+                <strong>{r.courseTitle}</strong>
+                <p className="muted">
+                  {r.cohortName} · starts {r.startsOn} · {r.timeSlot}
+                </p>
+              </div>
+              <div className="enrolment-status">
+                {r.status === 'REQUESTED' ? (
+                  <>
+                    <span className="badge">Waiting for your head's approval</span>
+                    <button className="btn" onClick={() => act(() => api.withdrawRequest(r.id), 'Request withdrawn')}>
+                      Withdraw
+                    </button>
+                  </>
+                ) : (
+                  <span className="muted">Not approved by {r.decidedBy}</span>
+                )}
               </div>
             </div>
           ))}
@@ -234,7 +291,11 @@ export default function TrainingPage() {
       {user && user.role !== 'ADMIN' && !OWN_PAYMENTS_PAGE.includes(user.role) && <YourPayments />}
 
       {user?.schoolId != null && (
-        <p className="banner-teal">Places you book are invoiced to your school, and show on its Payments page.</p>
+        <p className="banner-teal">
+          {user.role === 'HEAD'
+            ? 'Places you book are invoiced to your school, and show on its Payments page.'
+            : 'Your school pays for your places, so your head approves each one before it is booked.'}
+        </p>
       )}
       {courses.map((c) => (
         <section key={c.id} className="card">
@@ -264,8 +325,24 @@ export default function TrainingPage() {
                 </div>
                 {enrolledCohorts.has(h.id) ? (
                   <span className="badge badge-ok">Booked</span>
+                ) : waiting.has(h.id) ? (
+                  <span className="badge">Waiting for approval</span>
+                ) : needsApproval(c) ? (
+                  <button
+                    className="btn btn-primary"
+                    disabled={h.seatsLeft <= 0}
+                    onClick={() =>
+                      act(() => api.requestPlace(h.id), 'Request sent. Your head has been emailed to approve it.')
+                    }
+                  >
+                    Ask for a place
+                  </button>
                 ) : (
-                  <button className="btn btn-primary" disabled={h.seatsLeft <= 0} onClick={() => enrol(h.id)}>
+                  <button
+                    className="btn btn-primary"
+                    disabled={h.seatsLeft <= 0}
+                    onClick={() => act(() => api.enrol(h.id), `Booked: ${c.title}, ${h.name}`)}
+                  >
                     Book a place
                   </button>
                 )}
