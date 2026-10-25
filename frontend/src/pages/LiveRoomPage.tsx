@@ -21,6 +21,19 @@ interface ZoomEmbeddedClient {
     zak?: string
   }): Promise<unknown>
   leaveMeeting(): Promise<unknown>
+  /** Re-renders the video at new sizes (SDK 6.5 VideoOptions). */
+  updateVideoOptions(options: { viewSizes?: { default?: VideoSize; ribbon?: VideoSize } }): void
+}
+
+interface VideoSize {
+  width: number
+  height: number
+}
+
+/** Zoom's video fills our box: its width, at 16:9, no taller than two thirds of the window. */
+function videoSize(element: HTMLElement): VideoSize {
+  const width = Math.max(320, element.clientWidth)
+  return { width, height: Math.min(Math.round((width * 9) / 16), Math.round(window.innerHeight * 0.65)) }
 }
 
 declare global {
@@ -96,9 +109,8 @@ export default function LiveRoomPage() {
     const element = root.current
 
     // Zoom's window floats and can be dragged by default; pin it to the top-left of our box at our box's size.
-    const width = Math.max(320, element.clientWidth)
-    const height = Math.min(Math.round((width * 9) / 16), Math.round(window.innerHeight * 0.65))
-    element.style.minHeight = `${height}px`
+    const size = videoSize(element)
+    element.style.minHeight = `${size.height}px`
 
     const enter = async (c: ZoomEmbeddedClient) => {
       try {
@@ -111,6 +123,14 @@ export default function LiveRoomPage() {
           ...(join.zak ? { zak: join.zak } : {}),
         })
         setZoom('in')
+        // The init sizes only apply to some views; set them again now the meeting is showing, and on resizing.
+        const fit = () => {
+          const now = videoSize(element)
+          element.style.minHeight = `${now.height}px`
+          c.updateVideoOptions({ viewSizes: { default: now, ribbon: now } })
+        }
+        fit()
+        window.addEventListener('resize', fit)
       } catch (e: unknown) {
         const reason = String((e as { reason?: string })?.reason ?? (e instanceof Error ? e.message : ''))
         if (/not started/i.test(reason)) {
@@ -139,7 +159,10 @@ export default function LiveRoomPage() {
             video: {
               isResizable: false,
               popper: { disableDraggable: true, anchorPosition: { top: 0, left: 0 } },
-              viewSizes: { default: { width, height } },
+              // viewSizes.default covers the speaker and gallery views, so start in speaker view, not Zoom's
+              // small ribbon (SuspensionViewType is a const enum: its value is the string).
+              defaultViewType: 'speaker',
+              viewSizes: { default: size, ribbon: size },
             },
             meeting: { popper: { anchorElement: element, placement: 'top-start' } },
           },
