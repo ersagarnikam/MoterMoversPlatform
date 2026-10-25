@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.config.Mailer;
+import uk.co.motormovers.platform.notification.service.PushService;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
 import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.CohortSession;
@@ -23,7 +24,8 @@ import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
 
 /**
  * Emails everyone booked on a live session, and its trainer, a day before it starts: the time, how to join and the
- * rules. Each session is reminded once; moving it to a new time reminds again.
+ * rules. Each session is reminded once; moving it to a new time reminds again. Learners with the parent app also get
+ * a phone notification then, and another when the session opens to join.
  */
 @Component
 public class SessionReminderJob {
@@ -36,13 +38,15 @@ public class SessionReminderJob {
     private final CohortSessionRepository sessions;
     private final EnrolmentRepository enrolments;
     private final Mailer mailer;
+    private final PushService push;
     private final Clock clock;
 
     public SessionReminderJob(CohortSessionRepository sessions, EnrolmentRepository enrolments, Mailer mailer,
-            Clock clock) {
+            PushService push, Clock clock) {
         this.sessions = sessions;
         this.enrolments = enrolments;
         this.mailer = mailer;
+        this.push = push;
         this.clock = clock;
     }
 
@@ -72,11 +76,39 @@ public class SessionReminderJob {
                         what + " is on " + when + ".\n\nStart it from Live sessions: " + mailer.link("/live") + "\n");
                 sent++;
             }
+            push.notify(learners(cohort), "Live session " + s.getNumber() + " is coming up",
+                    cohort.getCourse().getTitle() + " is on " + when + ".", "/course");
             s.reminderSent(now);
         }
         if (sent > 0) {
             log.info("Live session reminders: {} emails for {} sessions", sent, due.size());
         }
         return sent;
+    }
+
+    /**
+     * Every two minutes: tells learners on their phones when a session opens to join (15 minutes before the start),
+     * once. A tap opens the parent app's Course tab with Join in Zoom. Returns how many phones were told.
+     */
+    @Scheduled(cron = "30 */2 * * * *")
+    @Transactional
+    public int announceOpening() {
+        Instant now = clock.instant();
+        int phones = 0;
+        for (CohortSession s : sessions.findByStartsAtBetweenAndOpeningPushSentAtIsNullOrderByStartsAt(now,
+                now.plus(CohortSession.OPENS_BEFORE))) {
+            Cohort cohort = s.getCohort();
+            String at = DateTimeFormatter.ofPattern("HH:mm", Locale.UK).withZone(clock.getZone()).format(s.getStartsAt());
+            phones += push.notify(learners(cohort), "Your live session is open",
+                    cohort.getCourse().getTitle() + ", session " + s.getNumber() + ", starts at " + at
+                            + " (UK time). Tap to join.", "/course");
+            s.openingPushSent(now);
+        }
+        return phones;
+    }
+
+    private List<Long> learners(Cohort cohort) {
+        return enrolments.findByCohortIdOrderByEnrolledAt(cohort.getId()).stream().map(e -> e.getUser().getId())
+                .toList();
     }
 }

@@ -5,11 +5,19 @@ import { AppState } from 'react-native'
 import { Loading } from '@/components/ui'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { flush } from '@/lib/outbox'
+import { openNotificationsOnTap, registerForPush } from '@/lib/push'
 import { usePalette } from '@/lib/theme'
 
 function RootStack() {
   const { user, loading } = useAuth()
   const p = usePalette()
+
+  // Notifications for live sessions and payments, once signed in; a tap opens the screen it is about.
+  useEffect(() => {
+    if (!user) return
+    void registerForPush()
+    return openNotificationsOnTap()
+  }, [user])
 
   // Send any home sessions saved while offline whenever the app comes back to the foreground.
   useEffect(() => {

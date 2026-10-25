@@ -118,6 +118,21 @@ team can open it at any time. The live page alone allows Zoom's scripts and the 
 (`frontend/nginx.conf`); if the browser console reports a blocked Zoom address there, add it to that policy and
 to `LIVE_CSP` in `frontend/vite.config.ts`.
 
+## Phone notifications
+
+The parent app tells parents on their phone when a live session is open to join (15 minutes before), the day
+before a session, and when a payment is due; a tap opens the right screen. Emails carry the same news, so this is
+optional.
+
+1. The app needs an EAS project and a store or development build (push does not work in Expo Go on Android):
+   `npx eas-cli@latest init` in `mobile/` adds the project id to `app.json`, then build with EAS. For Android push,
+   upload the Firebase (FCM) credentials to EAS; for iOS, let EAS create the push key when it asks.
+2. In `deploy/.env` set `PUSH_ENABLED=true` (and `EXPO_ACCESS_TOKEN` only if the Expo account has enhanced push
+   security on), then restart the API. With it off, the API only logs the notifications it would send.
+
+Phones register when a parent signs in to the app and allows notifications, and are removed on signing out or when
+Expo reports the app was deleted.
+
 ## Everyday operations
 
 | Task | How |

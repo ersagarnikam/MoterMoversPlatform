@@ -21,6 +21,12 @@ public final class PaymentViews {
     private PaymentViews() {
     }
 
+    /** An amount as people read it, as on the web: "£45", or "£45.50" when there are pence. */
+    public static String pounds(long pence) {
+        return pence % 100 == 0 ? String.format(java.util.Locale.UK, "£%,d", pence / 100)
+                : String.format(java.util.Locale.UK, "£%,.2f", pence / 100.0);
+    }
+
     /** One payment. payerEmail is null when a school pays. */
     public record PaymentView(Long id, PayerType payerType, String payerName, String payerEmail, Long schoolId,
             PaymentPurpose purpose, String purposeLabel, String description, int amountPence, PaymentStatus status,

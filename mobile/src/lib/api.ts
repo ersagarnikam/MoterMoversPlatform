@@ -246,6 +246,9 @@ export const api = {
   joinLive: (sessionId: number) => request<LiveJoin>('POST', `/api/training/live/${sessionId}/join`),
 
   myPayments: () => request<MyPayments>('GET', '/api/payments/mine'),
+  registerPushToken: (token: string, platform: string) =>
+    request<void>('POST', '/api/me/push-tokens', { token, platform }),
+  removePushToken: (token: string) => request<void>('POST', '/api/me/push-tokens/remove', { token }),
 }
 
 /** 4500 -> "£45", 1550 -> "£15.50" */

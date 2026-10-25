@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V12`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V13`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,7 +46,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 101 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 105 unit + API integration tests (H2)
 cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -96,6 +96,14 @@ a warning, not a refusal). Trainers also have **My cohorts** (`/trainer/cohorts`
 bookings, attendance and the end-of-course assessment of their own cohorts (`LiveSessionService.canHost` decides).
 Demo trainer: trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its
 own licensed Zoom user on the owner's account.
+
+**Phone notifications (2026-10-26, migration V13).** The parent app registers the phone after sign-in (`src/lib/push.ts`,
+`expo-notifications`; `POST /api/me/push-tokens`, removed on sign-out) and opens the screen a notification names
+(`data.url`). The API sends through Expo's push service (`notification` package: `PushService`, `ExpoPushSender`)
+when `PUSH_ENABLED=true`; otherwise it only logs. Sent: a live session open to join (`SessionReminderJob.announceOpening`,
+every 2 minutes, once per session, `cohort_session.opening_push_sent_at`), the day-before reminder, and a payment
+recorded as due for a person. Tokens Expo reports as gone are deleted. Needs an EAS project id in `app.json` and a
+store or development build to work (RUNBOOK, Phone notifications); not yet tried on a phone.
 
 **Quizzes and certificates (2026-10-26, migration V12).** Short quizzes between a course's live sessions
 (`course_quiz`, `quiz_question`, `quiz_attempt`; `QuizService`): the team writes them on the Courses page (Quizzes on
@@ -195,7 +203,8 @@ Not started unless noted. Confirm priorities with the owner.
 
 1. Real go-live inputs from the owner: UK server, domain and DNS, SMTP account with SPF/DKIM for the
    sending domain, then follow `deploy/RUNBOOK.md`.
-2. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address.
+2. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address. `eas init`
+   gives the project id phone notifications need; then set `PUSH_ENABLED=true` (RUNBOOK, Phone notifications).
 3. Session videos are timed placeholders until filmed sessions are uploaded (`programme_session.video_url`);
    content upload and hosting for videos/audio is still to be designed.
 4. Rate limits are per API instance (in memory). Move to a shared store (e.g. Redis) before running more

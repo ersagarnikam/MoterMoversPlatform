@@ -29,7 +29,8 @@
       "expo-router",
       "expo-status-bar",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      ["expo-notifications", { "enableBackgroundRemoteNotifications": false }]
     ],
     "experiments": {
       "typedRoutes": true

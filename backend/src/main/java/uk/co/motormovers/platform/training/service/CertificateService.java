@@ -3,7 +3,6 @@ package uk.co.motormovers.platform.training.service;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.payment.dto.PaymentViews;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
@@ -109,7 +109,7 @@ public class CertificateService {
         for (Enrolment e : due) {
             Course course = e.getCohort().getCourse();
             String renewal = course.getRenewalPence() == null ? ""
-                    : " Renewing costs £" + String.format(Locale.UK, "%.2f", course.getRenewalPence() / 100.0) + ".";
+                    : " Renewing costs " + PaymentViews.pounds(course.getRenewalPence()) + ".";
             mailer.send(e.getUser().getEmail(), "Your Motor Movers certificate expires soon",
                     "Hello " + e.getUser().getDisplayName() + ",\n\nYour " + course.getTitle() + " certificate is valid "
                             + "until " + e.getCertificateExpiresOn() + "." + renewal + " To renew it, reply to this "

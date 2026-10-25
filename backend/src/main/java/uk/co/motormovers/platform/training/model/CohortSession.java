@@ -41,6 +41,9 @@ public class CohortSession {
     /** When learners were reminded of this session by email; null: not yet. */
     private Instant reminderSentAt;
 
+    /** When learners were told the session is open to join (a phone notification); null: not yet. */
+    private Instant openingPushSentAt;
+
     protected CohortSession() {
     }
 
@@ -55,6 +58,7 @@ public class CohortSession {
         if (!startsAt.equals(this.startsAt)) {
             // Moved: remind learners of the new time.
             this.reminderSentAt = null;
+            this.openingPushSentAt = null;
         }
         this.startsAt = startsAt;
         this.durationMinutes = durationMinutes;
@@ -64,6 +68,10 @@ public class CohortSession {
         this.zoomMeetingId = meetingId;
         this.zoomPasscode = passcode;
         this.zoomJoinUrl = joinUrl;
+    }
+
+    public void openingPushSent(Instant at) {
+        this.openingPushSentAt = at;
     }
 
     public void reminderSent(Instant at) {
