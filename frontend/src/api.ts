@@ -147,6 +147,52 @@ export interface Enrolment {
   learnerEmail: string
   /** The numbers of the live sessions the learner was marked present at, e.g. [1, 2]. */
   attendedSessions: number[]
+  /** Quizzes between sessions passed, of how many the course has (0: none). */
+  quizzesPassed: number
+  quizzes: number
+}
+
+/** A quiz of a learner's course. open: its live session has started, or they attended it. */
+export interface QuizSummary {
+  id: number
+  afterSession: number
+  title: string
+  questions: number
+  passPercent: number
+  open: boolean
+  bestScore: number | null
+  passed: boolean
+}
+
+/** A quiz to take: the questions without their answers. */
+export interface QuizPaper {
+  id: number
+  title: string
+  passPercent: number
+  questions: { number: number; text: string; options: string[] }[]
+}
+
+/** wrong: the numbers of the questions answered wrongly. */
+export interface QuizResult {
+  scorePercent: number
+  passed: boolean
+  correct: number
+  questions: number
+  wrong: number[]
+  certificateIssued: boolean
+}
+
+/** A quiz as the team writes it. correctOption counts from 0. */
+export interface QuizInput {
+  afterSession: number
+  title: string
+  passPercent: number
+  questions: { text: string; options: string[]; correctOption: number }[]
+}
+
+export interface AdminQuiz extends QuizInput {
+  id: number
+  attempts: number
 }
 
 /** A member of staff's request for a course place their school pays for; their head approves or declines it. */
@@ -511,6 +557,19 @@ export class ApiError extends Error {
   }
 }
 
+/** A file from the API, e.g. a certificate PDF, saved by the browser under the given name. */
+async function downloadFile(path: string, filename: string) {
+  const token = getToken()
+  const res = await fetch(path, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  if (!res.ok) throw new ApiError(res.status, res.status === 403 ? 'Not your file' : 'Could not download the file')
+  const url = URL.createObjectURL(await res.blob())
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {}
   const token = getToken()
@@ -603,6 +662,17 @@ export const api = {
   cancelPlace: (enrolmentId: number) =>
     request<{ message: string }>('POST', `/api/training/enrolments/${enrolmentId}/cancel`),
   trainerCohorts: () => request<AdminCourse[]>('GET', '/api/trainer/cohorts'),
+  courseQuizzes: (courseId: number) => request<AdminQuiz[]>('GET', `/api/admin/courses/${courseId}/quizzes`),
+  addQuiz: (courseId: number, q: QuizInput) => request<AdminQuiz>('POST', `/api/admin/courses/${courseId}/quizzes`, q),
+  updateQuiz: (id: number, q: QuizInput) => request<AdminQuiz>('PUT', `/api/admin/quizzes/${id}`, q),
+  deleteQuiz: (id: number) => request<void>('DELETE', `/api/admin/quizzes/${id}`),
+  myQuizzes: (enrolmentId: number) => request<QuizSummary[]>('GET', `/api/training/enrolments/${enrolmentId}/quizzes`),
+  quizPaper: (enrolmentId: number, quizId: number) =>
+    request<QuizPaper>('GET', `/api/training/enrolments/${enrolmentId}/quizzes/${quizId}`),
+  submitQuiz: (enrolmentId: number, quizId: number, answers: number[]) =>
+    request<QuizResult>('POST', `/api/training/enrolments/${enrolmentId}/quizzes/${quizId}/attempts`, { answers }),
+  certificatePdf: (enrolmentId: number) =>
+    downloadFile(`/api/training/enrolments/${enrolmentId}/certificate.pdf`, 'motor-movers-certificate.pdf'),
   induction: () => request<Induction>('GET', '/api/training/induction'),
   completeLesson: (lessonId: number) =>
     request<Induction>('POST', `/api/training/induction/lessons/${lessonId}/complete`),

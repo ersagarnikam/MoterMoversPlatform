@@ -8,6 +8,7 @@ import {
   type Induction,
   type LiveSession,
   type Payment,
+  type QuizSummary,
   type Totals,
 } from '../api'
 import { sessionTime } from '../live'
@@ -84,6 +85,44 @@ function InductionSection() {
 /** What the signed-in person has paid for themselves. Hidden until there is something to show. */
 /** Parents and practitioners have their own Payments page; staff see their payments here. */
 const OWN_PAYMENTS_PAGE = ['PARENT', 'PRACTITIONER']
+
+/** The quizzes between a course's live sessions: each opens once its session has started or been attended. */
+function CourseQuizzes({ enrolment }: { enrolment: Enrolment }) {
+  const [quizzes, setQuizzes] = useState<QuizSummary[] | null>(null)
+
+  useEffect(() => {
+    api
+      .myQuizzes(enrolment.id)
+      .then(setQuizzes)
+      .catch(() => setQuizzes([]))
+  }, [enrolment.id])
+
+  if (!quizzes || quizzes.length === 0) return null
+  return (
+    <ul className="quiz-list">
+      {quizzes.map((q) => (
+        <li key={q.id}>
+          <span>
+            Quiz after session {q.afterSession}: {q.title}
+            <span className="muted">
+              {' '}
+              · {q.questions} questions · pass mark {q.passPercent}%
+            </span>
+          </span>
+          {q.passed ? (
+            <span className="badge badge-ok">Passed · {q.bestScore}%</span>
+          ) : q.open ? (
+            <Link className="btn btn-small" to={`/training/quiz/${enrolment.id}/${q.id}`}>
+              {q.bestScore === null ? 'Take quiz' : `Try again (best ${q.bestScore}%)`}
+            </Link>
+          ) : (
+            <span className="muted">Opens after session {q.afterSession}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 /** The learner's coming live sessions, with Join once a session opens (15 minutes before the start). */
 function YourLiveSessions() {
@@ -228,7 +267,8 @@ export default function TrainingPage() {
         <section className="card">
           <h3>Your courses</h3>
           {mine.map((e) => (
-            <div key={e.id} className="enrolment">
+            <div key={e.id} className="enrolment-block">
+            <div className="enrolment">
               <div>
                 <strong>{e.courseTitle}</strong>
                 <p className="muted">
@@ -247,7 +287,9 @@ export default function TrainingPage() {
                     </Link>
                   </>
                 ) : e.track === 'PROFESSIONAL' ? (
-                  <span className="muted">Certificate after all sessions and the assessment</span>
+                  <span className="muted">
+                    Certificate after all sessions{e.quizzes > 0 ? ', the quizzes' : ''} and the assessment
+                  </span>
                 ) : null}
                 {!e.certificateIssuedOn && e.sessionsAttended === 0 && (
                   <button className="btn" onClick={() => cancel(e)}>
@@ -255,6 +297,8 @@ export default function TrainingPage() {
                   </button>
                 )}
               </div>
+            </div>
+            {e.quizzes > 0 && <CourseQuizzes enrolment={e} />}
             </div>
           ))}
         </section>

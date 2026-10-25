@@ -104,14 +104,19 @@ public final class TrainingViews {
     public record EnrolmentView(Long id, Long cohortId, String courseTitle, CourseTrack track, String cohortName,
             LocalDate startsOn, String timeSlot, int sessionsAttended, int liveSessions, boolean assessmentPassed,
             LocalDate certificateIssuedOn, LocalDate certificateExpiresOn, String learnerName, String learnerEmail,
-            List<Integer> attendedSessions) {
+            List<Integer> attendedSessions, int quizzesPassed, int quizzes) {
 
-        public static EnrolmentView of(Enrolment e, List<Integer> attendedSessions) {
+        public static EnrolmentView of(Enrolment e, List<Integer> attendedSessions, QuizProgress quizProgress) {
             Cohort c = e.getCohort();
             return new EnrolmentView(e.getId(), c.getId(), c.getCourse().getTitle(), c.getCourse().getTrack(),
                     c.getName(), c.getStartsOn(), c.getTimeSlot(), e.getSessionsAttended(),
                     c.getCourse().getLiveSessions(), e.isAssessmentPassed(), e.getCertificateIssuedOn(),
-                    e.getCertificateExpiresOn(), e.getUser().getDisplayName(), e.getUser().getEmail(), attendedSessions);
+                    e.getCertificateExpiresOn(), e.getUser().getDisplayName(), e.getUser().getEmail(), attendedSessions,
+                    quizProgress.passed(), quizProgress.total());
         }
+    }
+
+    /** How many of a course's quizzes a learner has passed, of how many. */
+    public record QuizProgress(int passed, int total) {
     }
 }

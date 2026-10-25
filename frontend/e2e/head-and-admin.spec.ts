@@ -134,6 +134,18 @@ test('the team sets up a course and opens a cohort for booking', async ({ page }
   await edit.getByRole('button', { name: 'Save cohort' }).click()
   await expect(course.getByText('0 of 12 places booked')).toBeVisible()
 
+  // A quiz between sessions, written on the course.
+  await course.getByText('Quizzes (0)').click()
+  await course.getByRole('button', { name: 'Add a quiz' }).click()
+  await course.getByLabel('Quiz title').fill('First week check')
+  await course.getByLabel('Question 1', { exact: true }).fill('How long is the daily session?')
+  await course.getByLabel('Answers for question 1, one per line').fill('5 minutes\n10 minutes')
+  await course.getByLabel('Right answer to question 1').selectOption({ label: '10 minutes' })
+  await expectAccessible(page)
+  await course.getByRole('button', { name: 'Save quiz' }).click()
+  await expect(course.getByText('First week check saved')).toBeVisible()
+  await expect(course.getByText('Quizzes (1)')).toBeVisible()
+
   await page.getByRole('link', { name: 'See the catalogue as learners do' }).click()
   const listed = page.locator('section', { has: page.getByRole('heading', { name: title }) })
   await expect(listed.getByText('12 places left')).toBeVisible()
@@ -279,22 +291,63 @@ test('the team marks attendance and the assessment, and the learner gets a certi
     await expect(session(n)).toBeChecked()
   }
   await expect(cohort.getByText('4 of 4')).toBeVisible()
-  await expect(cohort.getByText('the assessment to go')).toBeVisible()
+  await expect(cohort.getByText('3 quizzes and the assessment to go')).toBeVisible()
   await expectAccessible(page)
   const passed = cohort.getByLabel('Sam Rivers passed the assessment')
   await passed.click()
-  await expect(cohort.getByText(/^Issued \d{4}-\d{2}-\d{2}, valid until/)).toBeVisible()
-  // Once issued, the certificate cannot be taken back here.
-  await expect(passed).toBeDisabled()
+  await expect(passed).toBeChecked()
+  // The quizzes between sessions are still to do.
+  await expect(cohort.getByText('3 quizzes to go')).toBeVisible()
   await page.getByRole('button', { name: 'Sign out' }).click()
 
+  // Sam takes the quizzes, which opened as each session was ticked.
   await signIn(page, 'practitioner@example.test')
-  await page.getByRole('link', { name: 'View your certificate' }).click()
+  const answers: [string, string[]][] = [
+    ['The daily session', ['10 minutes', 'The whole class together', 'Little and often is what makes the difference']],
+    [
+      'Colour stages and assessment',
+      ['Seven', 'Red', /A child's readiness/.source, 'Each movement, one at a time'],
+    ],
+    ['Keeping children and families safe', ['By initials', 'Adults only', 'Signpost them to their GP']],
+  ]
+  for (const [i, [title, right]] of answers.entries()) {
+    await page.locator('.quiz-list li', { hasText: title }).getByRole('link', { name: 'Take quiz' }).click()
+    await expect(page.getByRole('heading', { name: title })).toBeVisible()
+    if (i === 0) {
+      // A first try with a wrong answer: the score, and which question to look at again.
+      await page.getByLabel('5 minutes').check()
+      await page.getByLabel('The whole class together').check()
+      await page.getByLabel('Little and often is what makes the difference').check()
+      await expectAccessible(page)
+      await page.getByRole('button', { name: 'Send answers' }).click()
+      await expect(page.getByText('Not passed yet: 67%')).toBeVisible()
+      await expect(page.getByText('Look again at question 1.')).toBeVisible()
+      await page.getByRole('button', { name: 'Try again' }).click()
+    }
+    for (const answer of right) await page.getByLabel(new RegExp(answer)).check()
+    await page.getByRole('button', { name: 'Send answers' }).click()
+    await expect(page.getByText('Passed: 100%')).toBeVisible()
+    if (i < answers.length - 1) await page.getByRole('link', { name: 'Back to training' }).first().click()
+  }
+  // The last quiz completed the course.
+  await page.getByRole('link', { name: 'see your certificate' }).click()
   await expect(page.getByRole('heading', { name: 'Certificate of completion' })).toBeVisible()
   const certificate = page.getByRole('article', { name: 'Certificate' })
   await expect(certificate.getByText('Sam Rivers')).toBeVisible()
   await expect(certificate.getByText('Motor Movers practitioner course')).toBeVisible()
+  await expect(certificate).toContainText('passed the quizzes')
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download PDF' }).click()
+  expect((await download).suggestedFilename()).toBe('motor-movers-certificate.pdf')
   await expectAccessible(page)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  // The team sees it issued, and it cannot be taken back here.
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Courses' }).click()
+  await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
+  await expect(cohort.getByText(/^Issued \d{4}-\d{2}-\d{2}, valid until/)).toBeVisible()
+  await expect(passed).toBeDisabled()
 })
 
 test('the team adds a trust and opens a school’s setup', async ({ page }) => {

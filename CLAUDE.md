@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V11`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V12`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,11 +46,12 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 98 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 101 unit + API integration tests (H2)
 cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
-# Browser tests: start the API with demo data first (cd backend && ./mvnw spring-boot:run), then
+# Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
+# the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
 cd frontend && npm run e2e          # 61 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
@@ -95,6 +96,18 @@ a warning, not a refusal). Trainers also have **My cohorts** (`/trainer/cohorts`
 bookings, attendance and the end-of-course assessment of their own cohorts (`LiveSessionService.canHost` decides).
 Demo trainer: trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its
 own licensed Zoom user on the owner's account.
+
+**Quizzes and certificates (2026-10-26, migration V12).** Short quizzes between a course's live sessions
+(`course_quiz`, `quiz_question`, `quiz_attempt`; `QuizService`): the team writes them on the Courses page (Quizzes on
+each course; the wording check runs on save; a quiz learners have taken cannot be deleted). A quiz opens once the
+session it follows has started or the learner is marked present at it; learners take it at
+`/training/quiz/:enrolmentId/:quizId`, as often as they like; the server marks it and names the questions to look at
+again, never sending the answers. With quizzes on a course, all must be passed for the certificate
+(`CertificateService.issueIfComplete` is the one place certificates are issued). On issue the learner is emailed with
+the PDF attached (`CertificatePdf`, Apache PDFBox; also `GET /api/training/enrolments/{id}/certificate.pdf` and
+Download PDF on the certificate page), and a month before expiry they are reminded once (daily at 08:00,
+`enrolment.expiry_reminder_sent_on`). The starter practitioner course has three starter quizzes (80% to pass) for
+Pat to check and replace. Renewing a certificate online is not built: the reminder asks them to contact the team.
 
 **Staff course places (2026-10-26, migration V11).** A school pays for its staff's places, so staff other than heads
 **ask for a place** (`course_request`); the school's heads are emailed and approve or decline on the school's Payments

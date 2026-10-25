@@ -88,10 +88,10 @@ class LiveSessionRulesTest {
             Enrolment e = enrolment(course(CourseTrack.PROFESSIONAL, 4, true));
             e.attendanceChanged(3);
             e.recordAssessment(true);
-            assertThat(e.issueCertificateIfEligible(today)).isFalse();
+            assertThat(e.issueCertificateIfEligible(today, true)).isFalse();
 
             e.attendanceChanged(4);
-            assertThat(e.issueCertificateIfEligible(today)).isTrue();
+            assertThat(e.issueCertificateIfEligible(today, true)).isTrue();
             assertThat(e.getCertificateIssuedOn()).isEqualTo(today);
             assertThat(e.getCertificateExpiresOn()).isEqualTo(today.plusYears(1));
         }
@@ -100,7 +100,7 @@ class LiveSessionRulesTest {
         void needTheAssessmentEvenWithFullAttendance() {
             Enrolment e = enrolment(course(CourseTrack.PROFESSIONAL, 4, true));
             e.attendanceChanged(4);
-            assertThat(e.issueCertificateIfEligible(today)).isFalse();
+            assertThat(e.issueCertificateIfEligible(today, true)).isFalse();
             assertThat(e.getCertificateIssuedOn()).isNull();
         }
 
@@ -109,9 +109,9 @@ class LiveSessionRulesTest {
             Enrolment e = enrolment(course(CourseTrack.PROFESSIONAL, 2, true));
             e.attendanceChanged(2);
             e.recordAssessment(true);
-            e.issueCertificateIfEligible(today);
+            e.issueCertificateIfEligible(today, true);
 
-            assertThat(e.issueCertificateIfEligible(today.plusDays(5))).isFalse();
+            assertThat(e.issueCertificateIfEligible(today.plusDays(5), true)).isFalse();
             assertThat(e.getCertificateIssuedOn()).isEqualTo(today);
             assertThatThrownBy(() -> e.attendanceChanged(1))
                     .isInstanceOf(IllegalStateException.class)
@@ -122,11 +122,20 @@ class LiveSessionRulesTest {
         }
 
         @Test
+        void needEveryQuizPassedWhenTheCourseHasQuizzes() {
+            Enrolment e = enrolment(course(CourseTrack.PROFESSIONAL, 2, true));
+            e.attendanceChanged(2);
+            e.recordAssessment(true);
+            assertThat(e.issueCertificateIfEligible(today, false)).isFalse();
+            assertThat(e.issueCertificateIfEligible(today, true)).isTrue();
+        }
+
+        @Test
         void areNeverIssuedForAParentCourse() {
             Enrolment e = enrolment(course(CourseTrack.PARENT, 3, false));
             e.attendanceChanged(3);
             e.recordAssessment(true);
-            assertThat(e.issueCertificateIfEligible(today)).isFalse();
+            assertThat(e.issueCertificateIfEligible(today, true)).isFalse();
         }
     }
 

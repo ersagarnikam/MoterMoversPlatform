@@ -10,6 +10,7 @@ import {
   type SessionSummary,
   type Trainer,
 } from '../api'
+import CourseQuizzes from '../components/CourseQuizzes'
 import { sessionTime } from '../live'
 import { gbp } from '../money'
 
@@ -132,6 +133,8 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
           </div>
         </>
       )}
+
+      <CourseQuizzes course={course} />
 
       <h4>Cohorts</h4>
       {course.cohorts.length === 0 && <p className="muted">No cohorts yet.</p>}
@@ -328,6 +331,11 @@ export function CohortBookings({
                           {b.sessionsAttended} of {b.liveSessions}
                         </span>
                       </div>
+                      {b.quizzes > 0 && (
+                        <span className="muted">
+                          Quizzes passed: {b.quizzesPassed} of {b.quizzes}
+                        </span>
+                      )}
                     </td>
                     {certificate && (
                       <>
@@ -352,6 +360,8 @@ export function CohortBookings({
                             <span className="muted">
                               {[
                                 sessionsLeft > 0 && `${sessionsLeft} ${sessionsLeft === 1 ? 'session' : 'sessions'}`,
+                                b.quizzesPassed < b.quizzes &&
+                                  `${b.quizzes - b.quizzesPassed} ${b.quizzes - b.quizzesPassed === 1 ? 'quiz' : 'quizzes'}`,
                                 !b.assessmentPassed && 'the assessment',
                               ]
                                 .filter(Boolean)

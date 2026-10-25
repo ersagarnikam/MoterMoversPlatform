@@ -22,14 +22,18 @@ import uk.co.motormovers.platform.screening.model.ScreeningItem;
 import uk.co.motormovers.platform.screening.repository.ScreeningItemRepository;
 import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseTrack;
+import uk.co.motormovers.platform.training.model.CourseQuiz;
 import uk.co.motormovers.platform.training.model.InductionLesson;
+import uk.co.motormovers.platform.training.model.QuizQuestion;
+import uk.co.motormovers.platform.training.repository.CourseQuizRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
+import uk.co.motormovers.platform.training.repository.QuizQuestionRepository;
 
 /**
  * The programme content a new deployment can start from: the assessment items, nursery rhymes and
  * printables, the one-hour induction, home activities and guidance for the parent app, and the two live
- * courses. The demo loads it approved; a real deployment loads it as drafts (StarterContentLoader), so
+ * courses, with short quizzes between the practitioner course's sessions (for Pat to check and replace). The demo loads it approved; a real deployment loads it as drafts (StarterContentLoader), so
  * nothing reaches teachers or parents until the team has checked and approved it in Content approval.
  * Daily session plans are not included: the team writes them.
  */
@@ -47,16 +51,21 @@ public class StarterContent {
     private final HomeActivityRepository homeActivities;
     private final GuidanceArticleRepository guidance;
     private final CourseRepository courses;
+    private final CourseQuizRepository quizzes;
+    private final QuizQuestionRepository quizQuestions;
 
     public StarterContent(ScreeningItemRepository items, LibraryResourceRepository resources,
             InductionLessonRepository inductionLessons, HomeActivityRepository homeActivities,
-            GuidanceArticleRepository guidance, CourseRepository courses) {
+            GuidanceArticleRepository guidance, CourseRepository courses, CourseQuizRepository quizzes,
+            QuizQuestionRepository quizQuestions) {
         this.items = items;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.homeActivities = homeActivities;
         this.guidance = guidance;
         this.courses = courses;
+        this.quizzes = quizzes;
+        this.quizQuestions = quizQuestions;
     }
 
     /** Loads everything. With {@code approvedBy} null, reviewable content is left as drafts. */
@@ -71,11 +80,57 @@ public class StarterContent {
                 "Four weekly live sessions of 90 minutes, recorded modules and short quizzes between sessions, "
                         + "and an assessment. Leads to the Motor Movers practitioner certificate, renewed yearly.",
                 4, 90, 18_000, 6_000, true));
+        quizzes(professional);
         Course parent = courses.save(new Course(CourseTrack.PARENT, "Motor Movers parent course",
                 "Three weekly live sessions of 60 minutes with recorded home activities. Builds confidence to run "
                         + "the activities at home.",
                 3, 60, 4_500, null, false));
         return new Loaded(rhymes, induction, activities, professional, parent);
+    }
+
+    /** Three short quizzes, after each of the first three live sessions; 80% passes. */
+    private void quizzes(Course course) {
+        quiz(course, 1, "The daily session", List.of(
+                question("How long is the daily Motor Movers session?",
+                        List.of("5 minutes", "10 minutes", "30 minutes", "An hour, once a week"), 1),
+                question("Who takes part in the daily session?",
+                        List.of("Only the children who find movement hardest", "The whole class together",
+                                "Children whose parents ask for it"), 1),
+                question("Why does the platform count sessions over the last 20 school days?",
+                        List.of("To rank classes against each other", "Little and often is what makes the difference",
+                                "To decide which children leave the programme"), 1)));
+        quiz(course, 2, "Colour stages and assessment", List.of(
+                question("How many colour stages does the programme have?", List.of("Three", "Five", "Seven"), 2),
+                question("Which colour stage comes first?", List.of("Violet", "Red", "Green"), 1),
+                question("What does a readiness profile show?",
+                        List.of("A child's readiness for the movements of the programme, to plan their next steps",
+                                "A medical label for the child", "A score to share with other parents"), 0),
+                question("When you assess a child, you score...",
+                        List.of("Each movement, one at a time", "The whole class at once", "Only the movements they "
+                                + "get right"), 0)));
+        quiz(course, 3, "Keeping children and families safe", List.of(
+                question("How are children shown on the platform unless the school chooses otherwise?",
+                        List.of("By full name", "By initials", "By photo"), 1),
+                question("Who appears on camera in a live course session?",
+                        List.of("Adults only", "Adults and children", "Anyone who joins"), 0),
+                question("A parent asks about their own child's health in a live session. You...",
+                        List.of("Discuss it with the group", "Signpost them to their GP or the child's school",
+                                "Give them a label for it"), 1)));
+    }
+
+    private record Question(String text, List<String> options, int correct) {
+    }
+
+    private static Question question(String text, List<String> options, int correct) {
+        return new Question(text, options, correct);
+    }
+
+    private void quiz(Course course, int afterSession, String title, List<Question> list) {
+        CourseQuiz quiz = quizzes.save(new CourseQuiz(course, afterSession, title, 80));
+        for (int i = 0; i < list.size(); i++) {
+            Question q = list.get(i);
+            quizQuestions.save(new QuizQuestion(quiz, i + 1, q.text(), q.options(), q.correct()));
+        }
     }
 
     private void assessmentItems() {

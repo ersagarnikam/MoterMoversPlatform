@@ -56,13 +56,14 @@ public class TrainingService {
     private final SchoolRepository schools;
     private final AccessPolicy access;
     private final Mailer mailer;
+    private final CertificateService certificates;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
 
     public TrainingService(CourseRepository courses, CohortRepository cohorts, CohortSessionRepository sessions,
             EnrolmentRepository enrolments, CourseRequestRepository requests, SessionAttendanceRepository attendance,
             AppUserRepository users, PaymentRepository payments, SchoolRepository schools, AccessPolicy access,
-            Mailer mailer, CurrentUserResolver currentUser, Clock clock) {
+            Mailer mailer, CertificateService certificates, CurrentUserResolver currentUser, Clock clock) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.sessions = sessions;
@@ -74,6 +75,7 @@ public class TrainingService {
         this.schools = schools;
         this.access = access;
         this.mailer = mailer;
+        this.certificates = certificates;
         this.currentUser = currentUser;
         this.clock = clock;
     }
@@ -254,12 +256,12 @@ public class TrainingService {
         Enrolment e = findEnrolment(enrolmentId);
         requireHost(e.getCohort());
         e.recordAssessment(passed);
-        e.issueCertificateIfEligible(LocalDate.now(clock));
+        certificates.issueIfComplete(e);
         return view(e);
     }
 
     private TrainingViews.EnrolmentView view(Enrolment e) {
-        return TrainingViews.EnrolmentView.of(e, attendance.attendedNumbers(e.getId()));
+        return TrainingViews.EnrolmentView.of(e, attendance.attendedNumbers(e.getId()), certificates.quizProgress(e));
     }
 
     /** Books a place; with a school, the school is invoiced for it (free courses invoice nothing). */

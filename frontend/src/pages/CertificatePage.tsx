@@ -8,6 +8,7 @@ export default function CertificatePage() {
   const { enrolmentId } = useParams()
   const [enrolment, setEnrolment] = useState<Enrolment | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   useEffect(() => {
     api
@@ -32,10 +33,25 @@ export default function CertificatePage() {
         <Link className="fine-link" to="/training">
           Back to training
         </Link>
-        <button className="btn btn-primary" onClick={() => window.print()}>
-          Print or save as PDF
-        </button>
+        <div className="actions">
+          <button className="btn" onClick={() => window.print()}>
+            Print
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              api.certificatePdf(enrolment.id).catch((e) => setDownloadError(e instanceof Error ? e.message : String(e)))
+            }
+          >
+            Download PDF
+          </button>
+        </div>
       </div>
+      {downloadError && (
+        <p className="error no-print" role="alert">
+          {downloadError}
+        </p>
+      )}
       <article className="certificate" aria-label="Certificate">
         <StageStripe />
         <p className="eyebrow">Motor Movers</p>
@@ -43,7 +59,8 @@ export default function CertificatePage() {
         <p>This certifies that</p>
         <p className="certificate-name">{enrolment.learnerName}</p>
         <p>
-          has attended all {enrolment.liveSessions} live sessions and passed the assessment for the
+          has attended all {enrolment.liveSessions} live sessions
+          {enrolment.quizzes > 0 ? ', passed the quizzes' : ''} and passed the assessment for the
         </p>
         <p className="certificate-course">{enrolment.courseTitle}</p>
         <p className="muted">{enrolment.cohortName}</p>
