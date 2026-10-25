@@ -41,7 +41,9 @@ export default function TodayScreen() {
     const home = await api.home(params)
     // A payment problem must not hide the activities, so it falls back to nothing due.
     const due = await api.myPayments().then((m) => m.outstandingPence, () => 0)
-    return { children, home, due, forChild: ('childId' in params ? params.childId : null) ?? null }
+    // Likewise a live session open to join now, from the parent course.
+    const liveNow = await api.liveSessions().then((l) => l.some((s) => s.open), () => false)
+    return { children, home, due, liveNow, forChild: ('childId' in params ? params.childId : null) ?? null }
   }, [choice])
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function TodayScreen() {
 
   if (error && !data) return <ErrorState message={error} onRetry={() => reload()} />
   if (!data) return <Loading />
-  const { children, home, due, forChild } = data
+  const { children, home, due, liveNow, forChild } = data
 
   return (
     <Screen refreshing={refreshing} onRefresh={() => reload(true)}>
@@ -69,6 +71,12 @@ export default function TodayScreen() {
           {unsent === 1 ? '1 session is' : `${unsent} sessions are`} saved on this phone and will be sent when you
           are back online.
         </Banner>
+      )}
+
+      {liveNow && (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/course')}>
+          <Banner tone="ok">Your live session is open to join. Tap to join it in Zoom.</Banner>
+        </Pressable>
       )}
 
       {due > 0 && (

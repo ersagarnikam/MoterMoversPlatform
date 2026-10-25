@@ -104,6 +104,27 @@ export interface Enrolment {
   liveSessions: number
 }
 
+/** A live session of a booked course. open: it can be joined now (from 15 minutes before the start). */
+export interface LiveSession {
+  id: number
+  courseTitle: string
+  cohortName: string
+  number: number
+  of: number
+  /** An ISO instant. */
+  startsAt: string
+  durationMinutes: number
+  trainerName: string
+  open: boolean
+}
+
+/** Joining a live session. zoomUrl opens the meeting in the Zoom app; null while Zoom is not connected. */
+export interface LiveJoin {
+  zoomConnected: boolean
+  zoomUrl: string | null
+  rules: string
+}
+
 /** One of the signed-in person's own payments. Amounts are in pence. */
 export interface Payment {
   id: number
@@ -220,6 +241,9 @@ export const api = {
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
+  liveSessions: () => request<LiveSession[]>('GET', '/api/training/live'),
+  /** Records that the learner joined, for the trainer's register. */
+  joinLive: (sessionId: number) => request<LiveJoin>('POST', `/api/training/live/${sessionId}/join`),
 
   myPayments: () => request<MyPayments>('GET', '/api/payments/mine'),
 }
@@ -242,6 +266,15 @@ export function formatDate(iso: string): string {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${days[date.getDay()]} ${d} ${months[m - 1]}`
+}
+
+/** A live session's start in the phone's own time zone, e.g. "Tue 3 Nov, 19:00". */
+export function sessionTime(iso: string): string {
+  const date = new Date(iso)
+  const day = formatDate(
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
+  )
+  return `${day}, ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
 export function newClientId(): string {
