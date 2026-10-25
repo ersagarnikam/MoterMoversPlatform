@@ -53,6 +53,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Start the API
         working-directory: backend
+        env:
+          # The browser tests sign in more than the 50 times in 15 minutes one address is allowed; tests only.
+          LOGIN_LIMIT_PER_IP: '500'
         run: |
           ./mvnw -B -q package -DskipTests
           nohup java -jar target/motor-movers-platform-*.jar > api.log 2>&1 &
