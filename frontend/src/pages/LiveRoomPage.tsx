@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api, type LiveJoin, type LiveRegister } from '../api'
 import { sessionTime, ZOOM_SDK } from '../live'
+import Skeleton from '../components/Skeleton'
 
 /** The parts of Zoom's Meeting SDK (component view) the room uses. */
 interface ZoomEmbeddedClient {
@@ -349,7 +350,7 @@ function Register({ sessionId }: { sessionId: number }) {
         </p>
       )}
       {!register ? (
-        <p className="muted">Loading…</p>
+        <Skeleton />
       ) : learners.length === 0 ? (
         <p className="muted">No one has booked this cohort.</p>
       ) : (

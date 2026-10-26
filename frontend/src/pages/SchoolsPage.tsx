@@ -4,6 +4,9 @@ import { api, type ColourStage, type NewSchool, type Plan, type SchoolRow, type 
 import StageBadge from '../components/StageBadge'
 import { gbp } from '../money'
 import { STAGES } from '../stages'
+import { day } from '../dates'
+import { useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 
@@ -13,7 +16,7 @@ export default function SchoolsPage() {
   const [trusts, setTrusts] = useState<TrustRow[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   const load = useCallback(() => {
     Promise.all([api.schools(), api.trusts(), api.plans()])
@@ -41,13 +44,12 @@ export default function SchoolsPage() {
     }
   }
 
-  if (!schools) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!schools) return error ? <p className="error">{error}</p> : <Skeleton />
 
   return (
     <>
       <h1>Schools & licences</h1>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
       <div className="card table-wrap">
         <table>
           <thead>
@@ -76,7 +78,7 @@ export default function SchoolsPage() {
                   />
                 </td>
                 <td>{s.licenceStatus.replace('_', ' ').toLowerCase()}</td>
-                <td>{s.endsOn ?? '-'}</td>
+                <td>{s.endsOn ? day(s.endsOn) : '-'}</td>
                 <td className="stage-list">
                   {STAGES.filter((st) => s.stages.includes(st.key)).map((st) => (
                     <StageBadge key={st.key} stage={st.key} />

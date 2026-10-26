@@ -4,6 +4,9 @@ import { useAuth } from '../auth'
 import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
 import PaymentTable from '../components/PaymentTable'
 import { gbp } from '../money'
+import { day } from '../dates'
+import { useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 /**
  * A head's view of what their school has been invoiced and has paid Motor Movers, with the course places staff
@@ -14,7 +17,7 @@ export default function SchoolPaymentsPage() {
   const [data, setData] = useState<(Totals & { schoolName: string; payments: Payment[] }) | null>(null)
   const [requests, setRequests] = useState<CourseRequest[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
   const cards = useCardPayments()
 
   const load = useCallback(() => {
@@ -46,7 +49,7 @@ export default function SchoolPaymentsPage() {
   }
 
   if (!user?.schoolId) return <p className="muted">This account is not linked to a school.</p>
-  if (!data) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!data) return error ? <p className="error">{error}</p> : <Skeleton />
   const waiting = requests.filter((r) => r.status === 'REQUESTED')
   const decided = requests.filter((r) => r.status === 'APPROVED' || r.status === 'DECLINED').slice(0, 10)
 
@@ -58,7 +61,6 @@ export default function SchoolPaymentsPage() {
       </div>
       <CardPaymentReturn />
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
       <div className="kpis">
         <div className="card kpi">
           <span className="muted">Paid</span>
@@ -82,7 +84,7 @@ export default function SchoolPaymentsPage() {
                     {r.learnerName} · {r.courseTitle}
                   </strong>
                   <p className="muted">
-                    {r.cohortName} · starts {r.startsOn} · {r.timeSlot} · {gbp(r.pricePence)}
+                    {r.cohortName} · starts {day(r.startsOn)} · {r.timeSlot} · {gbp(r.pricePence)}
                   </p>
                 </div>
                 <div className="actions">

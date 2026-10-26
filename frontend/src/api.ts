@@ -438,6 +438,8 @@ export interface LiveSession {
   trainerName: string
   open: boolean
   host: boolean
+  /** How many are booked on the cohort; for whoever runs the session only (null for learners). */
+  booked: number | null
 }
 
 /**

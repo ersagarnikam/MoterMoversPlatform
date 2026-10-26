@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type Enrolment } from '../api'
 import StageStripe from '../components/StageStripe'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
 /** A learner's practitioner certificate, ready to print or save as a PDF from the browser. */
 export default function CertificatePage() {
@@ -18,7 +20,7 @@ export default function CertificatePage() {
   }, [enrolmentId])
 
   if (error) return <p className="error">{error}</p>
-  if (enrolment === undefined) return <p className="muted">Loading…</p>
+  if (enrolment === undefined) return <Skeleton />
   if (enrolment === null) {
     return (
       <p className="muted">
@@ -67,11 +69,11 @@ export default function CertificatePage() {
         <dl className="certificate-dates">
           <div>
             <dt>Issued</dt>
-            <dd>{enrolment.certificateIssuedOn}</dd>
+            <dd>{day(enrolment.certificateIssuedOn)}</dd>
           </div>
           <div>
             <dt>Valid until</dt>
-            <dd>{enrolment.certificateExpiresOn}</dd>
+            <dd>{day(enrolment.certificateExpiresOn)}</dd>
           </div>
         </dl>
       </article>

@@ -5,6 +5,8 @@ import { useAuth } from '../auth'
 import NotADiagnosis from '../components/NotADiagnosis'
 import Sparkline from '../components/Sparkline'
 import StageBadge from '../components/StageBadge'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
 /** Readiness profile: six areas, the suggested starting stage and the change over the year. */
 export default function ProfilePage() {
@@ -18,7 +20,7 @@ export default function ProfilePage() {
   }, [childId])
 
   if (error) return <p className="error">{error}</p>
-  if (!profile) return <p className="muted">Loading…</p>
+  if (!profile) return <Skeleton />
 
   return (
     <div className="profile">
@@ -55,7 +57,7 @@ export default function ProfilePage() {
             <h3>Change since the first assessment</h3>
             <Sparkline
               values={profile.history.map((h) => h.overallFraction)}
-              labels={profile.history.map((h) => `Assessment ${h.round} · ${h.screenedOn}`)}
+              labels={profile.history.map((h) => `Assessment ${h.round} · ${day(h.screenedOn)}`)}
             />
           </>
         )}
@@ -95,7 +97,7 @@ function ParentInviteCard({ childId }: { childId: number }) {
         <>
           <p className="invite-code">{invite.code}</p>
           <p className="muted">
-            For the parent or carer of {invite.childName} · {invite.className} · expires {invite.expiresOn}
+            For the parent or carer of {invite.childName} · {invite.className} · expires {day(invite.expiresOn)}
           </p>
         </>
       ) : (

@@ -101,7 +101,7 @@ test('a new teacher must finish the induction before running sessions', async ({
     await page.locator('details.lesson').nth(part - 1).locator('summary').click()
     await page.getByRole('button', { name: 'Mark as done' }).click()
   }
-  await expect(page.getByText(/^Completed \d{4}-\d{2}-\d{2}$/)).toBeVisible()
+  await expect(page.getByText(/^Completed \w{3} \d{1,2} \w{3} \d{4}$/)).toBeVisible()
 
   await page.getByRole('link', { name: 'My class' }).click()
   await expect(page.getByRole('button', { name: 'Start session' })).toBeVisible()

@@ -3,6 +3,8 @@ import { api, type TrustDashboard } from '../api'
 import { useAuth } from '../auth'
 import { gbp } from '../money'
 import { pct } from '../stages'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
 const STATUS_LABEL = { ACTIVE: 'Active', RENEWAL_DUE: 'Renewal due', FREE_TRIAL: 'Free trial', EXPIRED: 'Expired' }
 
@@ -18,7 +20,7 @@ export default function TrustDashboardPage() {
 
   if (!user?.trustId) return <p className="muted">This account is not linked to a trust.</p>
   if (error) return <p className="error">{error}</p>
-  if (!data) return <p className="muted">Loading…</p>
+  if (!data) return <Skeleton />
 
   return (
     <>
@@ -45,7 +47,7 @@ export default function TrustDashboardPage() {
               <tr key={s.schoolId}>
                 <td>{s.schoolName}</td>
                 <td className={s.licenceStatus === 'RENEWAL_DUE' ? 'strong' : ''}>{STATUS_LABEL[s.licenceStatus]}</td>
-                <td>{s.renewalDate ?? '-'}</td>
+                <td>{s.renewalDate ? day(s.renewalDate) : '-'}</td>
                 <td>{s.stages}</td>
                 <td className="num">{pct(s.screenedRate)}</td>
                 <td className="num">{pct(s.participation)}</td>

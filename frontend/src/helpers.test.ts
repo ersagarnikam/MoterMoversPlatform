@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sessionTime, ZOOM_SDK } from './live'
+import { sessionTime, startsIn, ZOOM_SDK } from './live'
 import { gbp } from './money'
 import { CONTACT_EMAIL, mailto, signInRole, SIGN_IN_ROLES } from './site'
 import { pct, stageInfo, STAGES } from './stages'
@@ -35,6 +35,26 @@ describe('sessionTime', () => {
 
   it('follows British Summer Time', () => {
     expect(sessionTime('2026-07-07T18:00:00Z', 'Europe/London')).toBe('Tue 7 Jul, 19:00 BST')
+  })
+})
+
+describe('startsIn', () => {
+  const at = '2026-11-03T19:00:00Z'
+  const minutesBefore = (m: number) => new Date(Date.parse(at) - m * 60_000)
+
+  it('counts down in the hour before', () => {
+    expect(startsIn(at, 60, minutesBefore(25))).toBe('Starts in 25 minutes')
+    expect(startsIn(at, 60, minutesBefore(1))).toBe('Starts in 1 minute')
+  })
+
+  it('says On now during the session', () => {
+    expect(startsIn(at, 60, minutesBefore(0))).toBe('On now')
+    expect(startsIn(at, 60, minutesBefore(-59))).toBe('On now')
+  })
+
+  it('says nothing further off, or once it is over', () => {
+    expect(startsIn(at, 60, minutesBefore(90))).toBe('')
+    expect(startsIn(at, 60, minutesBefore(-61))).toBe('')
   })
 })
 

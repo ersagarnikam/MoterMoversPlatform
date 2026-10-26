@@ -19,6 +19,17 @@ export function sessionTime(iso: string, timeZone?: string): string {
   return format.format(new Date(iso))
 }
 
+/**
+ * How soon a session is, when it is close: "On now" during it, "Starts in 25 minutes" in the hour before, else
+ * nothing (the date and time say enough).
+ */
+export function startsIn(startsAt: string, durationMinutes: number, now: Date = new Date()): string {
+  const minutes = Math.ceil((new Date(startsAt).getTime() - now.getTime()) / 60_000)
+  if (minutes <= 0 && minutes > -durationMinutes) return 'On now'
+  if (minutes > 0 && minutes <= 60) return minutes === 1 ? 'Starts in 1 minute' : `Starts in ${minutes} minutes`
+  return ''
+}
+
 const VENDOR = 'https://source.zoom.us/6.5.0/lib/vendor/'
 
 /**

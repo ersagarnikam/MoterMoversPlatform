@@ -4,6 +4,8 @@ import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/Pay
 import PaymentTable from '../components/PaymentTable'
 import { gbp } from '../money'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '../site'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
 /** A parent's or practitioner's own payments: what is due now, and everything paid so far. */
 export default function MyPaymentsPage() {
@@ -18,7 +20,7 @@ export default function MyPaymentsPage() {
       .catch((e) => setError(e.message))
   }, [])
 
-  if (!data) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!data) return error ? <p className="error">{error}</p> : <Skeleton />
   const due = data.payments.filter((p) => p.status === 'DUE')
 
   return (
@@ -50,7 +52,7 @@ export default function MyPaymentsPage() {
                 <div>
                   <strong>{p.description}</strong>
                   <p className="muted">
-                    {p.purposeLabel} · invoiced {p.invoicedOn}
+                    {p.purposeLabel} · invoiced {day(p.invoicedOn)}
                     {p.reference && <> · reference {p.reference}</>}
                   </p>
                 </div>

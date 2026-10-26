@@ -1,3 +1,4 @@
+import { day } from '../src/dates'
 import { expect, expectAccessible, signIn, test } from './fixtures'
 
 test('a head sets up a class, adds children and invites a teacher', async ({ page }) => {
@@ -28,8 +29,10 @@ test('a head sets up a class, adds children and invites a teacher', async ({ pag
   await expect(row.locator('.setup-children li')).toHaveCount(2)
   await expect(row.getByText(/· 2 children/)).toBeVisible()
 
-  page.once('dialog', (d) => d.accept())
   await row.locator('.setup-children li').first().getByRole('button', { name: 'Left the school' }).click()
+  // The page asks first, in the page itself.
+  await expectAccessible(page)
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark as left' }).click()
   await expect(row.locator('.setup-children li')).toHaveCount(1)
 })
 
@@ -143,7 +146,7 @@ test('the team sets up a course and opens a cohort for booking', async ({ page }
   await course.getByLabel('Right answer to question 1').selectOption({ label: '10 minutes' })
   await expectAccessible(page)
   await course.getByRole('button', { name: 'Save quiz' }).click()
-  await expect(course.getByText('First week check saved')).toBeVisible()
+  await expect(page.locator('.toasts').getByText('First week check saved')).toBeVisible()
   await expect(course.getByText('Quizzes (1)')).toBeVisible()
 
   await page.getByRole('link', { name: 'See the catalogue as learners do' }).click()
@@ -239,8 +242,12 @@ test('a teacher asks for a course place, the head approves it, and the teacher c
   await signIn(page, 'newteacher@oakfield.test')
   await page.getByRole('link', { name: 'Training' }).click()
   const place = page.locator('.enrolment', { hasText: cohortName })
-  page.once('dialog', (d) => d.accept())
   await place.getByRole('button', { name: 'Cancel place' }).click()
+  // Changing your mind keeps the place.
+  await page.getByRole('dialog').getByRole('button', { name: 'Keep my place' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await place.getByRole('button', { name: 'Cancel place' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel place' }).click()
   await expect(page.getByText(/is cancelled\. The school's invoice for it is cancelled/)).toBeVisible()
   await expect(page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Ask for a place' })).toBeVisible()
 })
@@ -257,12 +264,12 @@ test('the team adds a trainer with their own Zoom login', async ({ page }) => {
   await team.getByLabel('Zoom login (optional)').fill('zoom.host@trainers.test')
   await expectAccessible(page)
   await team.getByRole('button', { name: 'Add trainer' }).click()
-  await expect(team.getByText(`${name} added`)).toBeVisible()
+  await expect(page.locator('.toasts').getByText(`${name} added`)).toBeVisible()
   await expect(team.getByLabel(`Zoom login for ${name}`)).toHaveValue('zoom.host@trainers.test')
 
   // Switched off, they can no longer sign in.
   await team.getByRole('row', { name: new RegExp(name) }).getByRole('button', { name: 'Switch off' }).click()
-  await expect(team.getByText(`${name} is switched off`)).toBeVisible()
+  await expect(page.locator(".toasts").getByText(`${name} is switched off`)).toBeVisible()
   await expect(team.getByRole('row', { name: new RegExp(name) })).toContainText('(switched off)')
 })
 
@@ -346,7 +353,7 @@ test('the team marks attendance and the assessment, and the learner gets a certi
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Courses' }).click()
   await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
-  await expect(cohort.getByText(/^Issued \d{4}-\d{2}-\d{2}, valid until/)).toBeVisible()
+  await expect(cohort.getByText(/^Issued \w{3} \d{1,2} \w{3} \d{4}, valid until/)).toBeVisible()
   await expect(passed).toBeDisabled()
 })
 
@@ -429,8 +436,8 @@ test('the team schedules a price rise, and past prices stay in the history', asy
   await plan.getByLabel('New yearly price (£)').fill('950')
   await plan.getByLabel('From').fill(from)
   await plan.getByRole('button', { name: 'Set price' }).click()
-  await expect(page.getByText(`Primary core: £950 a year from ${from}`)).toBeVisible()
-  await expect(plan.getByText(`changes to £950 from ${from}`)).toBeVisible()
+  await expect(page.getByText(`Primary core: £950 a year from ${day(from)}`)).toBeVisible()
+  await expect(plan.getByText(`changes to £950 from ${day(from)}`)).toBeVisible()
   // Today's price is unchanged until then.
   await expect(plan.getByText('£900 a year', { exact: true })).toBeVisible()
   await plan.getByText('Price history').click()

@@ -1,6 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, type Plan } from '../api'
 import { gbp } from '../money'
+import { day } from '../dates'
+import { useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
@@ -12,7 +15,7 @@ const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 export default function PlansPage() {
   const [plans, setPlans] = useState<Plan[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   useEffect(() => {
     api
@@ -38,7 +41,7 @@ export default function PlansPage() {
     }
   }
 
-  if (!plans) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!plans) return error ? <p className="error">{error}</p> : <Skeleton />
 
   return (
     <>
@@ -47,7 +50,6 @@ export default function PlansPage() {
         <span className="muted">Yearly licence prices · a change applies from its date</span>
       </div>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
 
       {plans.map((p) => (
         <PlanCard key={p.code} plan={p} run={run} />
@@ -70,7 +72,7 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
 
   async function changePrice(e: FormEvent) {
     e.preventDefault()
-    const when = from === today() ? 'from today' : `from ${from}`
+    const when = from === today() ? 'from today' : `from ${day(from)}`
     if (await run(() => api.changePlanPrice(p.code, pence(price), from), `${p.label}: ${gbp(pence(price))} a year ${when}`)) {
       setPrice('')
     }
@@ -86,7 +88,7 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
       </div>
       <p className="muted">
         {p.licences} {p.licences === 1 ? 'licence' : 'licences'} on this plan
-        {p.nextPrice && ` · changes to ${gbp(p.nextPrice.pricePence)} from ${p.nextPrice.effectiveFrom}`}
+        {p.nextPrice && ` · changes to ${gbp(p.nextPrice.pricePence)} from ${day(p.nextPrice.effectiveFrom)}`}
       </p>
 
       {!p.freeTrial && (
@@ -144,10 +146,10 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
           <tbody>
             {p.history.map((h) => (
               <tr key={h.effectiveFrom}>
-                <td>{h.effectiveFrom === '2000-01-01' ? 'Launch' : h.effectiveFrom}</td>
+                <td>{h.effectiveFrom === '2000-01-01' ? 'Launch' : day(h.effectiveFrom)}</td>
                 <td className="num">{gbp(h.pricePence)}</td>
                 <td>
-                  {h.changedBy} <span className="muted">· {h.changedAt.slice(0, 10)}</span>
+                  {h.changedBy} <span className="muted">· {day(h.changedAt)}</span>
                 </td>
               </tr>
             ))}

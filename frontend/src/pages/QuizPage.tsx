@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type QuizPaper, type QuizResult } from '../api'
+import Skeleton from '../components/Skeleton'
 
 /**
  * Taking a quiz between live sessions. The server marks it and says which questions to look at again, without
@@ -47,7 +48,7 @@ export default function QuizPage() {
     setAnswers(paper?.questions.map(() => null) ?? [])
   }
 
-  if (!paper) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!paper) return error ? <p className="error">{error}</p> : <Skeleton />
 
   return (
     <>

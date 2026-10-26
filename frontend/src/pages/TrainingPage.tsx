@@ -15,6 +15,9 @@ import { sessionTime } from '../live'
 import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
 import { gbp } from '../money'
+import { day } from '../dates'
+import { useConfirm, useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 
 /** The one-hour induction school staff complete before running sessions. */
@@ -42,7 +45,7 @@ function InductionSection() {
       <div className="section-head">
         <h3>Motor Movers induction</h3>
         {induction.completedOn ? (
-          <span className="badge badge-ok">Completed {induction.completedOn}</span>
+          <span className="badge badge-ok">Completed {day(induction.completedOn)}</span>
         ) : (
           <span className="muted">
             {induction.lessonsDone} of {induction.lessons.length} parts done · {induction.totalMinutes} minutes in all
@@ -213,7 +216,7 @@ export default function TrainingPage() {
   const [mine, setMine] = useState<Enrolment[]>([])
   const [requests, setRequests] = useState<CourseRequest[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
   const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
@@ -242,12 +245,14 @@ export default function TrainingPage() {
     }
   }
 
-  function cancel(e: Enrolment) {
-    if (!window.confirm(`Cancel your place on ${e.courseTitle} (${e.cohortName})?`)) return
+  const confirm = useConfirm()
+
+  async function cancel(e: Enrolment) {
+    if (!(await confirm({ title: 'Cancel your place?', body: `On ${e.courseTitle} (${e.cohortName}).`, confirmLabel: 'Cancel place', cancelLabel: 'Keep my place', danger: true }))) return
     act(() => api.cancelPlace(e.id), (r) => (r as { message: string }).message)
   }
 
-  if (!loaded && !error) return <p className="muted">Loading…</p>
+  if (!loaded && !error) return <Skeleton />
   const enrolledCohorts = new Set(mine.map((m) => m.cohortId))
   const waiting = new Map(requests.filter((r) => r.status === 'REQUESTED').map((r) => [r.cohortId, r]))
   // A school pays for its staff's places, so staff other than heads ask their head first.
@@ -258,7 +263,6 @@ export default function TrainingPage() {
     <>
       <h1>Training</h1>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
       {user && OWN_PAYMENTS_PAGE.includes(user.role) && <PaymentDue />}
       {user?.role !== 'ADMIN' && <YourLiveSessions />}
       {user && ['TEACHER', 'HEAD', 'PRACTITIONER'].includes(user.role) && <InductionSection />}
@@ -272,7 +276,7 @@ export default function TrainingPage() {
               <div>
                 <strong>{e.courseTitle}</strong>
                 <p className="muted">
-                  {e.cohortName} · starts {e.startsOn} · {e.timeSlot}
+                  {e.cohortName} · starts {day(e.startsOn)} · {e.timeSlot}
                 </p>
               </div>
               <div className="enrolment-status">
@@ -281,7 +285,7 @@ export default function TrainingPage() {
                 </span>
                 {e.certificateIssuedOn ? (
                   <>
-                    <span className="badge badge-ok">Certified until {e.certificateExpiresOn}</span>
+                    <span className="badge badge-ok">Certified until {day(e.certificateExpiresOn)}</span>
                     <Link className="fine-link" to={`/training/certificate/${e.id}`}>
                       View your certificate
                     </Link>
@@ -312,7 +316,7 @@ export default function TrainingPage() {
               <div>
                 <strong>{r.courseTitle}</strong>
                 <p className="muted">
-                  {r.cohortName} · starts {r.startsOn} · {r.timeSlot}
+                  {r.cohortName} · starts {day(r.startsOn)} · {r.timeSlot}
                 </p>
               </div>
               <div className="enrolment-status">
@@ -361,7 +365,7 @@ export default function TrainingPage() {
                 <div>
                   <strong>{h.name}</strong>
                   <p className="muted">
-                    Starts {h.startsOn} · {h.timeSlot} · led by {h.trainerName}
+                    Starts {day(h.startsOn)} · {h.timeSlot} · led by {h.trainerName}
                   </p>
                   <p className="muted">
                     {h.seatsLeft} places left · {h.recordingAgreed ? 'sessions recorded' : 'not recorded'}

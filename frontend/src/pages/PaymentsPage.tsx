@@ -12,6 +12,8 @@ import {
 import MonthBars from '../components/MonthBars'
 import PaymentTable from '../components/PaymentTable'
 import { gbp } from '../money'
+import { useConfirm, useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 const PURPOSES: [PaymentPurpose, string][] = [
   ['LICENCE', 'Licence'],
@@ -24,12 +26,13 @@ const count = (n: number, thing: string) => `${n} ${thing}${n === 1 ? '' : 's'}`
 
 /** The team records invoices and payments, and sees spend by school, trust or group, person and month. */
 export default function PaymentsPage() {
+  const confirm = useConfirm()
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [payments, setPayments] = useState<Payment[]>([])
   const [schools, setSchools] = useState<SchoolRow[]>([])
   const [courses, setCourses] = useState<AdminCourse[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   const load = useCallback(() => {
     Promise.all([api.paymentSummary(), api.payments(), api.schools(), api.adminCourses()])
@@ -58,7 +61,7 @@ export default function PaymentsPage() {
     }
   }
 
-  if (!summary) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!summary) return error ? <p className="error">{error}</p> : <Skeleton />
 
   return (
     <>
@@ -67,7 +70,6 @@ export default function PaymentsPage() {
         <span className="muted">Recorded by the team, or paid by card online</span>
       </div>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
 
       <div className="kpis">
         <div className="card kpi">
@@ -139,10 +141,15 @@ export default function PaymentsPage() {
                 </button>
                 <button
                   className="btn"
-                  onClick={() => {
-                    if (confirm(`Cancel the ${gbp(p.amountPence)} invoice to ${p.payerName}?`)) {
-                      run(() => api.cancelPayment(p.id), `${p.description} cancelled`)
-                    }
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: `Cancel the ${gbp(p.amountPence)} invoice to ${p.payerName}?`,
+                      body: `${p.description}. A cancelled invoice cannot be paid.`,
+                      confirmLabel: 'Cancel invoice',
+                      cancelLabel: 'Keep it',
+                      danger: true,
+                    })
+                    if (ok) run(() => api.cancelPayment(p.id), `${p.description} cancelled`)
                   }}
                 >
                   Cancel

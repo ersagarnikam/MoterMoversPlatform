@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, type AdminCourse } from '../api'
 import { CohortBookings } from './CoursesPage'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
 /**
  * A trainer's own cohorts: who has booked, attendance at each live session, and the end-of-course assessment, which
@@ -18,7 +20,7 @@ export default function TrainerCohortsPage() {
   }, [])
 
   if (error) return <p className="error">{error}</p>
-  if (!courses) return <p className="muted">Loading…</p>
+  if (!courses) return <Skeleton />
 
   return (
     <>
@@ -38,7 +40,7 @@ export default function TrainerCohortsPage() {
               </span>
             </div>
             <p className="muted">
-              Starts {h.startsOn} · {h.timeSlot}
+              Starts {day(h.startsOn)} · {h.timeSlot}
             </p>
             <CohortBookings cohortId={h.id} cohortName={h.name} sessions={h.sessions} certificate={c.awardsCertificate} />
           </section>

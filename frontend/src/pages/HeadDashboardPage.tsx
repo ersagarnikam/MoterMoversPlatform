@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { api, type ParentLinkRow, type SchoolDashboard } from '../api'
 import { useAuth } from '../auth'
 import { pct } from '../stages'
+import { day } from '../dates'
+import { useConfirm } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 function download(filename: string, body: string) {
   const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }))
@@ -25,7 +28,7 @@ export default function HeadDashboardPage() {
 
   if (!schoolId) return <p className="muted">This account is not linked to a school.</p>
   if (error) return <p className="error">{error}</p>
-  if (!data) return <p className="muted">Loading…</p>
+  if (!data) return <Skeleton />
 
   const exportCsv = async (name: 'governor-summary' | 'research', filename: string) => {
     try {
@@ -108,8 +111,10 @@ function ParentLinks({ schoolId }: { schoolId: number }) {
     api.parentLinks(schoolId).then(setLinks).catch((e) => setError(e.message))
   }, [schoolId])
 
+  const confirm = useConfirm()
+
   async function remove(link: ParentLinkRow) {
-    if (!window.confirm(`Remove ${link.parentName}'s access to ${link.childName}?`)) return
+    if (!(await confirm({ title: `Remove ${link.parentName}'s access?`, body: `They will no longer see ${link.childName} in the parent app.`, confirmLabel: 'Remove access', danger: true }))) return
     try {
       await api.removeParentLink(schoolId, link.linkId)
       setLinks((all) => all?.filter((l) => l.linkId !== link.linkId) ?? null)
@@ -146,7 +151,7 @@ function ParentLinks({ schoolId }: { schoolId: number }) {
                   <td>
                     {l.parentName} <span className="muted">· {l.parentEmail}</span>
                   </td>
-                  <td>{l.linkedAt.slice(0, 10)}</td>
+                  <td>{day(l.linkedAt)}</td>
                   <td>
                     <button className="btn" onClick={() => remove(l)}>
                       Remove

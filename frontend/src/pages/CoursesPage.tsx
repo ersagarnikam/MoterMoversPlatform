@@ -13,6 +13,9 @@ import {
 import CourseQuizzes from '../components/CourseQuizzes'
 import { sessionTime } from '../live'
 import { gbp } from '../money'
+import { day } from '../dates'
+import { useConfirm, useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 const TRACKS: [CourseTrack, string][] = [
   ['PROFESSIONAL', 'Professionals (teachers, TAs, therapists)'],
@@ -30,7 +33,7 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<AdminCourse[] | null>(null)
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   useEffect(() => {
     api
@@ -60,7 +63,7 @@ export default function CoursesPage() {
     }
   }
 
-  if (!courses) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!courses) return error ? <p className="error">{error}</p> : <Skeleton />
 
   return (
     <>
@@ -71,7 +74,6 @@ export default function CoursesPage() {
         </Link>
       </div>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
       {courses.length === 0 && <p className="muted">No courses yet. Set one up below.</p>}
 
       {courses.map((c) => (
@@ -160,7 +162,7 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
                 <div>
                   <strong>{h.name}</strong>
                   <p className="muted">
-                    Starts {h.startsOn} · {h.timeSlot} · led by {h.trainerName}
+                    Starts {day(h.startsOn)} · {h.timeSlot} · led by {h.trainerName}
                   </p>
                   <p className="muted">
                     {h.booked} of {h.capacity} places booked · {h.recordingAgreed ? 'sessions recorded' : 'not recorded'}
@@ -239,10 +241,12 @@ export function CohortBookings({
 }) {
   const [bookings, setBookings] = useState<Enrolment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
+
+  const confirm = useConfirm()
 
   async function cancel(b: Enrolment) {
-    if (!window.confirm(`Cancel ${b.learnerName}'s place on ${cohortName}?`)) return
+    if (!(await confirm({ title: `Cancel ${b.learnerName}'s place?`, body: `On ${cohortName}. An invoice to their school that is still due is cancelled too.`, confirmLabel: 'Cancel place', cancelLabel: 'Keep the place', danger: true }))) return
     setError(null)
     try {
       setNotice((await api.cancelPlace(b.id)).message)
@@ -276,11 +280,6 @@ export function CohortBookings({
       {error && (
         <p className="error" role="alert">
           {error}
-        </p>
-      )}
-      {notice && (
-        <p className="banner-teal" role="status">
-          {notice}
         </p>
       )}
       {bookings.length === 0 ? (
@@ -354,7 +353,7 @@ export function CohortBookings({
                         <td>
                           {issued ? (
                             <span className="badge badge-ok">
-                              Issued {b.certificateIssuedOn}, valid until {b.certificateExpiresOn}
+                              Issued {day(b.certificateIssuedOn)}, valid until {day(b.certificateExpiresOn)}
                             </span>
                           ) : (
                             <span className="muted">
@@ -627,7 +626,7 @@ function CohortForm({
  */
 function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: Trainer[]) => void }) {
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [zoomEmail, setZoomEmail] = useState('')
@@ -671,7 +670,6 @@ function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: T
         can run any session. Give someone their own Zoom login so their sessions can run at the same time as others.
       </p>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
       <div className="table-wrap">
         <table>
           <thead>

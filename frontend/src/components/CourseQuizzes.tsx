@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, type AdminCourse, type AdminQuiz, type QuizInput } from '../api'
+import { useConfirm, useToast } from './Feedback'
 
 /**
  * Short quizzes between a course's live sessions. Learners take each once its session has started (or they attended
@@ -10,7 +11,7 @@ export default function CourseQuizzes({ course }: { course: AdminCourse }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<number | 'new' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   useEffect(() => {
     api
@@ -37,8 +38,10 @@ export default function CourseQuizzes({ course }: { course: AdminCourse }) {
     }
   }
 
+  const confirm = useConfirm()
+
   async function remove(q: AdminQuiz) {
-    if (!window.confirm(`Delete the quiz "${q.title}"?`)) return
+    if (!(await confirm({ title: `Delete the quiz "${q.title}"?`, body: 'Nobody has taken it yet, so nothing is lost.', confirmLabel: 'Delete quiz', danger: true }))) return
     setError(null)
     try {
       await api.deleteQuiz(q.id)
@@ -58,7 +61,6 @@ export default function CourseQuizzes({ course }: { course: AdminCourse }) {
           {error}
         </p>
       )}
-      {notice && <p className="banner-teal">{notice}</p>}
       {quizzes.length === 0 && <p className="muted">No quizzes. Add one to check learning between sessions.</p>}
       <ul className="quiz-list">
         {quizzes.map((q) =>

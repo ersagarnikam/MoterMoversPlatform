@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { api, type ContentItem, type ContentKind } from '../api'
 import StageBadge from '../components/StageBadge'
 import { STAGES } from '../stages'
+import { day } from '../dates'
+import { useToast } from '../components/Feedback'
 
 const KINDS: { kind: ContentKind; label: string }[] = [
   { kind: 'content', label: 'Class sessions' },
@@ -192,7 +194,7 @@ export default function ContentPage() {
   const [items, setItems] = useState<ContentItem[]>([])
   const [filter, setFilter] = useState<'DRAFT' | 'ALL'>('DRAFT')
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   useEffect(() => {
     // Ignore a slow response for a tab the user has already left.
@@ -260,7 +262,6 @@ export default function ContentPage() {
       {/* Keyed by kind so switching tabs starts a fresh form. */}
       <NewItemForm key={kind} kind={kind} onSave={create} />
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
       {shown.length === 0 && <p className="muted">Nothing waiting for sign-off.</p>}
       <div className="list">
         {shown.map((i) => (
@@ -297,7 +298,7 @@ export default function ContentPage() {
             {i.reviewedBy && (
               <p className="fine">
                 Reviewed by {i.reviewedBy}
-                {i.reviewedAt ? ` on ${i.reviewedAt.slice(0, 10)}` : ''}
+                {i.reviewedAt ? ` on ${day(i.reviewedAt)}` : ''}
               </p>
             )}
           </div>

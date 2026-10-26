@@ -58,9 +58,13 @@ public final class TrainingViews {
     public record SessionSummary(Long id, int number, Instant startsAt, int durationMinutes) {
     }
 
-    /** A live session as someone who may join it sees it. {@code host} is true for the Motor Movers team. */
+    /**
+     * A live session as someone who may join it sees it. {@code host} is true for whoever runs it (the team or the
+     * cohort's trainer), who also sees how many are {@code booked}; null for learners.
+     */
     public record LiveSessionView(Long id, Long cohortId, String courseTitle, String cohortName, int number,
-            int of, Instant startsAt, int durationMinutes, String trainerName, boolean open, boolean host) {
+            int of, Instant startsAt, int durationMinutes, String trainerName, boolean open, boolean host,
+            Integer booked) {
     }
 
     /**

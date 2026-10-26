@@ -279,11 +279,12 @@ public class LiveSessionService {
         return sessions.findById(id).orElseThrow(() -> new NotFoundException("Live session", id));
     }
 
-    private static TrainingViews.LiveSessionView view(CohortSession s, CurrentUser me, Instant now) {
+    private TrainingViews.LiveSessionView view(CohortSession s, CurrentUser me, Instant now) {
         Cohort c = s.getCohort();
         boolean host = canHost(me, c);
         return new TrainingViews.LiveSessionView(s.getId(), c.getId(), c.getCourse().getTitle(), c.getName(),
                 s.getNumber(), c.getCourse().getLiveSessions(), s.getStartsAt(), s.getDurationMinutes(),
-                c.getTrainerName(), host ? !s.isOverAt(now) : s.isOpenAt(now), host);
+                c.getTrainerName(), host ? !s.isOverAt(now) : s.isOpenAt(now), host,
+                host ? (int) enrolments.countByCohortId(c.getId()) : null);
     }
 }
