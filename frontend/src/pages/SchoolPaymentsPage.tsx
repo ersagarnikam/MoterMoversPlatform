@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, type CourseRequest, type Payment, type Totals } from '../api'
 import { useAuth } from '../auth'
+import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
 import PaymentTable from '../components/PaymentTable'
 import { gbp } from '../money'
 
@@ -14,6 +15,7 @@ export default function SchoolPaymentsPage() {
   const [requests, setRequests] = useState<CourseRequest[]>([])
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const cards = useCardPayments()
 
   const load = useCallback(() => {
     if (!user?.schoolId) return
@@ -54,6 +56,7 @@ export default function SchoolPaymentsPage() {
         <h1>{data.schoolName} · Payments</h1>
         <span className="muted">Licences and other invoices to the school</span>
       </div>
+      <CardPaymentReturn />
       {error && <p className="error">{error}</p>}
       {notice && <p className="banner-teal">{notice}</p>}
       <div className="kpis">
@@ -110,7 +113,14 @@ export default function SchoolPaymentsPage() {
       </section>
       <section className="card">
         <h3>Invoices and payments</h3>
-        <PaymentTable payments={data.payments} />
+        <PaymentTable
+          payments={data.payments}
+          actions={
+            cards
+              ? (p) => p.status === 'DUE' && <PayByCard payment={p} onError={(message) => setError(message)} />
+              : undefined
+          }
+        />
         <p className="fine">
           Staff who pay for their own courses see those payments on their Training page. Questions about an invoice go
           to the Motor Movers team.

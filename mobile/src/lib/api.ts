@@ -135,6 +135,8 @@ export interface Payment {
   invoicedOn: string
   paidOn: string | null
   reference: string | null
+  /** Paid by card on the platform. */
+  paidOnline: boolean
 }
 
 /** "Paid" is money received; "outstanding" is invoiced and not yet paid. */
@@ -246,6 +248,10 @@ export const api = {
   joinLive: (sessionId: number) => request<LiveJoin>('POST', `/api/training/live/${sessionId}/join`),
 
   myPayments: () => request<MyPayments>('GET', '/api/payments/mine'),
+  /** Whether Pay by card is switched on. */
+  onlinePayments: () => request<{ enabled: boolean }>('GET', '/api/payments/online'),
+  /** The address of the payment provider's page to pay this payment by card. */
+  checkout: (paymentId: number) => request<{ url: string }>('POST', `/api/payments/${paymentId}/checkout`),
   registerPushToken: (token: string, platform: string) =>
     request<void>('POST', '/api/me/push-tokens', { token, platform }),
   removePushToken: (token: string) => request<void>('POST', '/api/me/push-tokens/remove', { token }),

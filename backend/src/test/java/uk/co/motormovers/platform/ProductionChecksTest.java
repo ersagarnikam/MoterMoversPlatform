@@ -35,6 +35,16 @@ class ProductionChecksTest {
                 .doesNotThrowAnyException();
     }
 
+    @Test
+    void refusesHalfTheStripeKeys() {
+        PlatformProperties prod = properties("f3a9c1e07b5d4a2e9c8b7a6f5e4d3c2b1a0f9e8d7c6b", false,
+                "https://app.example.org");
+        // Card payments would be taken but never marked paid.
+        assertThatThrownBy(() -> verify(prod, new MockEnvironment().withProperty("spring.mail.host", "smtp.example.org")
+                .withProperty("platform.stripe.secret-key", "sk_live_x")))
+                .hasMessageContaining("STRIPE_WEBHOOK_SECRET");
+    }
+
     private static PlatformProperties properties(String secret, boolean seed, String webUrl) {
         return new PlatformProperties(Region.UK, 365, 0.7, seed,
                 new PlatformProperties.Jwt(secret, 480, 43200),

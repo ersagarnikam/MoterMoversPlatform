@@ -36,7 +36,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V13`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V14`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -46,7 +46,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 105 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 109 unit + API integration tests (H2)
 cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -96,6 +96,14 @@ a warning, not a refusal). Trainers also have **My cohorts** (`/trainer/cohorts`
 bookings, attendance and the end-of-course assessment of their own cohorts (`LiveSessionService.canHost` decides).
 Demo trainer: trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its
 own licensed Zoom user on the owner's account.
+
+**Card payments (2026-10-26, migration V14).** With `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` set (both or neither;
+`ProductionChecks` refuses one), payers see **Pay by card** on what is due: parents and practitioners on `/payments`
+and in the app, heads on the school's Payments page. It opens a Stripe Checkout page (`payment/stripe`,
+`OnlinePaymentService.checkout`); the card never touches the platform. Stripe's signed webhook
+(`POST /api/stripe/webhook`, open to Stripe only by its HMAC signature, 5-minute tolerance) marks the payment paid
+with `payment.paid_online_ref`; returning to the platform proves nothing on its own. Not yet tried with a real Stripe
+account (RUNBOOK, Card payments). Refunds are made in Stripe and not recorded on the platform.
 
 **Phone notifications (2026-10-26, migration V13).** The parent app registers the phone after sign-in (`src/lib/push.ts`,
 `expo-notifications`; `POST /api/me/push-tokens`, removed on sign-out) and opens the screen a notification names
@@ -220,8 +228,8 @@ Not started unless noted. Confirm priorities with the owner.
 8. Done 2026-10-21: bookings, attendance and certificates have a screen (per-session register since 2026-10-22).
    Session reminder emails done 2026-10-26. Not built: emailing the learner when their certificate is issued, and
    reminders before it expires.
-9. Payments are entered by hand. Not built: online payment (e.g. Stripe, which could create the same
-   `payment` records), refunds and credit notes (a paid payment is final), VAT (prices are the amounts charged,
+9. Online card payment (Stripe Checkout) done 2026-10-26, waiting on the owner's Stripe account. Not built: refunds
+   and credit notes (a paid payment is final), VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
 10. **Assessment rebuild (waiting on Pat, asked 2026-10-21).** Pat's model replaces today's single 0-3

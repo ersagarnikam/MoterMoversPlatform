@@ -47,6 +47,7 @@ export default function PaymentTable({
               <td className="nowrap">
                 <span className={`status status-payment-${p.status.toLowerCase()}`}>{STATUS[p.status]}</span>
                 {p.paidOn && <span className="muted"> {p.paidOn}</span>}
+                {p.paidOnline && <span className="muted"> · by card</span>}
               </td>
               {actions && <td className="row-actions">{actions(p)}</td>}
             </tr>

@@ -493,6 +493,8 @@ export interface Payment {
   invoicedOn: string
   paidOn: string | null
   reference: string | null
+  /** Paid by card on the platform (Stripe), not marked paid by hand. */
+  paidOnline: boolean
 }
 
 /** "Paid" is money received; "outstanding" is invoiced and not yet paid. */
@@ -724,6 +726,10 @@ export const api = {
       `/api/trusts/${trustId}/payments`,
     ),
   myPayments: () => request<Totals & { payments: Payment[] }>('GET', '/api/payments/mine'),
+  /** Whether Pay by card (Stripe) is switched on. */
+  onlinePayments: () => request<{ enabled: boolean }>('GET', '/api/payments/online'),
+  /** The address of Stripe's page to pay this payment by card. */
+  checkout: (paymentId: number) => request<{ url: string }>('POST', `/api/payments/${paymentId}/checkout`),
   schools: () => request<SchoolRow[]>('GET', '/api/admin/schools'),
   setParentLinks: (schoolId: number, enabled: boolean) =>
     request<void>('POST', `/api/admin/schools/${schoolId}/parent-links`, { enabled }),

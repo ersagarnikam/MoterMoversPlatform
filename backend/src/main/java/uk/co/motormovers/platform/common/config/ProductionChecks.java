@@ -44,6 +44,12 @@ public class ProductionChecks {
         if (properties.mail().webUrl() == null || !properties.mail().webUrl().startsWith("https://")) {
             problems.add("PLATFORM_WEB_URL must be the https:// address of the web app");
         }
+        boolean stripeKey = !env.getProperty("platform.stripe.secret-key", "").isBlank();
+        boolean stripeWebhook = !env.getProperty("platform.stripe.webhook-secret", "").isBlank();
+        if (stripeKey != stripeWebhook) {
+            // With only one, card payments would be taken but never marked paid, or never offered.
+            problems.add("STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET must be set together (or both left blank)");
+        }
         if (env.getProperty("platform.login-limit-per-ip", Integer.class, 50) > 50) {
             problems.add("LOGIN_LIMIT_PER_IP is for load tests only: leave it unset");
         }

@@ -27,10 +27,10 @@ public final class PaymentViews {
                 : String.format(java.util.Locale.UK, "£%,.2f", pence / 100.0);
     }
 
-    /** One payment. payerEmail is null when a school pays. */
+    /** One payment. payerEmail is null when a school pays; paidOnline when it was paid by card on the platform. */
     public record PaymentView(Long id, PayerType payerType, String payerName, String payerEmail, Long schoolId,
             PaymentPurpose purpose, String purposeLabel, String description, int amountPence, PaymentStatus status,
-            LocalDate invoicedOn, LocalDate paidOn, String reference) {
+            LocalDate invoicedOn, LocalDate paidOn, String reference, boolean paidOnline) {
 
         public static PaymentView of(Payment p) {
             boolean school = p.getSchool() != null;
@@ -38,7 +38,7 @@ public final class PaymentViews {
                     school ? p.getSchool().getName() : p.getPayer().getDisplayName(),
                     school ? null : p.getPayer().getEmail(), school ? p.getSchool().getId() : null, p.getPurpose(),
                     p.getPurpose().label(), p.getDescription(), p.getAmountPence(), p.getStatus(), p.getInvoicedOn(),
-                    p.getPaidOn(), p.getReference());
+                    p.getPaidOn(), p.getReference(), p.getPaidOnlineRef() != null);
         }
     }
 

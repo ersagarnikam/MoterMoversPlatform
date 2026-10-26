@@ -133,6 +133,22 @@ optional.
 Phones register when a parent signs in to the app and allows notifications, and are removed on signing out or when
 Expo reports the app was deleted.
 
+## Card payments
+
+Parents, practitioners and heads can pay what is due by card on Stripe's own page (Stripe Checkout); the card never
+touches the platform. Stripe then calls the platform, which marks the payment paid ("by card"). Without the keys,
+Pay by card is hidden and the team marks payments paid by hand, as before.
+
+1. In the Stripe dashboard (start in test mode): Developers > API keys, copy the secret key (`sk_test_...`).
+2. Developers > Webhooks > Add endpoint: `https://<APP_DOMAIN>/api/stripe/webhook`, events
+   `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy its signing secret (`whsec_...`).
+3. Put both in `deploy/.env` as `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (the API refuses to start with only
+   one), then restart the API. Pay a due payment with Stripe's test card 4242 4242 4242 4242 and check it shows paid.
+4. To go live, repeat with the live keys and a live-mode webhook.
+
+Refunds are made in the Stripe dashboard (find the payment by the payer's email). The platform does not record
+refunds yet, so the payment still shows as paid there. Prices are charged as they are, with no VAT split.
+
 ## Everyday operations
 
 | Task | How |

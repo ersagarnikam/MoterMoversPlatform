@@ -58,6 +58,10 @@ platform:
   push:
     enabled: ${PUSH_ENABLED:false}
     access-token: ${EXPO_ACCESS_TOKEN:}
+  # Paying by card with Stripe Checkout (payment/stripe/StripeProperties). Without both, payments are marked by hand.
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
 
 ---
 spring:
