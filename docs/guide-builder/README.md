@@ -28,6 +28,10 @@ cd mobile && npx expo start --web --port 8081     # parent app on the web (optio
 node docs/guide-builder/capture.mjs               # from the repository root; needs Chrome
 ```
 
+If port 8081 is taken, run the parent app on another port, allow it in the API
+(`PLATFORM_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8082`) and point the capture at it
+(`APP=http://localhost:8082 node docs/guide-builder/capture.mjs`).
+
 It ends with a list of failures (empty when every screen was captured). Without Zoom keys the live room shows
 "Zoom is not connected yet", so the guides use the register part of it (`live-register`).
 

@@ -275,6 +275,11 @@ await desk(async (page) => {
 // Motor Movers team
 await desk(async (page) => {
   await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('heading', { name: /^Hello/ }).waitFor()
+  await page.locator('.home-card').first().waitFor()
+  await shot(page, 'admin-home')
+  await page.getByRole('link', { name: 'Content approval', exact: true }).click()
+  await page.getByRole('heading', { name: 'Content approval' }).waitFor()
   await shot(page, 'admin-content')
   await step('add content', async () => {
     await page.getByText('Add a class session').click()
@@ -287,14 +292,15 @@ await desk(async (page) => {
     await shot(page, 'admin-content-wording')
   })
   await step('schools', async () => {
-    await page.getByRole('link', { name: 'Schools & licences' }).click()
+    await page.getByRole('link', { name: 'Schools & licences', exact: true }).click()
     await page.getByRole('heading', { name: 'Schools & licences' }).waitFor()
     await shot(page, 'admin-schools', { full: true })
   })
   await step('courses', async () => {
-    await page.getByRole('link', { name: 'Courses' }).click()
+    await page.getByRole('link', { name: 'Courses', exact: true }).click()
     await page.getByRole('heading', { name: 'Courses', exact: true }).waitFor()
     await shot(page, 'admin-courses')
+    await page.getByRole('link', { name: /Motor Movers practitioner course/ }).click()
     const course = page.locator('.course-admin', { hasText: 'Motor Movers practitioner course' })
     await course.getByText('Quizzes (3)').click()
     await part(course.locator('details.add-item').first(), 'admin-quizzes')
@@ -305,15 +311,16 @@ await desk(async (page) => {
     await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
     await cohort.locator('.bookings table').waitFor()
     await part(cohort, 'admin-bookings')
-    await part(page.locator('section.card', { has: page.getByRole('heading', { name: 'Trainers', exact: true }) }), 'admin-trainers')
+    await page.getByRole('link', { name: 'Trainers', exact: true }).click()
+    await part(page.locator('section.card', { has: page.getByRole('heading', { name: 'The training team' }) }), 'admin-trainers')
   })
   await step('live sessions', async () => {
-    await page.getByRole('link', { name: 'Live sessions' }).click()
+    await page.getByRole('link', { name: 'Live sessions', exact: true }).click()
     await page.getByRole('heading', { name: 'Live sessions' }).waitFor()
     await shot(page, 'admin-live')
   })
   await step('payments', async () => {
-    await page.getByRole('link', { name: 'Payments' }).click()
+    await page.getByRole('link', { name: 'Payments', exact: true }).click()
     await page.getByRole('heading', { name: 'Received each month' }).waitFor()
     await shot(page, 'admin-payments')
     await shot(page, 'admin-payments-full', { full: true })

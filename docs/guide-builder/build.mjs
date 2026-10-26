@@ -308,7 +308,7 @@ function overviewBody() {
         <li>Parent phone app for iPhone and Android, with phone notifications.</li>
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates emailed as PDFs.</li>
         <li>Content approval with the wording check, school onboarding, staff training approved by heads, and payments by card online.</li>
-        <li>Checked automatically on every change: 109 checks of the system behind the screens, 34 of the web app’s building blocks, 61 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
+        <li>Checked automatically on every change: 111 checks of the system behind the screens, 43 of the web app’s building blocks, 62 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
         <li>Production set-up tried in full: secure web address (HTTPS), nightly backups with copies off the server, and a refusal to start with unsafe settings.</li>
       </ul></div>
       <div class="card no"><h3>Next steps</h3><ul>

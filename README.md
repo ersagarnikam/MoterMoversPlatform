@@ -127,6 +127,12 @@ first deployment, updates, backups and restores.
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
+Across the web app: dates read "Thu 5 Nov 2026" (`src/dates.ts`); messages after an action appear in the corner and
+confirmations appear in the page (`components/Feedback.tsx`); pages show grey placeholders while loading; long lists
+(payments, schools, bookings, the live register) can be searched. The team starts on **Home** (`/admin`): live sessions
+today, drafts to sign off, overdue invoices, licences to renew, Zoom clashes and certificates running out
+(`GET /api/admin/overview`). Each course has its own page (`/admin/courses/:id`) and trainers their own (`/admin/trainers`).
+
 ### Teacher pages
 - **Today**: one button to start the daily 10-minute session, the next session in sequence for
   the class's colour stage, and a 20-day counter that shows when a class is quietly dropping off.

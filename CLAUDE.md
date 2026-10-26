@@ -46,13 +46,13 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 109 unit + API integration tests (H2)
-cd frontend && npm test             # 34 unit tests (Vitest): money, times, offline queue, API client
+cd backend  && ./mvnw -B verify      # 111 unit + API integration tests (H2)
+cd frontend && npm test             # 43 unit tests (Vitest): money, times, offline queue, API client
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 61 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 62 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -96,6 +96,14 @@ a warning, not a refusal). Trainers also have **My cohorts** (`/trainer/cohorts`
 bookings, attendance and the end-of-course assessment of their own cohorts (`LiveSessionService.canHost` decides).
 Demo trainer: trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its
 own licensed Zoom user on the owner's account.
+
+**Web app usability (2026-10-26).** Dates through `day()` in `src/dates.ts` ("Thu 5 Nov 2026"); after an action, a
+toast via `useToast()` and confirmations via `useConfirm()` (`components/Feedback.tsx`; never `window.confirm`);
+`components/Skeleton` while loading; `components/ListFilter` for searchable lists. The team's home is `/admin`
+(`TeamOverviewService`, `GET /api/admin/overview`); courses list at `/admin/courses` with a page per course
+(`/admin/courses/:id`) and trainers at `/admin/trainers`. Tables of people turn into cards under 760px
+(`table.cards` with `data-label` cells). Browser tests click menu links with `exact: true` (Home cards repeat their
+names).
 
 **Card payments (2026-10-26, migration V14).** With `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` set (both or neither;
 `ProductionChecks` refuses one), payers see **Pay by card** on what is due: parents and practitioners on `/payments`

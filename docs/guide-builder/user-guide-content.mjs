@@ -439,6 +439,15 @@ export const GUIDES = [
     ],
     tasks: [
       {
+        title: 'See what needs attention today',
+        steps: [
+          'Sign in. Home lists what needs doing first: live sessions today, drafts waiting for sign-off, overdue invoices, licences to renew, Zoom clashes and certificates running out.',
+          'Each card links to where it is done. Cards with nothing to do say All clear.',
+        ],
+        shots: ['admin-home'],
+        captions: ['Home: what needs attention today.'],
+      },
+      {
         title: 'Add and approve content',
         steps: [
           'Choose Content approval and the kind of content (class sessions, home activities, parent guidance, resources or staff induction).',
@@ -466,7 +475,8 @@ export const GUIDES = [
       {
         title: 'Open a cohort and give it a trainer',
         steps: [
-          'Choose Courses. Under a course, choose Open a cohort.',
+          'Choose Courses and open the course.',
+          'Choose Open a cohort.',
           'Enter the name, start date, start time (UK), day and time, places and recording, and choose the trainer.',
           'Choose Open cohort. Its weekly sessions are dated, and it is open for booking.',
         ],
@@ -475,7 +485,7 @@ export const GUIDES = [
       {
         title: 'Write a quiz',
         steps: [
-          'Under the course, choose Quizzes, then Add a quiz.',
+          'Open the course from Courses, choose Quizzes, then Add a quiz.',
           'Enter the title, the live session it follows and the pass mark.',
           'For each question, type the answers one per line and choose the right one. Choose Save quiz.',
         ],
@@ -486,7 +496,7 @@ export const GUIDES = [
       {
         title: 'Follow bookings, attendance and certificates',
         steps: [
-          'Under a cohort, choose Bookings and attendance.',
+          'Open the course from Courses. Under a cohort, choose Bookings and attendance.',
           'Tick the sessions each learner attended and the assessment. The certificate issues itself when everything is complete.',
           'Choose Cancel place to cancel a booking; a school invoice still due is cancelled with it.',
         ],
@@ -496,7 +506,7 @@ export const GUIDES = [
       {
         title: 'Add a trainer',
         steps: [
-          'On Courses, under Trainers, choose Add a trainer.',
+          'Choose Trainers, then Add a trainer.',
           'Enter their name, email and, if they have one, their own Zoom login. Choose Add trainer.',
           'They are emailed a link to choose a password. Give them cohorts when you open or edit one.',
         ],

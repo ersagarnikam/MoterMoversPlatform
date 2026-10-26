@@ -315,8 +315,15 @@ export const ROLES = [
     ],
     sees: 'Everything across the platform.',
     cannot: 'Approve wording that sounds like a diagnosis: the platform blocks it.',
-    flow: ['Write content', 'Wording check', 'Sign schools up', 'Courses and quizzes', 'Trainers', 'Payments and income'],
+    flow: ['Home', 'Write content', 'Wording check', 'Sign schools up', 'Courses and quizzes', 'Trainers', 'Payments'],
     steps: [
+      {
+        title: 'Start from what needs attention',
+        body: 'The team signs in to Home: today’s live sessions, drafts waiting for sign-off, overdue invoices, licences to renew, Zoom clashes and certificates running out, each linking to where it is done.',
+        why: 'Nothing slips: the day’s work is on one page instead of spread across the platform.',
+        shots: ['admin-home'],
+        captions: ['Home: what needs attention today.'],
+      },
       {
         title: 'Write new content as a draft',
         body: 'Each kind of content has its own tab: class sessions, home activities, parent guidance, resources and staff induction. “Add” opens a short form; the new item is saved as a draft and waits in “Awaiting sign-off”.',
@@ -340,14 +347,14 @@ export const ROLES = [
       },
       {
         title: 'Run courses, cohorts and quizzes',
-        body: 'The Courses page lists the practitioner and parent courses. The team edits prices, opens cohorts with dates, times and a trainer, writes the quizzes between sessions (with the same wording check), and follows each learner’s attendance, quizzes and assessment. A warning shows if two cohorts would need one Zoom login at the same time.',
+        body: 'The Courses page lists each course at a glance, and each course has its own page. There the team edits prices, opens cohorts with dates, times and a trainer, writes the quizzes between sessions (with the same wording check), and follows each learner’s attendance, quizzes and assessment. A warning shows if two cohorts would need one Zoom login at the same time.',
         why: 'Training can scale with demand: a new cohort is open for booking as soon as it is saved.',
         shots: ['admin-quiz-editor', 'admin-bookings'],
         captions: ['Writing a quiz: questions, answers and the right one.', 'A cohort’s bookings: sessions, quizzes, assessment and certificate.'],
       },
       {
         title: 'Build the training team',
-        body: 'Trainers are added on the Courses page and emailed a link to choose a password. Each can have their own Zoom login, and is given cohorts to run; a trainer who leaves is switched off in one click.',
+        body: 'Trainers are added on the Trainers page and emailed a link to choose a password. Each can have their own Zoom login, and is given cohorts to run; a trainer who leaves is switched off in one click.',
         why: 'Pat’s team can run many cohorts at once, each trainer seeing only their own.',
         shots: ['admin-trainers'],
         captions: ['The training team, their Zoom logins and the switch to turn an account off.'],
