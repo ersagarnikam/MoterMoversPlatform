@@ -199,8 +199,10 @@ export interface AssessmentOverview {
     stageName: string
     children: number
     developmental: Record<YearPoint, number>
-    movementsSecured: number
-    scoreLevels: Record<string, number>
+    /** Average movements secured this school year per child assessed. */
+    movementsPerChild: number
+    /** Children at each exercise level (1 to 4), each counted once at the middle of their latest scores. */
+    childrenAtLevel: Record<string, number>
     extraSupport: number
   }[]
   extraSupport: { childId: number; name: string; className: string; reasons: string[] }[]

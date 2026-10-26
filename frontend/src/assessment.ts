@@ -10,17 +10,22 @@ export function pointOrder(point: string): number {
 }
 
 /**
- * The point to score next: the first one (in the exercise's order) that fewer than half the class has a score for.
- * When every point is done, the last one, so a late score can still be put right.
+ * The point to score next: the first one (in the exercise's order) that some child still has no score for, so the
+ * last few children of a point are not skipped. A point is passed over once the class has moved on, that is once half
+ * the class or more has a score at a later point. When every point is done, the last one, so a late score can still be
+ * put right.
  */
 export function suggestedPoint(
   exercise: AssessmentExercise,
   children: { scores: { exerciseId: number; point: string }[] }[],
 ): string {
   const points = exercise.points.map((p) => p.point)
-  for (const p of points) {
-    const done = children.filter((c) => c.scores.some((s) => s.exerciseId === exercise.id && s.point === p)).length
-    if (done * 2 < children.length) return p
+  const done = points.map(
+    (p) => children.filter((c) => c.scores.some((s) => s.exerciseId === exercise.id && s.point === p)).length,
+  )
+  for (let i = 0; i < points.length; i++) {
+    const movedOn = done.slice(i + 1).some((d) => d * 2 >= children.length)
+    if (done[i] < children.length && !movedOn) return points[i]
   }
   return points[points.length - 1]
 }

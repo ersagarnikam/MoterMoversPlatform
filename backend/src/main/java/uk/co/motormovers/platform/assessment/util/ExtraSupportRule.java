@@ -28,6 +28,9 @@ public final class ExtraSupportRule {
 
     static final int MIN_EXERCISES_AT_A_POINT = 2;
 
+    /** Up to this many exercises low at two points in a row are listed one by one. */
+    static final int MAX_LISTED = 3;
+
     public record Mark(String exercise, String point, int score) {
     }
 
@@ -42,6 +45,8 @@ public final class ExtraSupportRule {
 
         Map<String, List<Mark>> byExercise = marks.stream()
                 .collect(Collectors.groupingBy(Mark::exercise, LinkedHashMap::new, Collectors.toList()));
+        List<String> lowTwice = new ArrayList<>();
+        List<String> lowTwiceReasons = new ArrayList<>();
         byExercise.forEach((exercise, list) -> {
             List<Mark> inOrder = list.stream().sorted((a, b) -> ExercisePoints.ORDER.compare(a.point(), b.point()))
                     .toList();
@@ -49,12 +54,22 @@ public final class ExtraSupportRule {
                 Mark before = inOrder.get(i - 1);
                 Mark now = inOrder.get(i);
                 if (before.score() <= LOW && now.score() <= LOW) {
-                    reasons.add(exercise + ": " + before.score() + " at " + ExercisePoints.label(before.point(), stage)
-                            + ", then " + now.score() + " at " + ExercisePoints.label(now.point(), stage));
+                    lowTwice.add(exercise);
+                    lowTwiceReasons.add(exercise + ": " + before.score() + " at "
+                            + ExercisePoints.label(before.point(), stage) + ", then " + now.score() + " at "
+                            + ExercisePoints.label(now.point(), stage));
                     break;
                 }
             }
         });
+        // A few exercises are named one by one; more than that read better as one line (the profile's table has
+        // every score).
+        if (lowTwice.size() <= MAX_LISTED) {
+            reasons.addAll(lowTwiceReasons);
+        } else {
+            reasons.add("1 or 2 at two points in a row on " + lowTwice.size() + " exercises, including "
+                    + String.join(", ", lowTwice.subList(0, MAX_LISTED - 1)) + " and " + lowTwice.get(MAX_LISTED - 1));
+        }
 
         Map<String, List<Mark>> byPoint = marks.stream().filter(m -> !ExercisePoints.START.equals(m.point()))
                 .collect(Collectors.groupingBy(Mark::point, () -> new TreeMap<>(ExercisePoints.ORDER),
