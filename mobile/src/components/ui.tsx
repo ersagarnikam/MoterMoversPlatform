@@ -159,8 +159,23 @@ export function StageBadge({ stage, label }: { stage: ColourStage | null | undef
   const p = usePalette()
   const info = stageInfo(stage)
   if (!info) return <Muted>Not placed yet</Muted>
+  // A pill washed in the stage's own colour and edged in it, as on the web; the text stays in the ink colour.
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        gap: space.sm,
+        paddingVertical: 4,
+        paddingLeft: 6,
+        paddingRight: 12,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: `${info.colour}8C`,
+        backgroundColor: `${info.colour}2E`,
+      }}
+    >
       <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: info.colour }} />
       <Text style={{ color: p.ink, fontSize: 15, fontWeight: '600' }}>{label ?? info.label}</Text>
     </View>

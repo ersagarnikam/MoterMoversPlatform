@@ -44,7 +44,7 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
                 <tr key={c.classId} className={`stage-row stage-tint-${c.stage.toLowerCase()}`}>
                   <td>{c.name}</td>
                   <td data-label="Colour">
-                    <StageBadge stage={c.stage} label={c.stageName} tinted />
+                    <StageBadge stage={c.stage} label={c.stageName} />
                   </td>
                   <td className="num" data-label="Developmental: start / middle / end">
                     {c.developmental.START} / {c.developmental.MIDDLE} / {c.developmental.END}

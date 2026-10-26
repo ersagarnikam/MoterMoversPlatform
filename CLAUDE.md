@@ -105,7 +105,7 @@ pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-desi
   points in a row, or 1 or 2 on half or more of the exercises (at least two) at a module end or the colour end. It
   shows as "May benefit from extra support" with its reasons, never a cause.
 - Head: an Assessments section on the Progress page (per class: children assessed at each point this school year,
-  movements secured, latest scores as counts at each level) and the list of flagged children. Each class shows its colour stage as a pill washed in the stage's own colour, with the row edged in it (`StageBadge tinted`, `.stage-tint-*` in styles.css). Trust or group leads
+  movements secured, latest scores as counts at each level) and the list of flagged children. Each class shows its colour stage as a pill washed in the stage's own colour, with the row edged in it (`StageBadge`, `.stage-tint-*` in styles.css). Trust or group leads
   see per school only the share developmentally assessed this year and how many are flagged.
 - Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
   modules in, with two children flagged. The last three children of each class are left to assess.
@@ -135,7 +135,9 @@ bookings, attendance and the end-of-course assessment of their own cohorts (`Liv
 Demo trainer: trainer@motormovers.test (Amy Clarke, Cohort B · UK morning). Each Zoom login used as a host needs its
 own licensed Zoom user on the owner's account.
 
-**Web app usability (2026-10-26).** Dates through `day()` in `src/dates.ts` ("Thu 5 Nov 2026"); after an action, a
+**Web app usability (2026-10-26).** Colour stages always show through `StageBadge` (web: a pill washed in the stage's
+colour, `.stage-tint-*` classes; parent app: `StageBadge` in `components/ui.tsx`, the same look), never as plain text
+(2026-10-27). Dates through `day()` in `src/dates.ts` ("Thu 5 Nov 2026"); after an action, a
 toast via `useToast()` and confirmations via `useConfirm()` (`components/Feedback.tsx`; never `window.confirm`);
 `components/Skeleton` while loading; `components/ListFilter` for searchable lists. The team's home is `/admin`
 (`TeamOverviewService`, `GET /api/admin/overview`); courses list at `/admin/courses` with a page per course
@@ -251,7 +253,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-27): colour stage pills in the head's assessment table; Pat's two assessments (developmental charts and exercise scores);
+Recent commits (newest first, 2026-10-27): colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
 in-page confirmations and live session labels; user guide and refreshed platform guides with their builder; parent
 app no longer crashes on the web; card payments (Stripe); phone notifications; quizzes and certificate PDFs; heads
