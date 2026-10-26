@@ -1,8 +1,9 @@
-# Assessment design (draft, waiting on Pat)
+# Assessment design (Pat's answers in, 2026-10-27)
 
 Pat's feedback (2026-10-20) replaces today's single 0 to 3 check with two assessments. This note sets out
-how the platform would store and show them, so that once Pat's charts and exercise descriptions arrive the
-work is mostly loading data. Open questions are at the end; each has a suggested default.
+how the platform stores and shows them. Pat replied on 2026-10-27 with the assessment booklet (the
+developmental charts) and the Green and Yellow exercise grids; her answers and what is still missing are in
+**Pat's answers** below. The source documents are kept outside the repository (the owner's `F:\IHA\Pat`).
 
 On screen it is always "assess" and "assessment", never "screen". The current check lives in the code as
 `screening` (tables `screening_item`, `screening_item_level`, `screening_result`); it stays in use until the
@@ -69,30 +70,67 @@ date and a score.
     class list. For each child the teacher taps 1 to 4, with the four descriptions on screen. The platform
     suggests the right point: the start of the colour, the end of the current module, or the end of the
     colour.
-- **Readiness profile.** The developmental charts with secure movements and the window each was secured in,
-  then Pat's table for each exercise in the current colour. "Not a diagnosis" stays on every profile.
-- **Head teacher.** The share of children assessed in each window. Exercise scores by class, as the number of
-  children at each level, not averages.
+- **Readiness profile.** Both assessments, as Pat asked: the developmental charts with secure movements, the
+  age in months and the window each was secured in, then Pat's table for each exercise in the current colour
+  (point, date, score). A note when the child "may benefit from extra support" (the low-score flag). "Not a
+  diagnosis" stays on every profile.
+- **Colour summary.** Pat's summary sheet: each exercise's end score, the totals (for Green, out of 108) and the
+  two comments, *personal, social and emotional development* and *academic achievement*.
+- **Class view.** The children flagged for extra support, for the teacher to act on.
+- **Head teacher.** Progress on both assessments: the share of children assessed in each window and movements
+  secured, and exercise scores by class as the number of children at each level, not averages. Flagged
+  children per class.
 - **Trust or group lead.** The same summaries per school, never individual children.
-- **Parent app.** Depends on Pat's answer (question 6).
+- **Parent app.** Not answered yet (question 6 under *Still to settle*).
 
-## Open questions for Pat (asked 2026-10-21)
+## Pat's answers (email of 2026-10-27)
 
-| # | Question | Suggested default if there is no answer |
-|---|---|---|
-| 1 | The full fine and gross motor charts | Needed: nothing to build on without them |
-| 2 | Exercises per module and colour, with the four descriptions each | Needed. Starfish is the worked example |
-| 3 | Is "Start" the start of the colour or of the school year? | The start of the colour, since the table ends at "Final end of Green" |
-| 4 | Month and year of birth, or the teacher types the age in months? | The teacher types it, so no new personal data is held. If month and year of birth are wanted, this is a change to record in the privacy notice and DPIA |
-| 5 | Is the readiness profile rebuilt from the two assessments, or replaced? | Rebuilt: keep the profile and its "Not a diagnosis" note, fed by the new data |
-| 6 | What heads, groups and parents should see | Heads and groups as above; parents see the exercises their child is working on, not scores |
-| 7 | Do exercise scores decide moving on to the next colour? | No automatic rule: the teacher decides, and the platform shows how many children are at 3 or 4 |
+The questions were asked on 2026-10-21. What Pat sent and said:
 
-## Order of work once the answers arrive
+| # | Question | Pat's answer | What the platform does |
+|---|---|---|---|
+| 1 | The fine and gross motor charts | **Received**: the *Motor Movers Individual Assessment* booklet. Fine motor: about 64 movements, birth to 7 years. Gross motor: about 80 movements, birth to 7 years. Each has an indicative age band; the teacher records the age in months when a movement is secure. Three dated comment boxes per chart (start, middle and end of year) | Load both charts as `milestone` rows, with a dated comment per window |
+| 2 | Exercises per module, with four descriptions each | **Green and Yellow received** as examples. Green: 27 exercises across modules 1 to 6, each with the movement, the four descriptions and its points. Yellow: 18 nursery-rhyme exercises, each with the rhyme, the actions and the four descriptions | Load Green and Yellow; the other five colours are still needed (see below) |
+| 3 | What "Start" means | "For the exercises it is the start and end of the colour." Green exercises are also scored at the end of each module they appear in (Yes and No: Start, End module 1, End module 2, Final end of Green). Yellow exercises have only Start and End | Start is the start of the colour. Points per exercise come from the grid: Start, End of each module it is in (Green), End of the colour |
+| 4 | Month and year of birth, or age in months | "The age of the child in months is better to correlate with the milestone." | The teacher records the age in months; no date of birth is stored (see the booklet header below) |
+| 5 | Is the readiness profile rebuilt or replaced? | "The profile should include both assessments: how they are progressing with the movements and how they are progressing overall against the developmental milestone." | Rebuilt from both assessments, keeping "Not a diagnosis" |
+| 6 | What heads and groups see | "Heads/Leaders would need to see the overview of progress for both." | Heads (and trust or group leads, as summaries) see progress on both assessments |
+| 7 | Do scores decide moving on to the next colour? | "There is currently not a rule about moving on as there is repetition and overlap when they start the next colour." | No moving-on rule |
+| new | Flagging children who need more support | "If the child has a pattern of low scores this would flag when additional intervention is needed." | A flag on the profile and in the class and head views; the rule is still to agree (below) |
 
-1. Migration with the tables above. Load the charts and exercises through `StarterContent`.
+Each colour also has a **summary sheet**: the end score of every exercise, a total for the colour (Green: out of
+108, 27 exercises × 4, in two columns, probably start and end), and two comments: *personal, social and
+emotional development* and *academic achievement*.
+
+### Still to settle with Pat
+
+1. **The other colours.** Exercise grids for Red, Orange, Blue, Indigo and Violet.
+2. **Gaps in the grids sent.**
+   - Green exercise 4, *Motor Spin*, has no four descriptions.
+   - Yellow *Jack and Jill* (11) has all four descriptions copied from *Grand Old Duke of York* (10), and
+     *Twinkle Twinkle Little Star* (13) has those of *The Wheels on the Bus* (12).
+   - Small typos: "Roudabout March", "Swop Overs", "Half A Pund Of Pudding Rice", "Hickory Tickory Tock",
+     "Assessmentt", "achivement".
+   - The booklet's gross motor chart repeats some 0 to 6 months rows (for example "Kicks legs vigorously when
+     lying on back" three times), has a blank row in 3 to 4 years, and has typos ("caching games", "rise a
+     two-wheel bike").
+3. **What "a pattern of low scores" is.** Suggested default: flag a child who scores 1 or 2 on the same exercise
+   at two points in a row, or 1 or 2 on half or more of the exercises assessed at the end of a module. The flag
+   says the child *may benefit from extra support*; it never names a cause.
+4. **The booklet header.** The paper booklet asks for date of birth, birth history and "any other significant
+   factors". The platform holds initials (or full names when the school chooses), not dates of birth, and
+   birth history is health information. Suggested default: the platform does not hold these; the teacher
+   records age in months, as Pat prefers.
+5. **The summary totals.** Are the two "X/108" columns the start and end totals? Suggested default: yes.
+6. **What parents see.** Not answered. Suggested default: the exercises their child is working on and the
+   movements now secure, without scores.
+
+## Order of work
+
+1. Migration with the tables above, plus the colour summary (comments and totals) and the low-score flag.
+   Load the booklet's charts and the Green and Yellow grids through `StarterContent`, for the team to check.
 2. API: list milestones and exercises, record achievements and scores (offline-safe, through `AccessPolicy`),
    and the profile and dashboard summaries.
 3. Teacher screens, then the profile, then the head and group dashboards, then the parent app if wanted.
 4. Retire the current 0 to 3 check and its readiness rules, and update the induction lesson on assessment.
-5. Regenerate the flow guide PDFs.
+5. Regenerate the user guide and flow guide PDFs.

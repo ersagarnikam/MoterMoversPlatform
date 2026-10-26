@@ -81,7 +81,7 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-26)
+## Current state (2026-10-27)
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
@@ -253,16 +253,20 @@ Not started unless noted. Confirm priorities with the owner.
    and credit notes (a paid payment is final), VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
-10. **Assessment rebuild (waiting on Pat, asked 2026-10-21).** Pat's model replaces today's single 0-3
+10. **Assessment rebuild: Pat replied 2026-10-27; not started.** Pat's model replaces today's single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
    when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,
    Developing, Nearly there, Confident and accurate) at the start, at the end of each module (our "unit") it
-   appears in, and at the end of the colour. Waiting for: the full charts, the exercises per module with
-   their descriptors, what "Start" means, whether schools accept month and year of birth (the platform
-   holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
-   Storage, screens and suggested defaults: `docs/assessment-design.md`. Screens already say "Module" for a
-   unit (the API field is still `unit`).
+   appears in, and at the end of the colour. Pat sent the assessment booklet (both charts) and the Green (27
+   exercises, modules 1-6) and Yellow (18 rhymes, start and end only) grids; the documents are on the owner's
+   machine in `F:\IHA\Pat`, not in the repository. Her answers: Start is the start of the colour; age in months
+   (no date of birth); the profile shows both assessments; heads and leaders see progress on both; no rule for
+   moving on; a pattern of low scores flags that a child needs more support. Still to settle: the other five
+   colours' grids, gaps in the grids sent (Motor Spin has no descriptions; Jack and Jill and Twinkle Twinkle
+   repeat another rhyme's), what counts as "a pattern of low scores", the booklet's date of birth and birth
+   history fields (suggested: not held), and what parents see. Full detail, storage, screens and the order of
+   work: `docs/assessment-design.md`. Screens already say "Module" for a unit (the API field is still `unit`).
 11. Zoom live sessions: **working inside the portal** (tested 2026-10-22 with the owner's Zoom account). Two apps in
    that account: testApp (Server-to-Server OAuth: creates meetings, host token; scopes `meeting:write:meeting:admin`,
    `user:read:token:admin`) and "General app 239" (Meeting SDK on, under Embed; its Client ID and Secret are
