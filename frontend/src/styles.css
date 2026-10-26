@@ -557,3 +557,16 @@ dialog.confirm .actions { justify-content: flex-end; margin-top: 1rem; }
   .assess-grid, .kpis-2 { grid-template-columns: 1fr; }
   .score-btn { width: 40px; height: 40px; }
 }
+
+/* A colour stage pill washed in its own colour (StageBadge) */
+.stage-tint-red { --tint: var(--stage-red); }
+.stage-tint-orange { --tint: var(--stage-orange); }
+.stage-tint-yellow { --tint: var(--stage-yellow); }
+.stage-tint-green { --tint: var(--stage-green); }
+.stage-tint-blue { --tint: var(--stage-blue); }
+.stage-tint-indigo { --tint: var(--stage-indigo); }
+.stage-tint-violet { --tint: var(--stage-violet); }
+.badge-stage { background: color-mix(in srgb, var(--tint) 18%, var(--paper)); border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent); color: var(--ink); font-weight: 500; padding: 0.2rem 0.65rem 0.2rem 0.4rem; }
+.badge-stage .dot { width: 0.8rem; height: 0.8rem; background: var(--tint); box-shadow: 0 0 0 2px var(--paper); }
+.stage-row td:first-child { border-left: 4px solid var(--tint); }
+.eyebrow-badge { margin: 0 0 0.35rem; }

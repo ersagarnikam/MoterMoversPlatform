@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api, type ClassSheet } from '../api'
 import { exerciseOutbox } from '../outbox'
 import Skeleton from '../components/Skeleton'
+import StageBadge from '../components/StageBadge'
 import { suggestedPoint } from '../assessment'
 
 const LEVEL_NAMES: Record<number, string> = { 1: 'Not yet', 2: 'Developing', 3: 'Nearly there', 4: 'Confident and accurate' }
@@ -28,7 +29,9 @@ export default function AssessPage() {
     <>
       <div className="page-head">
         <div>
-          <p className="eyebrow">{sheet.stageName}</p>
+          <p className="eyebrow-badge">
+            <StageBadge stage={sheet.stage} label={sheet.stageName} />
+          </p>
           <h1>Assess · {sheet.className}</h1>
         </div>
         <Link className="btn" to={`/class/${classId}/today`}>

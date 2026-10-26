@@ -7,6 +7,7 @@ import { day } from '../dates'
 import { useToast } from './Feedback'
 import NotADiagnosis from './NotADiagnosis'
 import Skeleton from './Skeleton'
+import StageBadge from './StageBadge'
 
 /** The flag lists the first few reasons; the table shows the rest. */
 const SHOWN_REASONS = 3
@@ -76,7 +77,15 @@ export default function AssessmentProfileCard({ childId }: { childId: number }) 
       )}
 
       <div className="section-head">
-        <h3>Exercises{profile.stageName ? ` · ${profile.stageName}` : ''}</h3>
+        <h3>
+          Exercises
+          {profile.stage && (
+            <>
+              {' · '}
+              <StageBadge stage={profile.stage} label={profile.stageName ?? undefined} />
+            </>
+          )}
+        </h3>
         {profile.stagesWithExercises.length > 1 && (
           <span className="chips" role="group" aria-label="Colour">
             {profile.stagesWithExercises.map((s) => (
