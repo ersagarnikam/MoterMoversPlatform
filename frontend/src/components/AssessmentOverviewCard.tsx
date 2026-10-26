@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type AssessmentOverview } from '../api'
 import Skeleton from './Skeleton'
+import StageBadge from './StageBadge'
 
 /**
  * The head's view of Pat's two assessments: per class, how many children have a developmental assessment at each
@@ -40,9 +41,11 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
             {data.classes.map((c) => {
               const total = Object.values(c.scoreLevels).reduce((a, b) => a + b, 0)
               return (
-                <tr key={c.classId}>
+                <tr key={c.classId} className={`stage-row stage-tint-${c.stage.toLowerCase()}`}>
                   <td>{c.name}</td>
-                  <td data-label="Colour">{c.stageName}</td>
+                  <td data-label="Colour">
+                    <StageBadge stage={c.stage} label={c.stageName} tinted />
+                  </td>
                   <td className="num" data-label="Developmental: start / middle / end">
                     {c.developmental.START} / {c.developmental.MIDDLE} / {c.developmental.END}
                     <span className="muted"> of {c.children}</span>
