@@ -1,8 +1,12 @@
 # Motor Movers Platform: notes for Claude
 
 Read this first. It records where the project stands so a new session can carry on. `README.md` has the
-full feature description and demo accounts; `deploy/RUNBOOK.md` has production operations. Update the
-**Current state** and **Next steps** sections whenever a piece of work lands.
+full feature description and demo accounts; `deploy/RUNBOOK.md` has production operations.
+
+**A team works on this project, and this file is how everyone knows its current state.** Update it in every pull
+request, not only when a feature lands: the **Current state** (with the date), **Next steps**, test counts, the latest
+migration, the recent commits line, and an **In progress** note while work is under way (who, branch, pull request,
+what is done and left; remove it once merged). Start from the latest `main`, and keep other people's notes.
 
 ## What this is
 
@@ -79,10 +83,14 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-10-26)
 
-`main` is the only branch and GitHub's default (since 2026-10-19). New work goes on short branches merged
-into `main` once CI is green; the old `claude/java-springboot-repo-setup-yoyu6y` branch is deleted.
-GitHub CI is green on every job (backend, frontend, e2e, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-61/61 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+`main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
+through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
+merges** (asked 2026-10-26). The
+GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, account ersagarnikam): open pull
+requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
+("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
+GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
+62/62 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -213,9 +221,10 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first): parent payments page and app screen; Maven wrapper; off-server backups and
-restore test; assessment design note and Module wording; starter content; course attendance and certificates;
-assess wording and trust or school group.
+Recent commits (newest first, 2026-10-26): team home page, a page per course, searchable lists; dates, toasts,
+in-page confirmations and live session labels; user guide and refreshed platform guides with their builder; parent
+app no longer crashes on the web; card payments (Stripe); phone notifications; quizzes and certificate PDFs; heads
+approve staff course places and trainers run their cohorts; training team.
 
 ## Next steps
 
