@@ -7,6 +7,8 @@ import TodayPage from './pages/TodayPage'
 import PlayerPage from './pages/PlayerPage'
 import ScreeningPage from './pages/ScreeningPage'
 import ProfilePage from './pages/ProfilePage'
+import AssessPage from './pages/AssessPage'
+import DevelopmentPage from './pages/DevelopmentPage'
 import ClassListPage from './pages/ClassListPage'
 import HeadDashboardPage from './pages/HeadDashboardPage'
 import TrustDashboardPage from './pages/TrustDashboardPage'
@@ -88,7 +90,9 @@ export default function App() {
         <Route path="/class/:classId/today" element={<TodayPage />} />
         <Route path="/class/:classId/play" element={<PlayerPage />} />
         <Route path="/class/:classId/screening" element={<ScreeningPage />} />
+        <Route path="/class/:classId/assess" element={<AssessPage />} />
         <Route path="/child/:childId" element={<ProfilePage />} />
+        <Route path="/child/:childId/development" element={<DevelopmentPage />} />
         <Route path="/dashboard" element={<HeadDashboardPage />} />
         <Route path="/trust" element={<TrustDashboardPage />} />
         <Route path="/training" element={<TrainingPage />} />

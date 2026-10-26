@@ -111,6 +111,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final PaymentRepository payments;
     private final PlanService plans;
     private final StarterContent starterContent;
+    private final DemoAssessments demoAssessments;
     private final PasswordEncoder passwordEncoder;
     private final PlatformProperties properties;
     private final Clock clock;
@@ -127,12 +128,14 @@ public class DemoDataLoader implements ApplicationRunner {
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
             HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
             InductionProgressRepository inductionProgress, PaymentRepository payments, PlanService plans,
-            StarterContent starterContent, PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock,
+            StarterContent starterContent, DemoAssessments demoAssessments, PasswordEncoder passwordEncoder,
+            PlatformProperties properties, Clock clock,
             @Value("${platform.load-test-learners:0}") int loadTestLearners) {
         this.loadTestLearners = loadTestLearners;
         this.payments = payments;
         this.plans = plans;
         this.starterContent = starterContent;
+        this.demoAssessments = demoAssessments;
         this.resources = resources;
         this.inductionProgress = inductionProgress;
         this.homeActivities = homeActivities;
@@ -215,7 +218,7 @@ public class DemoDataLoader implements ApplicationRunner {
         screenedClasses.add(y2r);
         screenedClasses.add(classWithHistory(oakfield, "Year 2 T", "Year 2", lewis, ColourStage.YELLOW, 27, 12,
                 sessions, today));
-        classWithHistory(oakfield, "Year 3 K", "Year 3", null, ColourStage.GREEN, 29, 18, sessions, today);
+        SchoolClass y3k = classWithHistory(oakfield, "Year 3 K", "Year 3", null, ColourStage.GREEN, 29, 18, sessions, today);
         screenedClasses.add(classWithHistory(marlow, "Reception B", "Reception", null, ColourStage.RED, 25, 19,
                 sessions, today));
         classWithHistory(marlow, "Year 1 P", "Year 1", null, ColourStage.ORANGE, 24, 17, sessions, today);
@@ -224,6 +227,7 @@ public class DemoDataLoader implements ApplicationRunner {
         classWithHistory(ferrers, "Reception F", "Reception", null, ColourStage.RED, 24, 12, sessions, today);
 
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
+        demoAssessments.seed(y2r, y3k, today);
         seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today);

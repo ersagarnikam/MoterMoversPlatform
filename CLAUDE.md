@@ -40,7 +40,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V14`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V15`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -50,13 +50,13 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 111 unit + API integration tests (H2)
-cd frontend && npm test             # 43 unit tests (Vitest): money, times, offline queue, API client
+cd backend  && ./mvnw -B verify      # 121 unit + API integration tests (H2)
+cd frontend && npm test             # 47 unit tests (Vitest): money, times, offline queue, API client, assessment points
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 62 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 65 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -81,16 +81,46 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-26)
+## Current state (2026-10-27)
+
+**Pat's two assessments (2026-10-27, branch `assessment-rebuild`, migration V15; the owner asked Claude to merge this
+pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-design.md`). Package `assessment`:
+- Content: `backend/src/main/resources/assessment/` holds the booklet's fine (59) and gross (74) motor charts and the
+  Green (27 exercises, modules 1-6) and Yellow (18 rhymes, start and end) grids as JSON, made from Pat's Word files
+  (four obvious typos corrected, repeated chart rows dropped). `AssessmentContent` loads them on start-up in every
+  deployment, adding only what is missing, so another colour's grid is a new `exercises-<colour>.json` plus its
+  colour in `STAGES_WITH_EXERCISES`. A test checks all of it against the wording guard.
+- Exercises: the teacher's **Assess** page (`/class/:id/assess`, from "Assess children") scores the whole class on one
+  exercise at one point (Start, End of module n, End of the colour; the point most of the class still needs is
+  suggested), 1 to 4 with Pat's four descriptions, through the offline queue (`outbox.ts`, now generic). A later
+  score at the same point replaces the earlier one.
+- Developmental: `/child/:id/development`. The teacher enters the child's age in months (no date of birth is held)
+  and the point in the school year (Sept-Dec start, Jan-Apr middle, May-Aug end, suggested from the date), taps each
+  movement that is secure, and writes each chart's comment. Once secure a movement stays secure; one recorded by
+  mistake can be taken off.
+- Profile (`/child/:id`): both assessments first (movements secure, Pat's table of scores per point, start and end
+  totals, the summary comments on personal, social and emotional development and on academic achievement), then the
+  old 0-3 readiness check, which stays (also reachable from the Assess page) until Pat confirms it can go.
+- Flag: `ExtraSupportRule` (the suggested default, still to agree with Pat): 1 or 2 on the same exercise at two
+  points in a row, or 1 or 2 on half or more of the exercises (at least two) at a module end or the colour end. It
+  shows as "May benefit from extra support" with its reasons, never a cause.
+- Head: an Assessments section on the Progress page (per class: children assessed at each point this school year,
+  movements secured, latest scores as counts at each level) and the list of flagged children. Trust or group leads
+  see per school only the share developmentally assessed this year and how many are flagged.
+- Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
+  modules in, with two children flagged. The last three children of each class are left to assess.
+- Not built: the other five colours (waiting for Pat), editing the charts or grids on screen (change the JSON), the
+  parent app view (not decided), the induction lesson on assessment, retiring the 0-3 check, regenerating the guides.
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
-merges** (asked 2026-10-26). The
+merges** (asked 2026-10-26), unless the owner asks for a particular one to be merged (as with the assessment pull
+request, 2026-10-27). The
 GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, account ersagarnikam): open pull
 requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
 GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-62/62 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+65/65 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -221,7 +251,8 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-26): team home page, a page per course, searchable lists; dates, toasts,
+Recent commits (newest first, 2026-10-27): Pat's two assessments (developmental charts and exercise scores);
+Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
 in-page confirmations and live session labels; user guide and refreshed platform guides with their builder; parent
 app no longer crashes on the web; card payments (Stripe); phone notifications; quizzes and certificate PDFs; heads
 approve staff course places and trainers run their cohorts; training team.
@@ -253,16 +284,22 @@ Not started unless noted. Confirm priorities with the owner.
    and credit notes (a paid payment is final), VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
-10. **Assessment rebuild (waiting on Pat, asked 2026-10-21).** Pat's model replaces today's single 0-3
+10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two
+   assessments above).** Next: send Pat the questions below, load the other colours when they arrive, agree the flag
+   rule, then retire the 0-3 check and update the induction lesson. Pat's model replaces today's single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
    when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,
    Developing, Nearly there, Confident and accurate) at the start, at the end of each module (our "unit") it
-   appears in, and at the end of the colour. Waiting for: the full charts, the exercises per module with
-   their descriptors, what "Start" means, whether schools accept month and year of birth (the platform
-   holds no dates of birth today), and whether the readiness profile is rebuilt from these or replaced.
-   Storage, screens and suggested defaults: `docs/assessment-design.md`. Screens already say "Module" for a
-   unit (the API field is still `unit`).
+   appears in, and at the end of the colour. Pat sent the assessment booklet (both charts) and the Green (27
+   exercises, modules 1-6) and Yellow (18 rhymes, start and end only) grids; the documents are on the owner's
+   machine in `F:\IHA\Pat`, not in the repository. Her answers: Start is the start of the colour; age in months
+   (no date of birth); the profile shows both assessments; heads and leaders see progress on both; no rule for
+   moving on; a pattern of low scores flags that a child needs more support. Still to settle: the other five
+   colours' grids, gaps in the grids sent (Motor Spin has no descriptions; Jack and Jill and Twinkle Twinkle
+   repeat another rhyme's), what counts as "a pattern of low scores", the booklet's date of birth and birth
+   history fields (suggested: not held), and what parents see. Full detail, storage, screens and the order of
+   work: `docs/assessment-design.md`. Screens already say "Module" for a unit (the API field is still `unit`).
 11. Zoom live sessions: **working inside the portal** (tested 2026-10-22 with the owner's Zoom account). Two apps in
    that account: testApp (Server-to-Server OAuth: creates meetings, host token; scopes `meeting:write:meeting:admin`,
    `user:read:token:admin`) and "General app 239" (Meeting SDK on, under Embed; its Client ID and Secret are

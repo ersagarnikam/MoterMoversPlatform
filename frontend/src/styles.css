@@ -201,7 +201,7 @@ details summary::-webkit-details-marker { display: none; }
 .offline-pill { background: var(--warn-bg); color: var(--warn-ink); border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.85rem; }
 
 /* Profile */
-.profile { max-width: 640px; }
+.profile { max-width: 900px; }
 .stage-title .badge { font-size: 1.1rem; padding: 0.3rem 0.8rem; font-weight: 600; }
 .area-bars { display: flex; flex-direction: column; gap: 0.55rem; margin: 1rem 0; }
 .area-row { display: grid; grid-template-columns: 170px 1fr 170px; align-items: center; gap: 0.75rem; }
@@ -517,3 +517,43 @@ dialog.confirm .actions { justify-content: flex-end; margin-top: 1rem; }
 /* A search box (and a filter) above a long list (components/ListFilter.tsx) */
 .list-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin: 0.5rem 0 0.9rem; }
 .list-filter input[type='search'] { flex: 1 1 16rem; min-width: 0; }
+
+/* Pat's assessments: exercises (1 to 4) and the developmental charts */
+.assess-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin-top: 1rem; align-items: start; }
+.assess-pickers { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin: 1rem 0; }
+.assess-pickers label { flex: 1 1 200px; }
+.assess-pickers p { flex-basis: 100%; margin: 0; }
+.assess-pickers input { font: inherit; background: var(--paper); color: var(--ink); padding: 0.5rem 0.6rem; border: 1px solid var(--border-strong); border-radius: 8px; }
+.movement { margin: 0.5rem 0; }
+.movement summary, .chart summary { cursor: pointer; font-weight: 600; padding: 0.35rem 0; }
+.pre-line { white-space: pre-line; }
+.levels { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.75rem 0 0; }
+.levels dt { font-weight: 600; }
+.levels dd { margin: 0.15rem 0 0; font-size: 0.9rem; }
+.score-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.score-list li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
+.score-name { color: inherit; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.score-buttons { display: flex; gap: 0.35rem; }
+.score-btn { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.score-on { border: 2px solid var(--bar); background: var(--accent-soft); }
+.support-pill { background: var(--warn-bg); color: var(--warn-ink); border-radius: 999px; padding: 0.05rem 0.55rem; font-size: 0.78rem; font-weight: 500; }
+.support-note ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+.support-list { padding-left: 1.2rem; }
+.development { display: flex; flex-direction: column; gap: 1rem; max-width: 900px; }
+.milestones { list-style: none; padding: 0; margin: 0.25rem 0 0.75rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.milestones li { display: flex; flex-direction: column; gap: 0.15rem; }
+.secure-toggle { display: flex; align-items: flex-start; gap: 0.6rem; text-align: left; padding: 0.55rem 0.7rem; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.secure-on { border: 2px solid var(--bar); background: var(--accent-soft); }
+.tick { width: 20px; height: 20px; flex-shrink: 0; border: 1.5px solid var(--icon); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+.secure-on .tick { background: var(--bar); border-color: var(--bar); color: var(--paper); }
+.secure-note { font-size: 0.82rem; padding-left: 2.3rem; }
+.chart-comment { margin-top: 1rem; }
+.kpis-2 { grid-template-columns: repeat(2, 1fr); }
+.kpis-2 .kpi { border: 1px solid var(--line); border-radius: 10px; padding: 0.6rem 0.8rem; gap: 0.15rem; }
+.score-table td, .score-table th { white-space: nowrap; }
+.score-table td:first-child { white-space: normal; }
+.totals { margin-top: 0.75rem; }
+@media (max-width: 760px) {
+  .assess-grid, .kpis-2 { grid-template-columns: 1fr; }
+  .score-btn { width: 40px; height: 40px; }
+}

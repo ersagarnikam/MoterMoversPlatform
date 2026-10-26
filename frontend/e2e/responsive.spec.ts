@@ -12,6 +12,13 @@ test('main screens fit a phone screen', async ({ page }) => {
   }
   await signIn(page, 'teacher@oakfield.test')
   await noSideScroll()
+  await page.getByRole('link', { name: 'Assess children' }).click()
+  await expect(page.locator('.score-buttons').first()).toBeVisible()
+  await noSideScroll()
+  await page.getByRole('link', { name: 'Back to today' }).click()
+  await page.locator('.roster .roster-child').first().click()
+  await expect(page.getByRole('heading', { name: /^Assessment · / })).toBeVisible()
+  await noSideScroll()
   await page.getByRole('link', { name: 'Resources', exact: true }).click()
   await noSideScroll()
   await page.getByRole('link', { name: 'Training', exact: true }).click()

@@ -1,0 +1,452 @@
+{
+  "source": "Pat's Green assessment grid, September 2026 (2026-10-27)",
+  "stage": "GREEN",
+  "exercises": [
+    {
+      "number": 1,
+      "title": "Yes and No",
+      "instructions": "Stand, feet slightly apart, arms by the side.\nSlowly and smoothly nod head forwards and backwards. Chin down to the chest and back up towards the ceiling without straining the neck. Repeat 3 times.\nSlowly and smoothly turn the head to one side to look over the shoulder without straining, keeping the chin up. Hold for a count of 3. Slowly turn back to the centre and hold for a count of 3. Repeat on the other side.\nClose your eyes and repeat both head turns.",
+      "levels": [
+        "Has difficulty nodding the head forwards and backwards smoothly and turning to look over each shoulder. Requires significant support to maintain posture, control head movements, keep the chin up during turns, and complete the eyes-closed section safely.",
+        "Can perform some of the nodding and head-turning movements correctly but control and range of movement are inconsistent. Sometimes keeps the chin up and holds positions for the required count, but balance, posture, and movement accuracy vary, particularly with eyes closed.",
+        "Performs most head nods and head turns with good control. Usually moves smoothly, looks over each shoulder while keeping the chin up, holds positions for the required count, and maintains posture during the eyes-closed section, with only minor errors.",
+        "Performs the complete sequence smoothly and independently. Consistently nods the head forwards and backwards with control, turns to look over both shoulders while keeping the chin up, holds each position for the required count, maintains good posture and balance, and accurately repeats the head turns with eyes closed."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "MODULE_2",
+        "END"
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Flying Machines",
+      "instructions": "Stand with feet slightly apart, arms by the side.\nRaise arms outwards to point like the wings of an aeroplane. Hold for a count of 3. Gently lower the arms. Repeat 5 times. (Chin up, looking straight ahead.)\nNow flap up and down slowly, reaching up high above your head, and then down to touch your sides.",
+      "levels": [
+        "Has difficulty raising the arms out to the side like aeroplane wings and holding the position. Requires significant support to keep the chin up, look straight ahead, control the arm movements, and complete the flapping sequence.",
+        "Can raise the arms and perform some of the aeroplane wing and flapping movements correctly, but control and posture are inconsistent. Arms are not always fully extended, and maintaining a chin-up position can be difficult.",
+        "Performs most aeroplane wing and flapping movements with good control. Usually raises the arms fully out to the side, holds the position for the required count, keeps the chin up and eyes forward, and moves arms smoothly above the head and back to the sides, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently raises the arms out like aeroplane wings, holds for the required count, maintains good posture with chin up and eyes forward, and smoothly flaps the arms from above the head down to the sides with excellent control and coordination."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Starfish",
+      "instructions": "Stretch out your fingers and toes like a starfish.\nMake a fist with your thumb on top of your fingers and curl your toes over.\nSqueeze and hold for 3 seconds (count aloud).\nRepeat 5 times.",
+      "levels": [
+        "Has difficulty stretching the fingers and toes out like a starfish and curling the fingers and toes into a fist and squeeze position. Requires significant support to hold the squeeze for 3 seconds and complete the repetitions.",
+        "Can stretch fingers and toes and make a fist with the thumb on top, but movements are inconsistent. May find it difficult to fully curl the toes, maintain the squeeze, or hold for the full 3 seconds during all repetitions.",
+        "Performs most finger and toe stretches and squeezes with good control. Usually stretches out fully like a starfish, curls fingers and toes correctly, and holds the squeeze for 3 seconds, with only minor errors during the 5 repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently stretches fingers and toes fully like a starfish, makes a fist with the thumb on top, curls the toes over, holds the squeeze for the full 3 seconds, and completes all 5 repetitions with excellent control and body awareness."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "MODULE_2",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Motor Spin",
+      "instructions": "Feet slightly apart. Stretch both arms out to the side at shoulder height.\nSpin one arm forwards to make small circles 5 times.\nStop and spin the other arm forwards 5 times.\nRepeat circling the other way.\nArms by your side. Count to 5.\nRaise your arms out to the side and spin both arms together.",
+      "levels": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Walking the Plank",
+      "instructions": "Walk in a straight line, heel to toe, using your arms to balance.\nNow walk backwards along the line.\nKeep your chin up and look straight ahead.",
+      "levels": [
+        "Has difficulty walking heel to toe in a straight line and requires significant support to maintain balance. Finds walking backwards along the line challenging and is unable to consistently keep the chin up and look straight ahead.",
+        "Can walk heel to toe along part of the line and uses arms to help with balance, but balance and coordination are inconsistent. Can attempt to walk backwards along the line but may frequently step off the line or look down.",
+        "Walks heel to toe along most of the line with good balance and control. Usually uses arms appropriately for balance, walks backwards with only minor errors, and keeps the chin up and eyes looking ahead for most of the activity.",
+        "Walks heel to toe along the entire line smoothly and accurately, using arms effectively for balance. Walks backwards along the line with excellent control, keeps the chin up, looks straight ahead throughout, and maintains balance and coordination independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "MODULE_2",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Tip Toe Swing",
+      "instructions": "Stand feet slightly apart.\nStand up on tip-toe swinging your arms out to the side.\nRepeat 5 times.\nNow repeat swinging your arms out to the front.",
+      "levels": [
+        "Has difficulty standing on tip-toe and maintaining balance while swinging the arms. Requires significant support to rise onto the toes, swing the arms out to the side and front, and complete the repetitions safely.",
+        "Can stand on tip-toe and perform some arm swings correctly, but balance and coordination are inconsistent. May lower heels quickly, lose balance, or have difficulty swinging the arms smoothly to the side and front.",
+        "Performs most tip-toe stands and arm swings with good control. Usually maintains balance while rising onto the toes, swings the arms out to the side and front correctly, and completes most repetitions with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently rises onto tip-toe with good balance, swings the arms smoothly out to the side and then to the front, maintains control throughout all repetitions, and demonstrates excellent coordination and stability."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Roundabout March",
+      "instructions": "(Lift knees up high when marching)\nFeet slightly apart, raise arms out to the side.\nSlowly march all the way round on the spot.\nStop with your arms by your side for a count of 5.\nRaise your arms and slowly march the other way.\nStop with your arms by your side and count to 5.",
+      "levels": [
+        "Has difficulty lifting the knees high while marching and turning on the spot. Requires significant support to keep the arms raised to the side, maintain balance while turning, and stop in a controlled position for the count of 5.",
+        "Can march and turn on the spot with some success, but knee lifting, arm position, and balance are inconsistent. May find it difficult to complete the turn smoothly or maintain control when stopping and counting to 5.",
+        "Performs most of the marching sequence with good control. Usually lifts the knees high, keeps the arms out to the side, marches in both directions, and stops appropriately for the count of 5, with only minor errors in balance or coordination.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the knees high while marching, keeps the arms extended to the side, turns smoothly in both directions, stops in a controlled position for each count of 5, and demonstrates excellent balance, coordination, and posture throughout."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Pulling Faces",
+      "instructions": "Puff up your cheeks with air and hold for a count of 3.\nMove the air from side to side.\nSlowly blow out the air.\nRepeat 3 times.\nRepeatedly make a 'p' sound.\nSuck in the air slowly as though you are sucking through a straw, then blow out slowly.\nRepeat 5 times.",
+      "levels": [
+        "Has difficulty puffing up the cheeks, holding the air, moving the air from side to side, and controlling breathing when blowing out. Requires significant support to make the 'p' sound repeatedly and to suck and blow air in a controlled manner.",
+        "Can perform some of the facial and mouth movements correctly but control is inconsistent. May struggle to hold air in the cheeks, move it from side to side, produce clear 'p' sounds, or control breathing during the sucking and blowing activities.",
+        "Performs most cheek, mouth, and breathing movements with good control. Usually puffs up the cheeks, moves the air from side to side, blows out slowly, repeats the 'p' sound clearly, and controls breathing during the sucking and blowing exercises, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently puffs up the cheeks and holds for the required count, moves air smoothly from side to side, blows out with control, produces repeated clear 'p' sounds, and sucks and blows air slowly and steadily throughout all repetitions."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Thumbs Up",
+      "instructions": "Feet slightly apart. Hold both arms out in front with fingers curled and thumbs up.\nLook at one thumb nail and follow with the head as you slowly swing the arm round to be parallel with the shoulder.\nHold for a count of 3 and then follow the thumb nail as you swing the arm back to the starting position.\nLook at the other thumb nail and follow with the head as you slowly swing the arm round to be parallel with the other shoulder.\nHold for a count of 3 and then follow the thumb nail as you slowly swing the arm back to the starting position.\nLook at the other thumb nail and follow with the head as you slowly swing the arm round to be parallel with the other shoulder.\nHold for a count of 3 and then follow the thumb nail as you slowly swing the arm back to the starting position.",
+      "levels": [
+        "Has difficulty holding the arms out in front with thumbs up and following the thumb nail with the eyes and head. Requires significant support to swing the arm to shoulder level, hold for a count of 3, and return to the starting position with control.",
+        "Can perform some of the arm, eye, and head movements correctly but control is inconsistent. Sometimes follows the thumb nail and moves the arm to shoulder level, but maintaining focus, holding the position, and coordinating the movement can be difficult.",
+        "Performs most of the arm, eye, and head movements with good control. Usually follows the thumb nail throughout the movement, swings the arm to shoulder level, holds for the required count of 3, and returns to the starting position smoothly, with only minor errors during the 3 repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently keeps both arms positioned correctly, follows the thumb nail with the eyes and head throughout each movement, swings the arm smoothly to shoulder level, holds for the required count of 3, returns with control, and completes all 3 repetitions with excellent coordination and focus."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "MODULE_3",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Hello Fingers",
+      "instructions": "Stand feet apart.\nHold one arm out to the side with the elbow bent and look at your fingers.\nKeep the other arm by your side making a fist with your hand (thumb on top).\nTouch the tip of each finger with your thumb 5 times.\nRepeat starting with the little finger to the index finger.\nChange sides and repeat.",
+      "levels": [
+        "Has difficulty holding the arm in position and touching each fingertip with the thumb. Requires significant support to isolate finger movements, follow the correct finger sequence, maintain visual focus on the fingers, and repeat on both sides.",
+        "Can touch some fingertips with the thumb correctly but finger control and coordination are inconsistent. May miss fingers, lose the sequence, or have difficulty maintaining focus on the fingers and repeating the activity on both sides.",
+        "Performs most finger-to-thumb touches with good control. Usually touches each fingertip accurately, follows the sequence from finger to finger and from little finger to index finger, maintains visual focus, and completes the activity on both sides with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently touches each fingertip with the thumb in the correct order, repeats the sequence smoothly, maintains focus on the fingers throughout, demonstrates excellent finger isolation and coordination, and completes the activity successfully on both sides."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "END"
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Cross Pattern March",
+      "instructions": "(Lift knees up high when marching; place the ball of the foot down first followed by the heel.)\nMarch on the spot lifting your knee up high.\nAt the same time touch each knee with the opposite hand. (Touch each knee 5 times.)\nStand with your arms by your side, eyes closed, and count to 5.",
+      "levels": [
+        "Has difficulty marching on the spot, lifting the knees high, and touching each knee with the opposite hand. Requires significant support to coordinate the crossing movements, place the foot down correctly, maintain balance, and stand still with eyes closed for the count of 5.",
+        "Can perform some of the marching and opposite hand-to-knee touches correctly but coordination is inconsistent. Knee lifts may be low, foot placement may be inaccurate, and balance or body control may vary during the marching and eyes-closed activities.",
+        "Performs most of the marching sequence with good control. Usually lifts the knees high, touches each knee with the opposite hand correctly, places the ball of the foot down before the heel, and maintains balance while standing with eyes closed, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the knees high, touches each knee with the opposite hand 5 times, places the ball of the foot down before the heel, maintains excellent balance and coordination, and stands steadily with eyes closed while counting to 5."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Swop Overs",
+      "instructions": "Stand with feet apart looking straight ahead.\nRaise one arm up straight to point at the ceiling (still looking ahead), with the other arm by your side.\nKeep the arms straight and, while looking ahead, change arms.\nRepeat 5 times each side.",
+      "levels": [
+        "Has difficulty raising one arm straight above the head and changing arms while continuing to look straight ahead. Requires significant support to keep the arms straight, maintain posture, and coordinate the arm changes.",
+        "Can raise and change arms correctly some of the time, but movement control and coordination are inconsistent. Arms are not always fully straight, and maintaining focus straight ahead can be difficult during the arm changes.",
+        "Performs most arm raises and arm changes with good control. Usually keeps the arms straight, changes arms smoothly, maintains a forward gaze, and completes the repetitions with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently raises each arm straight to the ceiling, changes arms smoothly while keeping the opposite arm by the side, maintains focus straight ahead throughout, and completes 5 repetitions on each side with excellent control, coordination, and posture."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 13,
+      "title": "Fingers and Thumbs",
+      "instructions": "Clasp your hands and then let go. Repeat 3 times.\nHold your hands in front of you facing each other with a small gap in the middle.\nTouch your little fingers.\nTouch your third fingers.\nTouch your middle fingers.\nTouch your first fingers.\nTouch your thumbs.\nRepeat starting with the thumbs.",
+      "levels": [
+        "Has difficulty clasping and releasing the hands and touching matching fingers together. Requires significant support to isolate finger movements, identify the correct fingers, and complete the sequence in the correct order.",
+        "Can clasp and release the hands and touch some matching fingers together, but finger control and coordination are inconsistent. May miss fingers, confuse the sequence, or have difficulty repeating the pattern in reverse order starting with the thumbs.",
+        "Performs most hand clasping and finger-touching movements with good control. Usually touches the little fingers, third fingers, middle fingers, first fingers, and thumbs accurately and can repeat the sequence in reverse order, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently clasps and releases the hands with control, touches each matching finger pair in the correct order, repeats the sequence starting with the thumbs, and demonstrates excellent finger isolation, coordination, and body awareness throughout."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 14,
+      "title": "Bend and Stretch",
+      "instructions": "Stand with feet apart looking straight ahead.\nBend forward letting the head and arms hang down.\nStretch up opening arms wide and tilting the head back.\nRepeat 5 times.",
+      "levels": [
+        "Has difficulty bending forward and allowing the head and arms to hang down, then stretching upwards with arms wide and head tilted back. Requires significant support to maintain balance, control movements, and complete the sequence.",
+        "Can perform some of the bending and stretching movements correctly but control and posture are inconsistent. May have difficulty fully bending forward, opening the arms wide, or tilting the head back while maintaining balance.",
+        "Performs most bend and stretch movements with good control. Usually bends forward allowing the head and arms to relax down, stretches upwards with arms open wide, tilts the head back appropriately, and maintains balance, with only minor errors during the 5 repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently bends forward with relaxed head and arms, stretches fully upwards opening the arms wide, tilts the head back with control, maintains good posture and balance throughout, and completes all 5 repetitions smoothly and confidently."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 15,
+      "title": "Stepping Out",
+      "instructions": "Stand straight, feet together, arms by your side.\nTake three steps to the side. Stand up straight between each step with your feet together.\nTake three steps back again the other way.\nTake three steps forward heel to toe (looking straight ahead). Feet together and count to 5.\nTake 3 steps back heel to toe (looking straight ahead). Feet together and count to 5.",
+      "levels": [
+        "Has difficulty taking side steps and returning with feet together between each step. Requires significant support to walk heel to toe forwards and backwards, maintain balance, look straight ahead, and stop for the count of 5.",
+        "Can perform some of the side stepping and heel-to-toe walking correctly but balance and coordination are inconsistent. May forget to bring feet together between steps, look down while walking, or have difficulty maintaining control when moving forwards and backwards.",
+        "Performs most side steps and heel-to-toe walking movements with good control. Usually stands straight between steps, brings feet together appropriately, walks forwards and backwards while looking straight ahead, and maintains balance during the counts of 5, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently takes three controlled side steps in each direction, stands straight with feet together between steps, walks heel to toe forwards and backwards while looking straight ahead, maintains excellent balance and posture, and completes both counts of 5 confidently and accurately."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 16,
+      "title": "Clapping Fun",
+      "instructions": "Clap hands together in front.\nClap hands behind.\nClap hands to one side.\nClap hands to the other side.\nClap hands high.\nClap hands low",
+      "levels": [
+        "Has difficulty clapping hands in the different positions. Requires significant support to move the hands to the front, behind the body, to each side, high, and low, and to complete the sequence in the correct order.",
+        "Can perform some of the claps correctly but movement accuracy and coordination are inconsistent. May have difficulty reaching the required positions, remembering the sequence, or maintaining control throughout the activity.",
+        "Performs most claps with good control and coordination. Usually claps accurately in front, behind, to both sides, high, and low, and follows the sequence correctly, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently claps hands in front, behind, to both sides, high, and low in the correct order, demonstrating excellent coordination, body awareness, and control throughout the activity."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 17,
+      "title": "Rocking Horse",
+      "instructions": "Stand with one leg and arm out to the front, the other arm stretched behind.\nRock backwards and forwards 5 times, flexing the feet.\nChange sides and repeat.",
+      "levels": [
+        "Has difficulty balancing with one leg and arm in front and the other arm stretched behind. Requires significant support to rock backwards and forwards, flex the feet, maintain posture, and change sides safely.",
+        "Can perform some of the rocking movements correctly but balance and coordination are inconsistent. May struggle to maintain the arm and leg positions, flex the feet effectively, or control the movement when changing sides.",
+        "Performs most rocking movements with good control. Usually maintains the correct arm and leg positions, rocks backwards and forwards smoothly while flexing the feet, and changes sides with only minor errors in balance or coordination.",
+        "Performs the complete sequence accurately and independently. Consistently maintains the correct arm and leg positions, rocks backwards and forwards smoothly 5 times while flexing the feet, changes sides confidently, and demonstrates excellent balance, coordination, and body control throughout."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 18,
+      "title": "Hop, Skip and Jump",
+      "instructions": "Take off and land 2 times on the same foot (take off and land on the ball of the foot).\nSwing the arms to help with the upwards movement.\nLand on the spot, flexing the knee on landing and keeping the head upright.\nRepeat using the other foot.\nSkip around the room. Change direction.\nJump up and down on the spot 5 times, landing softly on the balls of your feet and bending your knees.",
+      "levels": [
+        "Has difficulty hopping on one foot, skipping, and jumping on the spot. Requires significant support to take off and land on the ball of the foot, swing the arms effectively, bend the knee on landing, keep the head upright, and change direction while skipping.",
+        "Can perform some hops, skips, and jumps correctly but balance and coordination are inconsistent. Sometimes lands on the ball of the foot and bends the knee appropriately, but control, posture, and movement accuracy vary throughout the sequence.",
+        "Performs most hopping, skipping, and jumping movements with good control. Usually takes off and lands correctly on each foot, swings the arms to support movement, changes direction while skipping, and lands softly with bent knees, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently hops twice on each foot with controlled take-off and landing on the ball of the foot, swings the arms effectively, maintains an upright head position, skips confidently while changing direction, and completes 5 soft, controlled jumps with excellent balance, coordination, and body control."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 19,
+      "title": "Quick March",
+      "instructions": "March on the spot (right leg/left arm) raising the arms and legs high into the air.\nLand on the ball of the foot, rolling down to the heel. No stamping.\nMarch around the room raising the arms and legs high into the air (right foot/left arm).",
+      "levels": [
+        "Has difficulty marching on the spot and around the room using opposite arm and leg movements. Requires significant support to raise the arms and legs high, coordinate right leg with left arm movements, land on the ball of the foot, and avoid stamping.",
+        "Can perform some of the marching movements correctly but coordination and control are inconsistent. Sometimes raises the arms and legs high and uses opposite arm and leg actions, but foot placement, balance, and movement accuracy vary throughout the activity.",
+        "Performs most marching movements with good control. Usually raises the arms and legs high, coordinates opposite arm and leg actions correctly, lands on the ball of the foot before rolling to the heel, and marches around the room with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently marches on the spot and around the room using correct opposite arm and leg movements, raises the arms and legs high, lands softly on the ball of the foot before rolling to the heel without stamping, and demonstrates excellent coordination, posture, and body control throughout."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 20,
+      "title": "Roundabout",
+      "instructions": "Raise arms out to the side.\nTurn around 3 times.\nStop.\nArms by your side and close your eyes.\nCount to 10.\nRepeat going in the other direction.",
+      "levels": [
+        "Has difficulty turning around while keeping arms out to the side and maintaining balance. Requires significant support to stop safely after turning, stand with eyes closed, and remain stable while counting to 10.",
+        "Can complete some of the turning movements but balance and control are inconsistent. May become unsteady when stopping, have difficulty maintaining posture with eyes closed, or need reminders to keep arms in position.",
+        "Performs most of the turning sequence with good control. Usually keeps arms out to the side, completes the turns in both directions, stops with balance, and stands with eyes closed while counting to 10, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently keeps arms extended to the side, turns smoothly 3 times in each direction, stops in a controlled position, stands steadily with arms by the side and eyes closed while counting to 10, and demonstrates excellent balance, coordination, and body control throughout."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "MODULE_5",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 21,
+      "title": "Flamingo",
+      "instructions": "Looking straight ahead, raise both arms to the side.\nLift one leg with the knee forwards.\nLower it to the floor, placing the ball of the foot down first and then rolling the foot flat onto the floor.\nRepeat 5 times on each side.",
+      "levels": [
+        "Has difficulty raising the arms to the side and lifting one leg with the knee forwards. Requires significant support to maintain balance, lower the foot with control, and place the ball of the foot down before the heel.",
+        "Can perform some of the leg lifts correctly but balance and coordination are inconsistent. Arms are not always maintained at the side, the knee is not always lifted forwards, and foot placement may lack control when lowering to the floor.",
+        "Performs most leg lifts with good control. Usually keeps both arms raised to the side, lifts the knee forwards correctly, lowers the foot by placing the ball of the foot down first, and maintains balance with only minor errors during the 5 repetitions on each side.",
+        "Performs the complete sequence accurately and independently. Consistently raises both arms to the side, lifts each knee forwards with good posture while looking straight ahead, lowers the foot smoothly by placing the ball of the foot down first and rolling to a flat foot, and completes 5 repetitions on each side with excellent balance, coordination, and control."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 22,
+      "title": "Big Jump",
+      "instructions": "Stand feet together. There is an imaginary hole in front of you.\nWith your feet together, jump across the hole and then walk back to the starting position.\nRepeat 3 times.\nWalk around your hole.\nWalk back the other way.\nHop around the hole, then hop the other way.\nCurl up small into a ball.",
+      "levels": [
+        "Has difficulty jumping with feet together across the imaginary hole and returning to the starting position. Requires significant support to walk and hop around the hole, change direction, maintain balance, and curl up into a small ball.",
+        "Can perform some of the jumping, walking, and hopping activities correctly but balance and coordination are inconsistent. May struggle to keep feet together when jumping, control movements when changing direction, or maintain balance while hopping around the hole.",
+        "Performs most jumping, walking, and hopping movements with good control. Usually jumps across the hole with feet together, walks and hops around the hole in both directions, and curls up into a ball appropriately, with only minor errors in balance or coordination.",
+        "Performs the complete sequence accurately and independently. Consistently jumps across the imaginary hole with feet together, walks and hops smoothly around the hole in both directions, changes direction with good control, maintains excellent balance throughout, and curls up into a small ball confidently and accurately."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 23,
+      "title": "Wobble Toy",
+      "instructions": "Lie on your back with your knees bent up to your chest.\nHug your knees and rock until you reach a sitting position.",
+      "levels": [
+        "Has difficulty bringing the knees up to the chest, hugging them securely, and rocking forwards into a sitting position. Requires significant support to control the movement and maintain balance.",
+        "Can bring the knees to the chest and attempt the rocking movement, but control and coordination are inconsistent. May need support to generate enough momentum or to reach and maintain a sitting position.",
+        "Performs most of the movement with good control. Usually hugs the knees securely, rocks smoothly forwards, and reaches a sitting position, with only minor difficulties in balance or coordination.",
+        "Performs the complete movement accurately and independently. Consistently hugs the knees to the chest, rocks smoothly from lying to sitting, maintains good body control and balance throughout, and reaches a stable sitting position with ease."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 24,
+      "title": "Pirouette",
+      "instructions": "Stand straight with your arms clasped above your head.\nStaying on the spot, move slowly round in a circle.\nRepeat 3 times each way.",
+      "levels": [
+        "Has difficulty standing upright with arms clasped above the head and turning on the spot. Requires significant support to maintain balance, posture, and control while moving in a circle.",
+        "Can perform some of the turning movements correctly but balance and coordination are inconsistent. May lower the arms, lose position, or become unsteady while turning in either direction.",
+        "Performs most turns with good control. Usually keeps the arms clasped above the head, remains on the spot while turning, and completes the turns in both directions with only minor errors in balance or posture.",
+        "Performs the complete sequence accurately and independently. Consistently stands tall with arms clasped above the head, turns slowly and smoothly on the spot in both directions, maintains excellent balance and posture throughout, and completes all repetitions with confidence and control."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 25,
+      "title": "Where is my Nose?",
+      "instructions": "Stand feet together, arms out at shoulder height.\nTouch your nose with the fingertip of one hand.\nTake the arm back to the side and, at the same time, bring the fingertip of the other hand to touch your nose.\nRepeat 5 times.\nClose your eyes and see if you can find your nose.",
+      "levels": [
+        "Has difficulty keeping the arms at shoulder height and accurately touching the nose with the fingertip. Requires significant support to alternate hands, maintain posture, and locate the nose with eyes closed.",
+        "Can touch the nose with the fingertip some of the time, but coordination and accuracy are inconsistent. May have difficulty alternating hands smoothly, maintaining arms at shoulder height, or finding the nose accurately with eyes closed.",
+        "Performs most nose-touching movements with good control. Usually alternates hands correctly, keeps the arms at shoulder height, touches the nose accurately, and can find the nose with eyes closed with only minor errors.",
+        "Performs the complete sequence accurately and independently. Consistently alternates hands while maintaining arms at shoulder height, touches the nose accurately with the fingertip on each attempt, and confidently finds the nose with eyes closed, demonstrating excellent body awareness, coordination, and control."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 26,
+      "title": "Cross Overs",
+      "instructions": "Stand straight, feet slightly apart, arms by your side.\nRight hand to left shoulder and back again.\nLeft hand to right shoulder and back again.\nRight hand to left knee and back again.\nLeft hand to right knee and back again.\nRepeat the sequence 5 times.",
+      "levels": [
+        "Has difficulty crossing the body to touch the opposite shoulder and opposite knee. Requires significant support to coordinate the movements, return to the starting position, and complete the sequence in the correct order.",
+        "Can perform some of the cross-over movements correctly but coordination and accuracy are inconsistent. May find it difficult to reach the opposite shoulder or knee smoothly, alternate sides correctly, or maintain good posture throughout the sequence.",
+        "Performs most cross-over movements with good control. Usually touches the opposite shoulder and opposite knee accurately, returns to the starting position smoothly, and follows the sequence correctly, with only minor errors during the 5 repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently touches the right hand to the left shoulder, left hand to the right shoulder, right hand to the left knee, and left hand to the right knee in the correct order, maintaining excellent coordination, body awareness, posture, and control throughout all 5 repetitions."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 27,
+      "title": "Tortoise",
+      "instructions": "Start in the table position as for crawling (i.e. on hands and knees).\nClose your eyes.\nMove the head back up towards the ceiling and then slowly down between the knees.\nRepeat 5 times.\nSlowly crawl around the room looking for your friends.",
+      "levels": [
+        "Has difficulty maintaining the table position, moving the head towards the ceiling and down between the knees with eyes closed, and crawling around the room. Requires significant support to maintain balance, body control, and coordination throughout the activity.",
+        "Can perform some of the head movements and crawling actions correctly but control and coordination are inconsistent. May have difficulty maintaining the table position, completing the full range of head movement, or crawling smoothly around the room.",
+        "Performs most of the activity with good control. Usually maintains the table position, moves the head smoothly towards the ceiling and down between the knees with eyes closed, and crawls around the room with only minor errors in balance, coordination, or body control.",
+        "Performs the complete sequence accurately and independently. Consistently maintains a stable table position, moves the head smoothly from the ceiling towards the knees with eyes closed, completes all 5 repetitions with control, and crawls around the room confidently, demonstrating excellent balance, coordination, and body awareness."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "MODULE_6",
+        "END"
+      ]
+    }
+  ]
+}
