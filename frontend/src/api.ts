@@ -88,6 +88,124 @@ export interface Profile {
   history: { round: number; screenedOn: string; overallFraction: number }[]
 }
 
+// Pat's two assessments (docs/assessment-design.md): developmental charts and 1 to 4 exercise scores.
+export type Chart = 'FINE' | 'GROSS'
+export type YearPoint = 'START' | 'MIDDLE' | 'END'
+
+export interface AssessmentExercise {
+  id: number
+  stage: ColourStage
+  number: number
+  title: string
+  instructions: string
+  /** Score (1 to 4) to its description. A description Pat has not sent yet is missing. */
+  levels: Record<string, string>
+  points: { point: string; label: string }[]
+}
+
+export interface ExerciseScoreIn {
+  clientId: string
+  childId: number
+  exerciseId: number
+  point: string
+  score: number
+  assessedOn: string
+}
+
+export interface AchievementIn {
+  clientId: string
+  childId: number
+  milestoneId: number
+  ageMonths: number
+  yearPoint: YearPoint
+  achievedOn: string
+}
+
+export interface ClassSheet {
+  classId: number
+  className: string
+  stage: ColourStage
+  stageName: string
+  exercises: AssessmentExercise[]
+  children: {
+    id: number
+    name: string
+    scores: { exerciseId: number; point: string; score: number; assessedOn: string }[]
+    extraSupport: boolean
+  }[]
+}
+
+export interface Development {
+  childId: number
+  name: string
+  className: string
+  banner: string
+  schoolYear: number
+  suggestedYearPoint: YearPoint
+  charts: {
+    chart: Chart
+    label: string
+    secure: number
+    total: number
+    milestones: {
+      id: number
+      position: number
+      band: string
+      ageFromMonths: number
+      ageToMonths: number
+      description: string
+      achieved: {
+        ageMonths: number
+        yearPoint: YearPoint
+        yearPointLabel: string
+        schoolYear: number
+        achievedOn: string
+      } | null
+    }[]
+    comments: { yearPoint: YearPoint; yearPointLabel: string; schoolYear: number; note: string; writtenOn: string }[]
+  }[]
+}
+
+export interface AssessmentProfile {
+  childId: number
+  reference: string
+  name: string
+  className: string
+  banner: string
+  currentStage: ColourStage | null
+  stage: ColourStage | null
+  stageName: string | null
+  stagesWithExercises: ColourStage[]
+  development: { chart: Chart; label: string; secure: number; total: number; thisYear: Record<YearPoint, number> }[]
+  exercises: {
+    exerciseId: number
+    number: number
+    title: string
+    points: { point: string; label: string; score: number | null; assessedOn: string | null }[]
+  }[]
+  totals: { start: number; startAssessed: number; end: number; endAssessed: number; max: number } | null
+  extraSupport: { flagged: boolean; label: string; reasons: string[] }
+  summary: { personalComment: string | null; academicComment: string | null; writtenOn: string } | null
+}
+
+export interface AssessmentOverview {
+  schoolId: number
+  schoolName: string
+  schoolYear: number
+  classes: {
+    classId: number
+    name: string
+    stage: ColourStage
+    stageName: string
+    children: number
+    developmental: Record<YearPoint, number>
+    movementsSecured: number
+    scoreLevels: Record<string, number>
+    extraSupport: number
+  }[]
+  extraSupport: { childId: number; name: string; className: string; reasons: string[] }[]
+}
+
 export interface SchoolDashboard {
   schoolId: number
   schoolName: string
@@ -114,6 +232,10 @@ export interface TrustDashboard {
     stages: string
     screenedRate: number
     participation: number
+    /** Share of children with a developmental assessment this school year. */
+    developmentalRate: number
+    /** How many children may benefit from extra support. */
+    extraSupport: number
   }[]
 }
 
@@ -670,6 +792,23 @@ export const api = {
   submitScores: (scores: Score[]) =>
     request<{ saved: number; duplicates: number }>('POST', '/api/screening/results', scores),
   profile: (childId: number) => request<Profile>('GET', `/api/children/${childId}/profile`),
+  exerciseSheet: (classId: number, stage?: ColourStage) =>
+    request<ClassSheet>('GET', `/api/classes/${classId}/exercise-sheet${stage ? `?stage=${stage}` : ''}`),
+  submitExerciseScores: (scores: ExerciseScoreIn[]) =>
+    request<{ saved: number; duplicates: number }>('POST', '/api/assessment/exercise-scores', scores),
+  development: (childId: number) => request<Development>('GET', `/api/children/${childId}/development`),
+  submitAchievements: (records: AchievementIn[]) =>
+    request<{ saved: number; duplicates: number }>('POST', '/api/assessment/milestones', records),
+  clearAchievement: (childId: number, milestoneId: number) =>
+    request<void>('DELETE', `/api/children/${childId}/milestones/${milestoneId}`),
+  writeDevelopmentComment: (childId: number, c: { chart: Chart; yearPoint: YearPoint; note: string }) =>
+    request<void>('PUT', `/api/children/${childId}/development-comments`, c),
+  assessmentProfile: (childId: number, stage?: ColourStage) =>
+    request<AssessmentProfile>('GET', `/api/children/${childId}/assessment${stage ? `?stage=${stage}` : ''}`),
+  writeColourSummary: (childId: number, s: { stage: ColourStage; personalComment: string; academicComment: string }) =>
+    request<void>('PUT', `/api/children/${childId}/colour-summary`, s),
+  assessmentOverview: (schoolId: number) =>
+    request<AssessmentOverview>('GET', `/api/schools/${schoolId}/assessment-overview`),
   schoolDashboard: (schoolId: number) => request<SchoolDashboard>('GET', `/api/schools/${schoolId}/dashboard`),
   trustDashboard: (trustId: number) => request<TrustDashboard>('GET', `/api/trusts/${trustId}/dashboard`),
   exportCsv: (schoolId: number, name: 'governor-summary' | 'research') =>

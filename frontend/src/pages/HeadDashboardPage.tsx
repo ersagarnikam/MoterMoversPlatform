@@ -5,6 +5,7 @@ import { pct } from '../stages'
 import { day } from '../dates'
 import { useConfirm } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
+import AssessmentOverviewCard from '../components/AssessmentOverviewCard'
 
 function download(filename: string, body: string) {
   const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }))
@@ -97,6 +98,7 @@ export default function HeadDashboardPage() {
           </button>
         </section>
       </div>
+      <AssessmentOverviewCard schoolId={schoolId} />
       <ParentLinks schoolId={schoolId} />
     </>
   )

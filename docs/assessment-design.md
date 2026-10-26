@@ -1,4 +1,9 @@
-# Assessment design (Pat's answers in, 2026-10-27)
+# Assessment design (built for Green and Yellow, 2026-10-27)
+
+**Status.** Built on 2026-10-27 for the colours Pat has sent (Green and Yellow): migration `V15__assessments.sql`, the
+`assessment` package in the API, the teacher's Assess page and developmental charts, the profile, and the head and
+trust or group summaries. See **What was built** at the end. The open questions under *Still to settle with Pat*
+still stand; the platform uses the suggested defaults until she answers.
 
 Pat's feedback (2026-10-20) replaces today's single 0 to 3 check with two assessments. This note sets out
 how the platform stores and shows them. Pat replied on 2026-10-27 with the assessment booklet (the
@@ -134,3 +139,56 @@ emotional development* and *academic achievement*.
 3. Teacher screens, then the profile, then the head and group dashboards, then the parent app if wanted.
 4. Retire the current 0 to 3 check and its readiness rules, and update the induction lesson on assessment.
 5. Regenerate the user guide and flow guide PDFs.
+
+Steps 1 to 3 are done for Green and Yellow (not the parent app). Steps 4 and 5 are still to do.
+
+## What was built (2026-10-27)
+
+**Content.** `backend/src/main/resources/assessment/milestones.json` (fine motor 59 movements, gross motor 74),
+`exercises-green.json` (27) and `exercises-yellow.json` (18), made from Pat's Word documents. `AssessmentContent` loads
+them on start-up in every deployment, adding only what is missing (the charts on an empty platform, a colour's
+exercises if it has none). To add a colour: a new `exercises-<colour>.json` and the colour in
+`AssessmentContent.STAGES_WITH_EXERCISES`. To correct a description already loaded, change the database too (there is
+no editing screen yet). A test checks every text against the wording guard.
+
+Changes made to Pat's text when loading it, for her to confirm:
+- Typos corrected: "Roudabout March" to Roundabout March, "Half A Pund" to Half A Pound, "caching games" to
+  catching games, "Can rise a two-wheel bike" to ride.
+- The gross motor chart's repeated 0 to 6 months rows are loaded once (74 movements, not 80); the blank row is
+  dropped. "Handedness well established" is loaded without its "Left/right" box.
+- Yellow titles are taken from each rhyme's heading (for example "Little Bo Peep", not "Little Bo Beep"), without
+  "(CD Track n)". The rhyme words and actions are the exercise's instructions; *Sing a Song of Sixpence*, set in two
+  columns, is put back in reading order.
+- Kept as sent: "Swop Overs", "Hickory Tickory Tock", Motor Spin with no descriptions (scores 1 to 4 can still be
+  recorded), and the copied descriptions of Jack and Jill and Twinkle Twinkle.
+
+**Storage (migration V15).** As planned above, with these differences: the points an exercise is assessed at are
+stored per exercise (`exercise_point`: START, MODULE_n, END, in order), which replaces `module_exercise`; the
+developmental window is `year_point` (START, MIDDLE, END; "window" is a reserved word in PostgreSQL); the comment boxes
+are `development_comment` (one per child, chart, school year and point); the summary sheet's comments are
+`colour_summary` (the totals are worked out from the scores). All children's rows are deleted with the child.
+
+**API** (all through `AccessPolicy`; teachers their class, heads their school; trust or group leads see only
+counts and cannot record):
+
+| Method and path | What it does |
+|---|---|
+| `GET /api/assessment/milestones`, `GET /api/assessment/exercises?stage=` | The charts and a colour's exercises |
+| `GET /api/classes/{id}/exercise-sheet[?stage=]` | A class's exercises and every child's scores, with who is flagged |
+| `POST /api/assessment/exercise-scores` | A batch of scores from the offline queue; resending is safe; a later score at the same point replaces the earlier one |
+| `GET /api/children/{id}/development` | Both charts with what is secure, and the comments (logged as `VIEW_DEVELOPMENT`) |
+| `POST /api/assessment/milestones`, `DELETE /api/children/{id}/milestones/{milestoneId}` | Record movements as secure (offline queue), or take one off recorded by mistake |
+| `PUT /api/children/{id}/development-comments` | A chart's comment for this school year and point (empty removes it) |
+| `GET /api/children/{id}/assessment[?stage=]` | The profile: both assessments, totals, the flag, the summary (logged as `VIEW_ASSESSMENT`) |
+| `PUT /api/children/{id}/colour-summary` | The two summary comments for a colour |
+| `GET /api/schools/{id}/assessment-overview` | The head's view per class, and the flagged children |
+
+The trust or group dashboard gains `developmentalRate` and `extraSupport` per school.
+
+**The flag** (`assessment/util/ExtraSupportRule`) uses the suggested default from question 3: 1 or 2 on the same
+exercise at two points in a row, or 1 or 2 on half or more of the exercises (at least two) at the end of a module or
+of the colour. Low scores at the start alone never flag a child. It says "May benefit from extra support" with the
+reasons, never a cause.
+
+**School year.** September to August. The point in the year is suggested from the date (September to December
+start, January to April middle, May to August end); the teacher can change it.

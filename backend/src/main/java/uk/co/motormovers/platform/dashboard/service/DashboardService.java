@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.assessment.service.AssessmentService;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildAccessLogRepository;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
@@ -49,14 +50,15 @@ public class DashboardService {
     private final DailySessionRecordRepository records;
     private final LicenceRepository licences;
     private final ChildAccessLogRepository accessLog;
+    private final AssessmentService assessments;
     private final AccessPolicy access;
     private final PlatformProperties properties;
     private final Clock clock;
 
     public DashboardService(SchoolRepository schools, TrustRepository trusts, SchoolClassRepository classes,
             ChildRepository children, ScreeningResultRepository screening, DailySessionRecordRepository records,
-            LicenceRepository licences, ChildAccessLogRepository accessLog, AccessPolicy access,
-            PlatformProperties properties, Clock clock) {
+            LicenceRepository licences, ChildAccessLogRepository accessLog, AssessmentService assessments,
+            AccessPolicy access, PlatformProperties properties, Clock clock) {
         this.schools = schools;
         this.trusts = trusts;
         this.classes = classes;
@@ -65,6 +67,7 @@ public class DashboardService {
         this.records = records;
         this.licences = licences;
         this.accessLog = accessLog;
+        this.assessments = assessments;
         this.access = access;
         this.properties = properties;
         this.clock = clock;
@@ -84,6 +87,7 @@ public class DashboardService {
         LocalDate today = LocalDate.now(clock);
         List<DashboardViews.TrustSchoolRow> rows = schools.findByTrustIdOrderByName(trustId).stream().map(s -> {
             DashboardViews.SchoolDashboard d = buildSchool(s);
+            AssessmentService.SchoolFigures a = assessments.schoolFigures(s.getId());
             Licence licence = licences.findFirstBySchoolIdOrderByEndsOnDesc(s.getId()).orElse(null);
             return new DashboardViews.TrustSchoolRow(s.getId(), s.getName(),
                     licence == null ? Licence.Status.EXPIRED : licence.statusOn(today),
@@ -91,7 +95,8 @@ public class DashboardService {
                     licence == null ? null : licence.getEndsOn(),
                     licence == null ? "" : describeStages(licence.getStages()),
                     d.childrenTotal() == 0 ? 0 : (double) d.childrenScreened() / d.childrenTotal(),
-                    d.dailyParticipation());
+                    d.dailyParticipation(),
+                    a.children() == 0 ? 0 : (double) a.developmentallyAssessed() / a.children(), a.extraSupport());
         }).toList();
         return new DashboardViews.TrustDashboard(trust.getId(), trust.getName(), rows);
     }

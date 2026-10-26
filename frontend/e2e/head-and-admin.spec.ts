@@ -56,6 +56,17 @@ test('a head sees progress and can download the governor summary', async ({ page
   expect((await download).suggestedFilename()).toBe('governor-summary.csv')
 })
 
+test('a head sees both assessments and the children who may benefit from extra support', async ({ page }) => {
+  await signIn(page, 'head@oakfield.test')
+  await expect(page.getByRole('heading', { name: /^Assessments · school year/ })).toBeVisible()
+  const support = page.locator('.support-list li')
+  await expect(support).toHaveCount(2)
+  await support.first().getByRole('link').click()
+  await expect(page.getByText('May benefit from extra support.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Exercises · Stage 4 · Green/ })).toBeVisible()
+  await expectAccessible(page)
+})
+
 test('the trust or group lead sees schools but no children', async ({ page }) => {
   await signIn(page, 'trust@northbridge.test')
   // The Spending table lists the same schools, so look only in the licences and results table.

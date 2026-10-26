@@ -19,9 +19,13 @@ public final class DashboardViews {
             double flagThreshold, List<ClassParticipation> classes) {
     }
 
-    /** Trust leads see summaries only: no individual children. */
+    /**
+     * Trust leads see summaries only: no individual children. {@code developmentalRate} is the share of children with
+     * a developmental assessment this school year; {@code extraSupport} how many may benefit from extra support.
+     */
     public record TrustSchoolRow(Long schoolId, String schoolName, Licence.Status licenceStatus, String plan,
-            LocalDate renewalDate, String stages, double screenedRate, double participation) {
+            LocalDate renewalDate, String stages, double screenedRate, double participation,
+            double developmentalRate, int extraSupport) {
     }
 
     public record TrustDashboard(Long trustId, String trustName, List<TrustSchoolRow> schools) {

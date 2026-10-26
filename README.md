@@ -146,7 +146,15 @@ today, drafts to sign off, overdue invoices, licences to renew, Zoom clashes and
   lock anyone out (`training/service/InductionService.java`).
 - **Resources**: rhyme recordings and words, the rhyme book and printables, for the stages on the
   school's licence. Files are URLs (`library_resource.file_url`) until uploads are built.
-- **Assessment** (the `screening` package in the code): one movement at a time with what to watch for and a 0 to 3 scale. Scores are queued on the
+- **Exercise assessment** (Pat's model, the `assessment` package): the class does an exercise together and the teacher
+  scores every child 1 to 4 (Not yet, Developing, Nearly there, Confident and accurate) with Pat's descriptions, at the
+  start of the colour, the end of each module the exercise is in and the end of the colour. Green and Yellow are loaded.
+- **Developmental assessment**: Pat's fine and gross motor charts (birth to 7 years). At the start, middle and end of
+  the school year the teacher marks each movement the child can do securely; the child's age in months is recorded with
+  it (no date of birth is held), with a comment per chart.
+- **Assessment profile**: both assessments, Pat's table of scores, start and end totals, summary comments, and a note
+  when a pattern of low scores means a child *may benefit from extra support* (never a cause).
+- **Readiness check** (the older `screening` package, kept until Pat confirms it can go): one movement at a time with what to watch for and a 0 to 3 scale. Scores are queued on the
   device and sent when online. Each score carries a client id, so resending is safe.
 - **Readiness profile**: six areas (balance, gross motor, manual dexterity, aiming and catching, postural
   control, bilateral coordination) in programme terms (Emerging, Developing, Secure), the suggested stage
@@ -154,10 +162,12 @@ today, drafts to sign off, overdue invoices, licences to renew, Zoom clashes and
 
 ### Dashboards
 - **Head teacher**: children assessed, moved up a stage, daily participation, classes active, and
-  participation by class with classes below 70% flagged. CSV exports: governor summary and anonymised
+  participation by class with classes below 70% flagged. Assessments by class (developmental at each point of the
+  year, movements secured, latest exercise scores as counts per level) and the children who may benefit from extra
+  support. CSV exports: governor summary and anonymised
   research data.
 - **Trust or school group**: one row per school with licence status (Active, Renewal due, Free trial, Expired), stages,
-  assessed rate and participation.
+  assessed rate, share developmentally assessed this year, how many may benefit from extra support, and participation.
 
 ### Training
 The one-hour staff induction comes first (see *Induction gate* above), done online at the teacher's own
@@ -242,7 +252,7 @@ docs/             guides and design notes (see Documentation)
 | User guide | The people who use the platform: everyday tasks step by step, per role, with answers to common questions | `docs/user-guide/` (one PDF per role, and one with every role) |
 | Platform guides | Partners, investors and school leaders: what each role does and why, and an overview of the programme, safety, income and status | `docs/flow-guides/` |
 | Runbook | Whoever runs the server: deployment, updates, backups, Zoom, phone notifications, card payments | `deploy/RUNBOOK.md` |
-| Assessment design | The planned developmental and exercise assessments | `docs/assessment-design.md` |
+| Assessment design | The developmental and exercise assessments, Pat's answers and what is still open | `docs/assessment-design.md` |
 | Notes for developers | Where the project stands and the rules the code relies on | `CLAUDE.md` |
 
 The guides are built from the demo, so rebuild them when screens change: `docs/guide-builder/README.md`.
@@ -295,7 +305,7 @@ These come later in the roadmap or need decisions first:
 - Parent app: filmed home activity videos and email verification
 - Nursery mode
 - Self-service school sign-up (the team signs schools up)
-- The new developmental and exercise assessments (`docs/assessment-design.md`), waiting on Pat's charts
+- Exercise grids for Red, Orange, Blue, Indigo and Violet (waiting on Pat), and retiring the 0 to 3 check
 - The real screening items and stage mapping. `screening/util/ReadinessRules.java` holds placeholder
   thresholds until Pat and Laura confirm them.
 - Uploading files to the resource library (rhyme recordings, the rhyme book, printables), and rhymes in

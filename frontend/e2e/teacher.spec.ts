@@ -19,9 +19,43 @@ test('a trained teacher runs today’s session with its rhyme', async ({ page })
   }
 })
 
-test('a teacher assesses a child, one movement at a time', async ({ page }) => {
+test('a teacher scores the class on an exercise, 1 to 4', async ({ page }) => {
   await signIn(page, 'teacher@oakfield.test')
   await page.getByRole('link', { name: 'Assess children' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Assess')
+  await expect(page.getByLabel('Exercise')).toHaveValue(/\d+/)
+  await expect(page.getByText('Confident and accurate', { exact: false }).first()).toBeVisible()
+  // The last children of the demo class have no scores yet.
+  const last = page.locator('.score-buttons').last()
+  await last.getByRole('radio', { name: '3' }).click()
+  await expect(last.getByRole('radio', { name: '3' })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByText('0 saved on this device')).toBeVisible()
+  await expectAccessible(page)
+})
+
+test('a teacher records movements on the developmental charts with the age in months', async ({ page }) => {
+  await signIn(page, 'teacher@oakfield.test')
+  await page.getByRole('link', { name: 'Assess children' }).click()
+  await page.getByRole('button', { name: 'Developmental charts' }).click()
+  await page.getByRole('link', { name: /developmental charts$/ }).last().click()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Developmental charts')
+  await expect(page.getByText('Not a diagnosis.')).toBeVisible()
+  await page.getByLabel('Age in months').fill('80')
+  const movement = page.getByRole('switch', { name: /Handedness well established/ })
+  await movement.click()
+  await expect(movement).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByText(/Secure at 80 months/)).toBeVisible()
+  await expectAccessible(page)
+
+  await page.getByRole('link', { name: 'Assessment profile' }).click()
+  await expect(page.getByRole('heading', { name: /^Assessment · / })).toBeVisible()
+  await expect(page.getByText('Fine motor')).toBeVisible()
+})
+
+test('a teacher can still use the readiness check, one movement at a time', async ({ page }) => {
+  await signIn(page, 'teacher@oakfield.test')
+  await page.getByRole('link', { name: 'Assess children' }).click()
+  await page.getByRole('link', { name: 'Readiness check (0 to 3)' }).click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Assessment')
   await page.locator('.roster-child').first().click()
   await expect(page.getByText(/Item 1 of \d+/)).toBeVisible()
@@ -70,11 +104,13 @@ test('the roster shows initials, with the full name on hover only when the schoo
   }
 })
 
-test('the readiness profile always says it is not a diagnosis', async ({ page }) => {
+test('the profile shows both assessments and always says it is not a diagnosis', async ({ page }) => {
   await signIn(page, 'teacher@oakfield.test')
   await page.locator('.roster .roster-child').first().click()
-  await expect(page.getByRole('heading', { name: /Readiness profile/ })).toBeVisible()
-  await expect(page.getByText(/Not a diagnosis/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^Assessment · / })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^Exercises · Stage / })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Readiness check/ })).toBeVisible()
+  await expect(page.getByText('Not a diagnosis.')).toHaveCount(2)
   await expectAccessible(page)
 })
 
