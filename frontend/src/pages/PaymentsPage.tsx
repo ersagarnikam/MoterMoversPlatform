@@ -64,7 +64,7 @@ export default function PaymentsPage() {
     <>
       <div className="page-head">
         <h1>Payments</h1>
-        <span className="muted">Recorded by the team · online payment is not connected yet</span>
+        <span className="muted">Recorded by the team, or paid by card online</span>
       </div>
       {error && <p className="error">{error}</p>}
       {notice && <p className="banner-teal">{notice}</p>}
