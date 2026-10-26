@@ -1,8 +1,12 @@
 # Motor Movers Platform: notes for Claude
 
 Read this first. It records where the project stands so a new session can carry on. `README.md` has the
-full feature description and demo accounts; `deploy/RUNBOOK.md` has production operations. Update the
-**Current state** and **Next steps** sections whenever a piece of work lands.
+full feature description and demo accounts; `deploy/RUNBOOK.md` has production operations.
+
+**A team works on this project, and this file is how everyone knows its current state.** Update it in every pull
+request, not only when a feature lands: the **Current state** (with the date), **Next steps**, test counts, the latest
+migration, the recent commits line, and an **In progress** note while work is under way (who, branch, pull request,
+what is done and left; remove it once merged). Start from the latest `main`, and keep other people's notes.
 
 ## What this is
 
