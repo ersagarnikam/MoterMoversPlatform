@@ -82,7 +82,8 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
 merges** (asked 2026-10-26). The
-`gh` CLI is not installed on the owner's machine, so give the owner the pull request link. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
+GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, account ersagarnikam): open pull
+requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
 GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
 62/62 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
