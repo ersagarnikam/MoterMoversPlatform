@@ -13,6 +13,7 @@ import MonthBars from '../components/MonthBars'
 import PaymentTable from '../components/PaymentTable'
 import { gbp } from '../money'
 import { useConfirm, useToast } from '../components/Feedback'
+import ListFilter, { matches } from '../components/ListFilter'
 import Skeleton from '../components/Skeleton'
 
 const PURPOSES: [PaymentPurpose, string][] = [
@@ -32,6 +33,13 @@ export default function PaymentsPage() {
   const [schools, setSchools] = useState<SchoolRow[]>([])
   const [courses, setCourses] = useState<AdminCourse[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<'ALL' | Payment['status']>('ALL')
+  const filtered = payments.filter(
+    (p) =>
+      (status === 'ALL' || p.status === status) &&
+      matches(search, p.payerName, p.payerEmail, p.description, p.reference, p.purposeLabel),
+  )
   const setNotice = useToast()
 
   const load = useCallback(() => {
@@ -130,8 +138,26 @@ export default function PaymentsPage() {
 
       <section className="card">
         <h3>All payments</h3>
+        <ListFilter
+          search={search}
+          onSearch={setSearch}
+          placeholder="Find a payer, description or reference"
+          choice={{
+            label: 'Status',
+            value: status,
+            onChange: setStatus,
+            options: [
+              ['ALL', 'Every status'],
+              ['DUE', 'Due'],
+              ['PAID', 'Paid'],
+              ['CANCELLED', 'Cancelled'],
+            ],
+          }}
+          shown={filtered.length}
+          total={payments.length}
+        />
         <PaymentTable
-          payments={payments}
+          payments={filtered}
           showPayer
           actions={(p) =>
             p.status === 'DUE' && (

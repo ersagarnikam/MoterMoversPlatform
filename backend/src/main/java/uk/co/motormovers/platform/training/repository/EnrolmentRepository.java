@@ -19,4 +19,6 @@ public interface EnrolmentRepository extends JpaRepository<Enrolment, Long> {
     List<Enrolment> findByCohortIdOrderByEnrolledAt(Long cohortId);
 
     List<Enrolment> findByCertificateExpiresOnBetweenAndExpiryReminderSentOnIsNull(LocalDate from, LocalDate to);
+
+    List<Enrolment> findByCertificateExpiresOnBetweenOrderByCertificateExpiresOn(LocalDate from, LocalDate to);
 }

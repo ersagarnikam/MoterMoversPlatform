@@ -52,7 +52,7 @@ const ROLES = [
   { label: 'Trust or group lead', key: 'trust', email: 'trust@northbridge.test', home: /\/trust$/ },
   { label: 'Practitioner', key: 'practitioner', email: 'practitioner@example.test', home: /\/training$/ },
   { label: 'Parent or carer', key: 'parent', email: 'parent@example.test', home: /\/training$/ },
-  { label: 'Motor Movers team', key: 'team', email: 'admin@motormovers.test', home: /\/admin\/content$/ },
+  { label: 'Motor Movers team', key: 'team', email: 'admin@motormovers.test', home: /\/admin$/ },
 ]
 
 /** The same terms the API's WordingGuard blocks in programme content. */

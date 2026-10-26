@@ -12,4 +12,6 @@ public interface GuidanceArticleRepository extends JpaRepository<GuidanceArticle
     List<GuidanceArticle> findByStatusOrderByIdDesc(ContentStatus status);
 
     List<GuidanceArticle> findAllByOrderByIdDesc();
+
+    long countByStatus(ContentStatus status);
 }

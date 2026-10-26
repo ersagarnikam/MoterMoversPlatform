@@ -20,7 +20,10 @@ import { useConfirm, useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
 
 
-/** The one-hour induction school staff complete before running sessions. */
+/**
+ * The one-hour induction school staff complete before running sessions. Once done, its parts fold away behind one
+ * line, so the page leads with what is still to do.
+ */
 function InductionSection() {
   const [induction, setInduction] = useState<Induction | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -55,8 +58,22 @@ function InductionSection() {
       {!induction.completedOn && (
         <p className="banner-info">Complete every part before running the daily sessions with your class.</p>
       )}
-      <div className="cohorts">
-        {induction.lessons.map((l) => (
+      {induction.completedOn ? (
+        <details className="lesson-review">
+          <summary>Look at the induction again</summary>
+          <Lessons lessons={induction.lessons} onComplete={complete} />
+        </details>
+      ) : (
+        <Lessons lessons={induction.lessons} onComplete={complete} />
+      )}
+    </section>
+  )
+}
+
+function Lessons({ lessons, onComplete }: { lessons: Induction['lessons']; onComplete: (id: number) => void }) {
+  return (
+    <div className="cohorts">
+      {lessons.map((l) => (
           <details key={l.id} className="lesson">
             <summary>
               <span>
@@ -73,15 +90,14 @@ function InductionSection() {
             ))}
             {!l.done && (
               <div className="actions">
-                <button className="btn btn-primary" onClick={() => complete(l.id)}>
+                <button className="btn btn-primary" onClick={() => onComplete(l.id)}>
                   Mark as done
                 </button>
               </div>
             )}
           </details>
         ))}
-      </div>
-    </section>
+    </div>
   )
 }
 
@@ -338,6 +354,7 @@ export default function TrainingPage() {
 
       {user && user.role !== 'ADMIN' && !OWN_PAYMENTS_PAGE.includes(user.role) && <YourPayments />}
 
+      <h2 className="section-title">Book training</h2>
       {user?.schoolId != null && (
         <p className="banner-teal">
           {user.role === 'HEAD'

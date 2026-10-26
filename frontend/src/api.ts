@@ -511,6 +511,26 @@ export interface SchoolTotal extends Totals {
   trustName: string | null
 }
 
+/** What needs the team's attention today (their home page). Dates are calendar dates, startsAt an instant. */
+export interface TeamOverview {
+  draftsAwaiting: number
+  sessionsToday: {
+    id: number
+    courseTitle: string
+    cohortName: string
+    number: number
+    startsAt: string
+    trainerName: string
+    booked: number
+  }[]
+  overdue: { id: number; payerName: string; description: string; amountPence: number; invoicedOn: string }[]
+  dueTotalPence: number
+  renewals: { schoolId: number; schoolName: string; endsOn: string }[]
+  clashingCohorts: number
+  courseRequestsWaiting: number
+  certificatesExpiring: { enrolmentId: number; learnerName: string; courseTitle: string; expiresOn: string }[]
+}
+
 export interface PaymentSummary extends Totals {
   paidLast12MonthsPence: number
   byPayerType: (Totals & { key: PayerType; label: string; payments: number })[]
@@ -685,6 +705,7 @@ export const api = {
   /** New content is saved as a draft for sign-off. The fields depend on the kind (see ContentPage). */
   createContent: (kind: ContentKind, item: Record<string, unknown>) =>
     request<ContentItem>('POST', `/api/admin/${kind}`, item),
+  teamOverview: () => request<TeamOverview>('GET', '/api/admin/overview'),
   adminCourses: () => request<AdminCourse[]>('GET', '/api/admin/courses'),
   addCourse: (c: CourseInput) => request<AdminCourse>('POST', '/api/admin/courses', c),
   updateCourse: (id: number, c: CourseInput) => request<AdminCourse>('PUT', `/api/admin/courses/${id}`, c),

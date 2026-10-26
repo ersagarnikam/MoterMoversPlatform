@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   api,
   type AdminCourse,
@@ -16,6 +16,7 @@ import { gbp } from '../money'
 import { day } from '../dates'
 import { useConfirm, useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
+import ListFilter, { matches } from '../components/ListFilter'
 
 const TRACKS: [CourseTrack, string][] = [
   ['PROFESSIONAL', 'Professionals (teachers, TAs, therapists)'],
@@ -25,11 +26,8 @@ const TRACKS: [CourseTrack, string][] = [
 const pounds = (pence: number | null) => (pence === null ? '' : (pence / 100).toString())
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 
-/**
- * The team sets up live courses, opens cohorts and gives each a trainer who runs its live sessions; learners book
- * them on the Training page.
- */
-export default function CoursesPage() {
+/** The courses and trainers, and saving a change: every change returns the whole course, which replaces it. */
+function useCourses() {
   const [courses, setCourses] = useState<AdminCourse[] | null>(null)
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -46,24 +44,34 @@ export default function CoursesPage() {
       .catch((e) => setError(e.message))
   }, [])
 
-  /** Every change returns the whole course, which replaces (or joins) the list. */
-  async function run(action: () => Promise<AdminCourse>, done: string) {
+  async function run(action: () => Promise<AdminCourse>, done: string): Promise<AdminCourse | null> {
     setError(null)
-    setNotice(null)
     try {
       const saved = await action()
       setCourses((all) =>
         all?.some((c) => c.id === saved.id) ? all.map((c) => (c.id === saved.id ? saved : c)) : [...(all ?? []), saved],
       )
       setNotice(done)
-      return true
+      return saved
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
-      return false
+      return null
     }
   }
 
+  return { courses, trainers, setTrainers, error, run }
+}
+
+/**
+ * The team's live courses at a glance: each with its cohorts, places booked and anything to check, opening onto the
+ * course's own page. A new course is set up here.
+ */
+export default function CoursesPage() {
+  const { courses, error, run } = useCourses()
+  const navigate = useNavigate()
+
   if (!courses) return error ? <p className="error">{error}</p> : <Skeleton />
+  const today = new Date().toISOString().slice(0, 10)
 
   return (
     <>
@@ -76,18 +84,86 @@ export default function CoursesPage() {
       {error && <p className="error">{error}</p>}
       {courses.length === 0 && <p className="muted">No courses yet. Set one up below.</p>}
 
-      {courses.map((c) => (
-        <CourseCard key={c.id} course={c} trainers={trainers} run={run} />
-      ))}
+      <div className="course-grid">
+        {courses.map((c) => {
+          const upcoming = c.cohorts.filter((h) => h.startsOn >= today)
+          const next = upcoming[0]
+          const booked = upcoming.reduce((n, h) => n + h.booked, 0)
+          const places = upcoming.reduce((n, h) => n + h.capacity, 0)
+          const clashes = c.cohorts.filter((h) => h.clashes.length > 0).length
+          return (
+            <Link key={c.id} to={`/admin/courses/${c.id}`} className="card course-summary">
+              <div className="section-head">
+                <h3>{c.title}</h3>
+                <span className="price">{gbp(c.pricePence)}</span>
+              </div>
+              <p className="muted">
+                {c.track === 'PARENT' ? 'Parents and carers' : 'Professionals'} · {c.liveSessions} live sessions
+              </p>
+              <p>
+                {upcoming.length === 0
+                  ? 'No cohorts coming up'
+                  : `${upcoming.length} ${upcoming.length === 1 ? 'cohort' : 'cohorts'} coming up · ${booked} of ${places} places booked`}
+              </p>
+              {next && <p className="muted">Next starts {day(next.startsOn)} · {next.trainerName}</p>}
+              {clashes > 0 && (
+                <span className="badge badge-warn">
+                  {clashes} Zoom {clashes === 1 ? 'clash' : 'clashes'}
+                </span>
+              )}
+              <span className="fine-link">Open course →</span>
+            </Link>
+          )
+        })}
+      </div>
 
       <section className="card">
         <h3>Set up a course</h3>
         <p className="muted">
           A course shows in the catalogue as soon as it is saved. Learners can book once it has a cohort.
         </p>
-        <CourseForm submitLabel="Set up course" onSave={(input) => run(() => api.addCourse(input), `${input.title} set up`)} />
+        <CourseForm
+          submitLabel="Set up course"
+          onSave={async (input) => {
+            const saved = await run(() => api.addCourse(input), `${input.title} set up`)
+            if (saved) navigate(`/admin/courses/${saved.id}`)
+            return saved !== null
+          }}
+        />
       </section>
+    </>
+  )
+}
 
+/** One course: its details, quizzes and cohorts, with each cohort's bookings, attendance and certificates. */
+export function CoursePage() {
+  const { courseId } = useParams()
+  const { courses, trainers, error, run } = useCourses()
+
+  if (!courses) return error ? <p className="error">{error}</p> : <Skeleton />
+  const course = courses.find((c) => c.id === Number(courseId))
+  if (!course) return <p className="muted">There is no such course. <Link to="/admin/courses">Back to courses</Link></p>
+
+  return (
+    <>
+      <div className="page-head">
+        <Link className="fine-link" to="/admin/courses">
+          ← All courses
+        </Link>
+      </div>
+      {error && <p className="error">{error}</p>}
+      <CourseCard course={course} trainers={trainers} run={async (action, done) => (await run(action, done)) !== null} />
+    </>
+  )
+}
+
+/** Pat's training team: who can run live sessions, and their Zoom logins. */
+export function TrainersPage() {
+  const { trainers, setTrainers, error } = useCourses()
+  return (
+    <>
+      <h1>Trainers</h1>
+      {error && <p className="error">{error}</p>}
       <Trainers trainers={trainers} onChange={setTrainers} />
     </>
   )
@@ -240,6 +316,7 @@ export function CohortBookings({
   canCancel?: boolean
 }) {
   const [bookings, setBookings] = useState<Enrolment[] | null>(null)
+  const [search, setSearch] = useState('')
   const [error, setError] = useState<string | null>(null)
   const setNotice = useToast()
 
@@ -282,11 +359,20 @@ export function CohortBookings({
           {error}
         </p>
       )}
+      {bookings.length > 10 && (
+        <ListFilter
+          search={search}
+          onSearch={setSearch}
+          placeholder="Find a learner"
+          shown={bookings.filter((b) => matches(search, b.learnerName, b.learnerEmail)).length}
+          total={bookings.length}
+        />
+      )}
       {bookings.length === 0 ? (
         <p className="muted">No one has booked this cohort yet.</p>
       ) : (
         <div className="table-wrap">
-          <table>
+          <table className="cards">
             <caption className="visually-hidden">Bookings for {cohortName}</caption>
             <thead>
               <tr>
@@ -302,17 +388,17 @@ export function CohortBookings({
               </tr>
             </thead>
             <tbody>
-              {bookings.map((b) => {
+              {bookings.filter((b) => matches(search, b.learnerName, b.learnerEmail)).map((b) => {
                 const issued = b.certificateIssuedOn !== null
                 const sessionsLeft = b.liveSessions - b.sessionsAttended
                 return (
                   <tr key={b.id}>
-                    <td>
+                    <td data-label="Learner">
                       <strong>{b.learnerName}</strong>
                       <br />
                       <span className="muted">{b.learnerEmail}</span>
                     </td>
-                    <td>
+                    <td data-label="Live sessions attended">
                       <div className="session-ticks">
                         {sessions.map((s) => (
                           <label key={s.id} className="toggle" title={sessionTime(s.startsAt)}>
@@ -338,7 +424,7 @@ export function CohortBookings({
                     </td>
                     {certificate && (
                       <>
-                        <td>
+                        <td data-label="Assessment">
                           <label className="toggle">
                             <input
                               type="checkbox"
@@ -350,7 +436,7 @@ export function CohortBookings({
                             Passed
                           </label>
                         </td>
-                        <td>
+                        <td data-label="Certificate">
                           {issued ? (
                             <span className="badge badge-ok">
                               Issued {day(b.certificateIssuedOn)}, valid until {day(b.certificateExpiresOn)}
@@ -372,7 +458,7 @@ export function CohortBookings({
                       </>
                     )}
                     {canCancel && (
-                      <td>
+                      <td data-label="Place">
                         {!issued && (
                           <button className="btn" onClick={() => cancel(b)}>
                             Cancel place
@@ -664,14 +750,14 @@ function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: T
 
   return (
     <section className="card">
-      <h3>Trainers</h3>
+      <h3>The training team</h3>
       <p className="muted">
         Trainers run the live sessions of the cohorts given to them, with the register, and see nothing else. The team
         can run any session. Give someone their own Zoom login so their sessions can run at the same time as others.
       </p>
       {error && <p className="error">{error}</p>}
       <div className="table-wrap">
-        <table>
+        <table className="cards">
           <thead>
             <tr>
               <th>Name</th>
@@ -682,12 +768,12 @@ function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: T
           <tbody>
             {trainers.map((t) => (
               <tr key={t.id}>
-                <td>
+                <td data-label="Name">
                   {t.displayName}
                   {t.team ? ' (team)' : ''}
                   {t.enabled ? '' : ' (switched off)'}
                 </td>
-                <td>
+                <td data-label="Email">
                   {t.email}
                   {!t.team && (
                     <>
@@ -709,7 +795,7 @@ function Trainers({ trainers, onChange }: { trainers: Trainer[]; onChange: (t: T
                     </>
                   )}
                 </td>
-                <td>
+                <td data-label="Zoom login">
                   <ZoomLogin
                     trainer={t}
                     onSave={(value) =>

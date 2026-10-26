@@ -292,6 +292,7 @@ function Register({ sessionId }: { sessionId: number }) {
   const [register, setRegister] = useState<LiveRegister | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     let stopped = false
@@ -339,7 +340,14 @@ function Register({ sessionId }: { sessionId: number }) {
 
   const learners = register?.learners ?? []
   const joined = learners.filter((l) => l.joinedAt)
+  const ticked = learners.filter((l) => l.present)
   const toTick = joined.filter((l) => !l.present && !l.certificateIssued)
+  // Who needs the host first: joined but not ticked, then not joined yet, then ticked; by name within each.
+  const order = (l: (typeof learners)[number]) => (l.present ? 2 : l.joinedAt ? 0 : 1)
+  const needle = search.trim().toLowerCase()
+  const shown = learners
+    .filter((l) => !needle || l.learnerName.toLowerCase().includes(needle) || l.learnerEmail.toLowerCase().includes(needle))
+    .sort((a, b) => order(a) - order(b) || a.learnerName.localeCompare(b.learnerName))
 
   return (
     <section className="card">
@@ -355,14 +363,29 @@ function Register({ sessionId }: { sessionId: number }) {
         <p className="muted">No one has booked this cohort.</p>
       ) : (
         <>
-          <p className="joined-count" aria-live="polite">
-            <strong>
-              Joined: {joined.length} of {learners.length}
-            </strong>{' '}
-            <span className="muted">booked</span>
-          </p>
+          <div className="register-head">
+            <p className="joined-count" aria-live="polite">
+              <strong>
+                Joined: {joined.length} of {learners.length}
+              </strong>{' '}
+              <span className="muted">
+                booked · ticked {ticked.length}
+              </span>
+            </p>
+            {learners.length > 5 && (
+              <input
+                type="search"
+                className="register-search"
+                aria-label="Find a learner"
+                placeholder="Find a learner"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            )}
+          </div>
+          {shown.length === 0 && <p className="muted">No one booked matches “{search}”.</p>}
           <ul className="register">
-            {learners.map((l) => (
+            {shown.map((l) => (
               <li key={l.enrolmentId}>
                 <label className="toggle">
                   <input

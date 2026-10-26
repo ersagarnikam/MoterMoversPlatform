@@ -41,7 +41,7 @@ test('the roster shows initials, with the full name on hover only when the schoo
   // The head switches full names on and adds a child with a name to the same class.
   await page.getByRole('button', { name: 'Sign out' }).click()
   await signIn(page, 'head@oakfield.test')
-  await page.getByRole('link', { name: 'School setup' }).click()
+  await page.getByRole('link', { name: 'School setup', exact: true }).click()
   const names = page.getByLabel(/Show children’s full names to staff/)
   // The box reflects the saved setting, so it ticks once the server has saved it.
   await names.click()
@@ -64,7 +64,7 @@ test('the roster shows initials, with the full name on hover only when the schoo
     // Put the demo school back to initials only for the other tests.
     await page.getByRole('button', { name: 'Sign out' }).click()
     await signIn(page, 'head@oakfield.test')
-    await page.getByRole('link', { name: 'School setup' }).click()
+    await page.getByRole('link', { name: 'School setup', exact: true }).click()
     await page.getByLabel(/Show children’s full names to staff/).click()
     await expect(page.getByLabel(/Show children’s full names to staff/)).not.toBeChecked()
   }
@@ -80,7 +80,7 @@ test('the readiness profile always says it is not a diagnosis', async ({ page })
 
 test('resources show the rhyme book and rhyme words', async ({ page }) => {
   await signIn(page, 'teacher@oakfield.test')
-  await page.getByRole('link', { name: 'Resources' }).click()
+  await page.getByRole('link', { name: 'Resources', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Motor Movers rhyme book' })).toBeVisible()
   await page.getByRole('button', { name: 'Rhymes' }).click()
   await expect(page.getByRole('heading', { name: 'Humpty Dumpty' })).toBeVisible()

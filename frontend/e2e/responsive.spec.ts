@@ -12,9 +12,9 @@ test('main screens fit a phone screen', async ({ page }) => {
   }
   await signIn(page, 'teacher@oakfield.test')
   await noSideScroll()
-  await page.getByRole('link', { name: 'Resources' }).click()
+  await page.getByRole('link', { name: 'Resources', exact: true }).click()
   await noSideScroll()
-  await page.getByRole('link', { name: 'Training' }).click()
+  await page.getByRole('link', { name: 'Training', exact: true }).click()
   await noSideScroll()
 })
 
