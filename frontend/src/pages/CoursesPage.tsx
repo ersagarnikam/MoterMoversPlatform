@@ -390,7 +390,8 @@ export function CohortBookings({
       )}
       {certificate && (
         <p className="fine">
-          The certificate is issued when every live session is attended and the assessment is passed. It lasts a year,
+          The certificate is issued when every live session is attended, every quiz of the course passed and the
+          assessment passed. It lasts a year,
           and once issued it cannot be taken back here.
         </p>
       )}
