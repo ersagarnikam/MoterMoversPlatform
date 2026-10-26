@@ -110,7 +110,7 @@ account (RUNBOOK, Card payments). Refunds are made in Stripe and not recorded on
 (`data.url`). The API sends through Expo's push service (`notification` package: `PushService`, `ExpoPushSender`)
 when `PUSH_ENABLED=true`; otherwise it only logs. Sent: a live session open to join (`SessionReminderJob.announceOpening`,
 every 2 minutes, once per session, `cohort_session.opening_push_sent_at`), the day-before reminder, and a payment
-recorded as due for a person. Tokens Expo reports as gone are deleted. Needs an EAS project id in `app.json` and a
+recorded as due for a person. Tokens Expo reports as gone are deleted. On the web the app skips notifications (the calls throw there). Needs an EAS project id in `app.json` and a
 store or development build to work (RUNBOOK, Phone notifications); not yet tried on a phone.
 
 **Quizzes and certificates (2026-10-26, migration V12).** Short quizzes between a course's live sessions
@@ -191,8 +191,12 @@ Built so far:
 - Load test (`deploy/loadtest/`, k6): a school-day mix against the production stack with demo data. On one
   laptop (2026-10-19): 500 people with pauses at 6 ms median and no errors; ceiling about 800-900 requests a
   second with the machine's CPU saturated, never failing. Repeat from another machine against staging.
-- Flow guides (`docs/flow-guides/`): PDF guides per role plus an investor and partner overview, with
-  screenshots of the demo data (October 2026). Regenerate them when screens change.
+- Guides, rebuilt 2026-10-26 for all seven roles (Trainer included): the **user guide** (`docs/user-guide/`, for the
+  people who use the platform: getting started, "how do I…?" tasks with numbered steps, answers) and the **flow
+  guides** (`docs/flow-guides/`, for partners, investors and school leaders, plus the platform overview with safety,
+  income and status). Both are built from screenshots of the demo by `docs/guide-builder/` (`capture.mjs`, then
+  `build.mjs`; how-to in its README). **Rebuild them when screens or features change**, and update the status page
+  in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
 - Accounts: invite and reset links (hashed one-time tokens), 10-character minimum passwords, accounts
   switched off stop working within a minute (`ActiveUserFilter`), rate limits on sign-in, registration,

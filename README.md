@@ -15,9 +15,11 @@ Built from the *How the platform works* overview and the *Motor Movers, online* 
 | Database | H2 in memory for development, PostgreSQL 17 for real environments |
 | Web app (`frontend/`) | React 19, TypeScript, Vite 8, React Router 7; self-hosted fonts (`@fontsource`) and a strict content security policy |
 | Parent app (`mobile/`) | Expo SDK 58, React Native, TypeScript, Expo Router (iOS, Android and web via react-native-web) |
-| Production (`deploy/`) | Docker Compose: Caddy (HTTPS) -> nginx (web app) -> API -> PostgreSQL, plus a nightly backup; email over SMTP |
-| Tests | JUnit and Spring Boot integration tests (API), Playwright with accessibility checks (web), k6 load test (`deploy/loadtest/`) |
-| CI | GitHub Actions: backend, frontend, browser and parent app jobs on every push |
+| Production (`deploy/`) | Docker Compose: Caddy (HTTPS) -> nginx (web app) -> API -> PostgreSQL, plus a nightly backup with off-server copies; email over SMTP |
+| Services it connects to (all optional) | Zoom (live sessions: Server-to-Server OAuth and the Meeting SDK), Stripe Checkout (card payments), Expo push (phone notifications) |
+| Documents | Apache PDFBox (certificate PDFs); the guides in `docs/` are built with Playwright and Chrome (`docs/guide-builder/`) |
+| Tests | JUnit and Spring Boot integration tests (API), Vitest (web unit tests), Playwright with accessibility checks (browser), k6 load tests (`deploy/loadtest/`) |
+| CI | GitHub Actions: backend, frontend, browser, load test and parent app jobs on every push |
 
 ## Running it locally
 
@@ -98,6 +100,9 @@ cd mobile && npm run typecheck # parent app type-check
 cd frontend && npm run e2e     # browser tests; needs the API running with demo data (restart it between runs)
 ```
 
+The browser tests sign in more than the 50 times in 15 minutes that one address is allowed, so start the API for
+them with `LOGIN_LIMIT_PER_IP=500` (tests only; production refuses a raised limit).
+
 GitHub Actions runs all of these on every push (`.github/workflows/ci.yml`).
 
 ### Production
@@ -108,16 +113,17 @@ first deployment, updates, backups and restores.
 
 ## What is built
 
-### Six kinds of user, one platform
+### Seven kinds of user, one platform
 
 | Role | What they can do |
 |---|---|
-| Class teacher | See their own class only: today's session, the half-term counter, assessing children, readiness profiles. Take the one-hour induction and use the resource library |
-| Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log, their school's payments. Take the induction and use the resource library |
+| Class teacher | See their own class only: today's session, the half-term counter, assessing children, readiness profiles. Take the one-hour induction, use the resource library, and ask their head for a place on a course |
+| Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log, school setup, approving staff course places, their school's payments (with Pay by card). Take the induction and use the resource library |
 | Trust or school group lead | Each school's licence, renewal date and summary results, spending per school. Never individual children, unless a school grants it |
-| Practitioner | Live course catalogue, booking, attendance, certificate status and a printable certificate, a Payments page (what is due, how to pay, history). Can also take the induction |
-| Parent | The parent course, a Payments page (what is due, how to pay, history; a reminder while anything is due), and the parent app, which has the same payments screen |
-| Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), setting up courses and cohorts, licence plans and prices, recording payments and spending summaries, schools and licences (with each school's agreed price), every class |
+| Practitioner | Live course catalogue, booking and cancelling, joining live sessions, quizzes between sessions, the certificate (emailed as a PDF), a Payments page with Pay by card. Can also take the induction |
+| Parent | The parent course, a Payments page with Pay by card, and the parent app: home activities, progress, live sessions (Join in Zoom), payments and phone notifications |
+| Trainer | Only the cohorts the team gives them: Live sessions (start them on Zoom, keep the register) and My cohorts (attendance, quizzes, the end-of-course assessment) |
+| Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), courses, cohorts, quizzes and trainers, licence plans and prices, recording payments and spending summaries, schools and licences (with each school's agreed price), every class |
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
@@ -155,8 +161,27 @@ weekly sessions. **Live sessions run on Zoom inside the platform**: the team sta
 the register beside the meeting, and learners booked on the cohort press Join on their Training page from 15
 minutes before the start, with no Zoom account (setup: `deploy/RUNBOOK.md`, Live sessions on Zoom). The register shows who has joined so far and when
 ("Joined: 7 of 9"), with one click to tick them all. Ticks in the register, or on the Courses page, count as
-attendance; with the assessment passed the certificate is issued
-automatically, and the learner can print it or save it as a PDF from the Training page.
+attendance.
+
+- **Trainers**: Pat's team. The team adds trainers on the Courses page (each emailed an invite, optionally with
+  their own Zoom login so sessions can run at once) and gives each cohort a trainer, who then runs its sessions and
+  completes it from *My cohorts*. A warning shows when two cohorts would need one Zoom login at the same time.
+- **Quizzes**: short multiple-choice quizzes between sessions, written by the team (with the wording check). A
+  quiz opens once its session has started or the learner is marked present, can be retaken, and is marked on the
+  server, which names the questions to look at again without giving the answers.
+- **Certificate**: issued automatically once every session is attended, every quiz passed and the assessment
+  recorded; emailed as a PDF, downloadable from the certificate page, with a reminder a month before it expires.
+- **Staff places**: staff at a school ask for a place, the head is emailed and approves it on the school's Payments
+  page, and only then is the place booked and invoiced to the school. Places can be cancelled before the first
+  session (with the school's invoice, while it is due).
+- **Reminders**: everyone booked, and the trainer, is emailed the day before each session; parents with the app
+  also get phone notifications.
+
+### Payments
+The team records invoices and payments (a school or a person pays) and sees income by month, payer type,
+purpose, trust or group, school and person. Payers see what is due and their history. With Stripe keys set, they
+can **Pay by card** on Stripe Checkout; Stripe's signed confirmation marks the payment paid (`deploy/RUNBOOK.md`,
+Card payments). Refunds are made in Stripe and are not recorded on the platform yet.
 
 ### Safety built in
 | Rule | Where |
@@ -183,8 +208,10 @@ backend/
     classroom/    today's session, the induction gate, completing a session
     screening/    screening items, results, readiness profile
     dashboard/    head teacher and trust dashboards, exports
-    training/     staff induction, courses, cohorts, enrolments, certificates
+    training/     staff induction, courses, cohorts, enrolments, live sessions (zoom/), quizzes, certificates
     family/       parent app: invite codes, parent links, progress, home activities, guidance
+    payment/      invoices and payments, spending summaries, card payments (stripe/)
+    notification/ phone notifications to the parent app (Expo push)
     seed/         demo data (dev profile only)
     common/       shared config, exceptions, enums and helpers
                   each feature splits into controller/, service/, model/ (entities, enums),
@@ -197,8 +224,22 @@ frontend/
 mobile/
   src/app/        one file per screen (Expo Router); (tabs)/ holds the five tabs
   src/components/ shared UI
-  src/lib/        API client, sign-in, offline queue for home sessions, theme
+  src/lib/        API client, sign-in, offline queue for home sessions, notifications, theme
+deploy/           production stack, RUNBOOK.md, load tests
+docs/             guides and design notes (see Documentation)
 ```
+
+## Documentation
+
+| Document | For | Where |
+|---|---|---|
+| User guide | The people who use the platform: everyday tasks step by step, per role, with answers to common questions | `docs/user-guide/` (one PDF per role, and one with every role) |
+| Platform guides | Partners, investors and school leaders: what each role does and why, and an overview of the programme, safety, income and status | `docs/flow-guides/` |
+| Runbook | Whoever runs the server: deployment, updates, backups, Zoom, phone notifications, card payments | `deploy/RUNBOOK.md` |
+| Assessment design | The planned developmental and exercise assessments | `docs/assessment-design.md` |
+| Notes for developers | Where the project stands and the rules the code relies on | `CLAUDE.md` |
+
+The guides are built from the demo, so rebuild them when screens change: `docs/guide-builder/README.md`.
 
 ## Parent app
 
@@ -211,8 +252,12 @@ A phone app for parents and carers (`mobile/`), with five tabs:
   scores), the dates of movement checks, and how often the class did its daily session. The *Not a
   diagnosis* banner is always shown. Parents can give the child a name that is kept on the phone only.
 - **Guidance**: short articles approved by Pat and Laura.
-- **Course**: the parent course: book a place and see attendance.
-- **Account**: what the school can see, and signing out.
+- **Course**: the parent course: book a place, see attendance, and the live sessions with **Join in Zoom**
+  (opens the meeting in the Zoom app from 15 minutes before the start).
+- **Account**: what the school can see, payment details and history (with Pay by card), and signing out.
+
+With an EAS build, the app also sends **phone notifications**: a live session open to join, a session tomorrow,
+and a payment due; a tap opens the right screen (`deploy/RUNBOOK.md`, Phone notifications).
 
 How a parent gets linked to a child:
 
@@ -238,13 +283,13 @@ How a parent gets linked to a child:
 These come later in the roadmap or need decisions first:
 
 - Filmed session videos and offline caching of videos on school devices
-- Online payment for licences and courses (Phase 0 uses an off-the-shelf course platform)
-- Video calls for live training sessions, email reminders and calendar invites
+- Refunds and credit notes, VAT, and renewing a certificate online (card payment itself is built)
+- Calendar invites for live sessions, and Zoom's own attendance report
 - Inspection evidence PDF export
-- Parent app: filmed home activity videos, push reminders, email verification, rate limiting on sign-in
-  and code entry, and online payment for the parent course (booking a place does not take payment yet)
+- Parent app: filmed home activity videos and email verification
 - Nursery mode
-- Self-service school sign-up, staff account management and a password reset flow (parents included)
+- Self-service school sign-up (the team signs schools up)
+- The new developmental and exercise assessments (`docs/assessment-design.md`), waiting on Pat's charts
 - The real screening items and stage mapping. `screening/util/ReadinessRules.java` holds placeholder
   thresholds until Pat and Laura confirm them.
 - Uploading files to the resource library (rhyme recordings, the rhyme book, printables), and rhymes in

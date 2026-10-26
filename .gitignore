@@ -26,3 +26,7 @@ deploy/backups/
 # Browser tests
 frontend/e2e-results/
 frontend/playwright-report/
+
+# Guide builder: screenshots and working HTML are rebuilt (docs/guide-builder/README.md)
+docs/guide-builder/shots/
+docs/guide-builder/html/
