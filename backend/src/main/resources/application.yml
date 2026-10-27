@@ -26,6 +26,8 @@ platform:
   retention-days: 365
   # A class below this daily participation rate is flagged on the head teacher dashboard.
   participation-flag-threshold: 0.70
+  # Motor Movers at Home: families whose school is not on Motor Movers (docs/home-programme-design.md).
+  home-programme: ${HOME_PROGRAMME:true}
   jwt:
     # Override in every real environment (env var PLATFORM_JWT_SECRET). Must be at least 32 bytes.
     secret: ${PLATFORM_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
@@ -139,6 +141,8 @@ platform:
   seed-demo-data: false
   # Starter content as drafts on an empty platform (seed/StarterContentLoader).
   seed-starter-content: ${SEED_STARTER_CONTENT:false}
+  # Off until the owner and Pat are ready to offer the home programme.
+  home-programme: ${HOME_PROGRAMME:false}
   jwt:
     secret: ${PLATFORM_JWT_SECRET:}
   cors:

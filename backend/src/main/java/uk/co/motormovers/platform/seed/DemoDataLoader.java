@@ -112,6 +112,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final PlanService plans;
     private final StarterContent starterContent;
     private final DemoAssessments demoAssessments;
+    private final DemoHome demoHome;
     private final PasswordEncoder passwordEncoder;
     private final PlatformProperties properties;
     private final Clock clock;
@@ -128,14 +129,15 @@ public class DemoDataLoader implements ApplicationRunner {
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
             HomeSessionRecordRepository homeRecords, LibraryResourceRepository resources,
             InductionProgressRepository inductionProgress, PaymentRepository payments, PlanService plans,
-            StarterContent starterContent, DemoAssessments demoAssessments, PasswordEncoder passwordEncoder,
-            PlatformProperties properties, Clock clock,
+            StarterContent starterContent, DemoAssessments demoAssessments, DemoHome demoHome,
+            PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock,
             @Value("${platform.load-test-learners:0}") int loadTestLearners) {
         this.loadTestLearners = loadTestLearners;
         this.payments = payments;
         this.plans = plans;
         this.starterContent = starterContent;
         this.demoAssessments = demoAssessments;
+        this.demoHome = demoHome;
         this.resources = resources;
         this.inductionProgress = inductionProgress;
         this.homeActivities = homeActivities;
@@ -228,6 +230,9 @@ public class DemoDataLoader implements ApplicationRunner {
 
         screenedClasses.forEach(c -> seedScreeningHistory(c, today));
         demoAssessments.seed(y2r, y3k, today);
+        // Motor Movers at Home: a family whose school is not on Motor Movers.
+        demoHome.seed(users.save(new AppUser("home@example.test", "Priya Shah", hash, Role.PARENT, null, null)),
+                today);
         seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today);

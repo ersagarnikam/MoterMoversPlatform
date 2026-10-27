@@ -49,6 +49,7 @@ password `password`:
 | `trust@northbridge.test` | Trust or group lead, Northbridge Academy Trust | Our schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
+| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on Motor Movers at Home) | Use the parent app |
 | `admin@motormovers.test` | Motor Movers team | Content approval |
 | `pat@motormovers.test` | Motor Movers team (Pat, trainer) | Content approval; Live sessions to start a course session |
 | `trainer@motormovers.test` | Trainer in Pat's team (Amy Clarke) | Live sessions for her own cohorts only |
@@ -226,6 +227,7 @@ backend/
     dashboard/    head teacher and trust dashboards, exports
     training/     staff induction, courses, cohorts, enrolments, live sessions (zoom/), quizzes, certificates
     family/       parent app: invite codes, parent links, progress, home activities, guidance
+    home/         Motor Movers at Home: family children, the starting check, daily sessions, sharing
     payment/      invoices and payments, spending summaries, card payments (stripe/)
     notification/ phone notifications to the parent app (Expo push)
     seed/         demo data (dev profile only)
@@ -253,6 +255,7 @@ docs/             guides and design notes (see Documentation)
 | Platform guides | Partners, investors and school leaders: what each role does and why, and an overview of the programme, safety, income and status | `docs/flow-guides/` |
 | Runbook | Whoever runs the server: deployment, updates, backups, Zoom, phone notifications, card payments | `deploy/RUNBOOK.md` |
 | Assessment design | The developmental and exercise assessments, Pat's answers and what is still open | `docs/assessment-design.md` |
+| Home programme design | Motor Movers at Home: what parents do, and the questions for Pat | `docs/home-programme-design.md` |
 | Notes for developers | Where the project stands and the rules the code relies on | `CLAUDE.md` |
 
 The guides are built from the demo, so rebuild them when screens change: `docs/guide-builder/README.md`.
@@ -284,8 +287,28 @@ How a parent gets linked to a child:
 4. The head sees every link under *Parent app links* on the progress dashboard and can remove any of them.
    The parent can also remove the child from their app.
 
+### Motor Movers at Home (no school needed)
+
+For families whose child's school is not on Motor Movers (`docs/home-programme-design.md`, waiting for Pat's
+answers). Switched on with `HOME_PROGRAMME=true`; off in production by default, on in development.
+
+- The parent **adds their child** (a first name or nickname and an age in years and months; no date of birth). A
+  second parent or carer joins with a family code (Account, Your family).
+- A **starting check** asks about the movements from Pat's charts for the year up to the child's age (Yes, Not yet,
+  Not sure) and suggests a colour; it is suggested again every three months.
+- **Today** has a daily session of four of Pat's exercises from the child's module (ten sessions a module), then
+  the parent rates exercises done for the first time and, at the end of each module, its exercises (Not yet,
+  Getting there, Nearly, Got it). Colours without Pat's grid use the home activities.
+- **Progress** shows movements secure and each exercise's first and latest rating, and a gentle prompt (never a
+  flag) when scores stay low.
+- If the school joins later, its parent code links the child: the home record moves onto the school's, with the
+  parent's agreement.
+
+Demo: `home@example.test` (Priya Shah: Ava on Green, Leo before his check).
+
 | Rule | Where |
 |---|---|
+| A home child is seen only by its family's parents and carers: never by a school, a trust or the team, unless the parent links a school | `security/service/AccessPolicy.java` (`requireFamilyOf`) |
 | A parent sees a child only through a school-issued code, only while the school keeps parent links on, and only while the child is on roll | `security/service/AccessPolicy.java` (`requireParentOf`) |
 | Every time a parent opens progress is in the school's record access log | `family/service/FamilyService.java` |
 | Parents see programme bands, not scores or fractions | `family/dto/FamilyViews.java` (`AreaBand`) |

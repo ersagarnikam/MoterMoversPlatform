@@ -129,6 +129,10 @@ public class FamilyService {
     public FamilyViews.Progress progress(Long childId) {
         Child child = children.findById(childId).orElseThrow(() -> new NotFoundException("Child", childId));
         CurrentUser me = access.requireParentOf(child);
+        if (child.isAtHome()) {
+            // A home child's progress is at /api/home/children/{id}.
+            throw new NotFoundException("Linked child", childId);
+        }
         accessLog.save(new ChildAccessLog(child.getId(), child.getSchoolClass().getSchool().getId(), me.email(),
                 "PARENT_VIEW_PROGRESS"));
         ParentLink link = links.findByParentIdAndChildId(me.id(), childId).orElseThrow();

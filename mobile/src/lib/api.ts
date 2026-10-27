@@ -68,6 +68,122 @@ export interface HomeEntry {
   doneOn: string
 }
 
+// --- Motor Movers at Home ------------------------------------------------------------------------------------------
+
+export interface HomeChild {
+  id: number
+  name: string
+  ageMonths: number
+  stage: ColourStage | null
+  stageName: string | null
+  checkedOn: string | null
+  /** The starting check has not been done, or was done a few months ago. */
+  checkDue: boolean
+}
+
+export interface HomeOverview {
+  /** The home programme is switched on for this deployment. */
+  enabled: boolean
+  children: HomeChild[]
+  members: { userId: number; name: string; owner: boolean; you: boolean }[]
+  owner: boolean
+  maxChildren: number
+}
+
+export type CheckAnswer = 'YES' | 'NOT_YET' | 'NOT_SURE'
+
+export interface HomeCheck {
+  childId: number
+  name: string
+  ageMonths: number
+  banner: string
+  questions: {
+    milestoneId: number
+    chart: 'FINE' | 'GROSS'
+    chartLabel: string
+    band: string
+    description: string
+    secure: boolean
+  }[]
+}
+
+export interface CheckResult {
+  suggested: ColourStage
+  suggestedName: string
+  forAge: ColourStage
+  forAgeName: string
+  earlier: boolean
+  yes: number
+  notYet: number
+  notSure: number
+  explanation: string
+}
+
+export interface HomeExercise {
+  id: number
+  stage: ColourStage
+  number: number
+  title: string
+  instructions: string
+  /** Pat's description of each score, 1 to 4. */
+  levels: Record<string, string>
+  points: { point: string; label: string }[]
+}
+
+export interface HomeToday {
+  childId: number
+  name: string
+  stage: ColourStage
+  stageName: string
+  /** Pat's exercises exist for this colour; otherwise the colour's home activities are used. */
+  hasExercises: boolean
+  module: number
+  modules: number
+  sessionInModule: number
+  sessionsPerModule: number
+  colourComplete: boolean
+  exercises: HomeExercise[]
+  /** Exercises to rate after doing them for the first time. */
+  firstTime: number[]
+  /** False for a child linked to a school: the teacher does the rating. */
+  canRate: boolean
+  doneToday: boolean
+  counterGrid: boolean[]
+  daysDone: number
+  counterDays: number
+  sessionsDone: number
+  review: { point: string; label: string; exercises: HomeExercise[] } | null
+  checkDue: boolean
+  support: { show: boolean; message: string | null }
+  levels: { score: number; label: string }[]
+}
+
+export interface HomeSessionEntry {
+  clientId: string
+  childId: number
+  doneOn: string
+}
+
+export interface ExerciseRating {
+  clientId: string
+  childId: number
+  exerciseId: number
+  point: string
+  score: number
+  assessedOn: string
+}
+
+export interface HomeProgress {
+  child: HomeChild
+  banner: string
+  charts: { chart: 'FINE' | 'GROSS'; label: string; secure: number; total: number; recentlySecure: string[] }[]
+  stage: ColourStage | null
+  stageName: string | null
+  exercises: { exerciseId: number; number: number; title: string; first: string; latest: string; improved: boolean }[]
+  sessionsDone: number
+  support: { show: boolean; message: string | null }
+}
+
 export interface ArticleSummary {
   id: number
   title: string
@@ -252,6 +368,31 @@ export const api = {
   onlinePayments: () => request<{ enabled: boolean }>('GET', '/api/payments/online'),
   /** The address of the payment provider's page to pay this payment by card. */
   checkout: (paymentId: number) => request<{ url: string }>('POST', `/api/payments/${paymentId}/checkout`),
+  // Motor Movers at Home: a family's own children, not linked to a school.
+  homeOverview: () => request<HomeOverview>('GET', '/api/home'),
+  addHomeChild: (name: string, ageMonths: number) =>
+    request<HomeChild>('POST', '/api/home/children', { name, ageMonths }),
+  updateHomeChild: (id: number, name: string, ageMonths: number) =>
+    request<HomeChild>('PUT', `/api/home/children/${id}`, { name, ageMonths }),
+  deleteHomeChild: (id: number) => request<void>('DELETE', `/api/home/children/${id}`),
+  homeProgress: (id: number) => request<HomeProgress>('GET', `/api/home/children/${id}`),
+  homeCheck: (id: number) => request<HomeCheck>('GET', `/api/home/children/${id}/check`),
+  submitHomeCheck: (id: number, answers: { milestoneId: number; answer: CheckAnswer }[]) =>
+    request<CheckResult>('POST', `/api/home/children/${id}/check`, { answers }),
+  setHomeStage: (id: number, stage: ColourStage) =>
+    request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
+  homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
+  recordHomeSessions: (sessions: HomeSessionEntry[]) =>
+    request<{ saved: number; duplicates: number }>('POST', '/api/home/sessions', sessions),
+  /** Ratings use the assessment endpoint, which checks that the child is the family's. */
+  rateExercises: (ratings: ExerciseRating[]) =>
+    request<{ saved: number; duplicates: number }>('POST', '/api/assessment/exercise-scores', ratings),
+  inviteCarer: () => request<{ code: string; expiresOn: string }>('POST', '/api/home/invites'),
+  joinFamily: (code: string) => request<HomeOverview>('POST', '/api/home/join', { code }),
+  removeFamilyMember: (userId: number) => request<void>('DELETE', `/api/home/members/${userId}`),
+  joinSchool: (id: number, code: string) =>
+    request<LinkedChild>('POST', `/api/home/children/${id}/join-school`, { code }),
+
   registerPushToken: (token: string, platform: string) =>
     request<void>('POST', '/api/me/push-tokens', { token, platform }),
   removePushToken: (token: string) => request<void>('POST', '/api/me/push-tokens/remove', { token }),

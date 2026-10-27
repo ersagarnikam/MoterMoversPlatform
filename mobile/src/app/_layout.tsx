@@ -48,6 +48,13 @@ function RootStack() {
         <Stack.Screen name="child/[id]" options={{ title: 'Progress' }} />
         <Stack.Screen name="guidance/[id]" options={{ title: 'Guidance' }} />
         <Stack.Screen name="payments" options={{ title: 'Payments' }} />
+        <Stack.Screen name="add-child" options={{ title: 'Add your child' }} />
+        <Stack.Screen name="check/[id]" options={{ title: 'Starting check' }} />
+        <Stack.Screen name="home-session/[id]" options={{ title: 'Home session' }} />
+        <Stack.Screen name="review/[id]" options={{ title: 'Ratings' }} />
+        <Stack.Screen name="home-child/[id]" options={{ title: 'Progress' }} />
+        <Stack.Screen name="join-school/[id]" options={{ title: 'Link a school', presentation: 'modal' }} />
+        <Stack.Screen name="family" options={{ title: 'Your family' }} />
         <Stack.Screen name="link-child" options={{ title: 'Link your child', presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={!user}>
