@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { STAGES } from '../../stages'
+import HeroArt from './HeroArt'
 
 const STEPS = [
   {
@@ -68,6 +69,7 @@ export default function HomePage() {
             ))}
           </ol>
         </div>
+        <HeroArt />
       </section>
 
       <section className="site-section">
