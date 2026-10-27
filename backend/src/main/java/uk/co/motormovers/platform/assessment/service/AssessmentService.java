@@ -184,7 +184,7 @@ public class AssessmentService {
     @Transactional
     public AssessmentViews.Development development(Long childId) {
         Child child = findChild(childId);
-        log(child, access.requireClassAccess(child.getSchoolClass()), "VIEW_DEVELOPMENT");
+        log(child, access.requireRecordAccess(child), "VIEW_DEVELOPMENT");
         LocalDate today = LocalDate.now(clock);
         Map<Long, MilestoneAchievement> mine = achievements.findByChildId(childId).stream()
                 .collect(Collectors.toMap(a -> a.getMilestone().getId(), Function.identity()));
@@ -208,7 +208,7 @@ public class AssessmentService {
                                     n.getSchoolYear(), n.getNote(), n.getWrittenOn()))
                             .toList()));
         });
-        return new AssessmentViews.Development(child.getId(), child.displayName(), child.getSchoolClass().getName(),
+        return new AssessmentViews.Development(child.getId(), child.displayName(), placeOf(child),
                 AssessmentViews.NOT_A_DIAGNOSIS, YearPoint.schoolYear(today), YearPoint.on(today), charts);
     }
 
@@ -287,7 +287,7 @@ public class AssessmentService {
     @Transactional
     public AssessmentViews.Profile profile(Long childId, ColourStage requested) {
         Child child = findChild(childId);
-        log(child, access.requireClassAccess(child.getSchoolClass()), "VIEW_ASSESSMENT");
+        log(child, access.requireRecordAccess(child), "VIEW_ASSESSMENT");
         int year = YearPoint.schoolYear(LocalDate.now(clock));
 
         List<MilestoneAchievement> mine = achievements.findByChildId(childId);
@@ -337,7 +337,7 @@ public class AssessmentService {
                     .orElse(null);
         }
         return new AssessmentViews.Profile(child.getId(), "Child " + child.getId(), child.displayName(),
-                child.getSchoolClass().getName(), AssessmentViews.NOT_A_DIAGNOSIS, child.getCurrentStage(), stage,
+                placeOf(child), AssessmentViews.NOT_A_DIAGNOSIS, child.getCurrentStage(), stage,
                 stage == null ? null : stage.displayName(), withExercises, development, rows, totalsRow,
                 new AssessmentViews.ExtraSupport(support.flagged(), AssessmentViews.EXTRA_SUPPORT, support.reasons()),
                 summary);
@@ -455,7 +455,8 @@ public class AssessmentService {
     }
 
     private static ColourStage defaultStage(Child child, List<ColourStage> withExercises) {
-        for (ColourStage s : Stream.of(child.getCurrentStage(), child.getSchoolClass().getStage())
+        for (ColourStage s : Stream.of(child.getCurrentStage(),
+                child.getSchoolClass() == null ? null : child.getSchoolClass().getStage())
                 .filter(Objects::nonNull).toList()) {
             if (withExercises.contains(s)) {
                 return s;
@@ -464,13 +465,21 @@ public class AssessmentService {
         return withExercises.isEmpty() ? null : withExercises.getFirst();
     }
 
+    /** The class name, or "At home" for a family's own child. */
+    private static String placeOf(Child child) {
+        return child.getSchoolClass() == null ? Child.HOME_YEAR_GROUP : child.getSchoolClass().getName();
+    }
+
     private Child findChild(Long id) {
         return children.findById(id).orElseThrow(() -> new NotFoundException("Child", id));
     }
 
-    /** Teachers (their own class), heads and the team record assessments; trust or group leads only look. */
+    /**
+     * Teachers (their own class), heads and the team record assessments; trust or group leads only look. For a home
+     * child (Motor Movers at Home), the child's family.
+     */
     private CurrentUser requireRecorder(Child child) {
-        CurrentUser me = access.requireClassAccess(child.getSchoolClass());
+        CurrentUser me = access.requireRecordAccess(child);
         if (me.is(Role.TRUST_LEAD)) {
             throw new AccessDeniedException("Trust or group leads cannot record assessments");
         }
@@ -480,7 +489,11 @@ public class AssessmentService {
         return me;
     }
 
+    /** The school's record access log. A home child's record is the family's own, so it has none. */
     private void log(Child child, CurrentUser me, String action) {
+        if (child.isAtHome()) {
+            return;
+        }
         accessLog.save(new ChildAccessLog(child.getId(), child.getSchoolClass().getSchool().getId(), me.email(),
                 action));
     }

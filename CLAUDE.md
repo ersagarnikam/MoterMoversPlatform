@@ -40,7 +40,7 @@ school, screening, security, seed, training, user`.
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V15`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V16`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -50,7 +50,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 122 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 134 unit + API integration tests (H2)
 cd frontend && npm test             # 48 unit tests (Vitest): money, times, offline queue, API client, assessment points
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -82,6 +82,34 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   tear down with `down -v`.
 
 ## Current state (2026-10-27)
+
+**Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
+for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
+the demo, off in production until the owner and Pat agree; it needs its own privacy notice first). Design note with
+ten questions for Pat: `docs/home-programme-design.md` (also shared with the owner as a Claude doc).
+- Data (migration V16): a child belongs to a school class **or** a family (`child.family_id`, `school_class_id` now
+  nullable, a check constraint), with `age_months` on `age_recorded_on` instead of a date of birth and
+  `home_check_on`. `family`, `family_member` (OWNER or CARER; one family per account), `family_invite` (one-time
+  codes, 14 days), `home_programme_session`. Code that reads `child.getSchoolClass()` must allow null: use
+  `child.isAtHome()`.
+- Access: `AccessPolicy.requireFamilyOf` (the family's parents and carers only); `requireRecordAccess` picks family
+  or class access, and the assessment endpoints use it, so a teacher, head, trust lead or the team gets 403 on a home
+  child. `requireClassAccess(null)` refuses. Home children are not in a school's record access log.
+- API `/api/home` (PARENT; `HomeService`, `HomeController`): the family, children (add, edit, delete with everything
+  recorded), the starting check (movements in the year up to the child's age; each Yes kept as a
+  `milestone_achievement` with the age), the colour, today's session, sessions (offline-safe), invites, joining,
+  removing or leaving (the last member leaving deletes the family), and `join-school` (the school's parent code; the
+  home record moves onto the school's record, the school's own rows winning). Ratings use
+  `/api/assessment/exercise-scores`. Rules with defaults for Pat in `home/util/HomeRules.java` (colour by age, the
+  check, 4 exercises a session, 10 sessions a module, Yellow in threes, recheck after 91 days); parent words and the
+  gentle prompt in `home/dto/HomeViews.java`.
+- Parent app: Today (a home child's session, or the starting check; colours without Pat's grid fall back to the home
+  activities), `add-child`, `check/[id]`, `home-session/[id]` (then first-time ratings), `review/[id]` (end of module),
+  `home-child/[id]` (progress, check again, name and age, link a school, delete), `join-school/[id]`, `family`
+  (invite, join, remove). Sessions and ratings queue offline (`lib/homeOutbox.ts`).
+- Demo: home@example.test (Priya Shah): Ava (Green, module 2, module 1 review due) and Leo (no check yet).
+- Tests: `HomeProgrammeTest` (own context with a raised sign-in limit, so it does not use up the shared one),
+  `HomeRulesTest`, `HomeProgrammeOffTest`. Tried in the app's web preview: session, ratings, check, fallback, family.
 
 **Pat's two assessments (2026-10-27, branch `assessment-rebuild`, migration V15; the owner asked Claude to merge this
 pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-design.md`). Package `assessment`:
@@ -259,7 +287,8 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-27): clearer head assessment figures, suggested point and flag reasons;
+Recent commits (newest first, 2026-10-27): Motor Movers at Home; clearer head assessment figures,
+suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
 in-page confirmations and live session labels; user guide and refreshed platform guides with their builder; parent
@@ -320,3 +349,8 @@ Not started unless noted. Confirm priorities with the owner.
    a real meeting**; the old `git stash` attempt is superseded. Also: a call with real people on other devices
    (including the parent app's Join in the Zoom app); recording; for go-live the same keys in `deploy/.env` and the
    General app's production credentials.
+12. **Motor Movers at Home (merged 2026-10-27, switched off in production).** Before switching `HOME_PROGRAMME` on in production: Pat's
+   answers to the ten questions in `docs/home-programme-design.md` (use of her materials at home, colour by age, the
+   check's rule, parent wording, a safety note, videos), a privacy notice for families (Motor Movers is responsible
+   for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
+   subscriptions, a web version for families (the parent app only), and emailing a family code.

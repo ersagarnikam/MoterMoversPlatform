@@ -77,7 +77,7 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "TRAINER")
                         .requestMatchers("/api/trainer/**").hasRole("TRAINER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/family/**").hasRole("PARENT")
+                        .requestMatchers("/api/family/**", "/api/home/**").hasRole("PARENT")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2ResourceServer(o -> o.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
