@@ -83,8 +83,8 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-10-27)
 
-**In review (Claude for the owner, branch `home-programme`, pull request open, not merged, 2026-10-27): Motor Movers
-at Home**, for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
+**Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
+for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
 the demo, off in production until the owner and Pat agree; it needs its own privacy notice first). Design note with
 ten questions for Pat: `docs/home-programme-design.md` (also shared with the owner as a Claude doc).
 - Data (migration V16): a child belongs to a school class **or** a family (`child.family_id`, `school_class_id` now
@@ -287,7 +287,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-27): Motor Movers at Home (in review); clearer head assessment figures,
+Recent commits (newest first, 2026-10-27): Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
@@ -349,7 +349,7 @@ Not started unless noted. Confirm priorities with the owner.
    a real meeting**; the old `git stash` attempt is superseded. Also: a call with real people on other devices
    (including the parent app's Join in the Zoom app); recording; for go-live the same keys in `deploy/.env` and the
    General app's production credentials.
-12. **Motor Movers at Home (built 2026-10-27, in review).** Before switching `HOME_PROGRAMME` on in production: Pat's
+12. **Motor Movers at Home (merged 2026-10-27, switched off in production).** Before switching `HOME_PROGRAMME` on in production: Pat's
    answers to the ten questions in `docs/home-programme-design.md` (use of her materials at home, colour by age, the
    check's rule, parent wording, a safety note, videos), a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
