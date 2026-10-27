@@ -377,6 +377,41 @@ tfoot th { border-top: 1px solid var(--line); border-bottom: none; }
 .hero-stages li { display: inline-flex; align-items: center; gap: 0.4rem; }
 .swatch { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
 
+/* Home page hero art (HomePage.tsx, HeroArt): the rainbow draws itself in, the child does star jumps */
+.site-hero-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 28rem); gap: 2.5rem; align-items: center; }
+.hero-art { width: 100%; height: auto; display: block; overflow: visible; }
+.hero-arc { fill: none; stroke: var(--tint); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: hero-draw 7s ease-in-out infinite both; }
+.hero-arc:nth-of-type(2) { animation-delay: 0.12s; }
+.hero-arc:nth-of-type(3) { animation-delay: 0.24s; }
+.hero-arc:nth-of-type(4) { animation-delay: 0.36s; }
+.hero-arc:nth-of-type(5) { animation-delay: 0.48s; }
+.hero-arc:nth-of-type(6) { animation-delay: 0.6s; }
+.hero-arc:nth-of-type(7) { animation-delay: 0.72s; }
+.hero-limb { stroke: #f4efe6; stroke-width: 10; stroke-linecap: round; }
+.hero-head { fill: #f4efe6; }
+.hero-shadow { fill: rgb(0 0 0 / 0.3); transform-origin: 240px 310px; animation: hero-shadow 0.7s ease-in-out infinite alternate; }
+.hero-jumper { animation: hero-jump 0.7s ease-in-out infinite alternate; }
+.hero-arm-l, .hero-arm-r { transform-origin: 240px 230px; }
+.hero-leg-l, .hero-leg-r { transform-origin: 240px 262px; }
+.hero-arm-l { animation: hero-arm-l 0.7s ease-in-out infinite alternate; }
+.hero-arm-r { animation: hero-arm-r 0.7s ease-in-out infinite alternate; }
+.hero-leg-l { animation: hero-leg-l 0.7s ease-in-out infinite alternate; }
+.hero-leg-r { animation: hero-leg-r 0.7s ease-in-out infinite alternate; }
+@keyframes hero-draw { 0% { stroke-dashoffset: 1; opacity: 1; } 30%, 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes hero-jump { from { transform: none; } to { transform: translateY(-16px); } }
+@keyframes hero-shadow { from { transform: none; opacity: 1; } to { transform: scale(0.7); opacity: 0.6; } }
+@keyframes hero-arm-l { from { transform: rotate(20deg); } to { transform: rotate(145deg); } }
+@keyframes hero-arm-r { from { transform: rotate(-20deg); } to { transform: rotate(-145deg); } }
+@keyframes hero-leg-l { from { transform: rotate(4deg); } to { transform: rotate(24deg); } }
+@keyframes hero-leg-r { from { transform: rotate(-4deg); } to { transform: rotate(-24deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-arc, .hero-shadow, .hero-jumper { animation: none; stroke-dashoffset: 0; }
+  .hero-arm-l { animation: none; transform: rotate(145deg); }
+  .hero-arm-r { animation: none; transform: rotate(-145deg); }
+  .hero-leg-l { animation: none; transform: rotate(24deg); }
+  .hero-leg-r { animation: none; transform: rotate(-24deg); }
+}
+
 .site-section { max-width: 1100px; margin: 0 auto; padding: 3rem 1.25rem; }
 .site-section > h2 { margin-bottom: 1rem; }
 .site-section h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
@@ -442,6 +477,8 @@ tfoot th { border-top: 1px solid var(--line); border-bottom: none; }
   .site-header { position: static; }
   .site-nav { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; margin: 0 -0.5rem; }
   .site-hero { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  .site-hero-split { grid-template-columns: 1fr; }
+  .hero-art { display: none; }
   .site-section { padding: 2rem 1rem; }
   .site-band, .site-cta-band { width: calc(100% - 2rem); padding: 1.75rem 1rem; }
   .site-split, .site-cards-2, .site-cards-3, .site-steps, .site-steps-4, .site-footer-inner { grid-template-columns: 1fr; }

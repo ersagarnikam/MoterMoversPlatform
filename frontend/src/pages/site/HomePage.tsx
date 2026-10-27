@@ -39,10 +39,39 @@ const BENEFITS = [
   },
 ]
 
+// A child doing star jumps under a rainbow of the seven colour stages. Animated in styles.css (.hero-art);
+// it holds still for people who ask for less motion.
+function HeroArt() {
+  return (
+    <svg className="hero-art" viewBox="0 0 480 340" aria-hidden="true" focusable="false">
+      {STAGES.map((s, i) => {
+        const r = 222 - i * 12
+        return (
+          <path
+            key={s.key}
+            className={`hero-arc stage-tint-${s.key.toLowerCase()}`}
+            d={`M ${240 - r} 310 A ${r} ${r} 0 0 1 ${240 + r} 310`}
+            pathLength={1}
+          />
+        )
+      })}
+      <ellipse className="hero-shadow" cx="240" cy="310" rx="34" ry="6" />
+      <g className="hero-jumper">
+        <line className="hero-limb hero-leg-l" x1="240" y1="262" x2="240" y2="302" />
+        <line className="hero-limb hero-leg-r" x1="240" y1="262" x2="240" y2="302" />
+        <line className="hero-limb" x1="240" y1="224" x2="240" y2="262" />
+        <line className="hero-limb hero-arm-l" x1="240" y1="230" x2="240" y2="264" />
+        <line className="hero-limb hero-arm-r" x1="240" y1="230" x2="240" y2="264" />
+        <circle className="hero-head" cx="240" cy="203" r="16" />
+      </g>
+    </svg>
+  )
+}
+
 export default function HomePage() {
   return (
     <>
-      <section className="site-hero">
+      <section className="site-hero site-hero-split">
         <div className="site-hero-inner">
           <p className="eyebrow eyebrow-light">From the Movement for Learning Project</p>
           <h1>Movement that gets children ready to learn</h1>
@@ -68,6 +97,7 @@ export default function HomePage() {
             ))}
           </ol>
         </div>
+        <HeroArt />
       </section>
 
       <section className="site-section">
