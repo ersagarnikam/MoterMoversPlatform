@@ -6,7 +6,8 @@ import StageBadge from './StageBadge'
 
 /**
  * The head's view of Pat's two assessments: per class, how many children have a developmental assessment at each
- * point this school year, and the latest exercise scores as the number of scores at each level (not averages).
+ * point this school year, the average movements secured per child assessed, and how many children are at each exercise
+ * level (each child once, at the middle of their latest scores).
  * Then the children who may benefit from extra support.
  */
 export default function AssessmentOverviewCard({ schoolId }: { schoolId: number }) {
@@ -32,14 +33,14 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
               <th>Class</th>
               <th>Colour</th>
               <th className="num">Developmental: start / middle / end</th>
-              <th className="num">Movements secured</th>
-              <th>Latest exercise scores (1 · 2 · 3 · 4)</th>
+              <th className="num">Movements secured per child</th>
+              <th>Children at each exercise level</th>
               <th className="num">May benefit from extra support</th>
             </tr>
           </thead>
           <tbody>
             {data.classes.map((c) => {
-              const total = Object.values(c.scoreLevels).reduce((a, b) => a + b, 0)
+              const total = Object.values(c.childrenAtLevel).reduce((a, b) => a + b, 0)
               return (
                 <tr key={c.classId} className={`stage-row stage-tint-${c.stage.toLowerCase()}`}>
                   <td>{c.name}</td>
@@ -50,14 +51,14 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
                     {c.developmental.START} / {c.developmental.MIDDLE} / {c.developmental.END}
                     <span className="muted"> of {c.children}</span>
                   </td>
-                  <td className="num" data-label="Movements secured">
-                    {c.movementsSecured}
+                  <td className="num" data-label="Movements secured per child">
+                    {c.movementsPerChild === 0 ? <span className="muted">-</span> : c.movementsPerChild}
                   </td>
-                  <td data-label="Latest exercise scores (1 · 2 · 3 · 4)">
+                  <td data-label="Children at each exercise level">
                     {total === 0 ? (
                       <span className="muted">None yet</span>
                     ) : (
-                      [1, 2, 3, 4].map((n) => c.scoreLevels[n] ?? 0).join(' · ')
+                      <LevelCounts counts={c.childrenAtLevel} />
                     )}
                   </td>
                   <td className="num" data-label="May benefit from extra support">
@@ -80,7 +81,8 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
               <span className="muted">
                 {' '}
                 · {f.reasons[0]}
-                {f.reasons.length > 1 && ` and ${f.reasons.length - 1} more`}
+                {f.reasons.length > 1 &&
+                  ` (${f.reasons.length - 1} more ${f.reasons.length === 2 ? 'reason' : 'reasons'} on the profile)`}
               </span>
             </li>
           ))}
@@ -88,5 +90,26 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
       )}
       <p className="fine">A flag shows a pattern of low exercise scores. It is not a diagnosis and names no cause.</p>
     </section>
+  )
+}
+
+/** Short names for the table; the full name is the hover text. */
+const LEVELS: [number, string, string][] = [
+  [1, 'Not yet', 'Not yet'],
+  [2, 'Developing', 'Developing'],
+  [3, 'Nearly there', 'Nearly there'],
+  [4, 'Confident', 'Confident and accurate'],
+]
+
+/** How many children are at each level, labelled so the numbers read without a key. */
+function LevelCounts({ counts }: { counts: Record<string, number> }) {
+  return (
+    <ul className="level-counts">
+      {LEVELS.map(([n, name, full]) => (
+        <li key={n} title={full}>
+          <span className="level-num">{n}</span> {name}: <strong>{counts[n] ?? 0}</strong>
+        </li>
+      ))}
+    </ul>
   )
 }

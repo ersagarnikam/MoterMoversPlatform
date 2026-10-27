@@ -427,17 +427,22 @@ public class AssessmentService {
         Map<Child, List<String>> flagged = new LinkedHashMap<>();
         for (Child child : pupils) {
             List<ExerciseScore> mine = byChild.getOrDefault(child.getId(), List.of());
-            // The latest score on each exercise: the one at the furthest point reached.
-            mine.stream().collect(Collectors.groupingBy(s -> s.getExercise().getId(),
+            // The latest score on each exercise (the one at the furthest point reached); the child counts once, at
+            // the middle of those scores.
+            List<Integer> latest = mine.stream().collect(Collectors.groupingBy(s -> s.getExercise().getId(),
                     Collectors.maxBy(Comparator.comparing(ExerciseScore::getPoint, ExercisePoints.ORDER))))
-                    .values().forEach(o -> o.ifPresent(s -> levels.merge(s.getScore(), 1, Integer::sum)));
+                    .values().stream().flatMap(Optional::stream).map(ExerciseScore::getScore).sorted().toList();
+            if (!latest.isEmpty()) {
+                levels.merge(latest.get((latest.size() - 1) / 2), 1, Integer::sum);
+            }
             ExtraSupportRule.Result r = extraSupport(c.getStage(), mine);
             if (r.flagged()) {
                 flagged.put(child, r.reasons());
             }
         }
+        double perChild = assessed == 0 ? 0 : Math.round(10.0 * secured.size() / assessed) / 10.0;
         return new ClassFigures(new AssessmentViews.ClassOverview(c.getId(), c.getName(), c.getStage(),
-                c.getStage().displayName(), pupils.size(), developmental, secured.size(), levels, flagged.size()),
+                c.getStage().displayName(), pupils.size(), developmental, perChild, levels, flagged.size()),
                 assessed, flagged);
     }
 

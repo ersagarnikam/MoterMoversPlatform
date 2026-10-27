@@ -188,7 +188,12 @@ The trust or group dashboard gains `developmentalRate` and `extraSupport` per sc
 **The flag** (`assessment/util/ExtraSupportRule`) uses the suggested default from question 3: 1 or 2 on the same
 exercise at two points in a row, or 1 or 2 on half or more of the exercises (at least two) at the end of a module or
 of the colour. Low scores at the start alone never flag a child. It says "May benefit from extra support" with the
-reasons, never a cause.
+reasons, never a cause. Up to three exercises low at two points in a row are named one by one; more are summed up in
+one line, since the profile's table shows every score.
+
+**The head's figures** (changed 2026-10-27 after a first look): per class, the average movements secured this school
+year per child assessed, and the number of children at each exercise level, each child counted once at the middle of
+their latest scores (the lower middle when even), rather than raw counts of scores.
 
 **School year.** September to August. The point in the year is suggested from the date (September to December
 start, January to April middle, May to August end); the teacher can change it.

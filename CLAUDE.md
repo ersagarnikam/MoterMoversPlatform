@@ -50,8 +50,8 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 121 unit + API integration tests (H2)
-cd frontend && npm test             # 47 unit tests (Vitest): money, times, offline queue, API client, assessment points
+cd backend  && ./mvnw -B verify      # 122 unit + API integration tests (H2)
+cd frontend && npm test             # 48 unit tests (Vitest): money, times, offline queue, API client, assessment points
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -91,9 +91,10 @@ pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-desi
   deployment, adding only what is missing, so another colour's grid is a new `exercises-<colour>.json` plus its
   colour in `STAGES_WITH_EXERCISES`. A test checks all of it against the wording guard.
 - Exercises: the teacher's **Assess** page (`/class/:id/assess`, from "Assess children") scores the whole class on one
-  exercise at one point (Start, End of module n, End of the colour; the point most of the class still needs is
-  suggested), 1 to 4 with Pat's four descriptions, through the offline queue (`outbox.ts`, now generic). A later
-  score at the same point replaces the earlier one.
+  exercise at one point (Start, End of module n, End of the colour), 1 to 4 with Pat's four descriptions, through the
+  offline queue (`outbox.ts`, now generic). A later score at the same point replaces the earlier one. The suggested
+  point (`suggestedPoint` in `src/assessment.ts`) stays on a point until every child has a score there, unless half
+  the class or more already has a score at a later point (so one absent child does not hold the class back).
 - Developmental: `/child/:id/development`. The teacher enters the child's age in months (no date of birth is held)
   and the point in the school year (Sept-Dec start, Jan-Apr middle, May-Aug end, suggested from the date), taps each
   movement that is secure, and writes each chart's comment. Once secure a movement stays secure; one recorded by
@@ -103,10 +104,15 @@ pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-desi
   old 0-3 readiness check, which stays (also reachable from the Assess page) until Pat confirms it can go.
 - Flag: `ExtraSupportRule` (the suggested default, still to agree with Pat): 1 or 2 on the same exercise at two
   points in a row, or 1 or 2 on half or more of the exercises (at least two) at a module end or the colour end. It
-  shows as "May benefit from extra support" with its reasons, never a cause.
-- Head: an Assessments section on the Progress page (per class: children assessed at each point this school year,
-  movements secured, latest scores as counts at each level) and the list of flagged children. Each class shows its colour stage as a pill washed in the stage's own colour, with the row edged in it (`StageBadge`, `.stage-tint-*` in styles.css). Trust or group leads
-  see per school only the share developmentally assessed this year and how many are flagged.
+  shows as "May benefit from extra support" with its reasons, never a cause. Up to three exercises low at two points
+  in a row are named one by one; more read as one line ("1 or 2 at two points in a row on 21 exercises, including
+  …"); the profile's table has every score.
+- Head: an Assessments section on the Progress page. Per class: children assessed at each point this school year,
+  the average movements secured this year per child assessed, and how many **children** are at each exercise level
+  (each child counted once, at the middle of their latest scores; `ClassOverview.childrenAtLevel`), then the list of
+  flagged children (first reason, and how many more are on the profile). Each class shows its colour stage as a pill
+  washed in the stage's own colour, with the row edged in it (`StageBadge`, `.stage-tint-*` in styles.css). Trust or
+  group leads see per school only the share developmentally assessed this year and how many are flagged.
 - Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
   modules in, with two children flagged. The last three children of each class are left to assess.
 - Not built: the other five colours (waiting for Pat), editing the charts or grids on screen (change the JSON), the
@@ -253,7 +259,8 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-27): colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
+Recent commits (newest first, 2026-10-27): clearer head assessment figures, suggested point and flag reasons;
+colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
 in-page confirmations and live session labels; user guide and refreshed platform guides with their builder; parent
 app no longer crashes on the web; card payments (Stripe); phone notifications; quizzes and certificate PDFs; heads

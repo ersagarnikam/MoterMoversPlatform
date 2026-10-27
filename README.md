@@ -163,7 +163,7 @@ today, drafts to sign off, overdue invoices, licences to renew, Zoom clashes and
 ### Dashboards
 - **Head teacher**: children assessed, moved up a stage, daily participation, classes active, and
   participation by class with classes below 70% flagged. Assessments by class (developmental at each point of the
-  year, movements secured, latest exercise scores as counts per level) and the children who may benefit from extra
+  year, average movements secured per child, children at each exercise level) and the children who may benefit from extra
   support. CSV exports: governor summary and anonymised
   research data.
 - **Trust or school group**: one row per school with licence status (Active, Renewal due, Free trial, Expired), stages,

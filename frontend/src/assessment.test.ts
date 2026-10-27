@@ -28,10 +28,19 @@ describe('assessment points', () => {
     ])
   })
 
-  it('suggests the first point that most of the class has not been scored at', () => {
+  it('stays on a point until every child has a score there', () => {
     expect(suggestedPoint(starfish, [child(), child()])).toBe('START')
-    expect(suggestedPoint(starfish, [child('START'), child('START'), child()])).toBe('MODULE_1')
+    // The last child still needs a start score: not skipped (the demo's Yellow class, 25 of 28 done).
+    expect(suggestedPoint(starfish, [child('START'), child('START'), child()])).toBe('START')
+    expect(suggestedPoint(starfish, [child('START'), child('START'), child('START')])).toBe('MODULE_1')
     expect(suggestedPoint(starfish, [child('START', 'MODULE_1', 'END')])).toBe('END')
+  })
+
+  it('moves on once half the class has a score at a later point', () => {
+    // A child who missed the start does not hold the class back: the class is at module 1 (one child still to do).
+    const moved = [child('START', 'MODULE_1'), child('START', 'MODULE_1'), child()]
+    expect(suggestedPoint(starfish, moved)).toBe('MODULE_1')
+    expect(suggestedPoint(starfish, [child('START', 'MODULE_1'), child('START'), child('START')])).toBe('MODULE_1')
   })
 
   it('makes one column per point any exercise is assessed at', () => {

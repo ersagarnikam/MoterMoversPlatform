@@ -177,6 +177,8 @@ class AssessmentTest {
                 bearer(head)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.classes[?(@.name == 'Year 3 K')].extraSupport").value(hasItem(2)))
+                // Each child counts once, at the middle of their latest scores: the two low scorers are at 2.
+                .andExpect(jsonPath("$.classes[?(@.name == 'Year 3 K')].childrenAtLevel.2").value(hasItem(2)))
                 .andExpect(jsonPath("$.classes[?(@.name == 'Year 2 R')].developmental.START")
                         .value(hasItem(greaterThan(0))))
                 .andExpect(jsonPath("$.extraSupport.length()").value(2))
@@ -189,7 +191,7 @@ class AssessmentTest {
                 .andExpect(jsonPath("$.banner").value(containsString("Not a diagnosis")))
                 .andExpect(jsonPath("$.extraSupport.flagged").value(true))
                 .andExpect(jsonPath("$.extraSupport.label").value("May benefit from extra support"))
-                .andExpect(jsonPath("$.extraSupport.reasons[0]").value(containsString("1 at Start, then 2")));
+                .andExpect(jsonPath("$.extraSupport.reasons[0]").value(containsString("at two points in a row on 21 exercises, including Yes and No")));
 
         mvc.perform(put("/api/children/" + flagged + "/colour-summary").header("Authorization", bearer(head))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"stage\":\"GREEN\",\"personalComment\":"

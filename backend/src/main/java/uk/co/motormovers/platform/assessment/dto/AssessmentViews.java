@@ -130,11 +130,13 @@ public final class AssessmentViews {
     // --- The head's overview -------------------------------------------------------------------------------------
 
     /**
-     * One class: how many children have a developmental assessment at each point this school year, movements
-     * secured this year, and the latest exercise scores as the number of children's scores at each level.
+     * One class: how many children have a developmental assessment at each point this school year, the average number
+     * of movements secured this year per child assessed, and how many children are at each exercise level. A child's
+     * level is the middle of their latest scores (the lower of the two middle ones when even), so each child counts
+     * once.
      */
     public record ClassOverview(Long classId, String name, ColourStage stage, String stageName, int children,
-            Map<YearPoint, Integer> developmental, int movementsSecured, Map<Integer, Integer> scoreLevels,
+            Map<YearPoint, Integer> developmental, double movementsPerChild, Map<Integer, Integer> childrenAtLevel,
             int extraSupport) {
     }
 

@@ -45,6 +45,15 @@ class ExtraSupportRuleTest {
     }
 
     @Test
+    void manyLowExercisesReadAsOneLine() {
+        List<Mark> marks = List.of("Yes and No", "Starfish", "Tortoise", "Big Jump").stream()
+                .flatMap(e -> List.of(new Mark(e, "START", 1), new Mark(e, "MODULE_1", 2)).stream()).toList();
+        assertThat(ExtraSupportRule.apply(ColourStage.GREEN, marks).reasons()).containsExactly(
+                "1 or 2 at two points in a row on 4 exercises, including Yes and No, Starfish and Tortoise",
+                "1 or 2 on 4 of 4 exercises at the end of module 1");
+    }
+
+    @Test
     void pointsSortAndRead() {
         assertThat(List.of("END", "MODULE_10", "START", "MODULE_2").stream().sorted(ExercisePoints.ORDER).toList())
                 .containsExactly("START", "MODULE_2", "MODULE_10", "END");
