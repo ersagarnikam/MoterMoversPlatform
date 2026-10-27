@@ -24,6 +24,7 @@ import uk.co.motormovers.platform.payment.model.PayerType;
 import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
+import uk.co.motormovers.platform.notification.service.PushService;
 import uk.co.motormovers.platform.payment.repository.PaymentRepository;
 import uk.co.motormovers.platform.school.model.School;
 import uk.co.motormovers.platform.school.model.Trust;
@@ -50,16 +51,19 @@ public class PaymentService {
     private final AppUserRepository users;
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
+    private final PushService push;
     private final Clock clock;
 
     public PaymentService(PaymentRepository payments, SchoolRepository schools, TrustRepository trusts,
-            AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock) {
+            AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, PushService push,
+            Clock clock) {
         this.payments = payments;
         this.schools = schools;
         this.trusts = trusts;
         this.users = users;
         this.access = access;
         this.currentUser = currentUser;
+        this.push = push;
         this.clock = clock;
     }
 
@@ -155,7 +159,14 @@ public class PaymentService {
         if (r.paidOn() != null) {
             payment.markPaid(r.paidOn());
         }
-        return PaymentView.of(payments.save(payment));
+        payment = payments.save(payment);
+        if (payment.getPayer() != null && payment.getStatus() == PaymentStatus.DUE) {
+            // A parent with the app hears about it there too; a tap opens their Payments screen.
+            push.notify(List.of(payment.getPayer().getId()), "A payment is due",
+                    PaymentViews.pounds(payment.getAmountPence()) + " for " + payment.getDescription()
+                            + ". Tap to see how to pay.", "/payments");
+        }
+        return PaymentView.of(payment);
     }
 
     @Transactional

@@ -2,11 +2,17 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api, type ParentInvite, type Profile } from '../api'
 import { useAuth } from '../auth'
+import AssessmentProfileCard from '../components/AssessmentProfileCard'
 import NotADiagnosis from '../components/NotADiagnosis'
 import Sparkline from '../components/Sparkline'
 import StageBadge from '../components/StageBadge'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
-/** Readiness profile: six areas, the suggested starting stage and the change over the year. */
+/**
+ * A child's profile: Pat's two assessments first, then the current readiness check (six areas, the suggested starting
+ * stage and the change over the year), which stays until Pat confirms it can go.
+ */
 export default function ProfilePage() {
   const { childId } = useParams()
   const { user } = useAuth()
@@ -18,13 +24,14 @@ export default function ProfilePage() {
   }, [childId])
 
   if (error) return <p className="error">{error}</p>
-  if (!profile) return <p className="muted">Loading…</p>
+  if (!profile) return <Skeleton />
 
   return (
     <div className="profile">
+      <AssessmentProfileCard childId={profile.childId} />
       <div className="card">
         <div className="section-head">
-          <h2>Readiness profile · {profile.name}</h2>
+          <h2>Readiness check (0 to 3) · {profile.name}</h2>
           <span className="muted">
             {profile.reference} · {profile.className}
           </span>
@@ -55,7 +62,7 @@ export default function ProfilePage() {
             <h3>Change since the first assessment</h3>
             <Sparkline
               values={profile.history.map((h) => h.overallFraction)}
-              labels={profile.history.map((h) => `Assessment ${h.round} · ${h.screenedOn}`)}
+              labels={profile.history.map((h) => `Assessment ${h.round} · ${day(h.screenedOn)}`)}
             />
           </>
         )}
@@ -95,7 +102,7 @@ function ParentInviteCard({ childId }: { childId: number }) {
         <>
           <p className="invite-code">{invite.code}</p>
           <p className="muted">
-            For the parent or carer of {invite.childName} · {invite.className} · expires {invite.expiresOn}
+            For the parent or carer of {invite.childName} · {invite.className} · expires {day(invite.expiresOn)}
           </p>
         </>
       ) : (

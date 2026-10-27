@@ -12,6 +12,9 @@ import {
 } from '../api'
 import { useAuth } from '../auth'
 import { STAGES } from '../stages'
+import { day } from '../dates'
+import { useConfirm, useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -35,7 +38,7 @@ export default function SchoolSetupPage() {
   const schoolId = Number(param ?? user?.schoolId)
   const [setup, setSetup] = useState<SchoolSetup | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
   const [openClass, setOpenClass] = useState<number | null>(null)
 
   const load = useCallback(() => {
@@ -58,7 +61,7 @@ export default function SchoolSetupPage() {
     }
   }
 
-  if (!setup) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!setup) return error ? <p className="error">{error}</p> : <Skeleton />
   const teachers = setup.staff.filter((s) => s.enabled)
 
   return (
@@ -66,7 +69,6 @@ export default function SchoolSetupPage() {
       <p className="eyebrow">{setup.schoolName}</p>
       <h1>School setup</h1>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
 
       <SettingsCard
         settings={setup.settings}
@@ -93,7 +95,7 @@ export default function SchoolSetupPage() {
                   <td>{s.displayName}</td>
                   <td>{s.email}</td>
                   <td>{s.role === 'HEAD' ? 'Head / SENCo' : 'Teacher'}</td>
-                  <td>{s.inductionCompletedOn ? `Done ${s.inductionCompletedOn}` : 'Not yet'}</td>
+                  <td>{s.inductionCompletedOn ? `Done ${day(s.inductionCompletedOn)}` : 'Not yet'}</td>
                   <td>{s.enabled ? 'On' : 'Switched off'}</td>
                   <td className="row-actions">
                     {s.enabled && (
@@ -282,6 +284,7 @@ function ClassRow({
   onChanged: () => void
   onError: (message: string) => void
 }) {
+  const confirm = useConfirm()
   const [children, setChildren] = useState<SetupChild[] | null>(null)
   const [text, setText] = useState('')
 
@@ -348,10 +351,15 @@ function ClassRow({
                   </select>
                   <button
                     className="btn"
-                    onClick={() => {
-                      if (confirm(`Mark ${k.initials} as having left today? Their record is deleted automatically later.`)) {
-                        act(() => api.markChildLeft(schoolId, k.id, today()))
-                      }
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: `Mark ${k.initials} as having left today?`,
+                        body: 'They leave the class now. Their record is deleted automatically a year after their leaving date.',
+                        confirmLabel: 'Mark as left',
+                        cancelLabel: 'Not now',
+                        danger: true,
+                      })
+                      if (ok) act(() => api.markChildLeft(schoolId, k.id, today()))
                     }}
                   >
                     Left the school

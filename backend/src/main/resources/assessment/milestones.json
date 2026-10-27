@@ -1,0 +1,805 @@
+{
+  "source": "Pat's Motor Movers Individual Assessment booklet (2026-10-27)",
+  "fine": [
+    {
+      "band": "Birth",
+      "fromMonths": 0,
+      "toMonths": 0,
+      "description": "Reflexive grasp"
+    },
+    {
+      "band": "3 months",
+      "fromMonths": 3,
+      "toMonths": 3,
+      "description": "Ineffective reach for objects"
+    },
+    {
+      "band": "3 months",
+      "fromMonths": 3,
+      "toMonths": 3,
+      "description": "Voluntary grasp"
+    },
+    {
+      "band": "3 months",
+      "fromMonths": 3,
+      "toMonths": 3,
+      "description": "Two handed palmer grasp (thumb still inside)"
+    },
+    {
+      "band": "5 months",
+      "fromMonths": 5,
+      "toMonths": 5,
+      "description": "One handed palmar grasp"
+    },
+    {
+      "band": "6 months",
+      "fromMonths": 6,
+      "toMonths": 6,
+      "description": "Controlled reach: reaches, grasps, puts object in mouth."
+    },
+    {
+      "band": "6 months",
+      "fromMonths": 6,
+      "toMonths": 6,
+      "description": "Controlled release of objects"
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Picks things up with pincer grip (thumb and first finger)"
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Transfers objects from one hand to another."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Uses fingers to feed themselves."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Drops and picks up toys."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Uses tongue to move food around mouth."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Turns pages of a book two or three at a time."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Imitates gestures."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Builds tower of small blocks."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Puts four rings on a stick."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Places five pegs on a pegboard."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Scribbles."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Turns knobs."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Paints with whole arm, makes strokes."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Self feeds with minimal assistance. Able to bring spoon to mouth. Holds and drinks from a cup independently."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Strings four large beads."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Turns single pages of a book."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Snips with scissors."
+    },
+    {
+      "band": "1 to 2 years",
+      "fromMonths": 12,
+      "toMonths": 24,
+      "description": "Chews and swallows a range of different textured foods."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Holds crayon with thumb and finger (not fist)"
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can make circular, vertical and horizontal strokes."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Paints with some wrist action; makes dots, lines and circular strokes."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Manipulates playdough; rolls, squeezes, pulls."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Eats without assistance."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can build a tower of 9 blocks."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can copy a circle."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can copy a cross."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can copy a square."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can write first name."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can point to head, ears, nose, lips, hands, legs, feet, toes."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can write family name."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Copies letters."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Handedness well established"
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Dresses and undresses independently"
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can spread hand and bring thumbs into opposition with each finger in turn."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can cut out simple shapes"
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can copy a triangle"
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Colours within lines"
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Uses a three-finger pencil grip."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Uses glue appropriately."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can draw basic pictures."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can form all letters correctly."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can form all numbers correctly."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Demonstrates controlled pencil movement."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can use construction equipment independently; can build a tower with 10 blocks."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Able to thread small beads on a lace."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can do jigsaws with interlocking pieces."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can use a knife and fork independently."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can tie shoelaces independently."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Maintains legibility of handwriting when writing a story."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Good control of paintbrushes and equipment."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can draw a person with head, body, arms, legs, nose, mouth and eyes."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can produce drawings with detail e.g. house with roof, chimney, windows and door."
+    }
+  ],
+  "gross": [
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can focus gaze at 20 – 25 cm."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Turn head toward light or sound."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Follows the movement of an object moved into their line of vision (tracking)."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can lift head when lying on back."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Aware of arms and hands – able to bring them together over body."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Kicks legs vigorously when lying on back."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Grasps objects, plays with fingers and takes them to mouth."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Lifts head and chest using arms for support when in prone position."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Able to control head if gently pulled into sitting position."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can change angle of body to reach out for an object."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can roll onto stomach from back."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can roll on to back from stomach."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Sits with support."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Sits without support – straight back – 15 minutes."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can use their hands to lift their head and chest when lying on the stomach."
+    },
+    {
+      "band": "0 to 6 months",
+      "fromMonths": 0,
+      "toMonths": 6,
+      "description": "Can lift legs into vertical position and grasp feet."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Commando crawls on stomach"
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Creeps on hands and knees"
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Rocks backwards and forwards on all fours."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Transitions into different positions: sitting, all fours, lying on back, lying on tummy."
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Creeps up stairs"
+    },
+    {
+      "band": "6 to 12 months",
+      "fromMonths": 6,
+      "toMonths": 12,
+      "description": "Pulls self to stand."
+    },
+    {
+      "band": "12 to 18 months",
+      "fromMonths": 12,
+      "toMonths": 18,
+      "description": "Walks holding on to furniture."
+    },
+    {
+      "band": "12 to 18 months",
+      "fromMonths": 12,
+      "toMonths": 18,
+      "description": "Takes two or three steps without support."
+    },
+    {
+      "band": "12 to 18 months",
+      "fromMonths": 12,
+      "toMonths": 18,
+      "description": "Can roll into a ball."
+    },
+    {
+      "band": "12 to 18 months",
+      "fromMonths": 12,
+      "toMonths": 18,
+      "description": "Wide gait walking/running but gaining confidence walking."
+    },
+    {
+      "band": "12 to 18 months",
+      "fromMonths": 12,
+      "toMonths": 18,
+      "description": "Pushes against ball with foot."
+    },
+    {
+      "band": "12 to 18 months",
+      "fromMonths": 12,
+      "toMonths": 18,
+      "description": "Can squat to pick up a toy."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Walks smoothly and can turn corners, stops without sitting down."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Able to run."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Able to pull or carry a toy when walking."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can propel a tricycle with feet on floor."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Climbs on to and down from without assistance."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Walks down steps with support."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Picks up toys from the floor without falling over."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Copies simple movements e.g. clapping hands."
+    },
+    {
+      "band": "2 to 3 years",
+      "fromMonths": 24,
+      "toMonths": 36,
+      "description": "Can stand on tip toe."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can climb onto an adult chair, turn and sit down. Climbs outdoor equipment/ladders."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can kneel upright without support."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can step sideways."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can stand on one foot for five seconds."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can use a tricycle using pedals."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can jump two feet together."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can walk on tip toes."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can catch a ball."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can throw a ball underarm."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can throw a ball overarm."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can kick a ball forwards."
+    },
+    {
+      "band": "3 to 4 years",
+      "fromMonths": 36,
+      "toMonths": 48,
+      "description": "Can bend from the waist to pick up objects."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can catch a ball that has been bounced."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can run around obstacles."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Able to walk on a straight-line forwards toe to heel."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Walks up and down steps with alternate feet."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can walk on straight line backwards toe to heel."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Able to hop on one foot."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can jump forwards feet together 10 times."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can walk upstairs holding an object."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can march (cross pattern)."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can skip forwards."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Steps forward with leg on same side as throwing arm when throwing a ball."
+    },
+    {
+      "band": "4 to 5 years",
+      "fromMonths": 48,
+      "toMonths": 60,
+      "description": "Can run lightly on toes."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can hang for a bar for five seconds."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can catch a small ball with hands only."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can walk on a balance beam."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can skip using a skipping rope."
+    },
+    {
+      "band": "5 to 6 years",
+      "fromMonths": 60,
+      "toMonths": 72,
+      "description": "Can hop two metres."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can confidently take part in throwing and catching games – good co-ordination."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can kick a ball at least 6 metres."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can confidently run co-ordinating arms and legs. Able to control speed and avoid obstacles."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can skip around the room alternating feet."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can ride a two-wheel bike with stabilisers."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Can ride a two-wheel bike without stabilisers."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Able to stand completely still."
+    },
+    {
+      "band": "6 to 7 years",
+      "fromMonths": 72,
+      "toMonths": 84,
+      "description": "Able to balance on one leg for a count of ten."
+    }
+  ]
+}

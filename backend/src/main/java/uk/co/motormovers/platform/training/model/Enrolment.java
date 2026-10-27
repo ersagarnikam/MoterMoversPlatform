@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
+import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.user.model.AppUser;
 
 @Entity
@@ -35,6 +36,13 @@ public class Enrolment {
 
     private LocalDate certificateExpiresOn;
 
+    /** When the learner was reminded that the certificate expires soon; null: not yet. */
+    private LocalDate expiryReminderSentOn;
+
+    /** The school's invoice for a staff place; null when nothing was invoiced with the booking. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Payment payment;
+
     protected Enrolment() {
     }
 
@@ -59,13 +67,16 @@ public class Enrolment {
         this.assessmentPassed = passed;
     }
 
-    /** Issues the yearly practitioner certificate once every live session is attended and the assessment passed. */
-    public boolean issueCertificateIfEligible(LocalDate today) {
+    /**
+     * Issues the yearly practitioner certificate once every live session is attended, every quiz of the course
+     * passed ({@code quizzesPassed}, true for a course without quizzes) and the assessment passed.
+     */
+    public boolean issueCertificateIfEligible(LocalDate today, boolean quizzesPassed) {
         Course course = cohort.getCourse();
         if (!course.isAwardsCertificate() || certificateIssuedOn != null) {
             return false;
         }
-        if (sessionsAttended >= course.getLiveSessions() && assessmentPassed) {
+        if (sessionsAttended >= course.getLiveSessions() && assessmentPassed && quizzesPassed) {
             certificateIssuedOn = today;
             certificateExpiresOn = today.plusYears(1);
             return true;
@@ -103,5 +114,21 @@ public class Enrolment {
 
     public LocalDate getCertificateExpiresOn() {
         return certificateExpiresOn;
+    }
+
+    public LocalDate getExpiryReminderSentOn() {
+        return expiryReminderSentOn;
+    }
+
+    public void expiryReminderSent(LocalDate on) {
+        this.expiryReminderSentOn = on;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void invoicedWith(Payment payment) {
+        this.payment = payment;
     }
 }

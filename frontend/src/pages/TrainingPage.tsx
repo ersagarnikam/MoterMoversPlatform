@@ -1,13 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type Course, type Enrolment, type Induction, type LiveSession, type Payment, type Totals } from '../api'
+import {
+  api,
+  type Course,
+  type CourseRequest,
+  type Enrolment,
+  type Induction,
+  type LiveSession,
+  type Payment,
+  type QuizSummary,
+  type Totals,
+} from '../api'
 import { sessionTime } from '../live'
 import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
 import { gbp } from '../money'
+import { day } from '../dates'
+import { useConfirm, useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
 
 
-/** The one-hour induction school staff complete before running sessions. */
+/**
+ * The one-hour induction school staff complete before running sessions. Once done, its parts fold away behind one
+ * line, so the page leads with what is still to do.
+ */
 function InductionSection() {
   const [induction, setInduction] = useState<Induction | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +48,7 @@ function InductionSection() {
       <div className="section-head">
         <h3>Motor Movers induction</h3>
         {induction.completedOn ? (
-          <span className="badge badge-ok">Completed {induction.completedOn}</span>
+          <span className="badge badge-ok">Completed {day(induction.completedOn)}</span>
         ) : (
           <span className="muted">
             {induction.lessonsDone} of {induction.lessons.length} parts done · {induction.totalMinutes} minutes in all
@@ -42,8 +58,22 @@ function InductionSection() {
       {!induction.completedOn && (
         <p className="banner-info">Complete every part before running the daily sessions with your class.</p>
       )}
-      <div className="cohorts">
-        {induction.lessons.map((l) => (
+      {induction.completedOn ? (
+        <details className="lesson-review">
+          <summary>Look at the induction again</summary>
+          <Lessons lessons={induction.lessons} onComplete={complete} />
+        </details>
+      ) : (
+        <Lessons lessons={induction.lessons} onComplete={complete} />
+      )}
+    </section>
+  )
+}
+
+function Lessons({ lessons, onComplete }: { lessons: Induction['lessons']; onComplete: (id: number) => void }) {
+  return (
+    <div className="cohorts">
+      {lessons.map((l) => (
           <details key={l.id} className="lesson">
             <summary>
               <span>
@@ -60,21 +90,58 @@ function InductionSection() {
             ))}
             {!l.done && (
               <div className="actions">
-                <button className="btn btn-primary" onClick={() => complete(l.id)}>
+                <button className="btn btn-primary" onClick={() => onComplete(l.id)}>
                   Mark as done
                 </button>
               </div>
             )}
           </details>
         ))}
-      </div>
-    </section>
+    </div>
   )
 }
 
 /** What the signed-in person has paid for themselves. Hidden until there is something to show. */
 /** Parents and practitioners have their own Payments page; staff see their payments here. */
 const OWN_PAYMENTS_PAGE = ['PARENT', 'PRACTITIONER']
+
+/** The quizzes between a course's live sessions: each opens once its session has started or been attended. */
+function CourseQuizzes({ enrolment }: { enrolment: Enrolment }) {
+  const [quizzes, setQuizzes] = useState<QuizSummary[] | null>(null)
+
+  useEffect(() => {
+    api
+      .myQuizzes(enrolment.id)
+      .then(setQuizzes)
+      .catch(() => setQuizzes([]))
+  }, [enrolment.id])
+
+  if (!quizzes || quizzes.length === 0) return null
+  return (
+    <ul className="quiz-list">
+      {quizzes.map((q) => (
+        <li key={q.id}>
+          <span>
+            Quiz after session {q.afterSession}: {q.title}
+            <span className="muted">
+              {' '}
+              · {q.questions} questions · pass mark {q.passPercent}%
+            </span>
+          </span>
+          {q.passed ? (
+            <span className="badge badge-ok">Passed · {q.bestScore}%</span>
+          ) : q.open ? (
+            <Link className="btn btn-small" to={`/training/quiz/${enrolment.id}/${q.id}`}>
+              {q.bestScore === null ? 'Take quiz' : `Try again (best ${q.bestScore}%)`}
+            </Link>
+          ) : (
+            <span className="muted">Opens after session {q.afterSession}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 /** The learner's coming live sessions, with Join once a session opens (15 minutes before the start). */
 function YourLiveSessions() {
@@ -163,15 +230,18 @@ export default function TrainingPage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [rules, setRules] = useState('')
   const [mine, setMine] = useState<Enrolment[]>([])
+  const [requests, setRequests] = useState<CourseRequest[]>([])
   const [error, setError] = useState<string | null>(null)
+  const setNotice = useToast()
   const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
-    Promise.all([api.courses(), api.myEnrolments()])
-      .then(([c, m]) => {
+    Promise.all([api.courses(), api.myEnrolments(), api.myRequests()])
+      .then(([c, m, r]) => {
         setCourses(c.courses)
         setRules(c.rules)
         setMine(m)
+        setRequests(r)
         setLoaded(true)
       })
       .catch((e) => setError(e.message))
@@ -179,18 +249,31 @@ export default function TrainingPage() {
 
   useEffect(load, [load])
 
-  async function enrol(cohortId: number) {
+  async function act(action: () => Promise<unknown>, done: string | ((result: unknown) => string)) {
     setError(null)
+    setNotice(null)
     try {
-      await api.enrol(cohortId)
+      const result = await action()
+      setNotice(typeof done === 'string' ? done : done(result))
       load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not enrol')
+      setError(e instanceof Error ? e.message : 'Something went wrong')
     }
   }
 
-  if (!loaded && !error) return <p className="muted">Loading…</p>
+  const confirm = useConfirm()
+
+  async function cancel(e: Enrolment) {
+    if (!(await confirm({ title: 'Cancel your place?', body: `On ${e.courseTitle} (${e.cohortName}).`, confirmLabel: 'Cancel place', cancelLabel: 'Keep my place', danger: true }))) return
+    act(() => api.cancelPlace(e.id), (r) => (r as { message: string }).message)
+  }
+
+  if (!loaded && !error) return <Skeleton />
   const enrolledCohorts = new Set(mine.map((m) => m.cohortId))
+  const waiting = new Map(requests.filter((r) => r.status === 'REQUESTED').map((r) => [r.cohortId, r]))
+  // A school pays for its staff's places, so staff other than heads ask their head first.
+  const needsApproval = (c: Course) => user?.schoolId != null && user.role !== 'HEAD' && c.pricePence > 0
+  const undecided = requests.filter((r) => r.status === 'REQUESTED' || r.status === 'DECLINED')
 
   return (
     <>
@@ -204,11 +287,12 @@ export default function TrainingPage() {
         <section className="card">
           <h3>Your courses</h3>
           {mine.map((e) => (
-            <div key={e.id} className="enrolment">
+            <div key={e.id} className="enrolment-block">
+            <div className="enrolment">
               <div>
                 <strong>{e.courseTitle}</strong>
                 <p className="muted">
-                  {e.cohortName} · starts {e.startsOn} · {e.timeSlot}
+                  {e.cohortName} · starts {day(e.startsOn)} · {e.timeSlot}
                 </p>
               </div>
               <div className="enrolment-status">
@@ -217,14 +301,51 @@ export default function TrainingPage() {
                 </span>
                 {e.certificateIssuedOn ? (
                   <>
-                    <span className="badge badge-ok">Certified until {e.certificateExpiresOn}</span>
+                    <span className="badge badge-ok">Certified until {day(e.certificateExpiresOn)}</span>
                     <Link className="fine-link" to={`/training/certificate/${e.id}`}>
                       View your certificate
                     </Link>
                   </>
                 ) : e.track === 'PROFESSIONAL' ? (
-                  <span className="muted">Certificate after all sessions and the assessment</span>
+                  <span className="muted">
+                    Certificate after all sessions{e.quizzes > 0 ? ', the quizzes' : ''} and the assessment
+                  </span>
                 ) : null}
+                {!e.certificateIssuedOn && e.sessionsAttended === 0 && (
+                  <button className="btn" onClick={() => cancel(e)}>
+                    Cancel place
+                  </button>
+                )}
+              </div>
+            </div>
+            {e.quizzes > 0 && <CourseQuizzes enrolment={e} />}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {undecided.length > 0 && (
+        <section className="card">
+          <h3>Your requests</h3>
+          {undecided.map((r) => (
+            <div key={r.id} className="enrolment">
+              <div>
+                <strong>{r.courseTitle}</strong>
+                <p className="muted">
+                  {r.cohortName} · starts {day(r.startsOn)} · {r.timeSlot}
+                </p>
+              </div>
+              <div className="enrolment-status">
+                {r.status === 'REQUESTED' ? (
+                  <>
+                    <span className="badge">Waiting for your head's approval</span>
+                    <button className="btn" onClick={() => act(() => api.withdrawRequest(r.id), 'Request withdrawn')}>
+                      Withdraw
+                    </button>
+                  </>
+                ) : (
+                  <span className="muted">Not approved by {r.decidedBy}</span>
+                )}
               </div>
             </div>
           ))}
@@ -233,8 +354,13 @@ export default function TrainingPage() {
 
       {user && user.role !== 'ADMIN' && !OWN_PAYMENTS_PAGE.includes(user.role) && <YourPayments />}
 
+      <h2 className="section-title">Book training</h2>
       {user?.schoolId != null && (
-        <p className="banner-teal">Places you book are invoiced to your school, and show on its Payments page.</p>
+        <p className="banner-teal">
+          {user.role === 'HEAD'
+            ? 'Places you book are invoiced to your school, and show on its Payments page.'
+            : 'Your school pays for your places, so your head approves each one before it is booked.'}
+        </p>
       )}
       {courses.map((c) => (
         <section key={c.id} className="card">
@@ -256,7 +382,7 @@ export default function TrainingPage() {
                 <div>
                   <strong>{h.name}</strong>
                   <p className="muted">
-                    Starts {h.startsOn} · {h.timeSlot} · led by {h.trainerName}
+                    Starts {day(h.startsOn)} · {h.timeSlot} · led by {h.trainerName}
                   </p>
                   <p className="muted">
                     {h.seatsLeft} places left · {h.recordingAgreed ? 'sessions recorded' : 'not recorded'}
@@ -264,8 +390,24 @@ export default function TrainingPage() {
                 </div>
                 {enrolledCohorts.has(h.id) ? (
                   <span className="badge badge-ok">Booked</span>
+                ) : waiting.has(h.id) ? (
+                  <span className="badge">Waiting for approval</span>
+                ) : needsApproval(c) ? (
+                  <button
+                    className="btn btn-primary"
+                    disabled={h.seatsLeft <= 0}
+                    onClick={() =>
+                      act(() => api.requestPlace(h.id), 'Request sent. Your head has been emailed to approve it.')
+                    }
+                  >
+                    Ask for a place
+                  </button>
                 ) : (
-                  <button className="btn btn-primary" disabled={h.seatsLeft <= 0} onClick={() => enrol(h.id)}>
+                  <button
+                    className="btn btn-primary"
+                    disabled={h.seatsLeft <= 0}
+                    onClick={() => act(() => api.enrol(h.id), `Booked: ${c.title}, ${h.name}`)}
+                  >
                     Book a place
                   </button>
                 )}

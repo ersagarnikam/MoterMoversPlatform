@@ -118,6 +118,37 @@ team can open it at any time. The live page alone allows Zoom's scripts and the 
 (`frontend/nginx.conf`); if the browser console reports a blocked Zoom address there, add it to that policy and
 to `LIVE_CSP` in `frontend/vite.config.ts`.
 
+## Phone notifications
+
+The parent app tells parents on their phone when a live session is open to join (15 minutes before), the day
+before a session, and when a payment is due; a tap opens the right screen. Emails carry the same news, so this is
+optional.
+
+1. The app needs an EAS project and a store or development build (push does not work in Expo Go on Android):
+   `npx eas-cli@latest init` in `mobile/` adds the project id to `app.json`, then build with EAS. For Android push,
+   upload the Firebase (FCM) credentials to EAS; for iOS, let EAS create the push key when it asks.
+2. In `deploy/.env` set `PUSH_ENABLED=true` (and `EXPO_ACCESS_TOKEN` only if the Expo account has enhanced push
+   security on), then restart the API. With it off, the API only logs the notifications it would send.
+
+Phones register when a parent signs in to the app and allows notifications, and are removed on signing out or when
+Expo reports the app was deleted.
+
+## Card payments
+
+Parents, practitioners and heads can pay what is due by card on Stripe's own page (Stripe Checkout); the card never
+touches the platform. Stripe then calls the platform, which marks the payment paid ("by card"). Without the keys,
+Pay by card is hidden and the team marks payments paid by hand, as before.
+
+1. In the Stripe dashboard (start in test mode): Developers > API keys, copy the secret key (`sk_test_...`).
+2. Developers > Webhooks > Add endpoint: `https://<APP_DOMAIN>/api/stripe/webhook`, events
+   `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy its signing secret (`whsec_...`).
+3. Put both in `deploy/.env` as `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (the API refuses to start with only
+   one), then restart the API. Pay a due payment with Stripe's test card 4242 4242 4242 4242 and check it shows paid.
+4. To go live, repeat with the live keys and a live-mode webhook.
+
+Refunds are made in the Stripe dashboard (find the payment by the payer's email). The platform does not record
+refunds yet, so the payment still shows as paid there. Prices are charged as they are, with no VAT split.
+
 ## Everyday operations
 
 | Task | How |

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, ApiError, setApiToken, setUnauthorizedHandler, type CurrentUser } from './api'
+import { unregisterPush } from './push'
 import { clearLocal, getLocal, loadToken, saveToken, setLocal } from './storage'
 
 const USER_KEY = 'mm.user'
@@ -22,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const signOut = useCallback(async () => {
+    // While still signed in, so the server stops sending this phone the account's notifications.
+    await unregisterPush()
     setApiToken(null)
     await saveToken(null)
     await clearLocal()

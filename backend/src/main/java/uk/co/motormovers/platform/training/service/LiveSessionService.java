@@ -2,7 +2,6 @@ package uk.co.motormovers.platform.training.service;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +44,12 @@ public class LiveSessionService {
     private final CurrentUserResolver currentUser;
     private final ZoomClient zoom;
     private final ZoomProperties zoomProperties;
+    private final CertificateService certificates;
     private final Clock clock;
 
     public LiveSessionService(CohortSessionRepository sessions, SessionAttendanceRepository attendance,
             SessionJoinRepository joins, EnrolmentRepository enrolments, CurrentUserResolver currentUser, ZoomClient zoom,
-            ZoomProperties zoomProperties, Clock clock) {
+            ZoomProperties zoomProperties, CertificateService certificates, Clock clock) {
         this.sessions = sessions;
         this.attendance = attendance;
         this.joins = joins;
@@ -57,6 +57,7 @@ public class LiveSessionService {
         this.currentUser = currentUser;
         this.zoom = zoom;
         this.zoomProperties = zoomProperties;
+        this.certificates = certificates;
         this.clock = clock;
     }
 
@@ -155,7 +156,10 @@ public class LiveSessionService {
         }
         String signature = ZoomSignature.sign(zoomProperties.sdkKey(), zoomProperties.sdkSecret(), meetingId,
                 host ? ZoomSignature.HOST : ZoomSignature.PARTICIPANT, now);
-        return new TrainingViews.JoinView(view, true, true, null, zoomProperties.sdkKey(), signature, meetingId,
+        // Learners also get the join link, for the parent app, which opens the meeting in the Zoom app.
+        String joinUrl = host ? null
+                : locked.getZoomJoinUrl() != null ? locked.getZoomJoinUrl() : "https://zoom.us/j/" + meetingId;
+        return new TrainingViews.JoinView(view, true, true, joinUrl, zoomProperties.sdkKey(), signature, meetingId,
                 locked.getZoomPasscode(), zak, me.displayName(), me.email(),
                 TrainingViews.LIVE_SESSION_RULES, cohort.isRecordingAgreed());
     }
@@ -206,8 +210,9 @@ public class LiveSessionService {
         }
         attendance.flush();
         enrolment.attendanceChanged((int) attendance.countByIdEnrolmentId(enrolmentId));
-        enrolment.issueCertificateIfEligible(LocalDate.now(clock));
-        return TrainingViews.EnrolmentView.of(enrolment, attendance.attendedNumbers(enrolmentId));
+        certificates.issueIfComplete(enrolment);
+        return TrainingViews.EnrolmentView.of(enrolment, attendance.attendedNumbers(enrolmentId),
+                certificates.quizProgress(enrolment));
     }
 
     /**
@@ -262,7 +267,7 @@ public class LiveSessionService {
     }
 
     /** The team can run any session; a trainer only the sessions of cohorts assigned to them. */
-    private static boolean canHost(CurrentUser me, Cohort cohort) {
+    public static boolean canHost(CurrentUser me, Cohort cohort) {
         return me.is(Role.ADMIN) || runs(me, cohort);
     }
 
@@ -274,11 +279,12 @@ public class LiveSessionService {
         return sessions.findById(id).orElseThrow(() -> new NotFoundException("Live session", id));
     }
 
-    private static TrainingViews.LiveSessionView view(CohortSession s, CurrentUser me, Instant now) {
+    private TrainingViews.LiveSessionView view(CohortSession s, CurrentUser me, Instant now) {
         Cohort c = s.getCohort();
         boolean host = canHost(me, c);
         return new TrainingViews.LiveSessionView(s.getId(), c.getId(), c.getCourse().getTitle(), c.getName(),
                 s.getNumber(), c.getCourse().getLiveSessions(), s.getStartsAt(), s.getDurationMinutes(),
-                c.getTrainerName(), host ? !s.isOverAt(now) : s.isOpenAt(now), host);
+                c.getTrainerName(), host ? !s.isOverAt(now) : s.isOpenAt(now), host,
+                host ? (int) enrolments.countByCohortId(c.getId()) : null);
     }
 }

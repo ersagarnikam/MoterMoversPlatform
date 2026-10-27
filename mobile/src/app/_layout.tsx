@@ -5,11 +5,19 @@ import { AppState } from 'react-native'
 import { Loading } from '@/components/ui'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { flush } from '@/lib/outbox'
+import { openNotificationsOnTap, registerForPush } from '@/lib/push'
 import { usePalette } from '@/lib/theme'
 
 function RootStack() {
   const { user, loading } = useAuth()
   const p = usePalette()
+
+  // Notifications for live sessions and payments, once signed in; a tap opens the screen it is about.
+  useEffect(() => {
+    if (!user) return
+    void registerForPush()
+    return openNotificationsOnTap()
+  }, [user])
 
   // Send any home sessions saved while offline whenever the app comes back to the foreground.
   useEffect(() => {
@@ -40,6 +48,13 @@ function RootStack() {
         <Stack.Screen name="child/[id]" options={{ title: 'Progress' }} />
         <Stack.Screen name="guidance/[id]" options={{ title: 'Guidance' }} />
         <Stack.Screen name="payments" options={{ title: 'Payments' }} />
+        <Stack.Screen name="add-child" options={{ title: 'Add your child' }} />
+        <Stack.Screen name="check/[id]" options={{ title: 'Starting check' }} />
+        <Stack.Screen name="home-session/[id]" options={{ title: 'Home session' }} />
+        <Stack.Screen name="review/[id]" options={{ title: 'Ratings' }} />
+        <Stack.Screen name="home-child/[id]" options={{ title: 'Progress' }} />
+        <Stack.Screen name="join-school/[id]" options={{ title: 'Link a school', presentation: 'modal' }} />
+        <Stack.Screen name="family" options={{ title: 'Your family' }} />
         <Stack.Screen name="link-child" options={{ title: 'Link your child', presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={!user}>

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './auth'
+import { FeedbackProvider } from './components/Feedback'
 import App from './App'
 import { applyTheme, storedTheme } from './theme'
 // Fonts are served from our own domain: no visitor data goes to a font CDN.
@@ -18,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
+        <FeedbackProvider>
         <App />
+        </FeedbackProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

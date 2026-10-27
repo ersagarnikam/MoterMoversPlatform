@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api, type RosterEntry, type ScreeningItem, type Today } from '../api'
 import { enqueue, flush, pending } from '../outbox'
 import { rosterChild } from '../components/RosterChild'
+import Skeleton from '../components/Skeleton'
 
 /** Assessment replaces the paper booklet: watch one movement, tap a score, the platform does the rest. */
 export default function ScreeningPage() {
@@ -41,7 +42,7 @@ export default function ScreeningPage() {
   }, [])
 
   if (error) return <p className="error">{error}</p>
-  if (!today || items.length === 0) return <p className="muted">Loading…</p>
+  if (!today || items.length === 0) return <Skeleton />
 
   if (!child) {
     return (

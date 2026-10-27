@@ -4,7 +4,7 @@ import { useAuth } from '../auth'
 import StageStripe from './StageStripe'
 import ThemeSwitch from './ThemeSwitch'
 
-const NAV: Record<Role, { to: string; label: string }[]> = {
+const NAV: Record<Role, { to: string; label: string; end?: boolean }[]> = {
   TEACHER: [
     { to: '/classes', label: 'My class' },
     { to: '/resources', label: 'Resources' },
@@ -27,14 +27,19 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/training', label: 'Parent course' },
     { to: '/payments', label: 'Payments' },
   ],
-  TRAINER: [{ to: '/live', label: 'Live sessions' }],
+  TRAINER: [
+    { to: '/live', label: 'Live sessions' },
+    { to: '/trainer/cohorts', label: 'My cohorts' },
+  ],
   ADMIN: [
+    { to: '/admin', label: 'Home', end: true },
     { to: '/admin/content', label: 'Content approval' },
     { to: '/admin/schools', label: 'Schools & licences' },
     { to: '/admin/plans', label: 'Plans and prices' },
     { to: '/classes', label: 'All classes' },
     { to: '/resources', label: 'Resources' },
     { to: '/admin/courses', label: 'Courses' },
+    { to: '/admin/trainers', label: 'Trainers' },
     { to: '/live', label: 'Live sessions' },
     { to: '/admin/payments', label: 'Payments' },
   ],
@@ -81,7 +86,7 @@ export default function Layout() {
       <div className="body">
         <nav className="sidenav" aria-label="Main">
           {NAV[user.role].map((item) => (
-            <NavLink key={item.to} to={item.to} className={({ isActive }) =>
+            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) =>
                 isActive || (item.to === '/classes' && /^\/(class|child)\//.test(pathname)) ? 'active' : ''
               }>
               {item.label}

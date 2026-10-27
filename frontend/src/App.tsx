@@ -7,6 +7,8 @@ import TodayPage from './pages/TodayPage'
 import PlayerPage from './pages/PlayerPage'
 import ScreeningPage from './pages/ScreeningPage'
 import ProfilePage from './pages/ProfilePage'
+import AssessPage from './pages/AssessPage'
+import DevelopmentPage from './pages/DevelopmentPage'
 import ClassListPage from './pages/ClassListPage'
 import HeadDashboardPage from './pages/HeadDashboardPage'
 import TrustDashboardPage from './pages/TrustDashboardPage'
@@ -15,13 +17,16 @@ import CertificatePage from './pages/CertificatePage'
 import MyPaymentsPage from './pages/MyPaymentsPage'
 import LiveRoomPage from './pages/LiveRoomPage'
 import LiveSessionsPage from './pages/LiveSessionsPage'
+import TrainerCohortsPage from './pages/TrainerCohortsPage'
+import TeamHomePage from './pages/TeamHomePage'
+import QuizPage from './pages/QuizPage'
 import ResourcesPage from './pages/ResourcesPage'
 import SchoolSetupPage from './pages/SchoolSetupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ContentPage from './pages/ContentPage'
 import SchoolsPage from './pages/SchoolsPage'
-import CoursesPage from './pages/CoursesPage'
+import CoursesPage, { CoursePage, TrainersPage } from './pages/CoursesPage'
 import PaymentsPage from './pages/PaymentsPage'
 import PlansPage from './pages/PlansPage'
 import SchoolPaymentsPage from './pages/SchoolPaymentsPage'
@@ -43,7 +48,7 @@ export function homeFor(role: Role): string {
     case 'TRUST_LEAD':
       return '/trust'
     case 'ADMIN':
-      return '/admin/content'
+      return '/admin'
     case 'TRAINER':
       return '/live'
     default:
@@ -85,7 +90,9 @@ export default function App() {
         <Route path="/class/:classId/today" element={<TodayPage />} />
         <Route path="/class/:classId/play" element={<PlayerPage />} />
         <Route path="/class/:classId/screening" element={<ScreeningPage />} />
+        <Route path="/class/:classId/assess" element={<AssessPage />} />
         <Route path="/child/:childId" element={<ProfilePage />} />
+        <Route path="/child/:childId/development" element={<DevelopmentPage />} />
         <Route path="/dashboard" element={<HeadDashboardPage />} />
         <Route path="/trust" element={<TrustDashboardPage />} />
         <Route path="/training" element={<TrainingPage />} />
@@ -93,12 +100,17 @@ export default function App() {
         <Route path="/payments" element={<MyPaymentsPage />} />
         <Route path="/live" element={<LiveSessionsPage />} />
         <Route path="/live/:sessionId" element={<LiveRoomPage />} />
+        <Route path="/trainer/cohorts" element={<TrainerCohortsPage />} />
+        <Route path="/training/quiz/:enrolmentId/:quizId" element={<QuizPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/school/setup" element={<SchoolSetupPage />} />
         <Route path="/admin/schools/:schoolId/setup" element={<SchoolSetupPage />} />
+        <Route path="/admin" element={<TeamHomePage />} />
         <Route path="/admin/content" element={<ContentPage />} />
         <Route path="/admin/schools" element={<SchoolsPage />} />
         <Route path="/admin/courses" element={<CoursesPage />} />
+        <Route path="/admin/courses/:courseId" element={<CoursePage />} />
+        <Route path="/admin/trainers" element={<TrainersPage />} />
         <Route path="/admin/payments" element={<PaymentsPage />} />
         <Route path="/admin/plans" element={<PlansPage />} />
         <Route path="/school/payments" element={<SchoolPaymentsPage />} />

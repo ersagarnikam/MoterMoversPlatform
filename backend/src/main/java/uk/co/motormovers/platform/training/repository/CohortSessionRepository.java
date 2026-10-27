@@ -20,6 +20,10 @@ public interface CohortSessionRepository extends JpaRepository<CohortSession, Lo
 
     List<CohortSession> findByStartsAtAfterOrderByStartsAt(Instant after);
 
+    List<CohortSession> findByStartsAtBetweenAndReminderSentAtIsNullOrderByStartsAt(Instant from, Instant to);
+
+    List<CohortSession> findByStartsAtBetweenAndOpeningPushSentAtIsNullOrderByStartsAt(Instant from, Instant to);
+
     /** Locks the row, so two people joining at once do not create two Zoom meetings. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from CohortSession s where s.id = :id")

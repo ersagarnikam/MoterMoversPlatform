@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Linking, View } from 'react-native'
-import { Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
+import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
 import { api, formatDate, gbp, type Payment } from '@/lib/api'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '@/lib/contact'
 import { space, usePalette } from '@/lib/theme'
@@ -7,10 +8,31 @@ import { useLoad } from '@/lib/useLoad'
 
 const STATUS = { DUE: 'Due', PAID: 'Paid', CANCELLED: 'Cancelled' }
 
-/** The parent's own payments: what is due now and how to pay it, then everything so far. */
+/**
+ * The parent's own payments: what is due now and how to pay it (by card on the payment provider's page when that is
+ * switched on), then everything so far.
+ */
 export default function PaymentsScreen() {
   const p = usePalette()
-  const { data, error, refreshing, reload } = useLoad(() => api.myPayments())
+  const { data, error, refreshing, reload } = useLoad(async () => {
+    const [mine, online] = await Promise.all([api.myPayments(), api.onlinePayments().catch(() => ({ enabled: false }))])
+    return { ...mine, cards: online.enabled }
+  })
+  const [paying, setPaying] = useState<number | null>(null)
+  const [payError, setPayError] = useState<string | null>(null)
+
+  async function pay(payment: Payment) {
+    setPaying(payment.id)
+    setPayError(null)
+    try {
+      // The card is entered on the provider's own page in the browser; pull down here afterwards to see it paid.
+      await Linking.openURL((await api.checkout(payment.id)).url)
+    } catch (e) {
+      setPayError(e instanceof Error ? e.message : 'Card payments are not available just now')
+    } finally {
+      setPaying(null)
+    }
+  }
 
   if (error && !data) return <ErrorState message={error} onRetry={() => reload()} />
   if (!data) return <Loading />
@@ -33,10 +55,14 @@ export default function PaymentsScreen() {
         <Card accent={p.warnInk}>
           <H2>To pay</H2>
           {due.map((x) => (
-            <PaymentRow key={x.id} payment={x} />
+            <View key={x.id} style={{ gap: space.sm }}>
+              <PaymentRow payment={x} />
+              {data.cards && <Button label="Pay by card" busy={paying === x.id} onPress={() => pay(x)} />}
+            </View>
           ))}
+          {payError && <Banner tone="error">{payError}</Banner>}
           <Muted>
-            Pay as set out on your invoice, quoting the reference so the Motor Movers team can match your payment. It
+            {data.cards ? 'Or pay' : 'Pay'} as set out on your invoice, quoting the reference so the Motor Movers team can match your payment. It
             shows here as paid once they have received it.
           </Muted>
           <Button
@@ -63,7 +89,9 @@ export default function PaymentsScreen() {
 function PaymentRow({ payment, showStatus = false }: { payment: Payment; showStatus?: boolean }) {
   const p = usePalette()
   const status =
-    payment.status === 'PAID' && payment.paidOn ? `Paid ${formatDate(payment.paidOn)}` : STATUS[payment.status]
+    payment.status === 'PAID' && payment.paidOn
+      ? `Paid ${formatDate(payment.paidOn)}${payment.paidOnline ? ' by card' : ''}`
+      : STATUS[payment.status]
   return (
     <View
       style={{ gap: 2, paddingVertical: space.sm, borderTopWidth: 1, borderTopColor: p.line }}

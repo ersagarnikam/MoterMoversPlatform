@@ -13,4 +13,6 @@ public interface ProgrammeSessionRepository extends JpaRepository<ProgrammeSessi
     List<ProgrammeSession> findByStageAndStatusOrderByUnitAscDayAsc(ColourStage stage, ContentStatus status);
 
     List<ProgrammeSession> findAllByOrderByStageAscUnitAscDayAsc();
+
+    long countByStatus(ContentStatus status);
 }

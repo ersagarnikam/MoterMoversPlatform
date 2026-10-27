@@ -12,6 +12,9 @@ import {
 import MonthBars from '../components/MonthBars'
 import PaymentTable from '../components/PaymentTable'
 import { gbp } from '../money'
+import { useConfirm, useToast } from '../components/Feedback'
+import ListFilter, { matches } from '../components/ListFilter'
+import Skeleton from '../components/Skeleton'
 
 const PURPOSES: [PaymentPurpose, string][] = [
   ['LICENCE', 'Licence'],
@@ -24,12 +27,20 @@ const count = (n: number, thing: string) => `${n} ${thing}${n === 1 ? '' : 's'}`
 
 /** The team records invoices and payments, and sees spend by school, trust or group, person and month. */
 export default function PaymentsPage() {
+  const confirm = useConfirm()
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [payments, setPayments] = useState<Payment[]>([])
   const [schools, setSchools] = useState<SchoolRow[]>([])
   const [courses, setCourses] = useState<AdminCourse[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<'ALL' | Payment['status']>('ALL')
+  const filtered = payments.filter(
+    (p) =>
+      (status === 'ALL' || p.status === status) &&
+      matches(search, p.payerName, p.payerEmail, p.description, p.reference, p.purposeLabel),
+  )
+  const setNotice = useToast()
 
   const load = useCallback(() => {
     Promise.all([api.paymentSummary(), api.payments(), api.schools(), api.adminCourses()])
@@ -58,16 +69,15 @@ export default function PaymentsPage() {
     }
   }
 
-  if (!summary) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!summary) return error ? <p className="error">{error}</p> : <Skeleton />
 
   return (
     <>
       <div className="page-head">
         <h1>Payments</h1>
-        <span className="muted">Recorded by the team · online payment is not connected yet</span>
+        <span className="muted">Recorded by the team, or paid by card online</span>
       </div>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
 
       <div className="kpis">
         <div className="card kpi">
@@ -128,8 +138,26 @@ export default function PaymentsPage() {
 
       <section className="card">
         <h3>All payments</h3>
+        <ListFilter
+          search={search}
+          onSearch={setSearch}
+          placeholder="Find a payer, description or reference"
+          choice={{
+            label: 'Status',
+            value: status,
+            onChange: setStatus,
+            options: [
+              ['ALL', 'Every status'],
+              ['DUE', 'Due'],
+              ['PAID', 'Paid'],
+              ['CANCELLED', 'Cancelled'],
+            ],
+          }}
+          shown={filtered.length}
+          total={payments.length}
+        />
         <PaymentTable
-          payments={payments}
+          payments={filtered}
           showPayer
           actions={(p) =>
             p.status === 'DUE' && (
@@ -139,10 +167,15 @@ export default function PaymentsPage() {
                 </button>
                 <button
                   className="btn"
-                  onClick={() => {
-                    if (confirm(`Cancel the ${gbp(p.amountPence)} invoice to ${p.payerName}?`)) {
-                      run(() => api.cancelPayment(p.id), `${p.description} cancelled`)
-                    }
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: `Cancel the ${gbp(p.amountPence)} invoice to ${p.payerName}?`,
+                      body: `${p.description}. A cancelled invoice cannot be paid.`,
+                      confirmLabel: 'Cancel invoice',
+                      cancelLabel: 'Keep it',
+                      danger: true,
+                    })
+                    if (ok) run(() => api.cancelPayment(p.id), `${p.description} cancelled`)
                   }}
                 >
                   Cancel

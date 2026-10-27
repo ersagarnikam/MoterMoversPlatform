@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Payment } from '../api'
 import { gbp } from '../money'
+import { day } from '../dates'
 
 const STATUS = { DUE: 'Due', PAID: 'Paid', CANCELLED: 'Cancelled' }
 
@@ -32,7 +33,7 @@ export default function PaymentTable({
         <tbody>
           {payments.map((p) => (
             <tr key={p.id} className={p.status === 'CANCELLED' ? 'muted' : undefined}>
-              <td className="nowrap">{p.invoicedOn}</td>
+              <td className="nowrap">{day(p.invoicedOn)}</td>
               {showPayer && (
                 <td>
                   {p.payerName}
@@ -46,7 +47,8 @@ export default function PaymentTable({
               <td className="num nowrap">{gbp(p.amountPence)}</td>
               <td className="nowrap">
                 <span className={`status status-payment-${p.status.toLowerCase()}`}>{STATUS[p.status]}</span>
-                {p.paidOn && <span className="muted"> {p.paidOn}</span>}
+                {p.paidOn && <span className="muted"> {day(p.paidOn)}</span>}
+                {p.paidOnline && <span className="muted"> · by card</span>}
               </td>
               {actions && <td className="row-actions">{actions(p)}</td>}
             </tr>
