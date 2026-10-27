@@ -42,7 +42,7 @@ public class AuthController {
     private final CurrentUserResolver currentUser;
     private final RateLimiter rateLimiter;
     private final PasswordService passwords;
-    /** Sign-ins per network address per window: 50. Raised only for load tests (LOGIN_LIMIT_PER_IP). */
+    /** Sign-ins per network address per window: 50. Raised only for load and browser tests (LOGIN_LIMIT_PER_IP). */
     private final int loginsPerAddress;
     /** Checked when the email is unknown, so a wrong email takes as long as a wrong password. */
     private final String dummyHash;

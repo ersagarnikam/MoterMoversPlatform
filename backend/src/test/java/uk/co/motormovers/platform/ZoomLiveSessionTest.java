@@ -67,6 +67,9 @@ class ZoomLiveSessionTest {
         String asLearner = join(parent, session);
         assertThat((String) JsonPath.read(asLearner, "$.meetingNumber")).isEqualTo("81234567890");
         assertThat((Object) JsonPath.read(asLearner, "$.zak")).isNull();
+        // The join link too, for the parent app to open the Zoom app; the host's page has no use for one.
+        assertThat((String) JsonPath.read(asLearner, "$.zoomUrl")).isEqualTo("https://zoom.us/j/81234567890?pwd=x");
+        assertThat((Object) JsonPath.read(asHost, "$.zoomUrl")).isNull();
         assertThat(payload(JsonPath.read(asLearner, "$.signature"))).contains("\"role\":0");
 
         // Both joined the same meeting, created once under the configured host.

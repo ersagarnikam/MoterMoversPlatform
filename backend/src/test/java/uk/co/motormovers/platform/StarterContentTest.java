@@ -13,7 +13,10 @@ import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
 import uk.co.motormovers.platform.screening.repository.ScreeningItemRepository;
 import uk.co.motormovers.platform.seed.StarterContentLoader;
+import uk.co.motormovers.platform.content.util.WordingGuard;
+import uk.co.motormovers.platform.training.repository.CourseQuizRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
+import uk.co.motormovers.platform.training.repository.QuizQuestionRepository;
 import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
@@ -50,6 +53,15 @@ class StarterContentTest {
     ProgrammeSessionRepository sessions;
 
     @Autowired
+    CourseQuizRepository quizzes;
+
+    @Autowired
+    QuizQuestionRepository quizQuestions;
+
+    @Autowired
+    WordingGuard wordingGuard;
+
+    @Autowired
     AppUserRepository users;
 
     @Test
@@ -60,6 +72,12 @@ class StarterContentTest {
         assertThat(homeActivities.findAll()).hasSize(35).allMatch(a -> a.getStatus() == ContentStatus.DRAFT);
         assertThat(guidance.findAll()).hasSize(6).allMatch(g -> g.getStatus() == ContentStatus.DRAFT);
         assertThat(courses.count()).isEqualTo(2);
+        // Quizzes between the practitioner course's sessions, in wording the team could save themselves.
+        assertThat(quizzes.count()).isEqualTo(3);
+        assertThat(wordingGuard.check(quizzes.findAll().stream().map(q -> q.getTitle()).toList())).isEmpty();
+        assertThat(wordingGuard.check(quizQuestions.findAll().stream()
+                .flatMap(q -> java.util.stream.Stream.concat(java.util.stream.Stream.of(q.getText()), q.options().stream()))
+                .toList())).isEmpty();
         // The team writes the daily sessions, and no demo people or schools come with it.
         assertThat(sessions.count()).isZero();
         assertThat(users.count()).isZero();

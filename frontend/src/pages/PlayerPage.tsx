@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
 import { rosterChild } from '../components/RosterChild'
+import Skeleton from '../components/Skeleton'
 
 /**
  * The class player. The video fills the screen and can be cast to the whiteboard; the side list
@@ -35,7 +36,7 @@ export default function PlayerPage() {
       </p>
     )
   }
-  if (!today?.nextSession) return <p className="muted">Loading…</p>
+  if (!today?.nextSession) return <Skeleton />
   const session = today.nextSession
   const total = session.durationMinutes * 60
   const perStep = total / session.activities.length

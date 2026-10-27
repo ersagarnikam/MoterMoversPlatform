@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { api, type ClassSummary } from '../api'
 import { useAuth } from '../auth'
 import StageBadge from '../components/StageBadge'
+import Skeleton from '../components/Skeleton'
 
 export default function ClassListPage() {
   const { user } = useAuth()
@@ -14,7 +15,7 @@ export default function ClassListPage() {
   }, [])
 
   if (error) return <p className="error">{error}</p>
-  if (!classes) return <p className="muted">Loading…</p>
+  if (!classes) return <Skeleton />
   // One class, one session, one button: a teacher with a single class goes straight to it.
   if (user?.role === 'TEACHER' && classes.length === 1) return <Navigate to={`/class/${classes[0].id}/today`} replace />
 

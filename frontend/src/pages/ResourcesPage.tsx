@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api, type LibraryResource } from '../api'
 import StageBadge from '../components/StageBadge'
+import Skeleton from '../components/Skeleton'
 
 const KINDS: { kind: LibraryResource['kind'] | 'ALL'; label: string }[] = [
   { kind: 'ALL', label: 'Everything' },
@@ -22,7 +23,7 @@ export default function ResourcesPage() {
   const shown = useMemo(() => (items ?? []).filter((r) => kind === 'ALL' || r.kind === kind), [items, kind])
 
   if (error) return <p className="error">{error}</p>
-  if (!items) return <p className="muted">Loading…</p>
+  if (!items) return <Skeleton />
 
   return (
     <>

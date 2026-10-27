@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
 import StageBadge from '../components/StageBadge'
 import { rosterChild } from '../components/RosterChild'
+import Skeleton from '../components/Skeleton'
 
 /** A teacher's day starts with one button. */
 export default function TodayPage() {
@@ -16,7 +17,7 @@ export default function TodayPage() {
   }, [classId])
 
   if (error) return <p className="error">{error}</p>
-  if (!today) return <p className="muted">Loading…</p>
+  if (!today) return <Skeleton />
   const { schoolClass, nextSession } = today
 
   return (
@@ -27,7 +28,7 @@ export default function TodayPage() {
           <h1>{schoolClass.name} · Today’s session</h1>
         </div>
         <div className="tabs">
-          <Link to={`/class/${schoolClass.id}/screening`} className="btn">
+          <Link to={`/class/${schoolClass.id}/assess`} className="btn">
             Assess children
           </Link>
         </div>

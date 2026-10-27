@@ -12,4 +12,6 @@ public interface LibraryResourceRepository extends JpaRepository<LibraryResource
     List<LibraryResource> findByStatusOrderByTitle(ContentStatus status);
 
     List<LibraryResource> findAllByOrderByIdDesc();
+
+    long countByStatus(ContentStatus status);
 }

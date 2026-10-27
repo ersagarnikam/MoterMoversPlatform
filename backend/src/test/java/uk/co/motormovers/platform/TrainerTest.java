@@ -125,21 +125,87 @@ class TrainerTest {
     }
 
     @Test
-    void aPlaceBookedBySchoolStaffIsInvoicedToTheirSchool() throws Exception {
-        String lewis = login("newteacher@oakfield.test");
-        List<Integer> open = JsonPath.read(fetch(lewis, "/api/training/courses"),
-                "$.courses[?(@.title == 'Motor Movers practitioner course')].cohorts[*].id");
-        mvc.perform(post("/api/training/cohorts/" + open.getFirst() + "/enrol").header("Authorization", bearer(lewis)))
-                .andExpect(status().isOk());
-        // Booking again changes nothing, and is not invoiced twice.
-        mvc.perform(post("/api/training/cohorts/" + open.getFirst() + "/enrol").header("Authorization", bearer(lewis)))
-                .andExpect(status().isOk());
+    void aTrainerSeesTheBookingsOfTheirOwnCohortsAndRecordsTheAssessment() throws Exception {
+        String amy = login("trainer@motormovers.test");
+        String mine = fetch(amy, "/api/trainer/cohorts");
+        assertThat((List<String>) JsonPath.read(mine, "$[*].cohorts[*].name"))
+                .containsExactly("Cohort B · UK morning / AU evening");
+        Integer own = JsonPath.read(mine, "$[0].cohorts[0].id");
 
-        String head = login("head@oakfield.test");
-        Integer oakfield = JsonPath.read(fetch(head, "/api/auth/me"), "$.schoolId");
-        String payments = fetch(head, "/api/schools/" + oakfield + "/payments");
-        List<String> due = JsonPath.read(payments, "$.payments[?(@.description =~ /.*Mr Lewis.*/)].status");
-        assertThat(due).containsExactly("DUE");
+        // A practitioner books on Amy's cohort; she sees the booking and records the assessment.
+        String practitioner = login("practitioner@example.test");
+        String booking = mvc.perform(post("/api/training/cohorts/" + own + "/enrol")
+                        .header("Authorization", bearer(practitioner)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        Integer enrolment = JsonPath.read(booking, "$.id");
+        assertThat((List<String>) JsonPath.read(fetch(amy, "/api/admin/cohorts/" + own + "/enrolments"),
+                "$[*].learnerName")).contains("Sam Rivers");
+        send(amy, post("/api/admin/enrolments/" + enrolment + "/assessment"), "{\"passed\":true}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assessmentPassed").value(true));
+
+        // Not other trainers' cohorts.
+        String admin = login("admin@motormovers.test");
+        List<Integer> pats = JsonPath.read(fetch(admin, "/api/admin/courses"),
+                "$[*].cohorts[?(@.name == 'Cohort A · starting now')].id");
+        mvc.perform(get("/api/admin/cohorts/" + pats.getFirst() + "/enrolments").header("Authorization", bearer(amy)))
+                .andExpect(status().isForbidden());
+        Integer jo = JsonPath.read(fetch(admin, "/api/admin/cohorts/" + pats.getFirst() + "/enrolments"), "$[0].id");
+        send(amy, post("/api/admin/enrolments/" + jo + "/assessment"), "{\"passed\":true}")
+                .andExpect(status().isForbidden());
+        // The trainer pages are for trainers.
+        mvc.perform(get("/api/trainer/cohorts").header("Authorization", bearer(practitioner)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void aTrainerSwitchedOffCanNoLongerSignIn() throws Exception {
+        String admin = login("admin@motormovers.test");
+        String added = send(admin, post("/api/admin/trainers"),
+                "{\"email\":\"leaving@motormovers.test\",\"displayName\":\"Leaving Trainer\",\"zoomEmail\":null}")
+                .andReturn().getResponse().getContentAsString();
+        Integer id = JsonPath.read(added, "$.id");
+        send(admin, put("/api/admin/trainers/" + id + "/enabled"), "{\"enabled\":false}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enabled").value(false));
+        // Team accounts are not switched off here.
+        Integer pat = JsonPath.read(fetch(login("pat@motormovers.test"), "/api/auth/me"), "$.id");
+        send(admin, put("/api/admin/trainers/" + pat + "/enabled"), "{\"enabled\":false}")
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void theTeamIsWarnedWhenTwoCohortsWouldUseOneZoomLoginAtOnce() throws Exception {
+        String admin = login("admin@motormovers.test");
+        String course = send(admin, post("/api/admin/courses"), "{\"track\":\"PROFESSIONAL\",\"title\":\"Clash course\","
+                + "\"description\":\"For tests.\",\"liveSessions\":2,\"sessionMinutes\":60,\"pricePence\":1000,"
+                + "\"renewalPence\":null,\"awardsCertificate\":false}")
+                .andReturn().getResponse().getContentAsString();
+        Integer courseId = JsonPath.read(course, "$.id");
+        send(admin, post("/api/admin/courses/" + courseId + "/cohorts"), cohortAt("Early", 90, "06:00", null));
+        // Half an hour later, on the same (platform) Zoom login: both sessions clash.
+        String clashing = send(admin, post("/api/admin/courses/" + courseId + "/cohorts"),
+                cohortAt("Late", 90, "06:30", null))
+                .andReturn().getResponse().getContentAsString();
+        assertThat((List<String>) JsonPath.read(clashing, "$.cohorts[?(@.name == 'Late')].clashes[*]"))
+                .hasSize(2).allMatch(c -> c.contains("overlaps Clash course · Early"));
+
+        // Given to a trainer with their own Zoom login, it no longer clashes.
+        String trainer = send(admin, post("/api/admin/trainers"),
+                "{\"email\":\"own.zoom@motormovers.test\",\"displayName\":\"Own Zoom\",\"zoomEmail\":\"own@zoom.example\"}")
+                .andReturn().getResponse().getContentAsString();
+        Integer late = ((List<Integer>) JsonPath.read(clashing, "$.cohorts[?(@.name == 'Late')].id")).getFirst();
+        String moved = send(admin, put("/api/admin/cohorts/" + late),
+                cohortAt("Late", 90, "06:30", JsonPath.read(trainer, "$.id")))
+                .andReturn().getResponse().getContentAsString();
+        assertThat((List<Object>) JsonPath.read(moved, "$.cohorts[*].clashes[*]")).isEmpty();
+    }
+
+    private String cohortAt(String name, int daysAhead, String time, Integer trainerUserId) {
+        return "{\"name\":\"" + name + "\",\"startsOn\":\"" + LocalDate.now(clock).plusDays(daysAhead)
+                + "\",\"startTime\":\"" + time + "\",\"timeSlot\":\"Weekly\",\"capacity\":10,\"trainerName\":\"Pat\","
+                + "\"recordingAgreed\":false,\"trainerUserId\":" + trainerUserId + "}";
     }
 
     private String cohort(Integer trainerUserId) {

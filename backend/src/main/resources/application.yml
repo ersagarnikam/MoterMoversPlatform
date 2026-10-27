@@ -26,6 +26,8 @@ platform:
   retention-days: 365
   # A class below this daily participation rate is flagged on the head teacher dashboard.
   participation-flag-threshold: 0.70
+  # Motor Movers at Home: families whose school is not on Motor Movers (docs/home-programme-design.md).
+  home-programme: ${HOME_PROGRAMME:true}
   jwt:
     # Override in every real environment (env var PLATFORM_JWT_SECRET). Must be at least 32 bytes.
     secret: ${PLATFORM_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
@@ -54,6 +56,14 @@ platform:
     sdk-key: ${ZOOM_SDK_KEY:}
     sdk-secret: ${ZOOM_SDK_SECRET:}
     host-email: ${ZOOM_HOST_EMAIL:}
+  # Notifications to the parent app through Expo (notification/service/PushProperties). Off: only logged.
+  push:
+    enabled: ${PUSH_ENABLED:false}
+    access-token: ${EXPO_ACCESS_TOKEN:}
+  # Paying by card with Stripe Checkout (payment/stripe/StripeProperties). Without both, payments are marked by hand.
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
 
 ---
 spring:
@@ -131,6 +141,8 @@ platform:
   seed-demo-data: false
   # Starter content as drafts on an empty platform (seed/StarterContentLoader).
   seed-starter-content: ${SEED_STARTER_CONTENT:false}
+  # Off until the owner and Pat are ready to offer the home programme.
+  home-programme: ${HOME_PROGRAMME:false}
   jwt:
     secret: ${PLATFORM_JWT_SECRET:}
   cors:

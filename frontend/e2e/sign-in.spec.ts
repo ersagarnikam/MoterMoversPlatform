@@ -33,7 +33,7 @@ test('every role lands on its own home screen', async ({ page }) => {
     ['head@oakfield.test', 'Oakfield Primary · Progress'],
     ['trust@northbridge.test', 'Northbridge Academy Trust'],
     ['practitioner@example.test', 'Training'],
-    ['admin@motormovers.test', 'Content approval'],
+    ['admin@motormovers.test', 'Hello, Laura'],
   ]
   for (const [email, heading] of homes) {
     await signIn(page, email)

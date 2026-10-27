@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type Enrolment } from '../api'
 import StageStripe from '../components/StageStripe'
+import { day } from '../dates'
+import Skeleton from '../components/Skeleton'
 
 /** A learner's practitioner certificate, ready to print or save as a PDF from the browser. */
 export default function CertificatePage() {
   const { enrolmentId } = useParams()
   const [enrolment, setEnrolment] = useState<Enrolment | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   useEffect(() => {
     api
@@ -17,7 +20,7 @@ export default function CertificatePage() {
   }, [enrolmentId])
 
   if (error) return <p className="error">{error}</p>
-  if (enrolment === undefined) return <p className="muted">Loading…</p>
+  if (enrolment === undefined) return <Skeleton />
   if (enrolment === null) {
     return (
       <p className="muted">
@@ -32,10 +35,25 @@ export default function CertificatePage() {
         <Link className="fine-link" to="/training">
           Back to training
         </Link>
-        <button className="btn btn-primary" onClick={() => window.print()}>
-          Print or save as PDF
-        </button>
+        <div className="actions">
+          <button className="btn" onClick={() => window.print()}>
+            Print
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              api.certificatePdf(enrolment.id).catch((e) => setDownloadError(e instanceof Error ? e.message : String(e)))
+            }
+          >
+            Download PDF
+          </button>
+        </div>
       </div>
+      {downloadError && (
+        <p className="error no-print" role="alert">
+          {downloadError}
+        </p>
+      )}
       <article className="certificate" aria-label="Certificate">
         <StageStripe />
         <p className="eyebrow">Motor Movers</p>
@@ -43,18 +61,19 @@ export default function CertificatePage() {
         <p>This certifies that</p>
         <p className="certificate-name">{enrolment.learnerName}</p>
         <p>
-          has attended all {enrolment.liveSessions} live sessions and passed the assessment for the
+          has attended all {enrolment.liveSessions} live sessions
+          {enrolment.quizzes > 0 ? ', passed the quizzes' : ''} and passed the assessment for the
         </p>
         <p className="certificate-course">{enrolment.courseTitle}</p>
         <p className="muted">{enrolment.cohortName}</p>
         <dl className="certificate-dates">
           <div>
             <dt>Issued</dt>
-            <dd>{enrolment.certificateIssuedOn}</dd>
+            <dd>{day(enrolment.certificateIssuedOn)}</dd>
           </div>
           <div>
             <dt>Valid until</dt>
-            <dd>{enrolment.certificateExpiresOn}</dd>
+            <dd>{day(enrolment.certificateExpiresOn)}</dd>
           </div>
         </dl>
       </article>

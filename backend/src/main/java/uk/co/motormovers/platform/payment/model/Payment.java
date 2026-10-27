@@ -49,6 +49,9 @@ public class Payment {
 
     private Instant recordedAt;
 
+    /** Stripe's id for a payment made by card online; null when marked paid by hand. */
+    private String paidOnlineRef;
+
     protected Payment() {
     }
 
@@ -84,6 +87,20 @@ public class Payment {
         }
         this.status = PaymentStatus.PAID;
         this.paidOn = on;
+    }
+
+    /** Stripe confirmed a card payment. A payment no longer due (e.g. marked paid by hand meanwhile) stays as it is. */
+    public boolean paidOnline(LocalDate on, String stripeRef) {
+        if (status != PaymentStatus.DUE) {
+            return false;
+        }
+        markPaid(on);
+        this.paidOnlineRef = stripeRef;
+        return true;
+    }
+
+    public String getPaidOnlineRef() {
+        return paidOnlineRef;
     }
 
     public void cancel() {

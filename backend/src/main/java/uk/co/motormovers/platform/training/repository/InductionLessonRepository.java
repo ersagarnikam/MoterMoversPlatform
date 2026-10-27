@@ -12,4 +12,6 @@ public interface InductionLessonRepository extends JpaRepository<InductionLesson
     List<InductionLesson> findByStatusOrderByPosition(ContentStatus status);
 
     List<InductionLesson> findAllByOrderByPosition();
+
+    long countByStatus(ContentStatus status);
 }

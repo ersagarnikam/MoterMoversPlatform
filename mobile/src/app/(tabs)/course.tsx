@@ -1,18 +1,21 @@
+import * as Linking from 'expo-linking'
 import { useState } from 'react'
 import { View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
-import { api, formatDate } from '@/lib/api'
+import { api, formatDate, sessionTime, type LiveSession } from '@/lib/api'
 import { space } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
-/** The parent course: live online sessions with the Motor Movers team. */
+/** The parent course: live online sessions with the Motor Movers team, joined in the Zoom app. */
 export default function CourseScreen() {
   const { data, error, refreshing, reload } = useLoad(async () => {
-    const [catalogue, mine] = await Promise.all([api.courses(), api.myEnrolments()])
-    return { ...catalogue, mine }
+    const [catalogue, mine, live] = await Promise.all([api.courses(), api.myEnrolments(), api.liveSessions()])
+    return { ...catalogue, mine, live }
   })
   const [booking, setBooking] = useState<number | null>(null)
   const [bookError, setBookError] = useState<string | null>(null)
+  const [joining, setJoining] = useState<number | null>(null)
+  const [joinMessage, setJoinMessage] = useState<string | null>(null)
 
   if (error && !data) return <ErrorState message={error} onRetry={() => reload()} />
   if (!data) return <Loading />
@@ -32,8 +35,48 @@ export default function CourseScreen() {
     }
   }
 
+  async function join(s: LiveSession) {
+    setJoining(s.id)
+    setJoinMessage(null)
+    try {
+      const joined = await api.joinLive(s.id)
+      if (joined.zoomUrl) {
+        // Opens the Zoom app if it is installed, or Zoom's page in the browser, which offers it.
+        await Linking.openURL(joined.zoomUrl)
+      } else {
+        setJoinMessage('Video is not connected yet. Your trainer will let you know how to join this session.')
+      }
+    } catch (e) {
+      setJoinMessage(e instanceof Error ? e.message : 'Could not join the session')
+    } finally {
+      setJoining(null)
+    }
+  }
+
   return (
     <Screen refreshing={refreshing} onRefresh={() => reload(true)}>
+      {data.live.length > 0 && (
+        <View style={{ gap: space.sm }}>
+          <H2>Live sessions</H2>
+          {data.live.slice(0, 3).map((s) => (
+            <Card key={s.id}>
+              <Body style={{ fontWeight: '600' }}>
+                Session {s.number} of {s.of} · {sessionTime(s.startsAt)}
+              </Body>
+              <Muted>
+                {s.courseTitle} · {s.cohortName} · {s.durationMinutes} minutes with {s.trainerName}
+              </Muted>
+              {s.open ? (
+                <Button label="Join in Zoom" busy={joining === s.id} onPress={() => join(s)} />
+              ) : (
+                <Muted>You can join from 15 minutes before the start.</Muted>
+              )}
+            </Card>
+          ))}
+          {joinMessage && <Banner>{joinMessage}</Banner>}
+        </View>
+      )}
+
       {data.mine.length > 0 && (
         <View style={{ gap: space.sm }}>
           <H2>Your bookings</H2>

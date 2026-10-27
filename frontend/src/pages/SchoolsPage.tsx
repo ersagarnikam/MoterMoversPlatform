@@ -4,6 +4,10 @@ import { api, type ColourStage, type NewSchool, type Plan, type SchoolRow, type 
 import StageBadge from '../components/StageBadge'
 import { gbp } from '../money'
 import { STAGES } from '../stages'
+import { day } from '../dates'
+import { useToast } from '../components/Feedback'
+import Skeleton from '../components/Skeleton'
+import ListFilter, { matches } from '../components/ListFilter'
 
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
 
@@ -13,7 +17,7 @@ export default function SchoolsPage() {
   const [trusts, setTrusts] = useState<TrustRow[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const setNotice = useToast()
 
   const load = useCallback(() => {
     Promise.all([api.schools(), api.trusts(), api.plans()])
@@ -26,6 +30,8 @@ export default function SchoolsPage() {
   }, [])
 
   useEffect(load, [load])
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('ALL')
 
   async function run(action: () => Promise<unknown>, done: string) {
     setError(null)
@@ -41,13 +47,34 @@ export default function SchoolsPage() {
     }
   }
 
-  if (!schools) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>
+  if (!schools) return error ? <p className="error">{error}</p> : <Skeleton />
+  const shown = schools.filter(
+    (s) => (status === 'ALL' || s.licenceStatus === status) && matches(search, s.name, s.trustName, s.plan),
+  )
 
   return (
     <>
       <h1>Schools & licences</h1>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="banner-teal">{notice}</p>}
+      <ListFilter
+        search={search}
+        onSearch={setSearch}
+        placeholder="Find a school, trust or plan"
+        choice={{
+          label: 'Licence status',
+          value: status,
+          onChange: setStatus,
+          options: [
+            ['ALL', 'Every licence'],
+            ['ACTIVE', 'Active'],
+            ['RENEWAL_DUE', 'Renewal due'],
+            ['FREE_TRIAL', 'Free trial'],
+            ['EXPIRED', 'Expired'],
+          ],
+        }}
+        shown={shown.length}
+        total={schools.length}
+      />
       <div className="card table-wrap">
         <table>
           <thead>
@@ -64,7 +91,7 @@ export default function SchoolsPage() {
             </tr>
           </thead>
           <tbody>
-            {schools.map((s) => (
+            {shown.map((s) => (
               <tr key={s.id}>
                 <td>{s.name}</td>
                 <td>{s.trustName ?? '-'}</td>
@@ -76,7 +103,7 @@ export default function SchoolsPage() {
                   />
                 </td>
                 <td>{s.licenceStatus.replace('_', ' ').toLowerCase()}</td>
-                <td>{s.endsOn ?? '-'}</td>
+                <td>{s.endsOn ? day(s.endsOn) : '-'}</td>
                 <td className="stage-list">
                   {STAGES.filter((st) => s.stages.includes(st.key)).map((st) => (
                     <StageBadge key={st.key} stage={st.key} />

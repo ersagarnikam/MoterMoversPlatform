@@ -218,7 +218,8 @@ public class SchoolSetupService {
 
     private Child child(School school, Long childId) {
         return children.findById(childId)
-                .filter(c -> c.getSchoolClass().getSchool().getId().equals(school.getId()) && c.getLeftOn() == null)
+                .filter(c -> c.getSchoolClass() != null && c.getSchoolClass().getSchool().getId().equals(school.getId())
+                        && c.getLeftOn() == null)
                 .orElseThrow(() -> new NotFoundException("Child", childId));
     }
 

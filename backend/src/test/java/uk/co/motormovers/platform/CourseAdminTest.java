@@ -57,7 +57,8 @@ class CourseAdminTest {
         mvc.perform(get("/api/training/courses").header("Authorization", bearer(practitioner)))
                 .andExpect(jsonPath("$.courses[?(@.title == 'Early years refresher')].cohorts[0].seatsLeft")
                         .value(2));
-        for (String learner : new String[] {practitioner, login("teacher@oakfield.test")}) {
+        // A head books directly; other staff ask their head first (BookingRequestTest).
+        for (String learner : new String[] {practitioner, login("head@oakfield.test")}) {
             mvc.perform(post("/api/training/cohorts/" + cohortId + "/enrol").header("Authorization", bearer(learner)))
                     .andExpect(status().isOk());
         }
