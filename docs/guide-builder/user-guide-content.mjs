@@ -42,7 +42,8 @@ export const GUIDES = [
     strap: 'Running the daily session, assessing children, sharing progress with parents and booking training.',
     can: [
       'Run today’s 10-minute session and record who took part.',
-      'Assess children and see each child’s readiness profile.',
+      'Assess children on the programme’s exercises (1 to 4) and on the developmental charts.',
+      'See each child’s assessment profile.',
       'Give parents a code for the parent app.',
       'Use the resource library, and ask for a place on the practitioner course.',
     ],
@@ -71,25 +72,51 @@ export const GUIDES = [
         captions: ['The session player, with the plan and the rhyme’s words.'],
       },
       {
-        title: 'Assess a child',
+        title: 'Score the class on an exercise',
         steps: [
-          'From your class, choose Assess children, then choose a child.',
-          'For each of the 12 movements, ask the child to do it and choose the description that matches what you saw.',
-          'Choose Next item after each one, and Finish child at the end.',
+          'From your class, choose Assess children. Exercises (1 to 4) is open.',
+          'Choose the Exercise, and When: Start (the start of the colour), the end of a module, or the end of the colour. The point to do next is marked (suggested).',
+          'Open The movement to read what each score looks like: 1 Not yet, 2 Developing, 3 Nearly there, 4 Confident and accurate.',
+          'Watch the class do the exercise and tap 1, 2, 3 or 4 beside each child. Each score saves as you tap.',
         ],
-        tip: 'Each child takes five to eight minutes. Answers are kept on your device if the internet drops and sent when it is back, so you can carry on.',
-        shots: ['teacher-screening-item'],
-        captions: ['One movement: the instruction and four descriptions to choose from.'],
+        tip: 'Scores are kept on your device if the internet drops and sent when it is back. Tapping another score at the same point replaces the earlier one.',
+        shots: ['teacher-assess'],
+        captions: ['Scoring the class on one exercise, with the descriptions of each score.'],
       },
       {
-        title: 'Read a child’s readiness profile',
+        title: 'Record movements on the developmental charts',
+        steps: [
+          'In Assess children, choose Developmental charts, then Open charts beside a child.',
+          'Enter the child’s Age in months, and When: the start, middle or end of the school year.',
+          'Tap each movement the child does confidently and securely. It shows Secure at that age.',
+          'Write a comment for each chart if you wish, and choose Save comment.',
+        ],
+        tip: 'Do this at the start, middle and end of the school year. No date of birth is needed. A movement tapped by mistake can be tapped again to take it off.',
+        shots: ['teacher-development'],
+        captions: ['The fine and gross motor charts for one child.'],
+      },
+      {
+        title: 'Read a child’s assessment profile',
         steps: [
           'In your class list, choose a child.',
-          'The profile shows each of the six areas as Developing or Secure, the suggested starting stage, and the change since the first assessment.',
+          'The profile starts with the two assessments: movements secure on each chart, the table of exercise scores at each point, start and end totals, and the summary comments.',
+          'If a pattern of low scores shows, the profile says May benefit from extra support, with the reasons.',
+          'The earlier readiness check (0 to 3) follows underneath.',
         ],
-        tip: 'The profile describes readiness for the programme. It is never a diagnosis, and every view of a child’s record is logged.',
-        shots: ['teacher-profile'],
-        captions: ['A readiness profile.'],
+        tip: 'The profile describes progress with the programme. It is never a diagnosis, and every view of a child’s record is logged.',
+        shots: ['teacher-assessment-profile'],
+        captions: ['A child’s assessment profile.'],
+      },
+      {
+        title: 'Use the readiness check (0 to 3)',
+        steps: [
+          'In Assess children, choose Readiness check (0 to 3), then choose a child.',
+          'For each movement, ask the child to do it and choose the description that matches what you saw.',
+          'Choose Next item after each one, and Finish child at the end.',
+        ],
+        tip: 'This earlier check stays alongside the new assessments until Pat confirms it can go.',
+        shots: ['teacher-screening-item'],
+        captions: ['One movement: the instruction and four descriptions to choose from.'],
       },
       {
         title: 'Give a parent a code for the parent app',
@@ -145,6 +172,17 @@ export const GUIDES = [
         ],
         shots: ['head-dashboard'],
         captions: ['The progress dashboard.'],
+      },
+      {
+        title: 'Follow the assessments',
+        steps: [
+          'On Progress, scroll to Assessments for this school year.',
+          'For each class (with its colour), see how many children have been assessed at each point, the average movements secured this year, and how many children are at each exercise level.',
+          'Underneath, the children who may benefit from extra support are listed with the first reason. Choose a child to open their profile.',
+        ],
+        tip: 'Extra support describes a pattern of low scores, never a cause. Talk it through with the class teacher.',
+        shots: ['head-assessments'],
+        captions: ['Assessments across the school.'],
       },
       {
         title: 'Invite a member of staff',
@@ -231,6 +269,7 @@ export const GUIDES = [
           'Sign in. Your page lists every school in the trust or group.',
           'For each school, see its licence status (active, renewal due, free trial), renewal date, stages, children assessed and participation.',
           'Under Spending, see what each school has paid and what is outstanding, with a total.',
+          'For each school, see the share of children developmentally assessed this school year and how many may benefit from extra support.',
         ],
         tip: 'You see totals and percentages. Individual children are only visible if a school chooses to allow it.',
         shots: ['trust-dashboard'],
@@ -314,10 +353,11 @@ export const GUIDES = [
   {
     slug: 'parent-or-carer',
     title: 'Parent or carer',
-    strap: 'Using the parent app at home, taking the parent course and paying online.',
+    strap: 'Using the parent app at home, Motor Movers at Home if your child’s school is not on Motor Movers, the parent course and paying online.',
     can: [
-      'Link your child with a code from their school, and follow their stage.',
-      'Do a short activity at home most days.',
+      'Link your child with a code from their school, and follow how they are getting on.',
+      'Do a short activity or session at home most days.',
+      'No school on Motor Movers? Use Motor Movers at Home, in the app or on the website.',
       'Book and join the live parent course, and pay by card.',
     ],
     tasks: [
@@ -346,6 +386,63 @@ export const GUIDES = [
         phone: true,
       },
       {
+        title: 'See how your child is getting on at school',
+        steps: [
+          'Choose Progress, then your child.',
+          'Movements shows how many movements on the programme’s two charts (hands and fingers, whole body) the school has seen your child do securely.',
+          'Exercises shows each exercise of your child’s colour, from the first time to the latest: Not yet, Getting there, Nearly or Got it.',
+        ],
+        tip: 'These are not scores or comparisons with other children, and never a diagnosis. Your child’s class teacher is the best person to talk to.',
+        shots: ['app-child', 'app-child-assessments'],
+        captions: ['Your child’s page.', 'Exercises, in plain words.'],
+        phone: true,
+      },
+      {
+        title: 'Start Motor Movers at Home (no school needed)',
+        steps: [
+          'Create a parent account in the app, or on the website: choose For families, then Create a parent account.',
+          'Add your child: a first name or nickname and their age in years and months. In the app choose Add your child on Today; on the website, choose At home.',
+          'Do the short check: for each movement, choose Yes, Not yet or Not sure. Then choose Start with the suggested colour, or choose another.',
+        ],
+        tip: 'Only you, and anyone you invite, see your child. We never ask for a date of birth. The check is suggested again every three months.',
+        shots: ['app-home-check', 'home-web-check'],
+        captions: ['The check in the app.', 'The same check on the website.'],
+        mixed: true,
+      },
+      {
+        title: 'Do the daily home session',
+        steps: [
+          'In the app, open Today. On the website, choose At home, then your child.',
+          'Choose Start and do the four exercises together, one at a time. Choose Next exercise after each.',
+          'Choose We did it. The first time your child does an exercise, choose how it went: Not yet, Getting there, Nearly or Got it.',
+          'At the end of each module (ten sessions), a reminder asks you to rate its exercises again, so you can see the progress.',
+        ],
+        tip: 'Little and often: about ten minutes most days. Choosing a rating shows what it looks like, so you can check.',
+        shots: ['app-home-today', 'home-web-child'],
+        captions: ['Today in the app.', 'Your child’s page on the website.'],
+        mixed: true,
+      },
+      {
+        title: 'Share with another parent or carer',
+        steps: [
+          'In the app choose Account, then Family and sharing. On the website choose At home, then Family and sharing.',
+          'Type their email address and choose Email a code, or choose Get a code and pass it on yourself.',
+          'They sign in (or create an account) and enter the code under Join a family. It works once, for 14 days.',
+        ],
+        shots: ['app-family', 'home-web-family'],
+        captions: ['Your family in the app.', 'Family and sharing on the website.'],
+        mixed: true,
+      },
+      {
+        title: 'Link the school if it joins later',
+        steps: [
+          'Ask the school for a parent code.',
+          'Open your child’s page. In the app choose [name]’s school has joined Motor Movers; on the website it is under Settings.',
+          'Enter the code, agree to share what you recorded at home, and choose Link the school.',
+        ],
+        tip: 'The class teacher then sees what you recorded at home, and does the assessing from then on.',
+      },
+      {
         title: 'Book and join the parent course',
         steps: [
           'Choose Course, find a group that suits you and choose Book a place.',
@@ -372,7 +469,8 @@ export const GUIDES = [
     faq: [
       { q: 'My code does not work.', a: 'Each code works once and expires. Ask the teacher for a new one.' },
       { q: 'I am not getting notifications.', a: 'Allow notifications for Motor Movers in your phone’s settings, then sign out and in again.' },
-      { q: 'Can I use a computer instead?', a: 'Yes: sign in on the Motor Movers website to book the course, join sessions and pay.' },
+      { q: 'Can I use a computer instead?', a: 'Yes: sign in on the Motor Movers website to book the course, join sessions and pay. Motor Movers at Home works there too, under At home.' },
+      { q: 'Does the school see what we do at home?', a: 'Not with Motor Movers at Home, unless you link the school. The home activities you record for a school child are yours too.' },
     ],
   },
   {

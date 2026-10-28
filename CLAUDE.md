@@ -90,7 +90,8 @@ before** (the owner asked for all four):
 2. `parent-assessments` (based on #8): a school-linked parent sees their child's assessments in the parent app.
    Done; in review.
 3. `home-web` (based on #9): Motor Movers at Home on the website. Done; in review.
-4. The user and flow guides rebuilt for the new assessment screens and Motor Movers at Home. Not started.
+4. `guides-refresh` (based on #10): the user and flow guides rebuilt for the new assessment screens and Motor
+   Movers at Home. Done; in review.
 
 **Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
 for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
@@ -160,7 +161,7 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
 - Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
   modules in, with two children flagged. The last three children of each class are left to assess.
 - Not built: the other five colours (waiting for Pat), editing the charts or grids on screen (change the JSON), the
-  induction lesson on assessment, retiring the 0-3 check, regenerating the guides.
+  induction lesson on assessment, retiring the 0-3 check.
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
@@ -294,7 +295,9 @@ Built so far:
   guides** (`docs/flow-guides/`, for partners, investors and school leaders, plus the platform overview with safety,
   income and status). Both are built from screenshots of the demo by `docs/guide-builder/` (`capture.mjs`, then
   `build.mjs`; how-to in its README). **Rebuild them when screens or features change**, and update the status page
-  in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`.
+  in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`. Rebuilt again
+  2026-10-28 for Pat's assessments (teacher, head, trust lead), school assessments in the parent app, and Motor Movers
+  at Home (the capture walks Priya on the website and in the app, saving nothing, then Jo's child page).
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
   Since 2026-10-28 a linked child's Progress screen shows the school's assessments in plain words
   (`assessment/service/ParentProgress`, shared with Motor Movers at Home; mobile `components/AssessmentSummary`):
@@ -309,7 +312,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-28): Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-10-28): guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,

@@ -98,6 +98,16 @@ await desk(async (page) => {
   await shot(page, 'site-sign-in')
   await page.goto(`${WEB}/login?as=teacher`)
   await shot(page, 'site-login')
+  await step('families', async () => {
+    await page.goto(`${WEB}/for-families`)
+    await part(
+      page.locator('.site-section', { has: page.getByRole('heading', { name: 'Your child’s school is not on Motor Movers?' }) }),
+      'site-families-home',
+    )
+    await page.goto(`${WEB}/join`)
+    await page.getByRole('heading', { name: 'Create a parent account' }).waitFor()
+    await shot(page, 'home-web-join')
+  })
 })
 
 // New teacher: locked until the induction is done; asks for a course place the school pays for
@@ -136,12 +146,28 @@ await desk(async (page) => {
   await step('profile', async () => {
     await page.goto(`${WEB}/classes`)
     await page.locator('.roster .roster-child').first().click()
-    await page.getByRole('heading', { name: /Readiness profile/ }).waitFor()
+    await page.getByRole('heading', { name: /^Assessment · / }).waitFor()
     await shot(page, 'teacher-profile', { full: true })
+    await part(page.locator('.card', { has: page.getByRole('heading', { name: /^Assessment · / }) }).first(), 'teacher-assessment-profile')
+  })
+  await step('assess exercises', async () => {
+    await page.goto(`${WEB}/classes`)
+    await page.getByRole('link', { name: 'Assess children' }).click()
+    await page.getByLabel('Exercise').waitFor()
+    await shot(page, 'teacher-assess')
+  })
+  await step('developmental charts', async () => {
+    await page.getByRole('button', { name: 'Developmental charts' }).click()
+    await page.getByRole('link', { name: /developmental charts$/ }).last().click()
+    await page.getByLabel('Age in months').fill('80')
+    await page.getByRole('switch', { name: /Handedness well established/ }).click()
+    await page.getByText(/Secure at 80 months/).waitFor()
+    await shot(page, 'teacher-development')
   })
   await step('screening', async () => {
     await page.goto(`${WEB}/classes`)
     await page.getByRole('link', { name: 'Assess children' }).click()
+    await page.getByRole('link', { name: 'Readiness check (0 to 3)' }).click()
     await shot(page, 'teacher-screening-roster')
     await page.locator('.roster-child').first().click()
     await page.getByText(/Item 1 of \d+/).waitFor()
@@ -160,6 +186,9 @@ await desk(async (page) => {
   await signIn(page, 'head@oakfield.test')
   await shot(page, 'head-dashboard')
   await shot(page, 'head-dashboard-full', { full: true })
+  await step('assessments', async () => {
+    await part(page.locator('section', { has: page.getByRole('heading', { name: /^Assessments · school year/ }) }).first(), 'head-assessments')
+  })
   await step('setup', async () => {
     await page.getByRole('link', { name: 'School setup' }).click()
     await page.getByRole('heading', { name: 'School setup' }).waitFor()
@@ -250,6 +279,36 @@ await desk(async (page) => {
     await page.goto(`${WEB}/payments`)
     await page.getByRole('button', { name: 'Pay by card' }).first().waitFor()
     await shot(page, 'parent-payments')
+  })
+})
+
+// Motor Movers at Home on the website (Priya Shah: Ava on Green with her module 1 review due, Leo before his check)
+const priya = await token('home@example.test')
+const family = await api(priya, 'GET', '/api/home')
+const ava = family.children.find((c) => c.name === 'Ava')
+const leo = family.children.find((c) => c.name === 'Leo')
+await desk(async (page) => {
+  await signIn(page, 'home@example.test')
+  await step('home web', async () => {
+    await page.getByRole('link', { name: 'At home', exact: true }).click()
+    await page.getByRole('heading', { name: 'At home', level: 1 }).waitFor()
+    await shot(page, 'home-web-overview')
+    await page.goto(`${WEB}/home/child/${ava.id}`)
+    await page.getByRole('heading', { name: 'Movements' }).waitFor()
+    await shot(page, 'home-web-child')
+    await shot(page, 'home-web-child-full', { full: true })
+    await page.goto(`${WEB}/home/child/${ava.id}/session`)
+    await page.getByText(/^Exercise 1 of/).waitFor()
+    await shot(page, 'home-web-session')
+    await page.goto(`${WEB}/home/child/${ava.id}/review`)
+    await page.getByRole('group', { name: /^How .+ went$/ }).first().getByRole('button', { name: 'Nearly' }).click()
+    await shot(page, 'home-web-review')
+    await page.goto(`${WEB}/home/child/${leo.id}/check`)
+    await page.getByRole('heading', { name: 'Can Leo do these?' }).waitFor()
+    await shot(page, 'home-web-check')
+    await page.goto(`${WEB}/home/family`)
+    await page.getByRole('heading', { name: 'Family and sharing', level: 1 }).waitFor()
+    await shot(page, 'home-web-family')
   })
 })
 
@@ -356,6 +415,46 @@ await phone(async (page) => {
     await page.waitForTimeout(800)
     await shot(page, 'app-payments')
   })
+  await step('app child', async () => {
+    const [linked] = await api(await token('parent@example.test'), 'GET', '/api/family/children')
+    await page.goto(`${APP}/child/${linked.childId}`)
+    await page.getByText('Movements', { exact: true }).waitFor({ timeout: 15000 })
+    await page.waitForTimeout(800)
+    await shot(page, 'app-child')
+    await page.getByText(/^Exercises · /).scrollIntoViewIfNeeded()
+    await page.waitForTimeout(400)
+    await shot(page, 'app-child-assessments')
+  })
+})
+
+// Motor Movers at Home in the parent app (Priya)
+await phone(async (page) => {
+  try {
+    await page.goto(APP, { timeout: 10000 })
+  } catch {
+    return
+  }
+  await page.getByText('Sign in', { exact: true }).first().waitFor({ timeout: 60000 })
+  await page.locator('input').nth(0).fill('home@example.test')
+  await page.locator('input').nth(1).fill('password')
+  await page.getByText('Sign in', { exact: true }).last().click()
+  await page.getByText('Today', { exact: true }).last().waitFor({ timeout: 30000 })
+  await page.waitForTimeout(1500)
+  await shot(page, 'app-home-today')
+  const screens = [
+    ['app-home-session', `/home-session/${ava.id}`, /^Module \d/],
+    ['app-home-progress', `/home-child/${ava.id}`, 'Movements'],
+    ['app-home-check', `/check/${leo.id}`, 'Can Leo do these?'],
+    ['app-family', '/family', 'Invite someone'],
+  ]
+  for (const [name, path, text] of screens) {
+    await step(name, async () => {
+      await page.goto(`${APP}${path}`)
+      await page.getByText(text).first().waitFor({ timeout: 15000 })
+      await page.waitForTimeout(800)
+      await shot(page, name)
+    })
+  }
 })
 
 await browser.close()
