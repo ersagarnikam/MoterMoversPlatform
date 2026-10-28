@@ -267,7 +267,9 @@ A phone app for parents and carers (`mobile/`), with five tabs:
 - **Today**: one short home activity a day for the child's colour stage, played step by step with a
   gentle timer, and a 14-day counter. Sessions are saved on the phone first and sent when online.
   Parents without a linked child pick a stage.
-- **Progress**: the child's colour stage, the six areas as *Emerging / Developing / Secure* (never raw
+- **Progress**: the child's colour stage; the school's assessments in plain words (movements secure on each of
+  Pat's two charts, and each exercise's first and latest rating as *Not yet / Getting there / Nearly / Got it*;
+  never the 1-4 scores or the extra-support flag); the six areas as *Emerging / Developing / Secure* (never raw
   scores), the dates of movement checks, and how often the class did its daily session. The *Not a
   diagnosis* banner is always shown. Parents can give the child a name that is kept on the phone only.
 - **Guidance**: short articles approved by Pat and Laura.
