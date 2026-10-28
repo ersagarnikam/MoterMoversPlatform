@@ -61,6 +61,10 @@ class HomeProgrammeTest {
 
     @Test
     void aFamilyAddsAChildWithoutASchool() throws Exception {
+        mvc.perform(get("/api/home/available")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.enabled").value(true));
+        // Only that one is open: the rest needs a parent's sign-in.
+        mvc.perform(get("/api/home")).andExpect(status().isUnauthorized());
         String parent = register();
         mvc.perform(get("/api/home").header("Authorization", bearer(parent)))
                 .andExpect(status().isOk())

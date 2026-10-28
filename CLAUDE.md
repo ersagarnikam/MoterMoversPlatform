@@ -51,12 +51,12 @@ school, screening, security, seed, training, user`.
 
 ```bash
 cd backend  && ./mvnw -B verify      # 135 unit + API integration tests (H2)
-cd frontend && npm test             # 48 unit tests (Vitest): money, times, offline queue, API client, assessment points
+cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 65 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 67 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -89,7 +89,7 @@ before** (the owner asked for all four):
    carer. Done; in review.
 2. `parent-assessments` (based on #8): a school-linked parent sees their child's assessments in the parent app.
    Done; in review.
-3. Motor Movers at Home on the website, for families without the app. Not started.
+3. `home-web` (based on #9): Motor Movers at Home on the website. Done; in review.
 4. The user and flow guides rebuilt for the new assessment screens and Motor Movers at Home. Not started.
 
 **Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
@@ -117,6 +117,13 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
   activities), `add-child`, `check/[id]`, `home-session/[id]` (then first-time ratings), `review/[id]` (end of module),
   `home-child/[id]` (progress, check again, name and age, link a school, delete), `join-school/[id]`, `family`
   (invite by code or email, join, remove). Sessions and ratings queue offline (`lib/homeOutbox.ts`).
+- Website (2026-10-28, `frontend/src/pages/home`): the same for families without the app. `/join` creates a parent
+  account (`RegisterPage`; signed in, `/join` goes on to `/home`, which falls back to the parent course while the
+  programme is off); **At home** (`/home`, the menu item shown only while it is on) lists the children and adds one;
+  `/home/child/:id` has today's session (or the colour's home activities), progress and settings (name and age,
+  colour, link a school, delete); `/check`, `/session` (then first-time ratings) and `/review` under it;
+  `/home/family` for sharing. `GET /api/home/available` is the one home endpoint open without signing in (the
+  website asks it to decide what to show; `useHomeAvailable` in `src/homeProgramme.ts`). No offline queue on the web.
 - Demo: home@example.test (Priya Shah): Ava (Green, module 2, module 1 review due) and Leo (no check yet).
 - Tests: `HomeProgrammeTest` (own context with a raised sign-in limit, so it does not use up the shared one),
   `HomeRulesTest`, `HomeProgrammeOffTest`. Tried in the app's web preview: session, ratings, check, fallback, family.
@@ -163,7 +170,7 @@ GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, acc
 requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
 GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-65/65 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+67/67 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -302,7 +309,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-28): school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-10-28): Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
@@ -369,4 +376,4 @@ Not started unless noted. Confirm priorities with the owner.
    answers to the ten questions in `docs/home-programme-design.md` (use of her materials at home, colour by age, the
    check's rule, parent wording, a safety note, videos), a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions, and a web version for families (the parent app only; in progress).
+   subscriptions.

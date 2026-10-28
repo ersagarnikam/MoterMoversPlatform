@@ -68,6 +68,8 @@ public class SecurityConfig {
                                 "/api/auth/password-reset", "/api/auth/password").permitAll()
                         // Stripe's payment confirmations: checked by their signature in OnlinePaymentService.
                         .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
+                        // Whether Motor Movers at Home is switched on, for the public website's sign-up.
+                        .requestMatchers(HttpMethod.GET, "/api/home/available").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/h2-console/**", "/error")
                         .permitAll()
                         // Trainers keep the register for their own sessions (checked in LiveSessionService).

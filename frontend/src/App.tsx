@@ -37,6 +37,12 @@ import ProgrammePage from './pages/site/ProgrammePage'
 import ForSchoolsPage from './pages/site/ForSchoolsPage'
 import ForFamiliesPage from './pages/site/ForFamiliesPage'
 import SignInChooserPage from './pages/site/SignInChooserPage'
+import RegisterPage from './pages/RegisterPage'
+import HomeOverviewPage from './pages/home/HomeOverviewPage'
+import HomeChildPage from './pages/home/HomeChildPage'
+import HomeCheckPage from './pages/home/HomeCheckPage'
+import HomeSessionPage from './pages/home/HomeSessionPage'
+import HomeFamilyPage from './pages/home/HomeFamilyPage'
 
 /** Where each kind of user lands after signing in. */
 export function homeFor(role: Role): string {
@@ -75,6 +81,7 @@ export default function App() {
       <Routes>
         {site}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/join" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
@@ -85,6 +92,8 @@ export default function App() {
     <Routes>
       {site}
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* Just signed up: At home (which falls back to the parent course while it is switched off). */}
+      <Route path="/join" element={<Navigate to={user.role === 'PARENT' ? '/home' : homeFor(user.role)} replace />} />
       <Route element={<Layout />}>
         <Route path="/classes" element={<ClassListPage />} />
         <Route path="/class/:classId/today" element={<TodayPage />} />
@@ -98,6 +107,12 @@ export default function App() {
         <Route path="/training" element={<TrainingPage />} />
         <Route path="/training/certificate/:enrolmentId" element={<CertificatePage />} />
         <Route path="/payments" element={<MyPaymentsPage />} />
+        <Route path="/home" element={<HomeOverviewPage />} />
+        <Route path="/home/family" element={<HomeFamilyPage />} />
+        <Route path="/home/child/:childId" element={<HomeChildPage />} />
+        <Route path="/home/child/:childId/check" element={<HomeCheckPage />} />
+        <Route path="/home/child/:childId/session" element={<HomeSessionPage />} />
+        <Route path="/home/child/:childId/review" element={<HomeSessionPage review />} />
         <Route path="/live" element={<LiveSessionsPage />} />
         <Route path="/live/:sessionId" element={<LiveRoomPage />} />
         <Route path="/trainer/cohorts" element={<TrainerCohortsPage />} />

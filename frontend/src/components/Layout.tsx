@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { Role } from '../api'
 import { useAuth } from '../auth'
+import { useHomeAvailable } from '../homeProgramme'
 import StageStripe from './StageStripe'
 import ThemeSwitch from './ThemeSwitch'
 
@@ -59,7 +60,10 @@ export default function Layout() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const home = useHomeAvailable()
   if (!user) return null
+  // Motor Movers at Home, for parents, only while it is switched on.
+  const nav = user.role === 'PARENT' && home ? [{ to: '/home', label: 'At home' }, ...NAV.PARENT] : NAV[user.role]
   return (
     <div className="shell">
       <header className="topbar">
@@ -85,7 +89,7 @@ export default function Layout() {
       </header>
       <div className="body">
         <nav className="sidenav" aria-label="Main">
-          {NAV[user.role].map((item) => (
+          {nav.map((item: { to: string; label: string; end?: boolean }) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) =>
                 isActive || (item.to === '/classes' && /^\/(class|child)\//.test(pathname)) ? 'active' : ''
               }>

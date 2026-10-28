@@ -82,6 +82,9 @@ export default function LoginPage() {
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
         <Link to="/forgot-password" className="fine-link">Forgot your password?</Link>
+        <p className="fine">
+          A parent or carer without an account? <Link to="/join" className="fine-link">Create one</Link>
+        </p>
         {import.meta.env.DEV && (
           <div className="demo-accounts">
             <p className="muted">Demo accounts (password: <code>password</code>)</p>

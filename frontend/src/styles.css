@@ -572,3 +572,25 @@ dialog.confirm .actions { justify-content: flex-end; margin-top: 1rem; }
 .eyebrow-badge { margin: 0 0 0.35rem; }
 .level-counts { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.85rem; white-space: nowrap; }
 .level-num { display: inline-flex; align-items: center; justify-content: center; width: 1.2rem; height: 1.2rem; border-radius: 4px; border: 1px solid var(--border-strong); font-size: 0.75rem; font-weight: 600; }
+
+/* Motor Movers at Home on the website (pages/home) */
+.home-kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 1rem; margin: 1rem 0; }
+.home-kid { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+.home-kid h2 { margin: 0; }
+.home-kid p { margin: 0; }
+.home-today { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+.home-today h1, .home-today h2, .home-today p { margin: 0; }
+.home-steps { margin: 0; padding-left: 1.3rem; }
+.home-steps li { padding: 0.15rem 0; }
+.home-charts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.home-rows { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.home-rows li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.home-rows li:first-child { border-top: none; }
+.check-list { list-style: none; padding: 0; margin: 0; }
+.check-list li { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; padding: 0.75rem 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.check-list li:first-child { border-top: none; }
+.check-list p { margin: 0; }
+.home-exercise h2 { margin-top: 0; }
+.home-exercise p { font-size: 1.1rem; line-height: 1.6; }
+.home-progress { width: 100%; height: 6px; accent-color: var(--bar); }
+@media (max-width: 760px) { .home-charts { grid-template-columns: 1fr; } }
