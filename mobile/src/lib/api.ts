@@ -387,7 +387,13 @@ export const api = {
   /** Ratings use the assessment endpoint, which checks that the child is the family's. */
   rateExercises: (ratings: ExerciseRating[]) =>
     request<{ saved: number; duplicates: number }>('POST', '/api/assessment/exercise-scores', ratings),
-  inviteCarer: () => request<{ code: string; expiresOn: string }>('POST', '/api/home/invites'),
+  /** With an email address the code is also emailed there, with how to use it. */
+  inviteCarer: (email?: string) =>
+    request<{ code: string; expiresOn: string; sentTo: string | null }>(
+      'POST',
+      '/api/home/invites',
+      email ? { email } : undefined,
+    ),
   joinFamily: (code: string) => request<HomeOverview>('POST', '/api/home/join', { code }),
   removeFamilyMember: (userId: number) => request<void>('DELETE', `/api/home/members/${userId}`),
   joinSchool: (id: number, code: string) =>

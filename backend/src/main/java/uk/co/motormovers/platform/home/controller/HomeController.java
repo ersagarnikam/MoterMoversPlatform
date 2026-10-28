@@ -3,6 +3,8 @@ package uk.co.motormovers.platform.home.controller;
 import java.time.Duration;
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -90,9 +92,14 @@ public class HomeController {
         return home.recordSessions(sessions);
     }
 
+    /** Optionally emails the code; twenty emails a day per account, so the platform cannot be used to send mail. */
     @PostMapping("/invites")
-    public HomeViews.Invite invite() {
-        return home.invite();
+    public HomeViews.Invite invite(@Valid @RequestBody(required = false) HomeViews.InviteIn in) {
+        String email = in == null || in.email() == null || in.email().isBlank() ? null : in.email();
+        if (email != null) {
+            rateLimiter.check("home-invite-email", String.valueOf(currentUser.current().id()), 20, Duration.ofDays(1));
+        }
+        return home.invite(email);
     }
 
     /** Ten codes an hour per account, so codes cannot be guessed. */

@@ -2,10 +2,12 @@ package uk.co.motormovers.platform.home.service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +35,7 @@ import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.assessment.util.ExtraSupportRule;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
+import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.family.dto.FamilyViews;
@@ -80,6 +83,8 @@ public class HomeService {
 
     static final String NOT_AVAILABLE = "Motor Movers at Home is not available yet";
 
+    private static final DateTimeFormatter EMAIL_DATE = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.UK);
+
     static final String INVALID_CODE = "That code is not valid or has expired. Ask for a new one.";
 
     private final boolean enabled;
@@ -97,12 +102,14 @@ public class HomeService {
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final Mailer mailer;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
-            AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock) {
+            AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
+            Mailer mailer) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -118,6 +125,7 @@ public class HomeService {
         this.access = access;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.mailer = mailer;
     }
 
     // --- The family -------------------------------------------------------------------------------------------------
@@ -180,9 +188,12 @@ public class HomeService {
         children.delete(homeChild(childId));
     }
 
-    /** A code for a second parent or carer, so they can share the family's children. */
+    /**
+     * A code for a second parent or carer, so they can share the family's children. With an email address the code is
+     * also sent there, with how to use it; the email names the parent who sent it but not the children.
+     */
     @Transactional
-    public HomeViews.Invite invite() {
+    public HomeViews.Invite invite(String email) {
         CurrentUser me = requireParent();
         FamilyMember mine = members.findByUserId(me.id())
                 .orElseThrow(() -> new IllegalArgumentException("Add a child before inviting someone to share"));
@@ -192,7 +203,31 @@ public class HomeService {
         } while (invites.findByCode(code).isPresent());
         FamilyInvite invite = invites.save(new FamilyInvite(mine.getFamilyId(), code, me.id(),
                 today().plusDays(INVITE_DAYS)));
-        return new HomeViews.Invite(InviteCodes.format(invite.getCode()), invite.getExpiresOn());
+        String shown = InviteCodes.format(invite.getCode());
+        if (email != null) {
+            String from = users.findById(me.id()).map(AppUser::getDisplayName).orElse("A parent");
+            mailer.send(email, from + " has invited you to Motor Movers at Home", inviteEmail(from, shown,
+                    invite.getExpiresOn()));
+        }
+        return new HomeViews.Invite(shown, invite.getExpiresOn(), email);
+    }
+
+    private String inviteEmail(String from, String code, LocalDate expiresOn) {
+        return """
+                %1$s has invited you to share their children's Motor Movers at Home: the short daily movement \
+                sessions, and how each child is getting on.
+
+                Your family code is %2$s
+
+                To use it:
+                1. Open the Motor Movers app.
+                2. Sign in, or create a parent account with this email address.
+                3. Go to Account, then Your family, and enter the code under Join a family.
+
+                The code works once, until %3$s. If it has expired, ask %1$s for a new one.
+
+                If you were not expecting this, you can ignore this email.
+                """.formatted(from, code, EMAIL_DATE.format(expiresOn));
     }
 
     /** Joins the family whose code this is. Someone who already has their own home children cannot. */
