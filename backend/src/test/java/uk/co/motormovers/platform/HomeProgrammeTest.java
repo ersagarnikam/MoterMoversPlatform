@@ -1,6 +1,11 @@
 package uk.co.motormovers.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
@@ -20,14 +25,17 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.jayway.jsonpath.JsonPath;
 
+import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.content.util.WordingGuard;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 
@@ -47,6 +55,9 @@ class HomeProgrammeTest {
 
     @Autowired
     Clock clock;
+
+    @MockitoBean
+    Mailer mailer;
 
     @Test
     void aFamilyAddsAChildWithoutASchool() throws Exception {
@@ -179,6 +190,30 @@ class HomeProgrammeTest {
         // Staff cannot use the parent app's home endpoints at all.
         mvc.perform(get("/api/home").header("Authorization", bearer(login("teacher@oakfield.test"))))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void aFamilyCodeCanBeEmailed() throws Exception {
+        String owner = register();
+        mvc.perform(post("/api/home/children").header("Authorization", bearer(owner))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Nell\",\"ageMonths\":40}"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/home/invites").header("Authorization", bearer(owner))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"not an address\"}"))
+                .andExpect(status().isBadRequest());
+        String code = JsonPath.read(mvc.perform(post("/api/home/invites").header("Authorization", bearer(owner))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"gran@example.test\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sentTo").value("gran@example.test"))
+                .andReturn().getResponse().getContentAsString(), "$.code");
+
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(mailer).send(eq("gran@example.test"), contains("invited you to Motor Movers at Home"), body.capture());
+        assertThat(body.getValue()).contains(code).contains("Join a family").doesNotContain("Nell");
+        // Without an address nothing is sent.
+        mvc.perform(post("/api/home/invites").header("Authorization", bearer(owner)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.sentTo").doesNotExist());
+        verify(mailer, times(1)).send(anyString(), contains("invited you"), anyString());
     }
 
     @Test

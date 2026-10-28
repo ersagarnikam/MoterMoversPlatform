@@ -3,6 +3,9 @@ package uk.co.motormovers.platform.home.dto;
 import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
+
 import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
 import uk.co.motormovers.platform.assessment.model.Chart;
 import uk.co.motormovers.platform.common.model.ColourStage;
@@ -49,7 +52,12 @@ public final class HomeViews {
     public record ChildIn(String name, Integer ageMonths) {
     }
 
-    public record Invite(String code, LocalDate expiresOn) {
+    /** sentTo is the address the code was emailed to, or null when the parent will pass it on themselves. */
+    public record Invite(String code, LocalDate expiresOn, String sentTo) {
+    }
+
+    /** Optional: an address to email the code to. */
+    public record InviteIn(@Email @Size(max = 200) String email) {
     }
 
     public record CodeIn(String code) {

@@ -293,7 +293,7 @@ For families whose child's school is not on Motor Movers (`docs/home-programme-d
 answers). Switched on with `HOME_PROGRAMME=true`; off in production by default, on in development.
 
 - The parent **adds their child** (a first name or nickname and an age in years and months; no date of birth). A
-  second parent or carer joins with a family code (Account, Your family).
+  second parent or carer joins with a family code (Account, Your family), which the app can also email to them.
 - A **starting check** asks about the movements from Pat's charts for the year up to the child's age (Yes, Not yet,
   Not sure) and suggests a colour; it is suggested again every three months.
 - **Today** has a daily session of four of Pat's exercises from the child's module (ten sessions a module), then

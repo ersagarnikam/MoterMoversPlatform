@@ -50,7 +50,7 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 134 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 135 unit + API integration tests (H2)
 cd frontend && npm test             # 48 unit tests (Vitest): money, times, offline queue, API client, assessment points
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -81,7 +81,15 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-27)
+## Current state (2026-10-28)
+
+**In progress (Claude for the owner, 2026-10-28): four pull requests, one after another, each based on the one
+before** (the owner asked for all four):
+1. `family-code-email`: this tidy-up, and emailing a family code to a second parent or carer. Done; in review.
+2. Parent app: a school-linked parent sees their child's assessments (movements secure, a plain "how it is going"
+   per exercise; no scores, no flag). Not started.
+3. Motor Movers at Home on the website, for families without the app. Not started.
+4. The user and flow guides rebuilt for the new assessment screens and Motor Movers at Home. Not started.
 
 **Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
 for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
@@ -100,19 +108,19 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
   `milestone_achievement` with the age), the colour, today's session, sessions (offline-safe), invites, joining,
   removing or leaving (the last member leaving deletes the family), and `join-school` (the school's parent code; the
   home record moves onto the school's record, the school's own rows winning). Ratings use
-  `/api/assessment/exercise-scores`. Rules with defaults for Pat in `home/util/HomeRules.java` (colour by age, the
+  `/api/assessment/exercise-scores`. An invite can also email the code (`POST /api/home/invites` with `email`; the
+  email names the sender, not the children; 20 a day per account). Rules with defaults for Pat in `home/util/HomeRules.java` (colour by age, the
   check, 4 exercises a session, 10 sessions a module, Yellow in threes, recheck after 91 days); parent words and the
   gentle prompt in `home/dto/HomeViews.java`.
 - Parent app: Today (a home child's session, or the starting check; colours without Pat's grid fall back to the home
   activities), `add-child`, `check/[id]`, `home-session/[id]` (then first-time ratings), `review/[id]` (end of module),
   `home-child/[id]` (progress, check again, name and age, link a school, delete), `join-school/[id]`, `family`
-  (invite, join, remove). Sessions and ratings queue offline (`lib/homeOutbox.ts`).
+  (invite by code or email, join, remove). Sessions and ratings queue offline (`lib/homeOutbox.ts`).
 - Demo: home@example.test (Priya Shah): Ava (Green, module 2, module 1 review due) and Leo (no check yet).
 - Tests: `HomeProgrammeTest` (own context with a raised sign-in limit, so it does not use up the shared one),
   `HomeRulesTest`, `HomeProgrammeOffTest`. Tried in the app's web preview: session, ratings, check, fallback, family.
 
-**Pat's two assessments (2026-10-27, branch `assessment-rebuild`, migration V15; the owner asked Claude to merge this
-pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-design.md`). Package `assessment`:
+**Pat's two assessments (merged 2026-10-27, pull request #4, migration V15).** Built from Pat's documents of 2026-10-27 (`docs/assessment-design.md`). Package `assessment`:
 - Content: `backend/src/main/resources/assessment/` holds the booklet's fine (59) and gross (74) motor charts and the
   Green (27 exercises, modules 1-6) and Yellow (18 rhymes, start and end) grids as JSON, made from Pat's Word files
   (four obvious typos corrected, repeated chart rows dropped). `AssessmentContent` loads them on start-up in every
@@ -148,8 +156,8 @@ pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-desi
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
-merges** (asked 2026-10-26), unless the owner asks for a particular one to be merged (as with the assessment pull
-request, 2026-10-27). The
+merges** (asked 2026-10-26), unless the owner asks for a particular one to be merged (as with pull requests #4 to #7,
+2026-10-27). The
 GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, account ersagarnikam): open pull
 requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
@@ -287,7 +295,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-27): Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-10-28): email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
@@ -353,4 +361,4 @@ Not started unless noted. Confirm priorities with the owner.
    answers to the ten questions in `docs/home-programme-design.md` (use of her materials at home, colour by age, the
    check's rule, parent wording, a safety note, videos), a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions, a web version for families (the parent app only), and emailing a family code.
+   subscriptions, and a web version for families (the parent app only; in progress).
