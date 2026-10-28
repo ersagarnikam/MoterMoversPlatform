@@ -578,7 +578,7 @@ dialog.confirm .actions { justify-content: flex-end; margin-top: 1rem; }
 .home-kid { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
 .home-kid h2 { margin: 0; }
 .home-kid p { margin: 0; }
-.home-today { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+.home-today { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; align-self: start; }
 .home-today h1, .home-today h2, .home-today p { margin: 0; }
 .home-steps { margin: 0; padding-left: 1.3rem; }
 .home-steps li { padding: 0.15rem 0; }
