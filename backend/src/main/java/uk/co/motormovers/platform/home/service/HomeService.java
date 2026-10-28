@@ -4,7 +4,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
-import uk.co.motormovers.platform.assessment.model.Chart;
 import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.model.ExerciseScore;
 import uk.co.motormovers.platform.assessment.model.Milestone;
@@ -31,6 +29,7 @@ import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.assessment.repository.ExerciseScoreRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
+import uk.co.motormovers.platform.assessment.service.ParentProgress;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.assessment.util.ExtraSupportRule;
 import uk.co.motormovers.platform.child.model.Child;
@@ -103,13 +102,14 @@ public class HomeService {
     private final CurrentUserResolver currentUser;
     private final Clock clock;
     private final Mailer mailer;
+    private final ParentProgress parentProgress;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
-            Mailer mailer) {
+            Mailer mailer, ParentProgress parentProgress) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -126,6 +126,7 @@ public class HomeService {
         this.currentUser = currentUser;
         this.clock = clock;
         this.mailer = mailer;
+        this.parentProgress = parentProgress;
     }
 
     // --- The family -------------------------------------------------------------------------------------------------
@@ -447,39 +448,13 @@ public class HomeService {
     public HomeViews.Progress progress(Long childId) {
         Child child = homeChild(childId);
         LocalDate today = today();
-        List<MilestoneAchievement> mine = achievements.findByChildId(childId);
-        Map<Chart, Long> totals = milestones.findAll().stream()
-                .collect(Collectors.groupingBy(Milestone::getChart, Collectors.counting()));
-        // New: secure since the first check (what the first check found was already there) and in the last months.
-        LocalDate firstCheck = mine.stream().map(MilestoneAchievement::getAchievedOn).min(Comparator.naturalOrder())
-                .orElse(today);
-        LocalDate recent = today.minusDays(HomeRules.RECHECK_AFTER_DAYS);
-        List<HomeViews.ChartProgress> charts = new ArrayList<>();
-        for (Chart chart : Chart.values()) {
-            List<MilestoneAchievement> on = mine.stream().filter(a -> a.getMilestone().getChart() == chart).toList();
-            charts.add(new HomeViews.ChartProgress(chart, chart.label(), on.size(),
-                    totals.getOrDefault(chart, 0L).intValue(),
-                    on.stream()
-                            .filter(a -> a.getAchievedOn().isAfter(firstCheck) && !a.getAchievedOn().isBefore(recent))
-                            .sorted(Comparator.comparing((MilestoneAchievement a) -> a.getMilestone().getPosition()))
-                            .map(a -> a.getMilestone().getDescription()).toList()));
-        }
+        List<AssessmentViews.ChartProgress> charts = parentProgress.charts(childId, today);
         ColourStage stage = child.getCurrentStage();
-        List<HomeViews.ExerciseProgress> rows = List.of();
+        List<AssessmentViews.ExerciseProgress> rows = List.of();
         HomeViews.Support support = new HomeViews.Support(false, null);
         if (stage != null) {
             List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
-            Map<Long, List<ExerciseScore>> byExercise = theirs.stream()
-                    .collect(Collectors.groupingBy(s -> s.getExercise().getId()));
-            rows = exercises.findByStageOrderByNumber(stage).stream().filter(e -> byExercise.containsKey(e.getId()))
-                    .map(e -> {
-                        List<ExerciseScore> list = byExercise.get(e.getId()).stream()
-                                .sorted(Comparator.comparing(ExerciseScore::getPoint, ExercisePoints.ORDER)).toList();
-                        int first = list.getFirst().getScore();
-                        int latest = list.getLast().getScore();
-                        return new HomeViews.ExerciseProgress(e.getId(), e.getNumber(), e.getTitle(),
-                                HomeViews.level(first), HomeViews.level(latest), latest > first);
-                    }).toList();
+            rows = parentProgress.exercises(stage, theirs);
             support = support(stage, theirs);
         }
         return new HomeViews.Progress(homeChild(child, today), HomeViews.NOT_A_DIAGNOSIS, charts, stage,

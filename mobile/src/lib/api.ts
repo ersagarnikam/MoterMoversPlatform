@@ -27,6 +27,25 @@ export interface LinkedChild {
   linkedOn: string
 }
 
+/** Movements secure on one of Pat's charts, and those secured in the last few months. */
+export interface ChartProgress {
+  chart: 'FINE' | 'GROSS'
+  label: string
+  secure: number
+  total: number
+  recentlySecure: string[]
+}
+
+/** An exercise's first and latest rating in the parent's words. */
+export interface ExerciseProgress {
+  exerciseId: number
+  number: number
+  title: string
+  first: string
+  latest: string
+  improved: boolean
+}
+
 export interface Progress {
   child: LinkedChild
   banner: string
@@ -35,6 +54,11 @@ export interface Progress {
   screenings: string[]
   classSessionsDone: number
   counterDays: number
+  /** The school's assessments, in plain words (never the scores or the extra-support flag). */
+  charts: ChartProgress[]
+  exerciseStage: ColourStage | null
+  exerciseStageName: string | null
+  exercises: ExerciseProgress[]
 }
 
 export interface Activity {
@@ -176,10 +200,10 @@ export interface ExerciseRating {
 export interface HomeProgress {
   child: HomeChild
   banner: string
-  charts: { chart: 'FINE' | 'GROSS'; label: string; secure: number; total: number; recentlySecure: string[] }[]
+  charts: ChartProgress[]
   stage: ColourStage | null
   stageName: string | null
-  exercises: { exerciseId: number; number: number; title: string; first: string; latest: string; improved: boolean }[]
+  exercises: ExerciseProgress[]
   sessionsDone: number
   support: { show: boolean; message: string | null }
 }

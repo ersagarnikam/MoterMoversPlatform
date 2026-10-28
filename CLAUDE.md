@@ -85,9 +85,10 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 **In progress (Claude for the owner, 2026-10-28): four pull requests, one after another, each based on the one
 before** (the owner asked for all four):
-1. `family-code-email`: this tidy-up, and emailing a family code to a second parent or carer. Done; in review.
-2. Parent app: a school-linked parent sees their child's assessments (movements secure, a plain "how it is going"
-   per exercise; no scores, no flag). Not started.
+1. `family-code-email` (pull request #8): a CLAUDE.md tidy-up, and emailing a family code to a second parent or
+   carer. Done; in review.
+2. `parent-assessments` (based on #8): a school-linked parent sees their child's assessments in the parent app.
+   Done; in review.
 3. Motor Movers at Home on the website, for families without the app. Not started.
 4. The user and flow guides rebuilt for the new assessment screens and Motor Movers at Home. Not started.
 
@@ -152,7 +153,7 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
 - Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
   modules in, with two children flagged. The last three children of each class are left to assess.
 - Not built: the other five colours (waiting for Pat), editing the charts or grids on screen (change the JSON), the
-  parent app view (not decided), the induction lesson on assessment, retiring the 0-3 check, regenerating the guides.
+  induction lesson on assessment, retiring the 0-3 check, regenerating the guides.
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
@@ -288,6 +289,12 @@ Built so far:
   `build.mjs`; how-to in its README). **Rebuild them when screens or features change**, and update the status page
   in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
+  Since 2026-10-28 a linked child's Progress screen shows the school's assessments in plain words
+  (`assessment/service/ParentProgress`, shared with Motor Movers at Home; mobile `components/AssessmentSummary`):
+  movements secure on each chart (and those new in the last 91 days, after the first record), and each exercise's
+  first and latest rating as Not yet / Getting there / Nearly / Got it, for the child's colour if rated there, else
+  the class's. Never the 1-4 scores, totals or the extra-support flag (the school talks to the family about that).
+  The suggested default for Pat's open question on what parents see.
 - Accounts: invite and reset links (hashed one-time tokens), 10-character minimum passwords, accounts
   switched off stop working within a minute (`ActiveUserFilter`), rate limits on sign-in, registration,
   resets and parent codes (`RateLimiter`, in memory).
@@ -295,7 +302,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-28): email a family code; Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-10-28): school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
@@ -344,7 +351,8 @@ Not started unless noted. Confirm priorities with the owner.
    moving on; a pattern of low scores flags that a child needs more support. Still to settle: the other five
    colours' grids, gaps in the grids sent (Motor Spin has no descriptions; Jack and Jill and Twinkle Twinkle
    repeat another rhyme's), what counts as "a pattern of low scores", the booklet's date of birth and birth
-   history fields (suggested: not held), and what parents see. Full detail, storage, screens and the order of
+   history fields (suggested: not held), and what parents see (a suggested default is built: plain words, no scores
+   or flag). Full detail, storage, screens and the order of
    work: `docs/assessment-design.md`. Screens already say "Module" for a unit (the API field is still `unit`).
 11. Zoom live sessions: **working inside the portal** (tested 2026-10-22 with the owner's Zoom account). Two apps in
    that account: testApp (Server-to-Server OAuth: creates meetings, host token; scopes `meeting:write:meeting:admin`,
