@@ -5,6 +5,8 @@ interface AuthState {
   user: CurrentUser | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<CurrentUser>
+  /** Creates a parent's account and signs them in. */
+  register: (email: string, password: string, displayName: string) => Promise<CurrentUser>
   signOut: () => void
 }
 
@@ -30,12 +32,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user
   }, [])
 
+  const register = useCallback(async (email: string, password: string, displayName: string) => {
+    const { token, user } = await api.register(email, password, displayName)
+    setToken(token)
+    setUser(user)
+    return user
+  }, [])
+
   const signOut = useCallback(() => {
     setToken(null)
     setUser(null)
   }, [])
 
-  return <AuthContext.Provider value={{ user, loading, signIn, signOut }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, loading, signIn, register, signOut }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth(): AuthState {

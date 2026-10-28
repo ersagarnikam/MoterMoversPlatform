@@ -305,8 +305,12 @@ answers). Switched on with `HOME_PROGRAMME=true`; off in production by default, 
   flag) when scores stay low.
 - If the school joins later, its parent code links the child: the home record moves onto the school's, with the
   parent's agreement.
+- **On the website too**, for families without the app: *For families* offers a parent account (`/join`), and
+  parents get **At home** in the menu (`/home`): the children, the check, today's session and ratings, the module
+  reviews, progress, settings, linking a school, and *Family and sharing*. Shown only while `HOME_PROGRAMME` is on
+  (the website asks `GET /api/home/available`, the one home endpoint open without signing in).
 
-Demo: `home@example.test` (Priya Shah: Ava on Green, Leo before his check).
+Demo: `home@example.test` (Priya Shah: Ava on Green, Leo before his check), in the parent app or on the website.
 
 | Rule | Where |
 |---|---|

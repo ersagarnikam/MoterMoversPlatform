@@ -45,6 +45,9 @@ public final class HomeViews {
     }
 
     /** {@code enabled}: the home programme is switched on for this deployment. */
+    public record Availability(boolean enabled) {
+    }
+
     public record Overview(boolean enabled, List<HomeChild> children, List<Member> members, boolean owner,
             int maxChildren) {
     }

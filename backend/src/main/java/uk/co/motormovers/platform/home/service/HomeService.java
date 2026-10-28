@@ -129,6 +129,10 @@ public class HomeService {
         this.parentProgress = parentProgress;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     // --- The family -------------------------------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
@@ -221,14 +225,15 @@ public class HomeService {
                 Your family code is %2$s
 
                 To use it:
-                1. Open the Motor Movers app.
+                1. Open the Motor Movers app, or go to %4$s on the web.
                 2. Sign in, or create a parent account with this email address.
-                3. Go to Account, then Your family, and enter the code under Join a family.
+                3. Open Your family in the app (under Account), or Family and sharing on the web (under At home),
+                   and enter the code under Join a family.
 
                 The code works once, until %3$s. If it has expired, ask %1$s for a new one.
 
                 If you were not expecting this, you can ignore this email.
-                """.formatted(from, code, EMAIL_DATE.format(expiresOn));
+                """.formatted(from, code, EMAIL_DATE.format(expiresOn), mailer.link("/join"));
     }
 
     /** Joins the family whose code this is. Someone who already has their own home children cannot. */

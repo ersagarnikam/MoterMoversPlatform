@@ -677,6 +677,176 @@ export interface NewPayment {
   paidOn: string | null
 }
 
+// --- Motor Movers at Home (families without a school) -----------------------------------------------------------
+
+export interface HomeChild {
+  id: number
+  name: string
+  ageMonths: number
+  stage: ColourStage | null
+  stageName: string | null
+  checkedOn: string | null
+  /** The starting check has not been done, or was done a few months ago. */
+  checkDue: boolean
+}
+
+export interface FamilyMember {
+  userId: number
+  name: string
+  owner: boolean
+  you: boolean
+}
+
+export interface HomeOverview {
+  /** Motor Movers at Home is switched on for this deployment. */
+  enabled: boolean
+  children: HomeChild[]
+  members: FamilyMember[]
+  owner: boolean
+  maxChildren: number
+}
+
+export type CheckAnswer = 'YES' | 'NOT_YET' | 'NOT_SURE'
+
+export interface HomeCheck {
+  childId: number
+  name: string
+  ageMonths: number
+  banner: string
+  questions: {
+    milestoneId: number
+    chart: 'FINE' | 'GROSS'
+    chartLabel: string
+    band: string
+    description: string
+    secure: boolean
+  }[]
+}
+
+export interface CheckResult {
+  suggested: ColourStage
+  suggestedName: string
+  forAge: ColourStage
+  forAgeName: string
+  earlier: boolean
+  yes: number
+  notYet: number
+  notSure: number
+  explanation: string
+}
+
+export interface HomeExercise {
+  id: number
+  stage: ColourStage
+  number: number
+  title: string
+  instructions: string
+  /** Pat's description of each score, 1 to 4. */
+  levels: Record<string, string>
+  points: { point: string; label: string }[]
+}
+
+export interface HomeToday {
+  childId: number
+  name: string
+  stage: ColourStage
+  stageName: string
+  /** Pat's exercises exist for this colour; otherwise the colour's home activities are used. */
+  hasExercises: boolean
+  module: number
+  modules: number
+  sessionInModule: number
+  sessionsPerModule: number
+  colourComplete: boolean
+  exercises: HomeExercise[]
+  /** Exercises to rate after doing them for the first time. */
+  firstTime: number[]
+  /** False for a child linked to a school: the teacher does the rating. */
+  canRate: boolean
+  doneToday: boolean
+  counterGrid: boolean[]
+  daysDone: number
+  counterDays: number
+  sessionsDone: number
+  review: { point: string; label: string; exercises: HomeExercise[] } | null
+  checkDue: boolean
+  support: { show: boolean; message: string | null }
+  levels: { score: number; label: string }[]
+}
+
+/** Movements secure on one of Pat's charts, and those secured in the last few months. */
+export interface ChartProgress {
+  chart: 'FINE' | 'GROSS'
+  label: string
+  secure: number
+  total: number
+  recentlySecure: string[]
+}
+
+/** An exercise's first and latest rating in the parent's words. */
+export interface ExerciseProgress {
+  exerciseId: number
+  number: number
+  title: string
+  first: string
+  latest: string
+  improved: boolean
+}
+
+export interface HomeProgress {
+  child: HomeChild
+  banner: string
+  charts: ChartProgress[]
+  stage: ColourStage | null
+  stageName: string | null
+  exercises: ExerciseProgress[]
+  sessionsDone: number
+  support: { show: boolean; message: string | null }
+}
+
+/** A colour's home activities, used while Pat's exercise grid for that colour is still to come. */
+export interface HomeActivity {
+  id: number
+  stage: ColourStage
+  stageName: string
+  position: number
+  title: string
+  focus: string
+  durationMinutes: number
+  videoUrl: string | null
+  steps: string[]
+}
+
+export interface FamilyActivities {
+  stage: ColourStage
+  stageName: string
+  next: HomeActivity | null
+  activities: HomeActivity[]
+  doneToday: boolean
+  daysDone: number
+  counterDays: number
+  counterGrid: boolean[]
+  totalSessions: number
+}
+
+export interface FamilyInvite {
+  code: string
+  expiresOn: string
+  sentTo: string | null
+}
+
+/** A one-off id for a record sent to the API, so sending it twice saves it once. */
+export function newClientId(): string {
+  return crypto.randomUUID()
+}
+
+/** Today in the browser's time zone, as yyyy-mm-dd. */
+export function localDate(d: Date = new Date()): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
 const TOKEN_KEY = 'mm.token'
 
 export function getToken(): string | null {
@@ -901,4 +1071,52 @@ export const api = {
   parentLinks: (schoolId: number) => request<ParentLinkRow[]>('GET', `/api/schools/${schoolId}/parent-links`),
   removeParentLink: (schoolId: number, linkId: number) =>
     request<void>('DELETE', `/api/schools/${schoolId}/parent-links/${linkId}`),
+  /** Parents and carers create their own account. */
+  register: (email: string, password: string, displayName: string) =>
+    request<{ token: string; user: CurrentUser }>('POST', '/api/auth/register', { email, password, displayName }),
+  /** Open to anyone: whether Motor Movers at Home is switched on. */
+  homeAvailable: () => request<{ enabled: boolean }>('GET', '/api/home/available'),
+  homeOverview: () => request<HomeOverview>('GET', '/api/home'),
+  addHomeChild: (name: string, ageMonths: number) =>
+    request<HomeChild>('POST', '/api/home/children', { name, ageMonths }),
+  updateHomeChild: (id: number, name: string, ageMonths: number) =>
+    request<HomeChild>('PUT', `/api/home/children/${id}`, { name, ageMonths }),
+  deleteHomeChild: (id: number) => request<void>('DELETE', `/api/home/children/${id}`),
+  homeProgress: (id: number) => request<HomeProgress>('GET', `/api/home/children/${id}`),
+  homeCheck: (id: number) => request<HomeCheck>('GET', `/api/home/children/${id}/check`),
+  submitHomeCheck: (id: number, answers: { milestoneId: number; answer: CheckAnswer }[]) =>
+    request<CheckResult>('POST', `/api/home/children/${id}/check`, { answers }),
+  setHomeStage: (id: number, stage: ColourStage) =>
+    request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
+  homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
+  recordHomeSession: (childId: number) =>
+    request<{ saved: number; duplicates: number }>('POST', '/api/home/sessions', [
+      { clientId: newClientId(), childId, doneOn: localDate() },
+    ]),
+  /** Ratings use the assessment endpoint, which checks that the child is the family's. */
+  rateExercises: (childId: number, point: string, scores: Record<number, number>) =>
+    request<{ saved: number; duplicates: number }>(
+      'POST',
+      '/api/assessment/exercise-scores',
+      Object.entries(scores).map(([exerciseId, score]) => ({
+        clientId: newClientId(),
+        childId,
+        exerciseId: Number(exerciseId),
+        point,
+        score,
+        assessedOn: localDate(),
+      })),
+    ),
+  /** A colour's home activities for a child, while Pat's grid for that colour is still to come. */
+  familyActivities: (childId: number) => request<FamilyActivities>('GET', `/api/family/home?childId=${childId}`),
+  recordFamilyActivity: (childId: number, activityId: number) =>
+    request<{ saved: number; duplicates: number }>('POST', '/api/family/home/sessions', [
+      { clientId: newClientId(), activityId, childId, doneOn: localDate() },
+    ]),
+  /** With an email address the code is also emailed there, with how to use it. */
+  inviteCarer: (email?: string) => request<FamilyInvite>('POST', '/api/home/invites', email ? { email } : undefined),
+  joinFamily: (code: string) => request<HomeOverview>('POST', '/api/home/join', { code }),
+  removeFamilyMember: (userId: number) => request<void>('DELETE', `/api/home/members/${userId}`),
+  joinSchool: (id: number, code: string) =>
+    request<{ childId: number; schoolName: string }>('POST', `/api/home/children/${id}/join-school`, { code }),
 }
