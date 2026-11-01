@@ -44,9 +44,12 @@ the owner are happy with the questions at the end of this note.
 Colours you have not sent grids for yet (Red, Orange, Blue, Indigo, Violet) use the existing home activities for
 that colour until your grids arrive.
 
+Families can do all of this in the parent app or on the Motor Movers website (since 28 October 2026), so a family
+without a smartphone, or who prefers a bigger screen, is not left out.
+
 ### Try it
 
-In the parent app (or its web preview), sign in as **home@example.test** with the password **password**. Priya Shah
+In the parent app, or on the website under **At home**, sign in as **home@example.test** with the password **password**. Priya Shah
 has two children: **Ava**, 3 years 7 months, on Green, part way through module 2 with her module 1 ratings due, and
 **Leo**, 1 year 8 months, who has not done the starting check yet.
 
@@ -127,3 +130,6 @@ Each has a suggested answer, which is what the app does now. A short reply such 
   each marked as a default for Pat to confirm. Parent wording is in `home/dto/HomeViews.java`.
 - Parent app: Today (the session or the check), the session and first-time ratings, the module review, the starting
   check, the child's progress and settings, family and sharing, and linking a school.
+- Website (`frontend/src/pages/home`): the same, under At home (`/home`), with a parent sign-up page (`/join`). The
+  menu item and the families page's offer show only while the programme is on (`GET /api/home/available`, open to
+  anyone).

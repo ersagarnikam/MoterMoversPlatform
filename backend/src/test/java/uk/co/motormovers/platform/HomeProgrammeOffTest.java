@@ -24,6 +24,9 @@ class HomeProgrammeOffTest {
 
     @Test
     void switchedOffItSaysSoAndRefusesChanges() throws Exception {
+        // The public website asks without signing in.
+        mvc.perform(get("/api/home/available")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.enabled").value(false));
         String body = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"home@example.test\",\"password\":\"password\"}"))
                 .andReturn().getResponse().getContentAsString();

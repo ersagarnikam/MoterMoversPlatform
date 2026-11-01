@@ -219,11 +219,11 @@ const AUDIENCE = 'Partners, investors and school leaders. No technical knowledge
 function overviewBody() {
   const stageBar = `<div class="stages">${STAGES.map((c, i) => `<span style="background:${c}">${i + 1} · ${STAGE_NAMES[i]}</span>`).join('')}</div>`
   const roleCards = [
-    ['Class teacher', 'teacher-today', 'Runs the 10-minute session every school day, assesses children and sees each child’s readiness profile.'],
-    ['Head teacher and SENCo', 'head-dashboard', 'Sees progress and participation across the school, sets the school up and checks payments.'],
+    ['Class teacher', 'teacher-today', 'Runs the 10-minute session every school day, assesses children with Pat Preedy’s two assessments and sees each child’s profile.'],
+    ['Head teacher and SENCo', 'head-dashboard', 'Sees both assessments, progress and participation across the school, sets the school up and checks payments.'],
     ['Trust or group lead', 'trust-dashboard', 'Compares licences, results and spending across a group of schools, without seeing individual children.'],
     ['Practitioner', 'practitioner-training', 'Books the live practitioner course and works towards the yearly-renewed certificate.'],
-    ['Parent or carer', 'app-today', 'Follows their child’s stage in the parent app, does short home activities and takes the parent course.'],
+    ['Parent or carer', 'app-today', 'Follows their child’s progress in the parent app, does short sessions at home (with or without a school) and takes the parent course.'],
     ['Trainer', 'trainer-live', 'Runs the live course sessions given to them on Zoom, keeps the register and completes their cohorts.'],
     ['Motor Movers team', 'admin-content-wording', 'Publishes approved content, signs schools up, runs courses and trainers, and tracks income.'],
   ]
@@ -248,7 +248,7 @@ function overviewBody() {
       <div><b>2 · Teachers</b><span>run a guided 10-minute session daily, with ongoing assessment and start and end developmental assessments.</span></div>
       <div><b>3 · Head teachers</b><span>see participation and progress for every class, approve staff training and act where support is needed.</span></div>
       <div><b>4 · Trusts and school groups</b><span>see summaries across their schools to plan renewals and budgets.</span></div>
-      <div><b>5 · Families</b><span>link their child with a school code and keep the movement going at home.</span></div>
+      <div><b>5 · Families</b><span>link their child with a school code and keep the movement going at home; families without a school can use Motor Movers at Home.</span></div>
       <div><b>6 · Practitioners</b><span>take the live course, its quizzes and the certificate, growing the number of trained adults.</span></div>
       <div><b>7 · Trainers</b><span>run the live sessions on Zoom inside the platform, so training grows beyond one person.</span></div>
     </div>
@@ -266,10 +266,11 @@ function overviewBody() {
     <h2>Built to protect children</h2>
     <p>Schools trust Motor Movers with records about young children. These protections are built into how the platform works, not left to good intentions:</p>
     <ul class="ticks">
-      <li><strong>Never a diagnosis.</strong> The platform assesses readiness to learn. Every readiness profile says it is not a diagnosis, and the team cannot approve wording that sounds like one.</li>
+      <li><strong>Never a diagnosis.</strong> The platform assesses progress with the programme. Every profile says it is not a diagnosis, the extra-support flag never names a cause, and the team cannot approve wording that sounds like one.</li>
       <li><strong>Initials by default.</strong> Children are shown by initials unless the school chooses to show full names.</li>
       <li><strong>Everyone sees only their part.</strong> Teachers see their own class, heads their school, trusts and school groups summaries only, parents only the children linked to them.</li>
-      <li><strong>Parents are invited by the school.</strong> A one-time code links a parent to a child, and the school can remove the link at any time.</li>
+      <li><strong>Parents are invited by the school.</strong> A one-time code links a parent to a child, and the school can remove the link at any time. Parents see progress in plain words, never scores.</li>
+      <li><strong>A family’s own children stay with the family.</strong> With Motor Movers at Home, only the family sees its children, with no date of birth, unless it chooses to link the school.</li>
       <li><strong>Every view is logged.</strong> Each time someone opens a child’s record it is written to an access log the head can review.</li>
       <li><strong>Records do not linger.</strong> Children who leave are deleted automatically a year after their leaving date.</li>
       <li><strong>Video is off by default.</strong> Assessment video needs the school to opt in and parents to consent.</li>
@@ -308,7 +309,9 @@ function overviewBody() {
         <li>Parent phone app for iPhone and Android, with phone notifications.</li>
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates emailed as PDFs.</li>
         <li>Content approval with the wording check, school onboarding, staff training approved by heads, and payments by card online.</li>
-        <li>Checked automatically on every change: 111 checks of the system behind the screens, 43 of the web app’s building blocks, 62 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
+        <li>Pat Preedy’s two assessments for the Green and Yellow colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
+        <li>Motor Movers at Home for families without a school, in the app and on the website (switched off until Pat and the owner agree).</li>
+        <li>Checked automatically on every change: 135 checks of the system behind the screens, 51 of the web app’s building blocks, 67 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
         <li>Production set-up tried in full: secure web address (HTTPS), nightly backups with copies off the server, and a refusal to start with unsafe settings.</li>
       </ul></div>
       <div class="card no"><h3>Next steps</h3><ul>
@@ -316,7 +319,7 @@ function overviewBody() {
         <li>Publish the parent app in the Apple and Google app stores, which also switches on phone notifications.</li>
         <li>Connect the Motor Movers card payment account, and confirm VAT.</li>
         <li>Upload the filmed session videos and rhyme recordings.</li>
-        <li>The new developmental and exercise assessments, from Pat’s milestone charts.</li>
+        <li>Pat’s exercise grids for the other five colours, and her answers on Motor Movers at Home, with a privacy notice for families.</li>
       </ul></div>
     </div>
     <h3 style="margin-top:7mm">The guides in this pack</h3>

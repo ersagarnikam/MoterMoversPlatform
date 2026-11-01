@@ -40,6 +40,12 @@ public class HomeController {
         this.currentUser = currentUser;
     }
 
+    /** Open to anyone: the website offers sign-up for families only while the home programme is on. */
+    @GetMapping("/available")
+    public HomeViews.Availability available() {
+        return new HomeViews.Availability(home.isEnabled());
+    }
+
     @GetMapping
     public HomeViews.Overview overview() {
         return home.overview();
