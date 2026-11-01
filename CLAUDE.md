@@ -81,17 +81,13 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-28)
+## Current state (2026-11-02)
 
-**In progress (Claude for the owner, 2026-10-28): four pull requests, one after another, each based on the one
-before** (the owner asked for all four):
-1. `family-code-email` (pull request #8): a CLAUDE.md tidy-up, and emailing a family code to a second parent or
-   carer. Done; in review.
-2. `parent-assessments` (based on #8): a school-linked parent sees their child's assessments in the parent app.
-   Done; in review.
-3. `home-web` (based on #9): Motor Movers at Home on the website. Done; in review.
-4. `guides-refresh` (based on #10): the user and flow guides rebuilt for the new assessment screens and Motor
-   Movers at Home. Done; in review.
+**Merged 2026-10-28 (pull requests #8 to #11, stacked):** emailing a family code (#8), school assessments in the
+parent app (#9), Motor Movers at Home on the website (#10) and the rebuilt guides (#11). #10 and #11 were merged into
+their stacked base branches rather than `main`, so they reached `main` through a follow-up pull request
+(`finish-home-web`, 2026-11-02). With stacked pull requests, merge one, wait for GitHub to move the next one's base
+to `main`, then merge it; or open each from `main`.
 
 **Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
 for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
