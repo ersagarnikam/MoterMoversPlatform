@@ -594,3 +594,23 @@ dialog.confirm .actions { justify-content: flex-end; margin-top: 1rem; }
 .home-exercise p { font-size: 1.1rem; line-height: 1.6; }
 .home-progress { width: 100%; height: 6px; accent-color: var(--bar); }
 @media (max-width: 760px) { .home-charts { grid-template-columns: 1fr; } }
+
+/* The website's enquiry form (price guide, applying), opened in place under its button. */
+.enquiry-form { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; color: var(--ink); margin-top: 1.25rem; max-width: 48rem; }
+.enquiry-form h3, .enquiry-form h4, .enquiry-lead { margin: 0; }
+.price-chart { display: flex; flex-direction: column; gap: 0.6rem; }
+.price-chart h3 { font-size: 1rem; }
+.price-chart .muted, .price-chart .fine { margin: 0; }
+.price-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)); gap: 0.6rem; }
+.price-plan { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; font: inherit; color: var(--ink); text-align: left; cursor: pointer; padding: 0.8rem 0.9rem; }
+.price-plan:hover { border-color: var(--border-strong); }
+.price-plan-on { border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
+.price-plan-name { font-weight: 600; }
+.price-plan-price { font-size: 1.25rem; font-weight: 700; }
+.enquiry-form > .btn { align-self: flex-start; }
+.enquiry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; align-items: end; }
+.site-cta-band .enquiry-form { margin: 1.25rem auto 0; }
+.site-cta-band .enquiry-form p { color: var(--ink); margin: 0; max-width: none; }
+.site-cta-band .enquiry-form .fine { color: var(--muted); }
+.site-cta-band .enquiry-form a:not(.btn) { color: var(--teal); }
+@media (max-width: 760px) { .enquiry-grid { grid-template-columns: 1fr; } }

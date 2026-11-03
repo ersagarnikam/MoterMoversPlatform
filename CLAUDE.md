@@ -50,13 +50,13 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 135 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 139 unit + API integration tests (H2)
 cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 67 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 68 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -81,7 +81,19 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-11-02)
+## Current state (2026-11-03)
+
+**In review (Claude for the owner, branch `website-enquiry-form`, pull request open, not merged, 2026-11-03): price
+chart and enquiry form on the website.** "Ask for the price guide" on `/for-schools` was a `mailto:` link, which does
+nothing on a computer with no email program (the owner's). It now opens, in place, the **price chart** (the active
+licence plans at today's price from Plans & prices, `GET /api/plans`, open without signing in; the free trial shown as
+Free, a zero-price plan that is not the trial, such as "Free", left out) and an **enquiry form** (name, email, setting,
+phone, classes, stages, the plan chosen on the chart, message). "Apply online" opens the same form for applying; the
+email links stay as a second way. The API (`enquiry` package, `POST /api/enquiries`, open, 5 an hour per address, a
+hidden field that bots fill in) emails the enquiry to `platform.enquiry-email` (`PLATFORM_ENQUIRY_EMAIL`). Nothing is
+stored and the sender is not emailed. **For now the default is the owner's address (sagarnikamforu@gmail.com), so no
+test enquiry reaches Pat** (asked 2026-11-03); set it to the team's address for go-live. Tests: `EnquiryTest`, and the
+price guide browser test in `e2e/site.spec.ts`. Done: all of it, tried in the browser. Left: the owner's review.
 
 **Merged 2026-10-28 (pull requests #8 to #11, stacked):** emailing a family code (#8), school assessments in the
 parent app (#9), Motor Movers at Home on the website (#10) and the rebuilt guides (#11). #10 and #11 were merged into
@@ -167,7 +179,7 @@ GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, acc
 requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
 GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-67/67 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+68/68 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -234,7 +246,7 @@ connect, the server size, the web address and email. Nothing was created.
 
 Built so far:
 - Public website (`frontend/src/pages/site`, `SiteLayout`, shared facts in `src/site.ts`): home, about and
-  research, the programme, for schools (licence, how to join, apply by email), for families, and a
+  research, the programme, for schools (licence, price chart, how to join, an enquiry form for the price guide and applying), for families, and a
   role chooser at `/sign-in` that opens `/login?as=<role>`. Content is adapted from
   movementforlearningproject.co.uk; the contact email and phone are theirs, so confirm them with the owner.
 - Teacher: today's session player with nursery rhymes, 20-day participation counter, assessment one item at
@@ -308,7 +320,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-28): guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-11-03): price chart and enquiry form on the website (in review); guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,

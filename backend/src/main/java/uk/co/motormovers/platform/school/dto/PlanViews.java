@@ -24,6 +24,10 @@ public final class PlanViews {
             PriceRow nextPrice, long licences, List<PriceRow> history) {
     }
 
+    /** A plan as the public website shows it: what a school would pay a year from today. */
+    public record PublicPlan(String code, String label, boolean freeTrial, int annualPricePence) {
+    }
+
     public record NewPlan(@NotBlank @Size(max = 100) String label, boolean freeTrial,
             @Min(0) @Max(10_000_000) int pricePence) {
     }
