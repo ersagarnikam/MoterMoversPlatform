@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Text, View } from 'react-native'
+import { ExerciseList, MovementCards } from '@/components/AssessmentSummary'
 import {
   Banner,
   Body,
@@ -78,6 +79,21 @@ export default function ChildScreen() {
           <Muted>Started at {child.startingStageName}.</Muted>
         ) : null}
       </Card>
+
+      <H2>Movements</H2>
+      {data.charts.some((c) => c.secure > 0) ? (
+        <>
+          <Muted>Movements from the programme's charts that the school has seen {name} do securely.</Muted>
+          <MovementCards charts={data.charts} />
+        </>
+      ) : (
+        <Muted>The school has not recorded these for {name} yet.</Muted>
+      )}
+      <ExerciseList
+        stageName={data.exerciseStageName}
+        exercises={data.exercises}
+        note={`How ${name} is getting on with each exercise at school, from the first time to the latest.`}
+      />
 
       <Card>
         <H2>Six areas</H2>

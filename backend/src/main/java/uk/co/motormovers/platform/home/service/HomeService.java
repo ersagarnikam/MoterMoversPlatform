@@ -2,10 +2,11 @@ package uk.co.motormovers.platform.home.service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
-import uk.co.motormovers.platform.assessment.model.Chart;
 import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.model.ExerciseScore;
 import uk.co.motormovers.platform.assessment.model.Milestone;
@@ -29,10 +29,12 @@ import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.assessment.repository.ExerciseScoreRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
+import uk.co.motormovers.platform.assessment.service.ParentProgress;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.assessment.util.ExtraSupportRule;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
+import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.family.dto.FamilyViews;
@@ -80,6 +82,8 @@ public class HomeService {
 
     static final String NOT_AVAILABLE = "Motor Movers at Home is not available yet";
 
+    private static final DateTimeFormatter EMAIL_DATE = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.UK);
+
     static final String INVALID_CODE = "That code is not valid or has expired. Ask for a new one.";
 
     private final boolean enabled;
@@ -97,12 +101,15 @@ public class HomeService {
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final Mailer mailer;
+    private final ParentProgress parentProgress;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
-            AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock) {
+            AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
+            Mailer mailer, ParentProgress parentProgress) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -118,6 +125,12 @@ public class HomeService {
         this.access = access;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.mailer = mailer;
+        this.parentProgress = parentProgress;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     // --- The family -------------------------------------------------------------------------------------------------
@@ -180,9 +193,12 @@ public class HomeService {
         children.delete(homeChild(childId));
     }
 
-    /** A code for a second parent or carer, so they can share the family's children. */
+    /**
+     * A code for a second parent or carer, so they can share the family's children. With an email address the code is
+     * also sent there, with how to use it; the email names the parent who sent it but not the children.
+     */
     @Transactional
-    public HomeViews.Invite invite() {
+    public HomeViews.Invite invite(String email) {
         CurrentUser me = requireParent();
         FamilyMember mine = members.findByUserId(me.id())
                 .orElseThrow(() -> new IllegalArgumentException("Add a child before inviting someone to share"));
@@ -192,7 +208,32 @@ public class HomeService {
         } while (invites.findByCode(code).isPresent());
         FamilyInvite invite = invites.save(new FamilyInvite(mine.getFamilyId(), code, me.id(),
                 today().plusDays(INVITE_DAYS)));
-        return new HomeViews.Invite(InviteCodes.format(invite.getCode()), invite.getExpiresOn());
+        String shown = InviteCodes.format(invite.getCode());
+        if (email != null) {
+            String from = users.findById(me.id()).map(AppUser::getDisplayName).orElse("A parent");
+            mailer.send(email, from + " has invited you to Motor Movers at Home", inviteEmail(from, shown,
+                    invite.getExpiresOn()));
+        }
+        return new HomeViews.Invite(shown, invite.getExpiresOn(), email);
+    }
+
+    private String inviteEmail(String from, String code, LocalDate expiresOn) {
+        return """
+                %1$s has invited you to share their children's Motor Movers at Home: the short daily movement \
+                sessions, and how each child is getting on.
+
+                Your family code is %2$s
+
+                To use it:
+                1. Open the Motor Movers app, or go to %4$s on the web.
+                2. Sign in, or create a parent account with this email address.
+                3. Open Your family in the app (under Account), or Family and sharing on the web (under At home),
+                   and enter the code under Join a family.
+
+                The code works once, until %3$s. If it has expired, ask %1$s for a new one.
+
+                If you were not expecting this, you can ignore this email.
+                """.formatted(from, code, EMAIL_DATE.format(expiresOn), mailer.link("/join"));
     }
 
     /** Joins the family whose code this is. Someone who already has their own home children cannot. */
@@ -412,39 +453,13 @@ public class HomeService {
     public HomeViews.Progress progress(Long childId) {
         Child child = homeChild(childId);
         LocalDate today = today();
-        List<MilestoneAchievement> mine = achievements.findByChildId(childId);
-        Map<Chart, Long> totals = milestones.findAll().stream()
-                .collect(Collectors.groupingBy(Milestone::getChart, Collectors.counting()));
-        // New: secure since the first check (what the first check found was already there) and in the last months.
-        LocalDate firstCheck = mine.stream().map(MilestoneAchievement::getAchievedOn).min(Comparator.naturalOrder())
-                .orElse(today);
-        LocalDate recent = today.minusDays(HomeRules.RECHECK_AFTER_DAYS);
-        List<HomeViews.ChartProgress> charts = new ArrayList<>();
-        for (Chart chart : Chart.values()) {
-            List<MilestoneAchievement> on = mine.stream().filter(a -> a.getMilestone().getChart() == chart).toList();
-            charts.add(new HomeViews.ChartProgress(chart, chart.label(), on.size(),
-                    totals.getOrDefault(chart, 0L).intValue(),
-                    on.stream()
-                            .filter(a -> a.getAchievedOn().isAfter(firstCheck) && !a.getAchievedOn().isBefore(recent))
-                            .sorted(Comparator.comparing((MilestoneAchievement a) -> a.getMilestone().getPosition()))
-                            .map(a -> a.getMilestone().getDescription()).toList()));
-        }
+        List<AssessmentViews.ChartProgress> charts = parentProgress.charts(childId, today);
         ColourStage stage = child.getCurrentStage();
-        List<HomeViews.ExerciseProgress> rows = List.of();
+        List<AssessmentViews.ExerciseProgress> rows = List.of();
         HomeViews.Support support = new HomeViews.Support(false, null);
         if (stage != null) {
             List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
-            Map<Long, List<ExerciseScore>> byExercise = theirs.stream()
-                    .collect(Collectors.groupingBy(s -> s.getExercise().getId()));
-            rows = exercises.findByStageOrderByNumber(stage).stream().filter(e -> byExercise.containsKey(e.getId()))
-                    .map(e -> {
-                        List<ExerciseScore> list = byExercise.get(e.getId()).stream()
-                                .sorted(Comparator.comparing(ExerciseScore::getPoint, ExercisePoints.ORDER)).toList();
-                        int first = list.getFirst().getScore();
-                        int latest = list.getLast().getScore();
-                        return new HomeViews.ExerciseProgress(e.getId(), e.getNumber(), e.getTitle(),
-                                HomeViews.level(first), HomeViews.level(latest), latest > first);
-                    }).toList();
+            rows = parentProgress.exercises(stage, theirs);
             support = support(stage, theirs);
         }
         return new HomeViews.Progress(homeChild(child, today), HomeViews.NOT_A_DIAGNOSIS, charts, stage,

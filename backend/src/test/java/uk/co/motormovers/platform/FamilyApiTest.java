@@ -1,6 +1,8 @@
 package uk.co.motormovers.platform;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,7 +49,16 @@ class FamilyApiTest {
                 .andExpect(jsonPath("$.banner").value(containsString("Not a diagnosis")))
                 .andExpect(jsonPath("$.areas[0].bandLabel").exists())
                 .andExpect(jsonPath("$.areas[0].fraction").doesNotExist())
-                .andExpect(jsonPath("$.counterDays").value(20));
+                .andExpect(jsonPath("$.counterDays").value(20))
+                // The school's assessments in plain words: movements secure, and each exercise's first and latest
+                // rating. Never the 1-4 scores or the extra-support flag.
+                .andExpect(jsonPath("$.charts.length()").value(2))
+                .andExpect(jsonPath("$.charts[0].secure").value(greaterThan(0)))
+                .andExpect(jsonPath("$.exercises[0].title").exists())
+                .andExpect(jsonPath("$.exercises[0].latest").value(in(List.of("Not yet", "Getting there", "Nearly",
+                        "Got it"))))
+                .andExpect(jsonPath("$.exercises[0].score").doesNotExist())
+                .andExpect(jsonPath("$..extraSupport").isEmpty());
 
         mvc.perform(get("/api/schools/1/access-log").header("Authorization", bearer(login("head@oakfield.test"))))
                 .andExpect(jsonPath("$[?(@.childId == " + childId + " && @.action == 'PARENT_VIEW_PROGRESS')]")

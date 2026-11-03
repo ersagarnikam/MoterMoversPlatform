@@ -27,6 +27,25 @@ export interface LinkedChild {
   linkedOn: string
 }
 
+/** Movements secure on one of Pat's charts, and those secured in the last few months. */
+export interface ChartProgress {
+  chart: 'FINE' | 'GROSS'
+  label: string
+  secure: number
+  total: number
+  recentlySecure: string[]
+}
+
+/** An exercise's first and latest rating in the parent's words. */
+export interface ExerciseProgress {
+  exerciseId: number
+  number: number
+  title: string
+  first: string
+  latest: string
+  improved: boolean
+}
+
 export interface Progress {
   child: LinkedChild
   banner: string
@@ -35,6 +54,11 @@ export interface Progress {
   screenings: string[]
   classSessionsDone: number
   counterDays: number
+  /** The school's assessments, in plain words (never the scores or the extra-support flag). */
+  charts: ChartProgress[]
+  exerciseStage: ColourStage | null
+  exerciseStageName: string | null
+  exercises: ExerciseProgress[]
 }
 
 export interface Activity {
@@ -176,10 +200,10 @@ export interface ExerciseRating {
 export interface HomeProgress {
   child: HomeChild
   banner: string
-  charts: { chart: 'FINE' | 'GROSS'; label: string; secure: number; total: number; recentlySecure: string[] }[]
+  charts: ChartProgress[]
   stage: ColourStage | null
   stageName: string | null
-  exercises: { exerciseId: number; number: number; title: string; first: string; latest: string; improved: boolean }[]
+  exercises: ExerciseProgress[]
   sessionsDone: number
   support: { show: boolean; message: string | null }
 }
@@ -387,7 +411,13 @@ export const api = {
   /** Ratings use the assessment endpoint, which checks that the child is the family's. */
   rateExercises: (ratings: ExerciseRating[]) =>
     request<{ saved: number; duplicates: number }>('POST', '/api/assessment/exercise-scores', ratings),
-  inviteCarer: () => request<{ code: string; expiresOn: string }>('POST', '/api/home/invites'),
+  /** With an email address the code is also emailed there, with how to use it. */
+  inviteCarer: (email?: string) =>
+    request<{ code: string; expiresOn: string; sentTo: string | null }>(
+      'POST',
+      '/api/home/invites',
+      email ? { email } : undefined,
+    ),
   joinFamily: (code: string) => request<HomeOverview>('POST', '/api/home/join', { code }),
   removeFamilyMember: (userId: number) => request<void>('DELETE', `/api/home/members/${userId}`),
   joinSchool: (id: number, code: string) =>

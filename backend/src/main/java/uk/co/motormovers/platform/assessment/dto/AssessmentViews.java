@@ -20,7 +20,14 @@ public final class AssessmentViews {
     /** The only wording the flag uses: it never names a cause. */
     public static final String EXTRA_SUPPORT = "May benefit from extra support";
 
+    /** The parent's words for Pat's four levels (1 Not yet, 2 Developing, 3 Nearly there, 4 Confident and accurate). */
+    public static final List<String> PARENT_LEVELS = List.of("Not yet", "Getting there", "Nearly", "Got it");
+
     private AssessmentViews() {
+    }
+
+    public static String parentLevel(Integer score) {
+        return score == null ? null : PARENT_LEVELS.get(score - 1);
     }
 
     // --- Programme content ---------------------------------------------------------------------------------------
@@ -101,6 +108,17 @@ public final class AssessmentViews {
     }
 
     // --- The assessment profile: both assessments ----------------------------------------------------------------
+
+    // --- For parents (ParentProgress) ----------------------------------------------------------------------------
+
+    /** Movements secure on a chart, and those secured in the last few months. */
+    public record ChartProgress(Chart chart, String label, int secure, int total, List<String> recentlySecure) {
+    }
+
+    /** The first and latest rating of an exercise, in the parent's words. Never compared with other children. */
+    public record ExerciseProgress(Long exerciseId, int number, String title, String first, String latest,
+            boolean improved) {
+    }
 
     public record ChartSummary(Chart chart, String label, int secure, int total, Map<YearPoint, Integer> thisYear) {
     }

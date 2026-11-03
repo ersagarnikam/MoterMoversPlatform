@@ -1,7 +1,9 @@
 // Builds the guides as HTML and prints each to an A4 PDF with Chrome, from the screenshots in shots/ (capture.mjs).
 //   docs/flow-guides  for partners, investors and school leaders: the overview and one guide per role (flow-content.mjs)
 //   docs/user-guide   for the people who use the platform: how to do each task (user-guide-content.mjs)
-// Usage: node docs/guide-builder/build.mjs [flow|user|all]   (default all; needs frontend/node_modules and Chrome)
+// Usage: node docs/guide-builder/build.mjs [flow|user|all] [prototype]   (default all; needs frontend/node_modules and Chrome)
+//   prototype: the copies for people outside the build team, such as Pat (docs/*/prototype): labelled as a prototype,
+//   "considered in the design" rather than "built", and no prices (those are confirmed with Kay).
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -12,14 +14,28 @@ import { GETTING_STARTED, GUIDES } from './user-guide-content.mjs'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..', '..')
 const { chromium } = createRequire(join(ROOT, 'frontend', 'package.json'))('@playwright/test')
-const WHICH = process.argv[2] ?? 'all'
+const WHICH = ['flow', 'user'].find((w) => process.argv.includes(w)) ?? 'all'
+const PROTOTYPE = process.argv.includes('prototype')
 const HTML_DIR = join(HERE, 'html')
 mkdirSync(HTML_DIR, { recursive: true })
 
 const FONTS = join(ROOT, 'frontend', 'node_modules', '@fontsource')
 const shot = (name) => pathToFileURL(join(HERE, 'shots', `${name}.png`)).href
 const font = (family, weight) => pathToFileURL(join(FONTS, family, 'files', `${family}-latin-${weight}-normal.woff2`)).href
-const DATE = 'October 2026'
+const DATE = PROTOTYPE ? 'November 2026' : 'October 2026'
+const PROTO_NOTE =
+  'A prototype in design, shown with demonstration data. Schools, people, children and figures are examples, and features and wording may change.'
+
+// The prototype copies say what the design considers, not what is built. Applied to each finished page.
+const PROTO_WORDING = [
+  ['built on the Movement for Learning research', 'based on the Movement for Learning research'],
+  ['Built to protect children', 'Designed to protect children'],
+  ['These protections are built into how the platform works, not left to good intentions:', 'These protections are part of the design of the platform, not left to good intentions:'],
+  ['The parent app is built for iPhone and Android phones; publishing it in the app stores is the next step.', 'The parent app is designed for iPhone and Android phones.'],
+  ['with a built-in wording check', 'with a wording check'],
+  ['Who sees what is enforced by the platform itself', 'In the design, who sees what is enforced by the platform itself'],
+]
+const protoWording = (html) => PROTO_WORDING.reduce((h, [from, to]) => h.split(from).join(to), html)
 const STAGES = ['#d9534f', '#e8913a', '#e6c13d', '#5aa05a', '#4a7fc1', '#5a5fa8', '#9b6bb8']
 const STAGE_NAMES = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet']
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -48,6 +64,7 @@ p { margin: 0 0 2.5mm; }
 .cover { height: 263mm; display: flex; flex-direction: column; break-after: page; }
 .cover-band { background: var(--navy); color: #fff; border-radius: 4mm; padding: 16mm 14mm 14mm; }
 .brand { display: flex; align-items: center; gap: 4mm; font-family: Lora, serif; font-weight: 700; font-size: 15pt; }
+.proto { margin-left: auto; font-family: Inter, sans-serif; font-size: 8.5pt; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); background: #f3d27a; border-radius: 10mm; padding: 1.2mm 3.5mm; }
 .cover h1 { font-size: 32pt; margin: 22mm 0 5mm; }
 .cover .strap { font-size: 13pt; color: #d4dce6; max-width: 150mm; }
 .cover-meta { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
@@ -137,14 +154,14 @@ const stripe = () => `<div class="stripe">${STAGES.map((c) => `<span style="back
 function cover({ title, strap, hero, audience }) {
   return `<section class="cover">
     <div class="cover-band">
-      <div class="brand">${stripe()} Motor Movers</div>
+      <div class="brand">${stripe()} Motor Movers${PROTOTYPE ? '<span class="proto">Prototype</span>' : ''}</div>
       <h1>${esc(title)}</h1>
       <p class="strap">${esc(strap)}</p>
     </div>
     <div class="cover-hero">${hero ? `<img src="${shot(hero)}" alt="">` : ''}</div>
     <div class="cover-meta">
       <div class="meta-box"><strong>Who this is for</strong>${esc(audience)}</div>
-      <div class="meta-box"><strong>About these screens</strong>${esc(DEMO_NOTE)} Prepared ${DATE}.</div>
+      <div class="meta-box"><strong>About these screens</strong>${esc(PROTOTYPE ? PROTO_NOTE : DEMO_NOTE)} Prepared ${DATE}.</div>
     </div>
   </section>`
 }
@@ -219,11 +236,11 @@ const AUDIENCE = 'Partners, investors and school leaders. No technical knowledge
 function overviewBody() {
   const stageBar = `<div class="stages">${STAGES.map((c, i) => `<span style="background:${c}">${i + 1} · ${STAGE_NAMES[i]}</span>`).join('')}</div>`
   const roleCards = [
-    ['Class teacher', 'teacher-today', 'Runs the 10-minute session every school day, assesses children and sees each child’s readiness profile.'],
-    ['Head teacher and SENCo', 'head-dashboard', 'Sees progress and participation across the school, sets the school up and checks payments.'],
+    ['Class teacher', 'teacher-today', 'Runs the 10-minute session every school day, assesses children with Pat Preedy’s two assessments and sees each child’s profile.'],
+    ['Head teacher and SENCo', 'head-dashboard', 'Sees both assessments, progress and participation across the school, sets the school up and checks payments.'],
     ['Trust or group lead', 'trust-dashboard', 'Compares licences, results and spending across a group of schools, without seeing individual children.'],
     ['Practitioner', 'practitioner-training', 'Books the live practitioner course and works towards the yearly-renewed certificate.'],
-    ['Parent or carer', 'app-today', 'Follows their child’s stage in the parent app, does short home activities and takes the parent course.'],
+    ['Parent or carer', 'app-today', 'Follows their child’s progress in the parent app, does short sessions at home (with or without a school) and takes the parent course.'],
     ['Trainer', 'trainer-live', 'Runs the live course sessions given to them on Zoom, keeps the register and completes their cohorts.'],
     ['Motor Movers team', 'admin-content-wording', 'Publishes approved content, signs schools up, runs courses and trainers, and tracks income.'],
   ]
@@ -248,7 +265,7 @@ function overviewBody() {
       <div><b>2 · Teachers</b><span>run a guided 10-minute session daily, with ongoing assessment and start and end developmental assessments.</span></div>
       <div><b>3 · Head teachers</b><span>see participation and progress for every class, approve staff training and act where support is needed.</span></div>
       <div><b>4 · Trusts and school groups</b><span>see summaries across their schools to plan renewals and budgets.</span></div>
-      <div><b>5 · Families</b><span>link their child with a school code and keep the movement going at home.</span></div>
+      <div><b>5 · Families</b><span>link their child with a school code and keep the movement going at home; families without a school can use Motor Movers at Home.</span></div>
       <div><b>6 · Practitioners</b><span>take the live course, its quizzes and the certificate, growing the number of trained adults.</span></div>
       <div><b>7 · Trainers</b><span>run the live sessions on Zoom inside the platform, so training grows beyond one person.</span></div>
     </div>
@@ -266,10 +283,11 @@ function overviewBody() {
     <h2>Built to protect children</h2>
     <p>Schools trust Motor Movers with records about young children. These protections are built into how the platform works, not left to good intentions:</p>
     <ul class="ticks">
-      <li><strong>Never a diagnosis.</strong> The platform assesses readiness to learn. Every readiness profile says it is not a diagnosis, and the team cannot approve wording that sounds like one.</li>
+      <li><strong>Never a diagnosis.</strong> The platform assesses progress with the programme. Every profile says it is not a diagnosis, the extra-support flag never names a cause, and the team cannot approve wording that sounds like one.</li>
       <li><strong>Initials by default.</strong> Children are shown by initials unless the school chooses to show full names.</li>
       <li><strong>Everyone sees only their part.</strong> Teachers see their own class, heads their school, trusts and school groups summaries only, parents only the children linked to them.</li>
-      <li><strong>Parents are invited by the school.</strong> A one-time code links a parent to a child, and the school can remove the link at any time.</li>
+      <li><strong>Parents are invited by the school.</strong> A one-time code links a parent to a child, and the school can remove the link at any time. Parents see progress in plain words, never scores.</li>
+      <li><strong>A family’s own children stay with the family.</strong> With Motor Movers at Home, only the family sees its children, with no date of birth, unless it chooses to link the school.</li>
       <li><strong>Every view is logged.</strong> Each time someone opens a child’s record it is written to an access log the head can review.</li>
       <li><strong>Records do not linger.</strong> Children who leave are deleted automatically a year after their leaving date.</li>
       <li><strong>Video is off by default.</strong> Assessment video needs the school to opt in and parents to consent.</li>
@@ -280,7 +298,7 @@ function overviewBody() {
     </ul>
   </section>
 
-  <section class="section page">
+  ${PROTOTYPE ? protoBusiness() : `<section class="section page">
     <div class="eyebrow">The business</div>
     <h2>How the platform earns</h2>
     <p>Income comes from two sources, both managed in the platform: yearly school licences and live training courses. Schools, families and practitioners can pay by card online; staff course places are invoiced to the school once the head approves them. The team sees income by month, school, trust or group, family and type.</p>
@@ -297,9 +315,9 @@ function overviewBody() {
     </table>
     <p class="muted">Licence prices are the proposed plans built into the platform, and each licence covers the stages the team sets for that school. Course prices are those in the demonstration; the team can change them in the platform at any time. A free trial lets a school start before it buys.</p>
     <figure><img src="${shot('admin-payments')}" alt="" style="max-height:88mm"><figcaption>The team’s Payments page: money received, outstanding invoices and income month by month.</figcaption></figure>
-  </section>
+  </section>`}
 
-  <section class="section page">
+  ${PROTOTYPE ? protoStatus() : `<section class="section page">
     <div class="eyebrow">Where it stands</div>
     <h2>Status in ${DATE}</h2>
     <div class="status-grid">
@@ -308,7 +326,9 @@ function overviewBody() {
         <li>Parent phone app for iPhone and Android, with phone notifications.</li>
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates emailed as PDFs.</li>
         <li>Content approval with the wording check, school onboarding, staff training approved by heads, and payments by card online.</li>
-        <li>Checked automatically on every change: 111 checks of the system behind the screens, 43 of the web app’s building blocks, 62 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
+        <li>Pat Preedy’s two assessments for the Green and Yellow colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
+        <li>Motor Movers at Home for families without a school, in the app and on the website (switched off until Pat and the owner agree).</li>
+        <li>Checked automatically on every change: 135 checks of the system behind the screens, 51 of the web app’s building blocks, 67 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
         <li>Production set-up tried in full: secure web address (HTTPS), nightly backups with copies off the server, and a refusal to start with unsafe settings.</li>
       </ul></div>
       <div class="card no"><h3>Next steps</h3><ul>
@@ -316,13 +336,61 @@ function overviewBody() {
         <li>Publish the parent app in the Apple and Google app stores, which also switches on phone notifications.</li>
         <li>Connect the Motor Movers card payment account, and confirm VAT.</li>
         <li>Upload the filmed session videos and rhyme recordings.</li>
-        <li>The new developmental and exercise assessments, from Pat’s milestone charts.</li>
+        <li>Pat’s exercise grids for the other five colours, and her answers on Motor Movers at Home, with a privacy notice for families.</li>
       </ul></div>
     </div>
-    <h3 style="margin-top:7mm">The guides in this pack</h3>
+    ${guideList()}
+  </section>`}`
+}
+
+const guideList = () => `<h3 style="margin-top:7mm">The guides in this pack</h3>
     <ul class="toc">
       ${ROLES.map((r) => `<li><span>${esc(r.title)}</span><span class="muted">${esc(r.strap)}</span></li>`).join('')}
-    </ul>
+    </ul>`
+
+/** The prototype's business page: where income would come from, without prices (Kay confirms those). */
+function protoBusiness() {
+  return `<section class="section page">
+    <div class="eyebrow">The business</div>
+    <h2>How the platform is designed to earn</h2>
+    <p>The design has two sources of income, both managed in the platform: yearly school licences and live training courses. Schools, families and practitioners could pay by card online, and staff course places would be invoiced to the school once the head approves them. The team would see income by month, school, trust or group, family and type.</p>
+    <table>
+      <thead><tr><th>Source</th><th>Who pays</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td>Early years plan</td><td>Early-years setting</td><td>Yearly programme licence</td></tr>
+        <tr><td>Primary plans</td><td>Primary school</td><td>Yearly programme licence, for some stages or all seven</td></tr>
+        <tr><td>Trust plan</td><td>Each school in a trust or group</td><td>Yearly licence at trust pricing</td></tr>
+        <tr><td>Practitioner course</td><td>Practitioner or employer</td><td>Live sessions, assessment and a certificate renewed each year</td></tr>
+        <tr><td>Parent course</td><td>Family</td><td>Live sessions and home activities</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">Prices are still to be confirmed. Any figures on the screens in this pack are examples only. A free trial would let a school start before it buys.</p>
+  </section>`
+}
+
+/** The prototype's status page: what the design considers and what is still to settle. */
+function protoStatus() {
+  return `<section class="section page">
+    <div class="eyebrow">Where it stands</div>
+    <h2>Status in ${DATE}</h2>
+    <p>The platform is a prototype. Everything in this pack is considered in the design and can be tried with demonstration data, so it can be shaped with Pat before anything is final.</p>
+    <div class="status-grid">
+      <div class="card yes"><h3>Considered in the design</h3><ul>
+        <li>A public website, and the platform for all seven kinds of user.</li>
+        <li>A parent phone app for iPhone and Android, with phone notifications.</li>
+        <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates.</li>
+        <li>Content approval with a wording check, school onboarding, staff training approved by heads, and payment by card.</li>
+        <li>Pat Preedy’s two assessments, starting with the Green and Yellow colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
+        <li>Motor Movers at Home for families whose school does not use the programme, in the app and on the website.</li>
+      </ul></div>
+      <div class="card no"><h3>Still to settle</h3><ul>
+        <li>Pat’s answers to the open questions on the assessments and on Motor Movers at Home.</li>
+        <li>The exercise grids for the other five colours.</li>
+        <li>The filmed session videos and rhyme recordings.</li>
+        <li>Prices, and a privacy notice for families.</li>
+      </ul></div>
+    </div>
+    ${guideList()}
   </section>`
 }
 
@@ -434,10 +502,11 @@ const docs = [
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || 'chrome' })
 const ctx = await browser.newContext()
 for (const d of docs) {
-  const OUT = join(ROOT, 'docs', d.out)
+  const OUT = join(ROOT, 'docs', d.out, PROTOTYPE ? 'prototype' : '')
   mkdirSync(OUT, { recursive: true })
-  const htmlPath = join(HTML_DIR, `${d.file}.html`)
-  writeFileSync(htmlPath, page(d.title, d.body))
+  const htmlPath = join(HTML_DIR, `${PROTOTYPE ? 'prototype ' : ''}${d.file}.html`)
+  const html = page(d.title, d.body)
+  writeFileSync(htmlPath, PROTOTYPE ? protoWording(html) : html)
   const p = await ctx.newPage()
   await p.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' })
   await p.evaluate(() => document.fonts.ready)
@@ -448,7 +517,7 @@ for (const d of docs) {
     preferCSSPageSize: true,
     displayHeaderFooter: true,
     headerTemplate: '<span></span>',
-    footerTemplate: `<div style="width:100%;font-family:Inter,Arial,sans-serif;font-size:7.5pt;color:#8a93a0;padding:0 16mm;display:flex;justify-content:space-between"><span>${esc(d.title)} · ${DATE}</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`,
+    footerTemplate: `<div style="width:100%;font-family:Inter,Arial,sans-serif;font-size:7.5pt;color:#8a93a0;padding:0 16mm;display:flex;justify-content:space-between"><span>${PROTOTYPE ? 'Prototype · ' : ''}${esc(d.title)} · ${DATE}</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`,
   })
   await p.close()
   console.log('built', d.file)

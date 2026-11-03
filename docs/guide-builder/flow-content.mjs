@@ -12,12 +12,12 @@ export const ROLES = [
     who: 'Class teachers and teaching assistants in primary schools and early-years settings that hold a Motor Movers licence.',
     does: [
       'Runs a guided 10-minute movement session with the class every school day.',
-      'Assesses each child’s movement skills, one short movement at a time.',
-      'Sees a readiness profile for each child, shares progress with parents through a one-time code, and asks for a place on the practitioner course.',
+      'Assesses the class with Pat Preedy’s two assessments: the programme’s exercises scored 1 to 4, and the developmental movement charts.',
+      'Sees an assessment profile for each child, shares progress with parents through a one-time code, and asks for a place on the practitioner course.',
     ],
     sees: 'Their own class only.',
     cannot: 'Other classes, other schools, money or licences.',
-    flow: ['Sign in', 'Induction (once)', 'Today’s session', 'Mark it done', 'Assess children', 'Readiness profile', 'Training'],
+    flow: ['Sign in', 'Induction (once)', 'Today’s session', 'Mark it done', 'Score exercises', 'Developmental charts', 'Assessment profile', 'Training'],
     steps: [
       {
         title: 'Sign in from the Motor Movers website',
@@ -55,18 +55,25 @@ export const ROLES = [
         captions: ['Done for today: the counter has gone up to 17 of 20.'],
       },
       {
-        title: 'Assess each child, one movement at a time',
-        body: 'A few times a year the teacher assesses the class. Each child works through 12 short movements across six areas such as balance and catching. For each item the teacher picks the description that matches what they saw. Answers are saved on the device first, so assessment carries on if the internet drops. Video recording stays off unless the school opts in and parents consent.',
-        why: 'Quick, consistent observations that any trained teacher can make in the classroom or hall.',
-        shots: ['teacher-screening-item'],
-        captions: ['One assessment item: a clear instruction and four plain-language choices.'],
+        title: 'Score the class on the programme’s exercises',
+        body: 'At the start of each colour, at the end of each module and at the end of the colour, the teacher scores the whole class on each exercise from 1 to 4: Not yet, Developing, Nearly there, Confident and accurate. Pat’s description of each score is beside the class list, and the platform suggests which point comes next. Scores are saved on the device first, so assessing carries on if the internet drops.',
+        why: 'Quick, consistent observations of the very exercises the class does every day, made during the session itself.',
+        shots: ['teacher-assess'],
+        captions: ['Scoring Year 2 R on one exercise, with the description of each score.'],
       },
       {
-        title: 'See each child’s readiness profile',
-        body: 'The profile shows how ready a child is in each of the six areas (“Developing” or “Secure”), the suggested starting stage, and how they have changed since their first assessment. Every profile states clearly that it is not a diagnosis. From here the teacher can create a one-time code that lets a parent follow the child in the parent app.',
-        why: 'Teachers can place each child at the right stage and show progress over time, without labelling children.',
-        shots: ['teacher-profile'],
-        captions: ['A readiness profile. “Not a diagnosis” is always shown, and every view of the record is logged.'],
+        title: 'Record movements on the developmental charts',
+        body: 'At the start, middle and end of the school year the teacher opens each child’s fine and gross motor charts, from birth to seven years, and taps each movement the child does confidently and securely. The platform records the child’s age in months; no date of birth is held.',
+        why: 'A picture of each child’s physical development over time, in the words of Pat Preedy’s assessment booklet.',
+        shots: ['teacher-development'],
+        captions: ['A child’s developmental charts, with a movement just recorded as secure.'],
+      },
+      {
+        title: 'See each child’s assessment profile',
+        body: 'The profile brings both assessments together: movements secure on each chart, the table of exercise scores at every point, start and end totals, and the teacher’s summary comments. Where a pattern of low scores shows, it says “May benefit from extra support”, with the reasons and never a cause. Every profile states clearly that it is not a diagnosis. From here the teacher can create a one-time code that lets a parent follow the child in the parent app.',
+        why: 'Teachers can see progress over time and spot children who need more help, without labelling children.',
+        shots: ['teacher-assessment-profile'],
+        captions: ['An assessment profile. “Not a diagnosis” is always shown, and every view of the record is logged.'],
       },
       {
         title: 'Ask for a place on the practitioner course',
@@ -90,13 +97,13 @@ export const ROLES = [
     strap: 'Seeing progress across the school, setting the school up, approving training and keeping track of payments.',
     who: 'Head teachers, SENCos and other senior leaders responsible for Motor Movers in a school.',
     does: [
-      'Sees assessment, progress and daily participation for every class, with classes that need support flagged.',
+      'Sees both assessments, progress and daily participation for every class, with classes and children that may need support flagged.',
       'Sets the school up: invites staff, creates classes, adds children and records leavers.',
       'Approves staff course places, sees the school’s invoices and pays them by card.',
     ],
     sees: 'Everything for their own school.',
     cannot: 'Other schools, or staff members’ personal course payments.',
-    flow: ['Progress dashboard', 'Spot classes to support', 'School setup', 'Classes and children', 'Approve training', 'Payments'],
+    flow: ['Progress dashboard', 'Assessments', 'Spot classes to support', 'School setup', 'Classes and children', 'Approve training', 'Payments'],
     steps: [
       {
         title: 'See the whole school at a glance',
@@ -104,6 +111,13 @@ export const ROLES = [
         why: 'Leaders can see the programme is happening every day and where a class might need support, without chasing anyone.',
         shots: ['head-dashboard-full'],
         captions: ['Oakfield Primary: daily participation class by class, with Year 2 T flagged.'],
+      },
+      {
+        title: 'Follow both assessments, class by class',
+        body: 'For each class, with its colour, the head sees how many children have been assessed at each point this school year, the average movements secured per child on the developmental charts, and how many children are at each exercise level. Children who may benefit from extra support are listed with the first reason, and open straight into their profile.',
+        why: 'The SENCo can see which children need more help early, and talk it through with the class teacher.',
+        shots: ['head-assessments'],
+        captions: ['Assessments across Oakfield Primary, with two children who may benefit from extra support.'],
       },
       {
         title: 'Share results with governors and researchers',
@@ -157,7 +171,7 @@ export const ROLES = [
     steps: [
       {
         title: 'One page for the whole trust or group',
-        body: 'The trust or group page lists every school with its licence status (active, renewal due, free trial), renewal date, licensed stages, the share of children assessed and daily participation. Underneath, a spending table shows what each school has paid and what is outstanding, with a total for the trust or group.',
+        body: 'The trust or group page lists every school with its licence status (active, renewal due, free trial), renewal date, licensed stages, the share of children assessed, the share developmentally assessed this school year, how many children may benefit from extra support, and daily participation. Underneath, a spending table shows what each school has paid and what is outstanding, with a total for the trust or group.',
         why: 'Trust and group leaders can compare schools, plan renewals and budget, without seeing any child’s personal record.',
         shots: ['trust-dashboard'],
         captions: ['Northbridge Academy Trust: four schools, their licences, results and spending.'],
@@ -223,16 +237,17 @@ export const ROLES = [
   {
     slug: 'parent-or-carer',
     title: 'Parent or carer',
-    strap: 'Following a child’s stage at home with the parent app, and taking the parent course.',
-    who: 'Parents and carers of children in Motor Movers schools, invited by the school.',
+    strap: 'Following a child’s progress at home with the parent app, Motor Movers at Home for families without a school, and the parent course.',
+    who: 'Parents and carers of children in Motor Movers schools, invited by the school; and, with Motor Movers at Home, any family.',
     does: [
-      'Links their child in the parent app with a one-time code from the school.',
-      'Does a short home activity matched to the child’s stage, most days.',
+      'Links their child in the parent app with a one-time code from the school, and sees how they are getting on, in plain words.',
+      'Does a short home activity or session matched to the child’s stage, most days.',
+      'Without a school on Motor Movers: adds their child, does a short check and follows the daily sessions at home, in the app or on the website.',
       'Takes the live parent course in Zoom, and pays online by card.',
     ],
-    sees: 'Only the children the school has linked to them, as programme stages, not scores.',
-    cannot: 'Other children, assessment scores, or anything once the school removes the link.',
-    flow: ['Code from school', 'Link child in the app', 'Today’s activity', 'Progress', 'Parent course', 'Payments'],
+    sees: 'Only the children the school has linked to them, or their own family’s children; progress in plain words, not scores.',
+    cannot: 'Other children, assessment scores, the extra-support flag, or a school child once the school removes the link.',
+    flow: ['Code from school', 'Link child in the app', 'Today’s activity', 'Progress', 'Motor Movers at Home', 'Parent course', 'Payments'],
     steps: [
       {
         title: 'Get a code from the school',
@@ -255,6 +270,22 @@ export const ROLES = [
         shots: ['app-today', 'app-guidance'],
         captions: ['Today’s activity and the 14-day tracker.', 'Short guidance articles, each tagged with its stage.'],
         phone: true,
+      },
+      {
+        title: 'See how the child is getting on at school',
+        body: 'The child’s page shows the school’s assessments in plain words: how many movements on the programme’s two charts the school has seen the child do securely, and each exercise of the child’s colour from the first time to the latest (Not yet, Getting there, Nearly, Got it). Never scores, comparisons or the extra-support flag: the school talks to the family about that.',
+        why: 'Parents see real progress, in words that encourage rather than worry, and every view is logged for the school.',
+        shots: ['app-child', 'app-child-assessments'],
+        captions: ['A linked child’s page.', 'Exercises, from the first time to the latest.'],
+        phone: true,
+      },
+      {
+        title: 'Motor Movers at Home: no school needed',
+        body: 'Families whose school is not on Motor Movers can still use the programme. They create a parent account in the app or on the website, add their child (a first name or nickname and an age; no date of birth), and do a short check of movements from Pat’s charts, which suggests a colour. Each day brings a ten-minute session of Pat’s exercises; parents rate each exercise the first time and at the end of each module, in plain words. A second parent or carer can share by code or email, and if the school joins later the record can be shared with the teacher. It is switched on once Pat and the owner agree.',
+        why: 'Any family can help their child at home, and the programme reaches children before their school signs up.',
+        shots: ['app-home-today', 'home-web-child'],
+        captions: ['Today’s session in the app.', 'The same child on the website.'],
+        mixed: true,
       },
       {
         title: 'Take the parent course',

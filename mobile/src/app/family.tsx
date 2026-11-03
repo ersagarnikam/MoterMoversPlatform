@@ -12,7 +12,8 @@ import { useLoad } from '@/lib/useLoad'
  */
 export default function FamilyScreen() {
   const { data, error, reload } = useLoad(() => api.homeOverview())
-  const [invite, setInvite] = useState<{ code: string; expiresOn: string } | null>(null)
+  const [invite, setInvite] = useState<{ code: string; expiresOn: string; sentTo: string | null } | null>(null)
+  const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
@@ -37,6 +38,8 @@ export default function FamilyScreen() {
   }
 
   const ready = code.replace(/[^a-z0-9]/gi, '').length === 8
+  const address = email.trim()
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)
 
   return (
     <Screen>
@@ -93,14 +96,40 @@ export default function FamilyScreen() {
           {invite ? (
             <>
               <Body style={{ fontSize: 28, fontWeight: '700', letterSpacing: 2 }}>{invite.code}</Body>
-              <Muted>Works once, until {formatDate(invite.expiresOn)}. They enter it under Account, Your family.</Muted>
+              <Muted>
+                {invite.sentTo ? `Emailed to ${invite.sentTo}. ` : ''}Works once, until {formatDate(invite.expiresOn)}.
+                They enter it under Account, Your family.
+              </Muted>
+              <Button label="Get another code" variant="secondary" onPress={() => setInvite(null)} />
             </>
           ) : (
-            <Button
-              label="Get a code"
-              busy={busy}
-              onPress={() => run(async () => setInvite(await api.inviteCarer()), 'Code ready')}
-            />
+            <>
+              <Field
+                label="Their email (optional)"
+                hint="We email them the code and how to use it. Or leave it empty and pass the code on yourself."
+                value={email}
+                onChangeText={setEmail}
+                placeholder="name@example.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                maxLength={200}
+              />
+              <Button
+                label={address ? 'Email a code' : 'Get a code'}
+                disabled={address !== '' && !emailOk}
+                busy={busy}
+                onPress={() =>
+                  run(
+                    async () => {
+                      setInvite(await api.inviteCarer(address || undefined))
+                      setEmail('')
+                    },
+                    address ? `Code emailed to ${address}` : 'Code ready',
+                  )
+                }
+              />
+            </>
           )}
         </Card>
       )}

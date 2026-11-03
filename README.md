@@ -267,7 +267,9 @@ A phone app for parents and carers (`mobile/`), with five tabs:
 - **Today**: one short home activity a day for the child's colour stage, played step by step with a
   gentle timer, and a 14-day counter. Sessions are saved on the phone first and sent when online.
   Parents without a linked child pick a stage.
-- **Progress**: the child's colour stage, the six areas as *Emerging / Developing / Secure* (never raw
+- **Progress**: the child's colour stage; the school's assessments in plain words (movements secure on each of
+  Pat's two charts, and each exercise's first and latest rating as *Not yet / Getting there / Nearly / Got it*;
+  never the 1-4 scores or the extra-support flag); the six areas as *Emerging / Developing / Secure* (never raw
   scores), the dates of movement checks, and how often the class did its daily session. The *Not a
   diagnosis* banner is always shown. Parents can give the child a name that is kept on the phone only.
 - **Guidance**: short articles approved by Pat and Laura.
@@ -293,7 +295,7 @@ For families whose child's school is not on Motor Movers (`docs/home-programme-d
 answers). Switched on with `HOME_PROGRAMME=true`; off in production by default, on in development.
 
 - The parent **adds their child** (a first name or nickname and an age in years and months; no date of birth). A
-  second parent or carer joins with a family code (Account, Your family).
+  second parent or carer joins with a family code (Account, Your family), which the app can also email to them.
 - A **starting check** asks about the movements from Pat's charts for the year up to the child's age (Yes, Not yet,
   Not sure) and suggests a colour; it is suggested again every three months.
 - **Today** has a daily session of four of Pat's exercises from the child's module (ten sessions a module), then
@@ -303,8 +305,12 @@ answers). Switched on with `HOME_PROGRAMME=true`; off in production by default, 
   flag) when scores stay low.
 - If the school joins later, its parent code links the child: the home record moves onto the school's, with the
   parent's agreement.
+- **On the website too**, for families without the app: *For families* offers a parent account (`/join`), and
+  parents get **At home** in the menu (`/home`): the children, the check, today's session and ratings, the module
+  reviews, progress, settings, linking a school, and *Family and sharing*. Shown only while `HOME_PROGRAMME` is on
+  (the website asks `GET /api/home/available`, the one home endpoint open without signing in).
 
-Demo: `home@example.test` (Priya Shah: Ava on Green, Leo before his check).
+Demo: `home@example.test` (Priya Shah: Ava on Green, Leo before his check), in the parent app or on the website.
 
 | Rule | Where |
 |---|---|

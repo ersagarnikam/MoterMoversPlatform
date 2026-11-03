@@ -3,6 +3,9 @@ package uk.co.motormovers.platform.home.dto;
 import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
+
 import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
 import uk.co.motormovers.platform.assessment.model.Chart;
 import uk.co.motormovers.platform.common.model.ColourStage;
@@ -22,14 +25,14 @@ public final class HomeViews {
             + "every child moves at their own pace, and little and often helps. If you would like to talk it through, "
             + "your child's nursery, school or health visitor can help.";
 
-    /** The parent's words for Pat's four levels (1 Not yet, 2 Developing, 3 Nearly there, 4 Confident and accurate). */
-    public static final List<String> LEVELS = List.of("Not yet", "Getting there", "Nearly", "Got it");
+    /** The parent's words for Pat's four levels. */
+    public static final List<String> LEVELS = AssessmentViews.PARENT_LEVELS;
 
     private HomeViews() {
     }
 
     public static String level(Integer score) {
-        return score == null ? null : LEVELS.get(score - 1);
+        return AssessmentViews.parentLevel(score);
     }
 
     // --- The family -------------------------------------------------------------------------------------------------
@@ -42,6 +45,9 @@ public final class HomeViews {
     }
 
     /** {@code enabled}: the home programme is switched on for this deployment. */
+    public record Availability(boolean enabled) {
+    }
+
     public record Overview(boolean enabled, List<HomeChild> children, List<Member> members, boolean owner,
             int maxChildren) {
     }
@@ -49,7 +55,12 @@ public final class HomeViews {
     public record ChildIn(String name, Integer ageMonths) {
     }
 
-    public record Invite(String code, LocalDate expiresOn) {
+    /** sentTo is the address the code was emailed to, or null when the parent will pass it on themselves. */
+    public record Invite(String code, LocalDate expiresOn, String sentTo) {
+    }
+
+    /** Optional: an address to email the code to. */
+    public record InviteIn(@Email @Size(max = 200) String email) {
     }
 
     public record CodeIn(String code) {
@@ -110,15 +121,8 @@ public final class HomeViews {
 
     // --- Progress ---------------------------------------------------------------------------------------------------
 
-    public record ChartProgress(Chart chart, String label, int secure, int total, List<String> recentlySecure) {
-    }
-
-    /** The first and latest rating of an exercise, in the parent's words. Never compared with other children. */
-    public record ExerciseProgress(Long exerciseId, int number, String title, String first, String latest,
-            boolean improved) {
-    }
-
-    public record Progress(HomeChild child, String banner, List<ChartProgress> charts, ColourStage stage,
-            String stageName, List<ExerciseProgress> exercises, long sessionsDone, Support support) {
+    public record Progress(HomeChild child, String banner, List<AssessmentViews.ChartProgress> charts,
+            ColourStage stage, String stageName, List<AssessmentViews.ExerciseProgress> exercises, long sessionsDone,
+            Support support) {
     }
 }

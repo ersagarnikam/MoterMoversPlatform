@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.content.model.GuidanceArticle;
@@ -36,8 +37,14 @@ public final class FamilyViews {
     public record AreaBand(MotorArea area, String label, ReadinessBand band, String bandLabel) {
     }
 
+    /**
+     * The school's assessments in the parent's words (ParentProgress): movements secure, and the exercises of the
+     * child's colour with their first and latest rating. The school's extra-support flag is not shown to parents.
+     */
     public record Progress(LinkedChild child, String banner, boolean screened, List<AreaBand> areas,
-            List<LocalDate> screenings, int classSessionsDone, int counterDays) {
+            List<LocalDate> screenings, int classSessionsDone, int counterDays,
+            List<AssessmentViews.ChartProgress> charts, ColourStage exerciseStage, String exerciseStageName,
+            List<AssessmentViews.ExerciseProgress> exercises) {
     }
 
     public record ActivityCard(Long id, ColourStage stage, String stageName, int position, String title, String focus,

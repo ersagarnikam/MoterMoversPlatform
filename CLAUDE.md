@@ -50,13 +50,13 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 134 unit + API integration tests (H2)
-cd frontend && npm test             # 48 unit tests (Vitest): money, times, offline queue, API client, assessment points
+cd backend  && ./mvnw -B verify      # 139 unit + API integration tests (H2)
+cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 65 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 68 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -81,7 +81,42 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-10-27)
+## Current state (2026-11-03)
+
+**Shared with Pat on Google Drive (2026-11-03).** A **PAT** folder in the connected Drive (ihaustralia.info@gmail.com,
+https://drive.google.com/drive/folders/1CUAMy7DXaweoWH8KsqjIJUhp5y2Mikdn) holds: **Logo**, four logo directions for a
+possible new name, "Professor Pat Preedy Programme" (SVG; the designs are a Claude design canvas, not in the
+repository; nothing in the platform is renamed); and two Google Docs rewritten for Pat from `docs/assessment-design.md`
+and `docs/home-programme-design.md` (prototype wording, no prices). The prototype guide PDFs go in by hand (too large
+for the Drive connection). Kay's media one-pager (Kay Cogan, kaycogan@ihau.au) is a Claude design canvas too.
+
+**Price chart and enquiry form on the website (merged 2026-11-03, pull request #13, at the owner's request).** "Ask for the price guide" on `/for-schools` was a `mailto:` link, which does
+nothing on a computer with no email program (the owner's). It now opens, in place, the **price chart** (the active
+licence plans at today's price from Plans & prices, `GET /api/plans`, open without signing in; the free trial shown as
+Free, a zero-price plan that is not the trial, such as "Free", left out) and an **enquiry form** (name, email, setting,
+phone, classes, stages, the plan chosen on the chart, message). "Apply online" opens the same form for applying; the
+email links stay as a second way. The API (`enquiry` package, `POST /api/enquiries`, open, 5 an hour per address, a
+hidden field that bots fill in) emails the enquiry to `platform.enquiry-email` (`PLATFORM_ENQUIRY_EMAIL`). Nothing is
+stored and the sender is not emailed. **For now the default is the owner's address (sagarnikamforu@gmail.com), so no
+test enquiry reaches Pat** (asked 2026-11-03); set it to the team's address for go-live. Tests: `EnquiryTest`, and the
+price guide browser test in `e2e/site.spec.ts`. Before go-live: the owner confirms the prices, and whether they can be
+public, with **Kay** (prices go to Kay, not Pat), and sets `PLATFORM_ENQUIRY_EMAIL`.
+
+**Questions sent to Pat (2026-11-03, by the owner, by email).** Sixteen numbered questions, each with the approach
+considered in the design (the platform is a prototype, so the email speaks of the design, not of what is built):
+A. assessments in school: 1 the other five colours' grids; 2 the gaps in the grids (Motor Spin's descriptions; Jack
+and Jill and Twinkle Twinkle repeat another rhyme's); 3 the flag rule ("a pattern of low scores"); 4 no date of birth
+or birth history held; 5 what parents see; 6 retiring the 0-3 check and updating the induction lesson. B. Motor
+Movers at Home: 7 her materials at home; 8 colour by age; 9 the starting check's rule; 10 parent words for the levels;
+11 parents rating; 12 the gentle prompt; 13 session shape; 14 recheck every three months; 15 a safety note; 16 videos.
+(The "X/108" totals question was dropped.) Waiting for her reply; when it comes, update `docs/assessment-design.md`,
+`docs/home-programme-design.md` and the code's suggested defaults.
+
+**Merged 2026-10-28 (pull requests #8 to #11, stacked):** emailing a family code (#8), school assessments in the
+parent app (#9), Motor Movers at Home on the website (#10) and the rebuilt guides (#11). #10 and #11 were merged into
+their stacked base branches rather than `main`, so they reached `main` through a follow-up pull request
+(`finish-home-web`, 2026-11-02). With stacked pull requests, merge one, wait for GitHub to move the next one's base
+to `main`, then merge it; or open each from `main`.
 
 **Motor Movers at Home (merged 2026-10-27, pull request #7; switched off in production).** The parent app
 for families whose child's school is not on Motor Movers. Behind `HOME_PROGRAMME` (on in development and
@@ -100,19 +135,26 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
   `milestone_achievement` with the age), the colour, today's session, sessions (offline-safe), invites, joining,
   removing or leaving (the last member leaving deletes the family), and `join-school` (the school's parent code; the
   home record moves onto the school's record, the school's own rows winning). Ratings use
-  `/api/assessment/exercise-scores`. Rules with defaults for Pat in `home/util/HomeRules.java` (colour by age, the
+  `/api/assessment/exercise-scores`. An invite can also email the code (`POST /api/home/invites` with `email`; the
+  email names the sender, not the children; 20 a day per account). Rules with defaults for Pat in `home/util/HomeRules.java` (colour by age, the
   check, 4 exercises a session, 10 sessions a module, Yellow in threes, recheck after 91 days); parent words and the
   gentle prompt in `home/dto/HomeViews.java`.
 - Parent app: Today (a home child's session, or the starting check; colours without Pat's grid fall back to the home
   activities), `add-child`, `check/[id]`, `home-session/[id]` (then first-time ratings), `review/[id]` (end of module),
   `home-child/[id]` (progress, check again, name and age, link a school, delete), `join-school/[id]`, `family`
-  (invite, join, remove). Sessions and ratings queue offline (`lib/homeOutbox.ts`).
+  (invite by code or email, join, remove). Sessions and ratings queue offline (`lib/homeOutbox.ts`).
+- Website (2026-10-28, `frontend/src/pages/home`): the same for families without the app. `/join` creates a parent
+  account (`RegisterPage`; signed in, `/join` goes on to `/home`, which falls back to the parent course while the
+  programme is off); **At home** (`/home`, the menu item shown only while it is on) lists the children and adds one;
+  `/home/child/:id` has today's session (or the colour's home activities), progress and settings (name and age,
+  colour, link a school, delete); `/check`, `/session` (then first-time ratings) and `/review` under it;
+  `/home/family` for sharing. `GET /api/home/available` is the one home endpoint open without signing in (the
+  website asks it to decide what to show; `useHomeAvailable` in `src/homeProgramme.ts`). No offline queue on the web.
 - Demo: home@example.test (Priya Shah): Ava (Green, module 2, module 1 review due) and Leo (no check yet).
 - Tests: `HomeProgrammeTest` (own context with a raised sign-in limit, so it does not use up the shared one),
   `HomeRulesTest`, `HomeProgrammeOffTest`. Tried in the app's web preview: session, ratings, check, fallback, family.
 
-**Pat's two assessments (2026-10-27, branch `assessment-rebuild`, migration V15; the owner asked Claude to merge this
-pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-design.md`). Package `assessment`:
+**Pat's two assessments (merged 2026-10-27, pull request #4, migration V15).** Built from Pat's documents of 2026-10-27 (`docs/assessment-design.md`). Package `assessment`:
 - Content: `backend/src/main/resources/assessment/` holds the booklet's fine (59) and gross (74) motor charts and the
   Green (27 exercises, modules 1-6) and Yellow (18 rhymes, start and end) grids as JSON, made from Pat's Word files
   (four obvious typos corrected, repeated chart rows dropped). `AssessmentContent` loads them on start-up in every
@@ -144,17 +186,17 @@ pull request).** Built from Pat's documents of 2026-10-27 (`docs/assessment-desi
 - Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
   modules in, with two children flagged. The last three children of each class are left to assess.
 - Not built: the other five colours (waiting for Pat), editing the charts or grids on screen (change the JSON), the
-  parent app view (not decided), the induction lesson on assessment, retiring the 0-3 check, regenerating the guides.
+  induction lesson on assessment, retiring the 0-3 check.
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
-merges** (asked 2026-10-26), unless the owner asks for a particular one to be merged (as with the assessment pull
-request, 2026-10-27). The
+merges** (asked 2026-10-26), unless the owner asks for a particular one to be merged (as with pull requests #4 to #7,
+2026-10-27). The
 GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, account ersagarnikam): open pull
 requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
 GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-65/65 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+68/68 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -221,7 +263,7 @@ connect, the server size, the web address and email. Nothing was created.
 
 Built so far:
 - Public website (`frontend/src/pages/site`, `SiteLayout`, shared facts in `src/site.ts`): home, about and
-  research, the programme, for schools (licence, how to join, apply by email), for families, and a
+  research, the programme, for schools (licence, price chart, how to join, an enquiry form for the price guide and applying), for families, and a
   role chooser at `/sign-in` that opens `/login?as=<role>`. Content is adapted from
   movementforlearningproject.co.uk; the contact email and phone are theirs, so confirm them with the owner.
 - Teacher: today's session player with nursery rhymes, 20-day participation counter, assessment one item at
@@ -278,8 +320,20 @@ Built so far:
   guides** (`docs/flow-guides/`, for partners, investors and school leaders, plus the platform overview with safety,
   income and status). Both are built from screenshots of the demo by `docs/guide-builder/` (`capture.mjs`, then
   `build.mjs`; how-to in its README). **Rebuild them when screens or features change**, and update the status page
-  in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`.
+  in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`. Rebuilt again
+  2026-10-28 for Pat's assessments (teacher, head, trust lead), school assessments in the parent app, and Motor Movers
+  at Home (the capture walks Priya on the website and in the app, saving nothing, then Jo's child page).
+  **Prototype copies** (merged 2026-11-03, pull request #15, `build.mjs all prototype`, into `docs/flow-guides/prototype` and
+  `docs/user-guide/prototype`; they replace the old `prototype-labelled` set of 2026-10-19): for Pat and anyone outside
+  the build team. Labelled Prototype, "considered in the design" instead of "built" (`PROTO_WORDING`), no prices, and
+  a status page of what is still to settle. Rebuild them with the normal set.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
+  Since 2026-10-28 a linked child's Progress screen shows the school's assessments in plain words
+  (`assessment/service/ParentProgress`, shared with Motor Movers at Home; mobile `components/AssessmentSummary`):
+  movements secure on each chart (and those new in the last 91 days, after the first record), and each exercise's
+  first and latest rating as Not yet / Getting there / Nearly / Got it, for the child's colour if rated there, else
+  the class's. Never the 1-4 scores, totals or the extra-support flag (the school talks to the family about that).
+  The suggested default for Pat's open question on what parents see.
 - Accounts: invite and reset links (hashed one-time tokens), 10-character minimum passwords, accounts
   switched off stop working within a minute (`ActiveUserFilter`), rate limits on sign-in, registration,
   resets and parent codes (`RateLimiter`, in memory).
@@ -287,7 +341,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-10-27): Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-11-03): price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
@@ -323,7 +377,7 @@ Not started unless noted. Confirm priorities with the owner.
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
 10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two
-   assessments above).** Next: send Pat the questions below, load the other colours when they arrive, agree the flag
+   assessments above).** Questions sent to Pat 2026-11-03 (see Current state). Next: load the other colours when they arrive, agree the flag
    rule, then retire the 0-3 check and update the induction lesson. Pat's model replaces today's single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
@@ -336,7 +390,8 @@ Not started unless noted. Confirm priorities with the owner.
    moving on; a pattern of low scores flags that a child needs more support. Still to settle: the other five
    colours' grids, gaps in the grids sent (Motor Spin has no descriptions; Jack and Jill and Twinkle Twinkle
    repeat another rhyme's), what counts as "a pattern of low scores", the booklet's date of birth and birth
-   history fields (suggested: not held), and what parents see. Full detail, storage, screens and the order of
+   history fields (suggested: not held), and what parents see (a suggested default is built: plain words, no scores
+   or flag). Full detail, storage, screens and the order of
    work: `docs/assessment-design.md`. Screens already say "Module" for a unit (the API field is still `unit`).
 11. Zoom live sessions: **working inside the portal** (tested 2026-10-22 with the owner's Zoom account). Two apps in
    that account: testApp (Server-to-Server OAuth: creates meetings, host token; scopes `meeting:write:meeting:admin`,
@@ -353,4 +408,13 @@ Not started unless noted. Confirm priorities with the owner.
    answers to the ten questions in `docs/home-programme-design.md` (use of her materials at home, colour by age, the
    check's rule, parent wording, a safety note, videos), a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions, a web version for families (the parent app only), and emailing a family code.
+   subscriptions.
+13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
+   its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the
+   deployment (A$ there, £ in the UK), not a currency picker: money is hard-wired to £ today (`frontend/src/money.ts`
+   `gbp()`, `PaymentViews` amounts, "£" form labels, Stripe `currency=gbp` in `StripeApiClient`), and one deployment
+   mixing currencies would break the spend totals. Each deployment sets its own prices on Plans & prices. Also for
+   Australia: the school year runs January to December in four terms (the assessment's start, middle and end of year
+   assume September to July), GST at 10% (no tax is handled yet), Foundation/Prep year names, the Privacy Act's
+   privacy notices, and Stripe in AUD. To decide with the owner: separate deployment or one platform with two
+   countries.

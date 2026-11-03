@@ -7,10 +7,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
+import uk.co.motormovers.platform.assessment.model.ExerciseScore;
+import uk.co.motormovers.platform.assessment.repository.ExerciseScoreRepository;
+import uk.co.motormovers.platform.assessment.service.ParentProgress;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.model.ChildAccessLog;
 import uk.co.motormovers.platform.child.repository.ChildAccessLogRepository;
@@ -66,12 +71,15 @@ public class FamilyService {
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final ParentProgress parentProgress;
+    private final ExerciseScoreRepository scores;
 
     public FamilyService(ParentLinkRepository links, ParentInviteRepository invites, ChildRepository children,
             ChildAccessLogRepository accessLog, HomeActivityRepository activities,
             HomeSessionRecordRepository homeRecords, GuidanceArticleRepository guidance,
             DailySessionRecordRepository classRecords, AppUserRepository users, ScreeningService screening,
-            AccessPolicy access, CurrentUserResolver currentUser, Clock clock) {
+            AccessPolicy access, CurrentUserResolver currentUser, Clock clock, ParentProgress parentProgress,
+            ExerciseScoreRepository scores) {
         this.links = links;
         this.invites = invites;
         this.children = children;
@@ -85,6 +93,8 @@ public class FamilyService {
         this.access = access;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.parentProgress = parentProgress;
+        this.scores = scores;
     }
 
     /** Children this parent may currently see. Links stay dormant while the school has parent links off. */
@@ -124,7 +134,10 @@ public class FamilyService {
                 "PARENT_UNLINKED"));
     }
 
-    /** The parent's view of progress: stage and programme bands. Every view is logged for the school. */
+    /**
+     * The parent's view of progress: stage, the school's assessments in plain words (never the scores or the
+     * extra-support flag), and the programme bands. Every view is logged for the school.
+     */
     @Transactional
     public FamilyViews.Progress progress(Long childId) {
         Child child = children.findById(childId).orElseThrow(() -> new NotFoundException("Child", childId));
@@ -147,8 +160,22 @@ public class FamilyService {
         int classSessions = classRecords.findBySchoolClassIdInAndSessionDateBetween(
                 List.of(child.getSchoolClass().getId()), window.getFirst(), window.getLast()).size();
 
+        // Exercises of the child's own colour if the school has rated them there, else of the class's colour.
+        ColourStage exerciseStage = null;
+        List<AssessmentViews.ExerciseProgress> exercises = List.of();
+        for (ColourStage stage : Stream.of(child.getCurrentStage(), child.getSchoolClass().getStage())
+                .filter(Objects::nonNull).distinct().toList()) {
+            List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
+            if (!theirs.isEmpty()) {
+                exerciseStage = stage;
+                exercises = parentProgress.exercises(stage, theirs);
+                break;
+            }
+        }
         return new FamilyViews.Progress(FamilyViews.LinkedChild.of(link), ScreeningViews.NOT_A_DIAGNOSIS,
-                readiness.screened(), areas, screenings, classSessions, ClassroomService.COUNTER_DAYS);
+                readiness.screened(), areas, screenings, classSessions, ClassroomService.COUNTER_DAYS,
+                parentProgress.charts(childId, LocalDate.now(clock)), exerciseStage,
+                exerciseStage == null ? null : exerciseStage.displayName(), exercises);
     }
 
     /**

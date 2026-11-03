@@ -172,15 +172,10 @@ test('enquiry links open a filled-in email to the Motor Movers team', async ({ p
   }
 
   await page.goto('/for-schools')
-  for (const [name, subject] of [
-    ['Email us to apply', 'Apply for Motor Movers'],
-    ['Ask for the price guide', 'Motor Movers price guide'],
-  ]) {
-    const params = await mail(name)
-    expect(params.get('subject')).toBe(subject)
-    for (const field of ['Name:', 'School or setting:', 'Phone:', 'Number of classes:', 'Message:']) {
-      expect(params.get('body')).toContain(field)
-    }
+  const params = await mail('Email us to apply')
+  expect(params.get('subject')).toBe('Apply for Motor Movers')
+  for (const field of ['Name:', 'School or setting:', 'Phone:', 'Number of classes:', 'Message:']) {
+    expect(params.get('body')).toContain(field)
   }
   await expect(page.getByText('01202 826 718').first()).toBeVisible()
 
@@ -190,6 +185,25 @@ test('enquiry links open a filled-in email to the Motor Movers team', async ({ p
     'href',
     `mailto:${CONTACT_EMAIL}`,
   )
+})
+
+test('a school sees the price chart and asks for the price guide, no email program needed', async ({ page }) => {
+  await page.goto('/for-schools')
+  await page.getByRole('button', { name: 'Ask for the price guide' }).click()
+  const form = page.getByRole('form', { name: 'Ask for the price guide' })
+  // The plans the team sells, at today's prices (Plans & prices); choosing one goes with the enquiry.
+  const plans = form.getByRole('group', { name: 'Plans' })
+  await expect(plans.getByRole('button')).toHaveCount(5)
+  await expect(plans.getByRole('button', { name: /Primary core/ })).toContainText('£900')
+  await plans.getByRole('button', { name: /Primary core/ }).click()
+  await expect(plans.getByRole('button', { name: /Primary core/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(form).toContainText('the full price guide and the details of Primary core')
+  await form.getByLabel('Your name').fill('Sam Lee')
+  await form.getByLabel('Email').fill('sam@school.test')
+  await form.getByLabel('School or setting').fill('Oak Primary')
+  await form.getByLabel('Number of classes').fill('4')
+  await form.getByRole('button', { name: 'Send' }).click()
+  await expect(page.locator('.enquiry-form[role=status]')).toContainText('We will email the price guide to sam@school.test')
 })
 
 test('the role chooser lists every role and is accessible', async ({ page }) => {

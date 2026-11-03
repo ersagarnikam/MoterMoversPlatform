@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { View } from 'react-native'
+import { ExerciseList, MovementCards } from '@/components/AssessmentSummary'
 import {
   Banner,
   Body,
@@ -12,7 +13,6 @@ import {
   Loading,
   Muted,
   NotADiagnosis,
-  Row,
   Screen,
   StageBadge,
 } from '@/components/ui'
@@ -62,47 +62,14 @@ export default function HomeChildScreen() {
       {data.support.show && data.support.message && <Banner>{data.support.message}</Banner>}
 
       <H2>Movements</H2>
-      {data.charts.map((c) => (
-        <Card key={c.chart}>
-          <Row style={{ justifyContent: 'space-between' }}>
-            <Body style={{ fontWeight: '600' }}>{c.chart === 'FINE' ? 'Hands and fingers' : 'Whole body'}</Body>
-            <Muted>
-              {c.secure} of {c.total}
-            </Muted>
-          </Row>
-          {c.recentlySecure.length > 0 && (
-            <View style={{ gap: 2 }}>
-              <Muted>New in the last few months:</Muted>
-              {c.recentlySecure.slice(0, 5).map((m) => (
-                <Body key={m}>• {m}</Body>
-              ))}
-              {c.recentlySecure.length > 5 && <Muted>and {c.recentlySecure.length - 5} more</Muted>}
-            </View>
-          )}
-        </Card>
-      ))}
+      <MovementCards charts={data.charts} />
       <Button
         label={child.checkDue ? 'Time for the check again' : 'Do the check again'}
         variant={child.checkDue ? 'primary' : 'secondary'}
         onPress={() => router.push({ pathname: '/check/[id]', params: { id: childId } })}
       />
 
-      {data.exercises.length > 0 && (
-        <>
-          <H2>Exercises{data.stageName ? ` · ${data.stageName}` : ''}</H2>
-          <Card>
-            {data.exercises.map((e) => (
-              <Row key={e.exerciseId} style={{ justifyContent: 'space-between' }}>
-                <Body style={{ flexShrink: 1 }}>{e.title}</Body>
-                <Muted>
-                  {e.first === e.latest ? e.latest : `${e.first} → ${e.latest}`}
-                  {e.improved ? ' ✓' : ''}
-                </Muted>
-              </Row>
-            ))}
-          </Card>
-        </>
-      )}
+      <ExerciseList stageName={data.stageName} exercises={data.exercises} />
 
       <H2>Settings</H2>
       <Button
