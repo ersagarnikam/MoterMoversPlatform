@@ -132,11 +132,9 @@ export interface HomeCheck {
 }
 
 export interface CheckResult {
+  /** The colour to start at, from the child's age (the answers are kept as secure movements). */
   suggested: ColourStage
   suggestedName: string
-  forAge: ColourStage
-  forAgeName: string
-  earlier: boolean
   yes: number
   notYet: number
   notSure: number
@@ -161,12 +159,23 @@ export interface HomeToday {
   stageName: string
   /** Pat's exercises exist for this colour; otherwise the colour's home activities are used. */
   hasExercises: boolean
+  /** A rhyme colour (Red, Orange, Yellow): module is the rhyme, done five times in a week. */
+  rhymes: boolean
   module: number
   modules: number
+  /** The week within a module, which builds up over `weeks` (1 for a rhyme). */
+  week: number
+  weeks: number
   sessionInModule: number
   sessionsPerModule: number
   colourComplete: boolean
+  /** "Module 2 of 6 · week 3 of 5", "Rhyme 4 of 18 · session 2 of 5" or the colour done. */
+  progressLabel: string
+  /** "Module 2 · week 3", "Rhyme 4 · session 2". */
+  sessionTitle: string
   exercises: HomeExercise[]
+  /** The exercises added to the session this week. */
+  newThisWeek: number[]
   /** Exercises to rate after doing them for the first time. */
   firstTime: number[]
   /** False for a child linked to a school: the teacher does the rating. */
@@ -180,6 +189,8 @@ export interface HomeToday {
   checkDue: boolean
   support: { show: boolean; message: string | null }
   levels: { score: number; label: string }[]
+  /** Pat's safety note, shown before the first session. */
+  safetyNote: string
 }
 
 export interface HomeSessionEntry {

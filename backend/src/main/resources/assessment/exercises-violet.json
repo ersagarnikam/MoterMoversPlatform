@@ -1,0 +1,390 @@
+{
+  "source": "Pat's Violet assessment grid, September 2026 (2026-11-03)",
+  "stage": "VIOLET",
+  "exercises": [
+    {
+      "number": 1,
+      "title": "Motor Lift One",
+      "instructions": "The sequence should be completed standing with feet together and arms by the side. The arm is extended forward to shoulder height and the leg is extended straight forward without bending the knee.\n1. Lift right arm\n2. Lift right leg\n3. Lift left leg\n4. Lift left arm\n5. Lift left arm\n6. Lift left leg\n7. Lift right leg\n8. Lift right arm",
+      "levels": [
+        "Has difficulty completing the sequence of lifting the right arm, right leg, left leg and left arm in the correct order. Requires significant support to maintain balance, keep feet together, extend arms to shoulder height and keep legs straight.",
+        "Can perform some of the arm and leg lifts in the correct order. Arms sometimes reach shoulder height and legs are sometimes straight, but balance, coordination and movement accuracy are inconsistent throughout the sequence.",
+        "Performs most of the sequence correctly, lifting the right and left arms and legs with good control. Usually maintains balance, extends arms to shoulder height and keeps legs straight, with only minor errors during the four repetitions.",
+        "Performs the complete sequence of right arm, right leg, left leg, left arm, left arm, left leg, right leg and right arm accurately and independently. Maintains excellent balance, keeps feet together, extends arms to shoulder height, keeps legs straight and completes all four repetitions smoothly."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Motor Lift Two",
+      "instructions": "1 and 2: Lift right arm and right leg.\n3 and 4: Lift left arm and left leg.\n3 and 4: Lift left arm and left leg.\n1 and 2: Lift right arm and right leg.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the right arm and right leg together and the left arm and left leg together. Requires significant support to coordinate movements, maintain balance, and keep limbs extended correctly throughout the sequence.",
+        "Can perform some paired arm and leg lifts correctly but coordination is inconsistent. Sometimes lifts the correct arm and leg together, but balance, control, and posture are not maintained throughout the sequence.",
+        "Performs most right arm and right leg lifts, and left arm and left leg lifts, with good coordination and control. Usually maintains balance and accurate movement patterns, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, lifting the right arm and right leg together and the left arm and left leg together with excellent coordination, balance, control, and posture throughout all four repetitions."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Motor Lift Three",
+      "instructions": "1 and 3: Lift right arm and left leg.\n2 and 4: Lift left arm and right leg.\n2 and 4: Lift left arm and right leg.\n1 and 3: Lift right arm and left leg.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the right arm with the left leg and the left arm with the right leg. Requires significant support to coordinate opposite arm and leg movements, maintain balance, and complete the sequence.",
+        "Can perform some opposite arm and leg lifts correctly but coordination is inconsistent. Sometimes lifts the correct arm and leg together, but balance, control, and movement accuracy vary throughout the sequence.",
+        "Performs most right arm and left leg lifts and left arm and right leg lifts with good coordination and control. Usually maintains balance and accurate movement patterns, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, lifting the right arm with the left leg and the left arm with the right leg with excellent coordination, balance, control, and posture throughout all four repetitions."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Motor Lift Four",
+      "instructions": "1 and 3: Lift right arm and left leg.\n2 and 4: Lift left arm and right leg.\n2 and 4: Lift left arm and right leg.\n1 and 3: Lift right arm and left leg.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the right arm with the left leg and the left arm with the right leg. Requires significant support to coordinate opposite arm and leg movements, maintain balance, and complete the sequence.",
+        "Can perform some opposite arm and leg lifts correctly but coordination is inconsistent. Sometimes lifts the correct arm and leg together, but balance, control, and movement accuracy vary throughout the sequence.",
+        "Performs most right arm and left leg lifts and left arm and right leg lifts with good coordination and control. Usually maintains balance and accurate movement patterns, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, lifting the right arm with the left leg and the left arm with the right leg with excellent coordination, balance, control, and posture throughout all four repetitions."
+      ],
+      "points": [
+        "START",
+        "MODULE_1",
+        "END"
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Motor Swing One",
+      "instructions": "Keep the arm and leg straight whilst swinging in the required direction. The arm is extended to shoulder height and the leg is raised as far as flexibility permits.\nRight arm and right leg swing backwards.\nRight arm and right leg swing out to the right.\nRight arm and right leg swing forwards.\nLeft arm and left leg swing forwards.\nLeft arm and left leg swing out to the left.\nLeft arm and left leg swing backwards.\nLeft arm and left leg swing out to the left.\nRight arm and right leg swing forwards.\nRight arm and right leg swing out to the right.\nRight arm and right leg swing backwards.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty swinging the right arm and right leg and the left arm and left leg in the required directions. Requires significant support to keep limbs straight, raise the arm to shoulder height, lift the leg, maintain balance, and follow the sequence.",
+        "Can perform some of the forward, backward, and sideways swings correctly but movement accuracy is inconsistent. Arms and legs are not always straight, the arm does not always reach shoulder height, and balance can be difficult to maintain throughout the sequence.",
+        "Performs most right and left arm and leg swings in the correct directions with good control. Usually keeps limbs straight, raises the arm to shoulder height, lifts the leg appropriately, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, swinging the right and left arm and leg forwards, backwards, and to the side in the correct order. Consistently keeps limbs straight, raises the arm to shoulder height, lifts the leg as flexibility permits, maintains excellent balance, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "END"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Motor Swing Two",
+      "instructions": "Keep the arm and leg straight whilst swinging in the required direction. The arm is extended to shoulder height and the leg is raised as far as flexibility permits.\nRight arm swings backwards and right leg swings forwards.\nRight arm swings out to the right and right leg swings to the left.\nRight arm swings forwards and right leg swings backwards.\nLeft arm swings forwards and left leg swings backwards.\nLeft arm swings out to the left and left leg swings to the right.\nLeft arm swings backwards and left leg swings forwards.\nLeft arm swings backwards and left leg swings forwards.\nLeft arm swings out to the left and left leg swings to the right.\nLeft arm swings forwards and left leg swings backwards.\nRight arm swings forwards and right leg swings backwards.\nRight arm swings out to the right and right leg swings to the left.\nRight arm swings backwards and right leg swings forwards.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty performing the opposite arm and leg swings in the required directions. Requires significant support to keep the arm and leg straight, raise the arm to shoulder height, lift the leg appropriately, maintain balance, and follow the sequence correctly.",
+        "Can perform some of the opposite arm and leg swings correctly but movement accuracy is inconsistent. Arms and legs are not always straight, directions may be confused, and balance and control are not maintained throughout the sequence.",
+        "Performs most opposite arm and leg swings in the correct directions with good control. Usually keeps the arm and leg straight, raises the arm to shoulder height, lifts the leg appropriately, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, swinging the right and left arm and leg in opposite directions as required throughout the pattern. Consistently keeps limbs straight, raises the arm to shoulder height, lifts the leg as flexibility permits, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "END"
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Motor Swing Three",
+      "instructions": "Keep the arm and leg straight whilst swinging in the required direction. The arm is extended to shoulder height and the leg is raised as far as flexibility permits.\nRight arm and left leg swing backwards.\nRight arm and left leg swing out to the right.\nRight arm and left leg swing forwards.\nLeft arm and right leg swing forwards.\nLeft arm and right leg swing out to the left.\nLeft arm and right leg swing backwards.\nLeft arm and right leg swing backwards.\nLeft arm and right leg swing out to the left.\nLeft arm and right leg swing forwards.\nRight arm and left leg swing forwards.\nRight arm and left leg swing forwards.\nRight arm and left leg swing out to the right.\nRight arm and left leg swing backwards.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty performing the right arm and left leg swings and the left arm and right leg swings in the required directions. Requires significant support to keep limbs straight, raise the arm to shoulder height, lift the leg appropriately, maintain balance, and follow the sequence.",
+        "Can perform some of the opposite arm and leg swings correctly but movement accuracy is inconsistent. Arms and legs are not always kept straight, directions may be confused, and balance and coordination are not maintained throughout the sequence.",
+        "Performs most right arm and left leg swings and left arm and right leg swings in the correct directions with good control. Usually keeps limbs straight, raises the arm to shoulder height, lifts the leg appropriately, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, swinging the right arm and left leg, and the left arm and right leg, forwards, backwards, and to the side in the correct order. Consistently keeps limbs straight, raises the arm to shoulder height, lifts the leg as flexibility permits, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "END"
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Motor Swing Four",
+      "instructions": "Keep the arm and leg straight whilst swinging in the required direction. The arm is extended to shoulder height and the leg is raised as far as flexibility permits.\nRight arm swings backwards and left leg swings forwards.\nRight arm swings out to the right and left leg swings to the left.\nRight arm swings forwards and left leg swings backwards.\nLeft arm swings forwards and right leg swings backwards.\nLeft arm swings out to the left and right leg swings to the right.\nLeft arm swings backwards and right leg swings forwards.\nLeft arm swings backwards and right leg swings forwards.\nLeft arm swings out to the left and right leg swings to the right.\nLeft arm swings forwards and right leg swings backwards.\nRight arm swings forwards and left leg swings backwards.\nRight arm swings out to the right and left leg swings to the left.\nRight arm swings backwards and left leg swings forwards.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty performing the right arm and left leg swings and the left arm and right leg swings in opposite directions. Requires significant support to keep limbs straight, raise the arm to shoulder height, lift the leg appropriately, maintain balance, and follow the sequence.",
+        "Can perform some of the opposite-direction arm and leg swings correctly but movement accuracy is inconsistent. Arms and legs are not always kept straight, directions may be confused, and balance and coordination are not maintained throughout the sequence.",
+        "Performs most right arm and left leg swings and left arm and right leg swings in the correct directions with good control. Usually keeps limbs straight, raises the arm to shoulder height, lifts the leg appropriately, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, swinging the right arm and left leg and the left arm and right leg in opposite directions as required throughout the pattern. Consistently keeps limbs straight, raises the arm to shoulder height, lifts the leg as flexibility permits, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_2",
+        "END"
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Motor Star One",
+      "instructions": "The arms and legs extend diagonally out to the side.\nRight arm and right leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and left leg move simultaneously.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nLeft arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty extending the arms and legs diagonally and moving the correct arm and leg together. Requires significant support to coordinate same-side and opposite-side movements, maintain balance, and complete the sequence.",
+        "Can perform some of the same-side and opposite-side arm and leg movements correctly but coordination is inconsistent. Arms and legs are not always fully extended diagonally, and balance and movement accuracy vary throughout the sequence.",
+        "Performs most same-side movements (right arm with right leg and left arm with left leg) and opposite-side movements (right arm with left leg and left arm with right leg) with good control. Usually extends limbs diagonally and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, moving right arm and right leg, left arm and left leg, right arm and left leg, and left arm and right leg simultaneously in the correct order. Consistently extends arms and legs diagonally, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Motor Star Two",
+      "instructions": "The arms and legs extend diagonally out to the side.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty extending the arms and legs diagonally and moving the correct arm and leg together. Requires significant support to coordinate both same-side movements (right arm and right leg, left arm and left leg) and opposite-side movements (right arm and left leg, left arm and right leg), maintain balance, and complete the sequence.",
+        "Can perform some of the same-side and opposite-side movements correctly but coordination is inconsistent. Arms and legs are not always fully extended diagonally, and movement accuracy, balance, and control vary throughout the sequence.",
+        "Performs most right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg movements with good control. Usually extends arms and legs diagonally, maintains balance, and follows the sequence correctly, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, moving right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg simultaneously in the correct order. Consistently extends arms and legs diagonally, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Motor Star Three",
+      "instructions": "The arms extend straight forwards from the shoulders and the legs are extended diagonally out to the side.\nRight arm and right leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and left leg move simultaneously.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nLeft arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty extending the arms straight forward from the shoulders and the legs diagonally out to the side. Requires significant support to move the correct arm and leg together, coordinate same-side and opposite-side movements, maintain balance, and complete the sequence.",
+        "Can perform some of the same-side and opposite-side arm and leg movements correctly but coordination is inconsistent. Arms are not always extended straight forwards, legs are not always extended diagonally, and balance and movement accuracy vary throughout the sequence.",
+        "Performs most right arm and right leg, left arm and left leg, right arm and left leg, and left arm and right leg movements with good control. Usually extends arms straight forward from the shoulders, extends legs diagonally, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, moving right arm and right leg, left arm and left leg, right arm and left leg, and left arm and right leg simultaneously in the correct order. Consistently extends arms straight forward from the shoulders, extends legs diagonally out to the side, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Motor Star Four",
+      "instructions": "Motor Star Four\nThe arms extend straight forwards from the shoulders and the legs are extended diagonally out to the side.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty extending the arms straight forwards from the shoulders and the legs diagonally out to the side. Requires significant support to coordinate right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg movements and to maintain balance throughout the sequence.",
+        "Can perform some of the same-side and opposite-side movements correctly but coordination is inconsistent. Arms are not always extended straight forwards, legs are not always extended diagonally, and balance and movement accuracy vary throughout the sequence.",
+        "Performs most right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg movements with good control. Usually extends arms straight forwards from the shoulders, extends legs diagonally out to the side, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, moving right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg simultaneously in the correct order. Consistently extends arms straight forwards from the shoulders, extends legs diagonally out to the side, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_3",
+        "END"
+      ]
+    },
+    {
+      "number": 13,
+      "title": "Motor Star Five",
+      "instructions": "The arms extend straight forwards from the shoulders and the legs are extended diagonally out to the side.\nRight arm and right leg move simultaneously.\nLeft arm and left leg move simultaneously.\nLeft arm and left leg move simultaneously.\nRight arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.\nLeft arm and right leg move simultaneously.\nLeft arm and right leg move simultaneously.\nRight arm and left leg move simultaneously.",
+      "levels": [
+        "Has difficulty extending the arms straight forwards from the shoulders and the legs diagonally out to the side. Requires significant support to coordinate right arm and right leg, left arm and left leg, right arm and left leg, and left arm and right leg movements and to maintain balance throughout the sequence.",
+        "Can perform some of the same-side and opposite-side movements correctly but coordination is inconsistent. Arms are not always extended straight forwards, legs are not always extended diagonally, and balance and movement accuracy vary throughout the sequence.",
+        "Performs most right arm and right leg, left arm and left leg, right arm and left leg, and left arm and right leg movements with good control. Usually extends arms straight forwards from the shoulders, extends legs diagonally out to the side, and maintains balance, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately, moving right arm and right leg, left arm and left leg, right arm and left leg, and left arm and right leg simultaneously in the correct order. Consistently extends arms straight forwards from the shoulders, extends legs diagonally out to the side, maintains excellent balance and coordination, and completes all four repetitions smoothly and independently."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 14,
+      "title": "Motor Jump One",
+      "instructions": "Stand feet together, arms by the side.\nJump feet wide apart, arms pointing diagonally to the ceiling.\nJump and return to the starting position.\nStand feet together, arms by the side.\nJump with the right arm and left leg forward and the left arm and right leg back.\nJump and change so that the left arm and right leg are forward.\nDo another 4 jumps changing arms and legs.",
+      "levels": [
+        "Has difficulty jumping with feet apart and together and coordinating arm and leg movements. Requires significant support to jump safely, point arms diagonally to the ceiling, alternate opposite arm and leg positions, and maintain balance throughout the sequence.",
+        "Can perform some of the jumps and movement changes correctly but coordination is inconsistent. Sometimes jumps feet apart and together successfully and changes arm and leg positions, but balance, timing, and movement accuracy vary throughout the sequence.",
+        "Performs most of the jumps with good control and coordination. Usually jumps feet apart and together correctly, points arms diagonally to the ceiling, alternates right arm and left leg forward with left arm and right leg forward, and maintains balance, with only minor errors.",
+        "Performs the complete sequence accurately and independently. Jumps feet apart and together with control, points arms diagonally to the ceiling, smoothly alternates opposite arm and leg positions while jumping, maintains excellent balance, timing, and coordination, and completes all movement changes confidently."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 15,
+      "title": "Motor Jump Two",
+      "instructions": "Stand feet together, arms by the side.\nJump with the left leg forward and right leg behind, arms pointing diagonally to the ceiling.\nJump so that the right leg is forward and the left leg is behind, arms to the side of the body.\nDo another 4 jumps changing arms and legs.",
+      "levels": [
+        "Has difficulty jumping with one leg forward and one leg behind while coordinating arm movements. Requires significant support to change leg positions, move arms to the correct position, and maintain balance throughout the sequence.",
+        "Can perform some of the jumps and changes in arm and leg positions correctly but coordination is inconsistent. Sometimes lands with the correct leg forward and arm position, but balance, timing, and movement accuracy vary throughout the sequence.",
+        "Performs most jumps with good control and coordination. Usually changes from left leg forward to right leg forward correctly, moves arms between the diagonal and side positions, and maintains balance, with only minor errors during the sequence.",
+        "Performs the complete sequence accurately and independently. Consistently jumps with the correct leg forward and behind, moves arms accurately between diagonal and side positions, maintains excellent balance, timing, and coordination, and completes all jumps smoothly and confidently."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 16,
+      "title": "Motor Jump Three",
+      "instructions": "Stand feet together, arms by the side.\nJump feet wide apart, right arm forward and left arm back.\nJump feet together and bring left arm forward and right arm back.\nDo another 4 jumps changing arms and legs.",
+      "levels": [
+        "Has difficulty jumping feet apart and together while changing arm positions. Requires significant support to coordinate the right arm forward and left arm back position, then the left arm forward and right arm back position, and to maintain balance throughout the sequence.",
+        "Can perform some of the jumps and arm changes correctly but coordination is inconsistent. Sometimes jumps feet apart and together successfully and changes arm positions appropriately, but balance, timing, and movement accuracy vary throughout the sequence.",
+        "Performs most jumps with good control and coordination. Usually jumps feet apart and together correctly, changes between right arm forward and left arm back and left arm forward and right arm back positions, and maintains balance, with only minor errors during the sequence.",
+        "Performs the complete sequence accurately and independently. Consistently jumps feet apart and together, smoothly alternates between right arm forward and left arm back and left arm forward and right arm back positions, maintains excellent balance, timing, and coordination, and completes all jumps confidently and accurately."
+      ],
+      "points": [
+        "START",
+        "MODULE_4",
+        "END"
+      ]
+    },
+    {
+      "number": 17,
+      "title": "Motor Lift Five",
+      "instructions": "Lie on the floor feet together, arms by your side.\nLift right arm and right leg.\nLift both legs.\nLift left arm and left leg.\nLift both arms.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the right arm and right leg, both legs, the left arm and left leg, and both arms. Requires significant support to perform the movements, maintain body control, and complete the sequence.",
+        "Can perform some of the lifting movements correctly but control and coordination are inconsistent. Sometimes lifts the correct arm or leg combination, but range of movement, body control, and accuracy vary throughout the sequence.",
+        "Performs most of the lifting movements with good control. Usually lifts the right arm and right leg, both legs, the left arm and left leg, and both arms correctly, with only minor errors in coordination, height, or control during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the right arm and right leg, both legs, the left arm and left leg, and both arms with good control, coordination, and strength, completing all four repetitions smoothly and correctly."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 18,
+      "title": "Motor Lift Six",
+      "instructions": "Lie on the floor feet together, arms by your side.\nLift left arm and left leg.\nLift both legs.\nLift right arm and right leg.\nLift both arms.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the left arm and left leg, both legs, the right arm and right leg, and both arms. Requires significant support to perform the movements, maintain body control, and complete the sequence.",
+        "Can perform some of the lifting movements correctly but control and coordination are inconsistent. Sometimes lifts the correct arm or leg combination, but range of movement, body control, and accuracy vary throughout the sequence.",
+        "Performs most of the lifting movements with good control. Usually lifts the left arm and left leg, both legs, the right arm and right leg, and both arms correctly, with only minor errors in coordination, height, or control during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the left arm and left leg, both legs, the right arm and right leg, and both arms with good control, coordination, and strength, completing all four repetitions smoothly and correctly."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 19,
+      "title": "Motor Lift Seven",
+      "instructions": "Lie on the floor feet together, arms by your side.\nLift both arms.\nLift right arm and left leg.\nLift both legs.\nLift left arm and right leg.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting both arms, the right arm and left leg, both legs, and the left arm and right leg. Requires significant support to coordinate movements, maintain body control, and complete the sequence.",
+        "Can perform some of the lifting movements correctly but control and coordination are inconsistent. Sometimes lifts the correct arm and leg combinations, but range of movement, body control, and accuracy vary throughout the sequence.",
+        "Performs most of the lifting movements with good control. Usually lifts both arms, the right arm and left leg, both legs, and the left arm and right leg correctly, with only minor errors in coordination, height, or control during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts both arms, the right arm and left leg, both legs, and the left arm and right leg with good control, coordination, and strength, completing all four repetitions smoothly and correctly."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 20,
+      "title": "Motor Lift Eight",
+      "instructions": "Lie on the floor feet together, arms by your side.\nLift both arms.\nLift left arm and right leg.\nLift both legs.\nLift right arm and left leg.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting both arms, the left arm and right leg, both legs, and the right arm and left leg. Requires significant support to coordinate movements, maintain body control, and complete the sequence.",
+        "Can perform some of the lifting movements correctly but control and coordination are inconsistent. Sometimes lifts the correct arm and leg combinations, but range of movement, body control, and accuracy vary throughout the sequence.",
+        "Performs most of the lifting movements with good control. Usually lifts both arms, the left arm and right leg, both legs, and the right arm and left leg correctly, with only minor errors in coordination, height, or control during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts both arms, the left arm and right leg, both legs, and the right arm and left leg with good control, coordination, and strength, completing all four repetitions smoothly and correctly."
+      ],
+      "points": [
+        "START",
+        "MODULE_5",
+        "END"
+      ]
+    },
+    {
+      "number": 21,
+      "title": "Motor Cross One",
+      "instructions": "Lift the right arm to the ceiling then across the body to touch the floor by the shoulder. Up to the ceiling and back to the side.\nLift the right leg up to the ceiling then across to the floor bending the knee. Up to the ceiling and back down.\nLift the left leg up to the ceiling then across to the floor bending the knee. Up to the ceiling and back down.\nLift the left arm to the ceiling then across the body to touch the floor by the shoulder. Up to the ceiling and back to the side.\nLift the left arm to the ceiling then across the body to touch the floor by the shoulder. Up to the ceiling and back to the side.\nLift the left leg up to the ceiling then across to the floor bending the knee. Up to the ceiling and back down.\nLift the right leg up to the ceiling then across to the floor bending the knee. Up to the ceiling and back down.\nLift the right arm to the ceiling then across the body to touch the floor by the shoulder. Up to the ceiling and back to the side.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the arms and legs to the ceiling and moving them across the body in the correct sequence. Requires significant support to control the movements, bend the knee appropriately during leg movements, and return limbs to the starting position.",
+        "Can perform some arm and leg crossing movements correctly but coordination and control are inconsistent. Sometimes lifts limbs to the ceiling and across the body accurately, but movement range, balance, and sequence recall vary throughout the activity.",
+        "Performs most arm and leg crossing movements with good control. Usually lifts the right and left arms to the ceiling and across the body to the floor by the shoulder, and lifts the right and left legs to the ceiling and across the body with an appropriate knee bend, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the right and left arms to the ceiling and across the body to touch the floor by the shoulder, and lifts the right and left legs to the ceiling and across the body with good knee control before returning to the starting position. Completes all four repetitions smoothly, accurately, and with excellent coordination."
+      ],
+      "points": [
+        "START",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 22,
+      "title": "Motor Cross Two",
+      "instructions": "Lift up right arm and right leg to the ceiling, cross over the body and touch the other side. Lift to the ceiling and return to the starting position.\nLift up left arm and left leg to the ceiling, cross over the body and touch the other side. Lift to the ceiling and return to the starting position.\nLift up right arm and right leg to the ceiling, cross over the body and touch the other side. Lift to the ceiling and return to the starting position.",
+      "levels": [
+        "Has difficulty lifting the right arm and right leg, and the left arm and left leg, to the ceiling and crossing them over the body to touch the opposite side. Requires significant support to coordinate movements, control the body, and return to the starting position.",
+        "Can perform some of the crossing movements correctly but coordination and control are inconsistent. Sometimes lifts the correct arm and leg to the ceiling and across the body, but movement range, accuracy, and sequence recall vary throughout the activity.",
+        "Performs most right arm and right leg and left arm and left leg crossing movements with good control. Usually lifts limbs to the ceiling, crosses over the body to touch the opposite side, and returns to the starting position, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the right arm and right leg and the left arm and left leg to the ceiling, crosses them over the body to touch the opposite side, returns smoothly to the starting position, and completes all four repetitions with excellent coordination and control."
+      ],
+      "points": [
+        "START",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 23,
+      "title": "Motor Cross Three",
+      "instructions": "Lie on the back feet together, arms by the side.\nLift right arm and left leg up to the ceiling, across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift left arm and right leg up to the ceiling, across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift left arm and right leg up to the ceiling, across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift right arm and left leg up to the ceiling, across the body to touch the floor. Up to the ceiling and back to the starting position.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the right arm and left leg, and the left arm and right leg, to the ceiling and across the body to touch the floor. Requires significant support to coordinate opposite arm and leg movements, maintain control, and return to the starting position.",
+        "Can perform some of the opposite arm and leg crossing movements correctly but coordination is inconsistent. Sometimes lifts the correct arm and leg to the ceiling and across the body, but movement accuracy, control, and sequence recall vary throughout the activity.",
+        "Performs most right arm and left leg and left arm and right leg crossing movements with good control. Usually lifts limbs to the ceiling, crosses the body to touch the floor, and returns to the starting position, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the right arm and left leg and the left arm and right leg to the ceiling, crosses the body to touch the floor, returns smoothly to the starting position, and completes all four repetitions with excellent coordination, control, and accuracy."
+      ],
+      "points": [
+        "START",
+        "MODULE_6",
+        "END"
+      ]
+    },
+    {
+      "number": 24,
+      "title": "Motor Cross Four",
+      "instructions": "Lie on the back feet together, arms by the side.\nLift right arm and right leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift right arm and left leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift left arm and left leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift left arm and right leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift left arm and left leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift left arm and right leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift right arm and right leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nLift right arm and left leg up to the ceiling across the body to touch the floor. Up to the ceiling and back to the starting position.\nRepeat the sequence 4 times.",
+      "levels": [
+        "Has difficulty lifting the right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg to the ceiling and across the body to touch the floor. Requires significant support to coordinate movements, maintain control, and return to the starting position.",
+        "Can perform some of the crossing movements correctly but coordination and control are inconsistent. Sometimes lifts the correct arm and leg combination to the ceiling and across the body, but movement accuracy, control, and sequence recall vary throughout the activity.",
+        "Performs most same-side and opposite-side crossing movements with good control. Usually lifts the correct arm and leg combination to the ceiling, crosses the body to touch the floor, and returns to the starting position, with only minor errors during the four repetitions.",
+        "Performs the complete sequence accurately and independently. Consistently lifts the right arm and right leg, right arm and left leg, left arm and left leg, and left arm and right leg to the ceiling, crosses the body to touch the floor, returns smoothly to the starting position, and completes all four repetitions with excellent coordination, control, and accuracy."
+      ],
+      "points": [
+        "START",
+        "MODULE_6",
+        "END"
+      ]
+    }
+  ]
+}

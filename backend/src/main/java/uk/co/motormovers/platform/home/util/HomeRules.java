@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.home.util;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -7,50 +8,45 @@ import java.util.Set;
 
 import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.model.Milestone;
+import uk.co.motormovers.platform.assessment.model.YearPoint;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.common.model.ColourStage;
 
 /**
- * The rules of Motor Movers at Home. Every number here is a suggested default for Pat to confirm
- * (docs/home-programme-design.md): the age each colour suits, which movements the starting check asks about, when it
- * suggests starting a colour earlier, and how many sessions make a module.
+ * The rules of Motor Movers at Home, from Pat's answers of 2026-11-03 (docs/home-programme-design.md). Children move
+ * through the colours at their own pace, so the colour does not follow the age: young children start at Orange and
+ * older ones at Green, the core programme, then go on through the colours. A rhyme colour (Red, Orange, Yellow) does
+ * one rhyme a week, five times; a colour with modules (Green to Violet) builds each module up over five weeks, adding
+ * one or two exercises a week.
  */
 public final class HomeRules {
 
-    /** The youngest age (months) a colour suits; the programme covers 6 months to 8 years. Pat to confirm. */
-    static final int[] COLOUR_FROM_MONTHS = {0, 18, 30, 42, 54, 66, 78};
+    /** Babies and toddlers start at Red (Pat's "from 6 months/toddlers"). Pat to confirm where Red fits. */
+    static final int ORANGE_FROM_MONTHS = 24;
+
+    /** From the age children start school in the UK (Pat's "4/5"), they start at Green, the core programme. */
+    static final int GREEN_FROM_MONTHS = 48;
 
     /** The check asks about movements from the year before the child's age up to their age. */
     static final int CHECK_LOOKBACK_MONTHS = 12;
 
-    /** With fewer than half the answered movements secure, the check suggests the colour before. */
-    static final double SECURE_SHARE_TO_STAY = 0.5;
+    public static final int SESSIONS_PER_WEEK = 5;
 
-    /** Below this many Yes or Not yet answers the check keeps the colour for the child's age. */
-    static final int MIN_ANSWERS = 4;
+    /** Pat's example builds Green module 1 up over five weeks. */
+    public static final int WEEKS_PER_MODULE = 5;
 
-    public static final int SESSIONS_PER_MODULE = 10;
-
-    public static final int EXERCISES_PER_SESSION = 4;
-
-    /** Colours without modules in Pat's grid (Yellow) are worked through in groups of this many exercises. */
-    static final int GROUP_SIZE = 3;
-
-    /** The starting check is suggested again after this many days. */
-    public static final int RECHECK_AFTER_DAYS = 91;
+    /** New exercises in a module's first week; the rest are added one or two a week after that. */
+    static final int NEW_IN_FIRST_WEEK = 2;
 
     private HomeRules() {
     }
 
-    /** The colour for a child's age, before the check. */
-    public static ColourStage colourForAge(int ageMonths) {
-        ColourStage colour = ColourStage.RED;
-        for (ColourStage s : ColourStage.values()) {
-            if (ageMonths >= COLOUR_FROM_MONTHS[s.ordinal()]) {
-                colour = s;
-            }
+    /** The colour a child starts at: Red for babies and toddlers, Orange for nursery age, Green from school age. */
+    public static ColourStage startingColour(int ageMonths) {
+        if (ageMonths >= GREEN_FROM_MONTHS) {
+            return ColourStage.GREEN;
         }
-        return colour;
+        return ageMonths >= ORANGE_FROM_MONTHS ? ColourStage.ORANGE : ColourStage.RED;
     }
 
     /** The movements the starting check asks about: those a child usually does in the year up to their age. */
@@ -58,42 +54,82 @@ public final class HomeRules {
         return m.getAgeFromMonths() <= ageMonths && m.getAgeToMonths() >= ageMonths - CHECK_LOOKBACK_MONTHS;
     }
 
-    public record Suggestion(ColourStage colour, ColourStage forAge, boolean earlier) {
+    /**
+     * The check (Pat's developmental charts) is done at the start, middle and end of each school year, as in school:
+     * it is due when it has not been done yet in the current part of the year.
+     */
+    public static boolean checkDue(LocalDate checkedOn, LocalDate today) {
+        return checkedOn == null || YearPoint.schoolYear(checkedOn) != YearPoint.schoolYear(today)
+                || YearPoint.on(checkedOn) != YearPoint.on(today);
     }
 
-    /** The colour to start at: the one for the child's age, or the one before when most answers are "Not yet". */
-    public static Suggestion suggest(int ageMonths, int yes, int notYet) {
-        ColourStage forAge = colourForAge(ageMonths);
-        int answered = yes + notYet;
-        boolean earlier = answered >= MIN_ANSWERS && (double) yes / answered < SECURE_SHARE_TO_STAY
-                && forAge != ColourStage.RED;
-        return new Suggestion(earlier ? ColourStage.values()[forAge.ordinal() - 1] : forAge, forAge, earlier);
+    /** A colour with module points in Pat's grid (Green to Violet); the rhyme colours have only a start and an end. */
+    public static boolean hasModules(List<Exercise> exercises) {
+        return exercises.stream().flatMap(e -> e.getPoints().stream()).anyMatch(ExercisePoints::isModule);
     }
 
-    /** Where a child is in a colour: module, session within it, and the exercises for today. */
-    public record Plan(int module, int modules, int sessionInModule, boolean colourComplete, List<Exercise> today,
+    /**
+     * Where a child is in a colour. {@code module} is the module, or the rhyme for a rhyme colour; {@code week} the
+     * week within a module (always 1 for a rhyme). {@code today} is the session; {@code newThisWeek} the exercises it
+     * adds this week.
+     */
+    public record Plan(boolean rhymes, int module, int modules, int week, int weeks, int sessionInModule,
+            int sessionsPerModule, boolean colourComplete, List<Exercise> today, List<Exercise> newThisWeek,
             int modulesDone) {
     }
 
     public static Plan plan(List<Exercise> exercises, long sessionsDone) {
+        boolean rhymes = !hasModules(exercises);
         List<List<Exercise>> modules = modules(exercises);
         int count = modules.size();
-        int modulesDone = (int) Math.min(count, sessionsDone / SESSIONS_PER_MODULE);
+        int perModule = rhymes ? SESSIONS_PER_WEEK : SESSIONS_PER_WEEK * WEEKS_PER_MODULE;
+        int modulesDone = (int) Math.min(count, sessionsDone / perModule);
         boolean complete = modulesDone == count;
         int module = Math.min(count, modulesDone + 1);
-        int session = (int) (sessionsDone - (long) (module - 1) * SESSIONS_PER_MODULE);
+        int session = (int) Math.min(perModule - 1, sessionsDone - (long) (module - 1) * perModule);
+        int weeks = rhymes ? 1 : WEEKS_PER_MODULE;
+        int week = rhymes ? 1 : session / SESSIONS_PER_WEEK + 1;
         List<Exercise> list = modules.get(module - 1);
-        List<Exercise> today = new ArrayList<>();
-        int take = Math.min(EXERCISES_PER_SESSION, list.size());
-        for (int i = 0; i < take; i++) {
-            today.add(list.get((session * EXERCISES_PER_SESSION + i) % list.size()));
+        List<Exercise> today;
+        List<Exercise> added;
+        if (rhymes) {
+            today = list;
+            added = List.of();
+        } else {
+            List<List<Exercise>> byWeek = buildUp(list, module == 1 ? List.of() : modules.get(module - 2));
+            today = byWeek.subList(0, week).stream().flatMap(List::stream).toList();
+            added = week == 1 ? List.of() : byWeek.get(week - 1);
         }
-        return new Plan(module, count, Math.min(SESSIONS_PER_MODULE, session + 1), complete, today, modulesDone);
+        return new Plan(rhymes, module, count, week, weeks, session + 1, perModule, complete, today, added,
+                modulesDone);
     }
 
     /**
-     * The modules of a colour. With Pat's module points (Green), module n holds the exercises assessed at its end;
-     * without them (Yellow), the exercises in groups of three, in order.
+     * A module's exercises week by week: those carried on from the module before from the first week, with the first
+     * two new ones; the other new ones are added one or two a week, in Pat's order, so all are in by the last week.
+     */
+    static List<List<Exercise>> buildUp(List<Exercise> module, List<Exercise> previous) {
+        List<Exercise> carried = module.stream().filter(previous::contains).toList();
+        List<Exercise> fresh = module.stream().filter(e -> !previous.contains(e)).toList();
+        List<List<Exercise>> weeks = new ArrayList<>();
+        int first = Math.min(NEW_IN_FIRST_WEEK, fresh.size());
+        List<Exercise> week1 = new ArrayList<>(carried);
+        week1.addAll(fresh.subList(0, first));
+        weeks.add(week1);
+        int rest = fresh.size() - first;
+        int laterWeeks = WEEKS_PER_MODULE - 1;
+        int from = first;
+        for (int w = 0; w < laterWeeks; w++) {
+            int take = rest / laterWeeks + (w < rest % laterWeeks ? 1 : 0);
+            weeks.add(fresh.subList(from, from + take));
+            from += take;
+        }
+        return weeks;
+    }
+
+    /**
+     * The modules of a colour. With Pat's module points (Green to Violet), module n holds the exercises assessed at
+     * its end; without them (the rhyme colours), each rhyme on its own, in order: one a week.
      */
     public static List<List<Exercise>> modules(List<Exercise> exercises) {
         List<Exercise> sorted = exercises.stream().sorted(Comparator.comparingInt(Exercise::getNumber)).toList();
@@ -109,11 +145,29 @@ public final class HomeRules {
                 }
             }
         } else {
-            for (int i = 0; i < sorted.size(); i += GROUP_SIZE) {
-                modules.add(sorted.subList(i, Math.min(sorted.size(), i + GROUP_SIZE)));
-            }
+            sorted.forEach(e -> modules.add(List.of(e)));
         }
         return modules;
+    }
+
+    /** "Module 2 of 6 · week 3 of 5", "Rhyme 4 of 18 · session 2 of 5", or the colour done. */
+    public static String progressLabel(Plan plan) {
+        String unit = plan.rhymes() ? "rhymes" : "modules";
+        if (plan.colourComplete()) {
+            return "All " + plan.modules() + " " + unit + " done: keep practising";
+        }
+        return plan.rhymes()
+                ? "Rhyme " + plan.module() + " of " + plan.modules() + " · session " + plan.sessionInModule() + " of "
+                        + plan.sessionsPerModule()
+                : "Module " + plan.module() + " of " + plan.modules() + " · week " + plan.week() + " of "
+                        + plan.weeks();
+    }
+
+    /** "Module 2 · week 3", "Rhyme 4 · session 2". */
+    public static String sessionTitle(Plan plan) {
+        return plan.rhymes()
+                ? "Rhyme " + plan.module() + " · session " + plan.sessionInModule()
+                : "Module " + plan.module() + " · week " + plan.week();
     }
 
     public record Review(String point, List<Exercise> exercises) {

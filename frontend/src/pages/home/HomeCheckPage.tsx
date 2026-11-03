@@ -9,7 +9,9 @@ import { STAGES, stageInfo } from '../../stages'
 
 /**
  * The starting check: movements from Pat's charts that children usually manage around this age. The parent answers
- * Yes, Not yet or Not sure for each, and the check suggests a colour to start at. Done again every few months.
+ * Yes, Not yet or Not sure for each; each Yes is kept as a secure movement. The colour to start at comes from the
+ * child's age (Pat: young children at Orange, children at school at Green). Done again at the start, middle and end of
+ * each school year.
  */
 export default function HomeCheckPage() {
   const { childId } = useParams()
@@ -143,7 +145,10 @@ function Result({ childId, name, result }: { childId: number; name: string; resu
           {result.yes} yes · {result.notYet} not yet · {result.notSure} not sure
         </p>
       </section>
-      <p>Each colour builds on the one before, and there is no rush. Every few months we will suggest the check again.</p>
+      <p>
+        Each colour builds on the one before, and there is no rush. We will suggest the check again at the start, middle
+        and end of each school year.
+      </p>
       {choosing && (
         <div className="chips" role="group" aria-label="Choose a colour">
           {STAGES.map((s) => (

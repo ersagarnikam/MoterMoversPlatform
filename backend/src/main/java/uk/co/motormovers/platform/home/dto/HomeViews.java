@@ -18,12 +18,18 @@ public final class HomeViews {
             "Not a diagnosis. This shows how your child is getting on with the programme's movements, not a test.";
 
     /**
-     * The gentle prompt in place of the school's extra-support flag. Pat to approve the wording; it names no cause and
-     * points to people who know the child.
+     * The gentle prompt in place of the school's extra-support flag, in Pat's words (2026-11-03): it names no cause
+     * and points to people who know the child.
      */
-    public static final String SUPPORT_PROMPT = "Some of these movements are taking a little longer. That is common: "
-            + "every child moves at their own pace, and little and often helps. If you would like to talk it through, "
-            + "your child's nursery, school or health visitor can help.";
+    public static final String SUPPORT_PROMPT = "Some of these movements are taking a little longer. Children move "
+            + "and develop at their own pace. You may wish to talk it through with your child's nursery or health "
+            + "visitor.";
+
+    /** Pat's safety note (2026-11-03), shown before the first session and kept on the session screen. */
+    public static final String SAFETY_NOTE = "Before starting, make sure there is enough clear space for your child "
+            + "to move safely and that an adult is present at all times to model the movements and supervise. "
+            + "Encourage your child to listen to their body and complete each movement at a comfortable pace. If a "
+            + "movement hurts or feels uncomfortable, stop and do not continue with that activity.";
 
     /** The parent's words for Pat's four levels. */
     public static final List<String> LEVELS = AssessmentViews.PARENT_LEVELS;
@@ -82,8 +88,9 @@ public final class HomeViews {
     public record CheckIn(List<Answer> answers) {
     }
 
-    public record CheckResult(ColourStage suggested, String suggestedName, ColourStage forAge, String forAgeName,
-            boolean earlier, int yes, int notYet, int notSure, String explanation) {
+    /** {@code suggested}: the colour to start at, which comes from the child's age, not from the answers. */
+    public record CheckResult(ColourStage suggested, String suggestedName, int yes, int notYet, int notSure,
+            String explanation) {
     }
 
     public record StageIn(ColourStage stage) {
@@ -102,15 +109,19 @@ public final class HomeViews {
 
     /**
      * Today for one child. With Pat's exercises for the colour ({@code hasExercises}), the session is
-     * {@code exercises}; without them, the app shows the colour's home activities instead. {@code firstTime}: the
-     * exercises to rate after doing them for the first time. {@code canRate} is false for a child linked to a school,
-     * whose teacher does the assessing.
+     * {@code exercises}; without them, the app shows the colour's home activities instead. In a rhyme colour
+     * ({@code rhymes}) {@code module} is the rhyme, done for a week; otherwise a module builds up over {@code weeks},
+     * and {@code newThisWeek} are the exercises added this week. {@code progressLabel} and {@code sessionTitle} say
+     * where the child is ("Module 2 of 6 · week 3 of 5"). {@code firstTime}: the exercises to rate after doing them for
+     * the first time. {@code canRate} is false for a child linked to a school, whose teacher does the assessing.
      */
     public record Today(Long childId, String name, ColourStage stage, String stageName, boolean hasExercises,
-            int module, int modules, int sessionInModule, int sessionsPerModule, boolean colourComplete,
-            List<AssessmentViews.ExerciseView> exercises, List<Long> firstTime, boolean canRate, boolean doneToday,
-            List<Boolean> counterGrid, int daysDone, int counterDays, long sessionsDone, Review review,
-            boolean checkDue, Support support, List<Level> levels) {
+            boolean rhymes, int module, int modules, int week, int weeks, int sessionInModule, int sessionsPerModule,
+            boolean colourComplete, String progressLabel, String sessionTitle,
+            List<AssessmentViews.ExerciseView> exercises, List<Long> newThisWeek, List<Long> firstTime,
+            boolean canRate, boolean doneToday, List<Boolean> counterGrid, int daysDone, int counterDays,
+            long sessionsDone, Review review, boolean checkDue, Support support, List<Level> levels,
+            String safetyNote) {
     }
 
     public record SessionIn(String clientId, Long childId, LocalDate doneOn) {

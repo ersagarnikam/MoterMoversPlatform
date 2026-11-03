@@ -24,7 +24,9 @@ import { useLoad } from '@/lib/useLoad'
 
 /**
  * The starting check: movements from Pat's charts that children usually manage around this age. The parent answers
- * Yes, Not yet or Not sure for each, and the check suggests a colour to start at. Done again every few months.
+ * Yes, Not yet or Not sure for each; each Yes is kept as a secure movement. The colour to start at comes from the
+ * child's age (Pat: young children at Orange, children at school at Green). Done again at the start, middle and end of
+ * each school year.
  */
 export default function CheckScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -141,8 +143,8 @@ function Result({ childId, name, result }: { childId: number; name: string; resu
         </Muted>
       </Card>
       <Body>
-        Each colour builds on the one before, and there is no rush. Every few months we will suggest doing the check
-        again.
+        Each colour builds on the one before, and there is no rush. We will suggest the check again at the start,
+        middle and end of each school year.
       </Body>
       {choosing && (
         <View style={{ gap: space.sm }}>

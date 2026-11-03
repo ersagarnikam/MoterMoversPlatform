@@ -93,7 +93,7 @@ class HomeProgrammeTest {
     }
 
     @Test
-    void theStartingCheckSuggestsAColour() throws Exception {
+    void theStartingCheckRecordsMovementsAndTheAgeSetsTheColour() throws Exception {
         String priya = login("home@example.test");
         Integer leo = childNamed(priya, "Leo");
         String check = mvc.perform(get("/api/home/children/" + leo + "/check").header("Authorization", bearer(priya)))
@@ -103,7 +103,8 @@ class HomeProgrammeTest {
                 .andReturn().getResponse().getContentAsString();
         List<Integer> ids = JsonPath.read(check, "$.questions[*].milestoneId");
 
-        // Two yes, the rest not yet: Leo (20 months, Orange for his age) is suggested the colour before.
+        // Two yes, the rest not yet. The answers are kept, but the colour comes from the age: Leo (20 months) starts
+        // at Red, where babies and toddlers begin.
         List<String> answers = new ArrayList<>();
         for (int i = 0; i < ids.size(); i++) {
             answers.add("{\"milestoneId\":" + ids.get(i) + ",\"answer\":\"" + (i < 2 ? "YES" : "NOT_YET") + "\"}");
@@ -111,13 +112,20 @@ class HomeProgrammeTest {
         mvc.perform(post("/api/home/children/" + leo + "/check").header("Authorization", bearer(priya))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"answers\":[" + String.join(",", answers) + "]}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.forAge").value("ORANGE"))
                 .andExpect(jsonPath("$.suggested").value("RED"))
-                .andExpect(jsonPath("$.earlier").value(true))
+                .andExpect(jsonPath("$.explanation").value(containsString("own pace")))
                 .andExpect(jsonPath("$.yes").value(2));
         mvc.perform(get("/api/home/children/" + leo).header("Authorization", bearer(priya)))
                 .andExpect(jsonPath("$.child.stage").value("RED"))
                 .andExpect(jsonPath("$.child.checkDue").value(false));
+        // Red is a rhyme colour: one rhyme a week, five times.
+        mvc.perform(get("/api/home/children/" + leo + "/today").header("Authorization", bearer(priya)))
+                .andExpect(jsonPath("$.hasExercises").value(true))
+                .andExpect(jsonPath("$.rhymes").value(true))
+                .andExpect(jsonPath("$.exercises.length()").value(1))
+                .andExpect(jsonPath("$.exercises[0].title").value("Rock a Bye Baby"))
+                .andExpect(jsonPath("$.progressLabel").value("Rhyme 1 of 18 · session 1 of 5"))
+                .andExpect(jsonPath("$.safetyNote").value(containsString("an adult is present")));
         // The yes answers are secure movements on Pat's charts, with his age.
         mvc.perform(get("/api/children/" + leo + "/development").header("Authorization", bearer(priya)))
                 .andExpect(status().isOk())
@@ -136,9 +144,14 @@ class HomeProgrammeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.stage").value("GREEN"))
                 .andExpect(jsonPath("$.hasExercises").value(true))
+                .andExpect(jsonPath("$.rhymes").value(false))
                 .andExpect(jsonPath("$.module").value(2))
                 .andExpect(jsonPath("$.modules").value(6))
-                .andExpect(jsonPath("$.exercises.length()").value(4))
+                .andExpect(jsonPath("$.progressLabel").value("Module 2 of 6 · week 1 of 5"))
+                .andExpect(jsonPath("$.sessionTitle").value("Module 2 · week 1"))
+                // The first week of a module: what carries on from module 1 and the first new ones, nothing added yet.
+                .andExpect(jsonPath("$.exercises.length()").value(greaterThan(1)))
+                .andExpect(jsonPath("$.newThisWeek.length()").value(0))
                 .andExpect(jsonPath("$.canRate").value(true))
                 .andExpect(jsonPath("$.levels[3].label").value("Got it"))
                 // Module 1 is done, so its end-of-module ratings are due.
@@ -306,6 +319,7 @@ class HomeProgrammeTest {
     void theParentWordingPassesTheWordingCheck() {
         List<String> texts = new ArrayList<>(HomeViews.LEVELS);
         texts.add(HomeViews.SUPPORT_PROMPT);
+        texts.add(HomeViews.SAFETY_NOTE);
         texts.add(HomeViews.NOT_A_DIAGNOSIS.replace("Not a diagnosis.", ""));
         assertThat(new WordingGuard().check(texts)).isEmpty();
     }
