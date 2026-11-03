@@ -83,6 +83,16 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-11-03)
 
+**Shared with Pat on Google Drive (2026-11-03).** A **PAT** folder in the connected Drive (ihaustralia.info@gmail.com,
+https://drive.google.com/drive/folders/1CUAMy7DXaweoWH8KsqjIJUhp5y2Mikdn) holds: **Logo**, four logo directions for a
+possible new name, "Professor Pat Preedy Programme" (SVG; the designs are a Claude design canvas, not in the
+repository; nothing in the platform is renamed); and two Google Docs rewritten for Pat from `docs/assessment-design.md`
+and `docs/home-programme-design.md` (prototype wording, no prices). The prototype guide PDFs go in by hand (too large
+for the Drive connection). Kay's media one-pager (Kay Cogan, kaycogan@ihau.au) is a Claude design canvas too.
+
+**In progress (Claude for the owner, branch `prototype-guides`):** the prototype guide copies (see Guides below).
+Remove this note once merged.
+
 **Price chart and enquiry form on the website (merged 2026-11-03, pull request #13, at the owner's request).** "Ask for the price guide" on `/for-schools` was a `mailto:` link, which does
 nothing on a computer with no email program (the owner's). It now opens, in place, the **price chart** (the active
 licence plans at today's price from Plans & prices, `GET /api/plans`, open without signing in; the free trial shown as
@@ -316,6 +326,10 @@ Built so far:
   in `build.mjs` (`overviewBody`). The words live in `flow-content.mjs` and `user-guide-content.mjs`. Rebuilt again
   2026-10-28 for Pat's assessments (teacher, head, trust lead), school assessments in the parent app, and Motor Movers
   at Home (the capture walks Priya on the website and in the app, saving nothing, then Jo's child page).
+  **Prototype copies** (2026-11-03, `build.mjs all prototype`, into `docs/flow-guides/prototype` and
+  `docs/user-guide/prototype`; they replace the old `prototype-labelled` set of 2026-10-19): for Pat and anyone outside
+  the build team. Labelled Prototype, "considered in the design" instead of "built" (`PROTO_WORDING`), no prices, and
+  a status page of what is still to settle. Rebuild them with the normal set.
 - Parent: parent course on the web; parent app (link a child with a school code, home activities, guidance).
   Since 2026-10-28 a linked child's Progress screen shows the school's assessments in plain words
   (`assessment/service/ParentProgress`, shared with Motor Movers at Home; mobile `components/AssessmentSummary`):
