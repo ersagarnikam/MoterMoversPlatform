@@ -42,3 +42,14 @@ node docs/guide-builder/build.mjs          # both sets; or: build.mjs user | bui
 ```
 
 The HTML behind each PDF is kept in `html/` (not in git) for checking a layout in a browser.
+
+### Prototype copies, for Pat and others outside the build team
+
+```bash
+node docs/guide-builder/build.mjs all prototype   # writes docs/flow-guides/prototype and docs/user-guide/prototype
+```
+
+The same guides, labelled as a prototype on every cover and page footer. Where the normal guides say a feature
+is built, these say it is considered in the design (`PROTO_WORDING` in `build.mjs`), and the overview has no
+prices (the owner confirms those with Kay) and a status page of what is considered and what is still to settle.
+Rebuild both sets together, and add to `PROTO_WORDING` whenever new guide text says something is built or ready.
