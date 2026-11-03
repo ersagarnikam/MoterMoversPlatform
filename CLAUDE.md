@@ -92,8 +92,18 @@ email links stay as a second way. The API (`enquiry` package, `POST /api/enquiri
 hidden field that bots fill in) emails the enquiry to `platform.enquiry-email` (`PLATFORM_ENQUIRY_EMAIL`). Nothing is
 stored and the sender is not emailed. **For now the default is the owner's address (sagarnikamforu@gmail.com), so no
 test enquiry reaches Pat** (asked 2026-11-03); set it to the team's address for go-live. Tests: `EnquiryTest`, and the
-price guide browser test in `e2e/site.spec.ts`. Before go-live: check with Pat
-that she is happy for the prices to be public, and set `PLATFORM_ENQUIRY_EMAIL`.
+price guide browser test in `e2e/site.spec.ts`. Before go-live: the owner confirms the prices, and whether they can be
+public, with **Kay** (prices go to Kay, not Pat), and sets `PLATFORM_ENQUIRY_EMAIL`.
+
+**Questions sent to Pat (2026-11-03, by the owner, by email).** Sixteen numbered questions, each with the approach
+considered in the design (the platform is a prototype, so the email speaks of the design, not of what is built):
+A. assessments in school: 1 the other five colours' grids; 2 the gaps in the grids (Motor Spin's descriptions; Jack
+and Jill and Twinkle Twinkle repeat another rhyme's); 3 the flag rule ("a pattern of low scores"); 4 no date of birth
+or birth history held; 5 what parents see; 6 retiring the 0-3 check and updating the induction lesson. B. Motor
+Movers at Home: 7 her materials at home; 8 colour by age; 9 the starting check's rule; 10 parent words for the levels;
+11 parents rating; 12 the gentle prompt; 13 session shape; 14 recheck every three months; 15 a safety note; 16 videos.
+(The "X/108" totals question was dropped.) Waiting for her reply; when it comes, update `docs/assessment-design.md`,
+`docs/home-programme-design.md` and the code's suggested defaults.
 
 **Merged 2026-10-28 (pull requests #8 to #11, stacked):** emailing a family code (#8), school assessments in the
 parent app (#9), Motor Movers at Home on the website (#10) and the rebuilt guides (#11). #10 and #11 were merged into
@@ -356,7 +366,7 @@ Not started unless noted. Confirm priorities with the owner.
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
 10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two
-   assessments above).** Next: send Pat the questions below, load the other colours when they arrive, agree the flag
+   assessments above).** Questions sent to Pat 2026-11-03 (see Current state). Next: load the other colours when they arrive, agree the flag
    rule, then retire the 0-3 check and update the induction lesson. Pat's model replaces today's single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
