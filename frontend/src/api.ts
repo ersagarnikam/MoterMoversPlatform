@@ -888,6 +888,29 @@ async function downloadFile(path: string, filename: string) {
   URL.revokeObjectURL(url)
 }
 
+/** An enquiry from the public website, emailed to the Motor Movers team. */
+export type EnquiryKind = 'PRICE_GUIDE' | 'APPLY'
+export interface Enquiry {
+  kind: EnquiryKind
+  name: string
+  email: string
+  setting: string
+  phone: string
+  classes: string
+  stages: string
+  plan: string
+  message: string
+  website: string
+}
+
+/** A licence plan on the website's price chart, at today's price. */
+export interface PublicPlan {
+  code: string
+  label: string
+  freeTrial: boolean
+  annualPricePence: number
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {}
   const token = getToken()
@@ -1076,6 +1099,8 @@ export const api = {
     request<{ token: string; user: CurrentUser }>('POST', '/api/auth/register', { email, password, displayName }),
   /** Open to anyone: whether Motor Movers at Home is switched on. */
   homeAvailable: () => request<{ enabled: boolean }>('GET', '/api/home/available'),
+  sendEnquiry: (enquiry: Enquiry) => request<void>('POST', '/api/enquiries', enquiry),
+  plansForSale: () => request<PublicPlan[]>('GET', '/api/plans'),
   homeOverview: () => request<HomeOverview>('GET', '/api/home'),
   addHomeChild: (name: string, ageMonths: number) =>
     request<HomeChild>('POST', '/api/home/children', { name, ageMonths }),

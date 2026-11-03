@@ -44,6 +44,9 @@ platform:
     web-url: ${PLATFORM_WEB_URL:http://localhost:5173}
   # First Motor Movers team account on a new deployment, emailed a sign-in link (see AdminBootstrap).
   admin-email: ${PLATFORM_ADMIN_EMAIL:}
+  # Where the public website's enquiry form (price guide, applying) sends enquiries. The owner's address while the
+  # form is tried out, so no test enquiry reaches Pat; set PLATFORM_ENQUIRY_EMAIL to the team's address for go-live.
+  enquiry-email: ${PLATFORM_ENQUIRY_EMAIL:sagarnikamforu@gmail.com}
   # Load tests only (deploy/loadtest/live-session.js): sign-ins allowed per network address every 15 minutes, and
   # how many extra parent accounts the demo data books on its live cohort. Production refuses a raised limit.
   login-limit-per-ip: ${LOGIN_LIMIT_PER_IP:50}

@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import EnquiryForm from '../../components/EnquiryForm'
+import type { EnquiryKind } from '../../api'
 import { CONTACT_EMAIL, CONTACT_PHONE, ENQUIRY_BODY, mailto } from '../../site'
 
 const INCLUDED = [
@@ -30,6 +33,8 @@ const STEPS = [
 ]
 
 export default function ForSchoolsPage() {
+  // The enquiry form opens in place under the button that asked for it.
+  const [open, setOpen] = useState<EnquiryKind | null>(null)
   return (
     <>
       <section className="site-page-head">
@@ -50,9 +55,11 @@ export default function ForSchoolsPage() {
               seven stages or only the ones you need, so you pay for what your children will use.
             </p>
             <p>Ask us for the programme price guide and we will help you work out the right stages.</p>
-            <a className="btn btn-primary" href={mailto('Motor Movers price guide', ENQUIRY_BODY)}>
-              Ask for the price guide
-            </a>
+            {open !== 'PRICE_GUIDE' && (
+              <button type="button" className="btn btn-primary" onClick={() => setOpen('PRICE_GUIDE')}>
+                Ask for the price guide
+              </button>
+            )}
           </div>
           <div className="card">
             <h3>What is included</h3>
@@ -63,6 +70,8 @@ export default function ForSchoolsPage() {
             </ul>
           </div>
         </div>
+        {/* Full width under the licence, so the price chart has room. */}
+        {open === 'PRICE_GUIDE' && <EnquiryForm kind="PRICE_GUIDE" onClose={() => setOpen(null)} />}
       </section>
 
       <section className="site-section">
@@ -106,11 +115,18 @@ export default function ForSchoolsPage() {
           Email <a href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>{CONTACT_EMAIL}</a> or call {CONTACT_PHONE}.
           We reply by email, usually within a week.
         </p>
-        <div className="site-cta">
-          <a className="btn btn-big btn-light" href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>
-            Email us to apply
-          </a>
-        </div>
+        {open === 'APPLY' ? (
+          <EnquiryForm kind="APPLY" onClose={() => setOpen(null)} />
+        ) : (
+          <div className="site-cta">
+            <button type="button" className="btn btn-big btn-light" onClick={() => setOpen('APPLY')}>
+              Apply online
+            </button>
+            <a className="btn btn-big btn-ghost-dark" href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>
+              Email us to apply
+            </a>
+          </div>
+        )}
       </section>
     </>
   )

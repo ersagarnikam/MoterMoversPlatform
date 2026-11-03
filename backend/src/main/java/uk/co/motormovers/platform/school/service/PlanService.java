@@ -45,6 +45,21 @@ public class PlanService {
         return plans.findAllByOrderBySortOrderAscLabelAsc().stream().map(this::view).toList();
     }
 
+    /**
+     * The plans a school can take today, for the public website's price chart: active plans at today's price. A
+     * plan that costs nothing and is not the free trial (such as "Free") is the team's to give, so it is left out.
+     */
+    @Transactional(readOnly = true)
+    public List<PlanViews.PublicPlan> forSale() {
+        LocalDate today = LocalDate.now(clock);
+        return plans.findAllByOrderBySortOrderAscLabelAsc().stream()
+                .filter(LicencePlan::isActive)
+                .map(p -> new PlanViews.PublicPlan(p.getCode(), p.getLabel(), p.isFreeTrial(),
+                        priceOn(p.getCode(), today)))
+                .filter(p -> p.freeTrial() || p.annualPricePence() > 0)
+                .toList();
+    }
+
     /** A new plan, priced from today. Its code is made from the name and never changes. */
     @Transactional
     public PlanViews.PlanView create(PlanViews.NewPlan r) {
