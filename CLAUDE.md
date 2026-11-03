@@ -398,3 +398,12 @@ Not started unless noted. Confirm priorities with the owner.
    check's rule, parent wording, a safety note, videos), a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
    subscriptions.
+13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
+   its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the
+   deployment (A$ there, £ in the UK), not a currency picker: money is hard-wired to £ today (`frontend/src/money.ts`
+   `gbp()`, `PaymentViews` amounts, "£" form labels, Stripe `currency=gbp` in `StripeApiClient`), and one deployment
+   mixing currencies would break the spend totals. Each deployment sets its own prices on Plans & prices. Also for
+   Australia: the school year runs January to December in four terms (the assessment's start, middle and end of year
+   assume September to July), GST at 10% (no tax is handled yet), Foundation/Prep year names, the Privacy Act's
+   privacy notices, and Stripe in AUD. To decide with the owner: separate deployment or one platform with two
+   countries.
