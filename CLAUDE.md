@@ -83,8 +83,7 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-11-03)
 
-**In review (Claude for the owner, branch `website-enquiry-form`, pull request open, not merged, 2026-11-03): price
-chart and enquiry form on the website.** "Ask for the price guide" on `/for-schools` was a `mailto:` link, which does
+**Price chart and enquiry form on the website (merged 2026-11-03, pull request #13, at the owner's request).** "Ask for the price guide" on `/for-schools` was a `mailto:` link, which does
 nothing on a computer with no email program (the owner's). It now opens, in place, the **price chart** (the active
 licence plans at today's price from Plans & prices, `GET /api/plans`, open without signing in; the free trial shown as
 Free, a zero-price plan that is not the trial, such as "Free", left out) and an **enquiry form** (name, email, setting,
@@ -93,7 +92,8 @@ email links stay as a second way. The API (`enquiry` package, `POST /api/enquiri
 hidden field that bots fill in) emails the enquiry to `platform.enquiry-email` (`PLATFORM_ENQUIRY_EMAIL`). Nothing is
 stored and the sender is not emailed. **For now the default is the owner's address (sagarnikamforu@gmail.com), so no
 test enquiry reaches Pat** (asked 2026-11-03); set it to the team's address for go-live. Tests: `EnquiryTest`, and the
-price guide browser test in `e2e/site.spec.ts`. Done: all of it, tried in the browser. Left: the owner's review.
+price guide browser test in `e2e/site.spec.ts`. Before go-live: check with Pat
+that she is happy for the prices to be public, and set `PLATFORM_ENQUIRY_EMAIL`.
 
 **Merged 2026-10-28 (pull requests #8 to #11, stacked):** emailing a family code (#8), school assessments in the
 parent app (#9), Motor Movers at Home on the website (#10) and the rebuilt guides (#11). #10 and #11 were merged into
@@ -320,7 +320,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-03): price chart and enquiry form on the website (in review); guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
+Recent commits (newest first, 2026-11-03): price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
 Pat's answers on the new assessments; team home page, a page per course, searchable lists; dates, toasts,
