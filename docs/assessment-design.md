@@ -1,9 +1,10 @@
-# Assessment design (built for Green and Yellow, 2026-10-27)
+# Assessment design (all seven colours, 2026-11-04)
 
-**Status.** Built on 2026-10-27 for the colours Pat has sent (Green and Yellow): migration `V15__assessments.sql`, the
-`assessment` package in the API, the teacher's Assess page and developmental charts, the profile, and the head and
-trust or group summaries. See **What was built** at the end. The open questions under *Still to settle with Pat*
-still stand; the platform uses the suggested defaults until she answers.
+**Status.** Built on 2026-10-27 for Green and Yellow (migration `V15__assessments.sql`, the `assessment` package in
+the API, the teacher's Assess page and developmental charts, the profile, and the head and trust or group summaries),
+and on 2026-11-04 for the other five colours, from the grids Pat sent on 2026-11-03. See **What was built** at the
+end. Pat agreed the suggested defaults on 2026-11-03 (**Pat's answers of 2026-11-03**); what is still open is under
+*Still to settle with Pat*.
 
 Pat's feedback (2026-10-20) replaces today's single 0 to 3 check with two assessments. This note sets out
 how the platform stores and shows them. Pat replied on 2026-10-27 with the assessment booklet (the
@@ -86,7 +87,8 @@ date and a score.
   secured, and exercise scores by class as the number of children at each level, not averages. Flagged
   children per class.
 - **Trust or group lead.** The same summaries per school, never individual children.
-- **Parent app.** Not answered yet (question 6 under *Still to settle*).
+- **Parent app.** Movements secure on each chart, and each exercise's first and latest rating in plain words (Not yet,
+  Getting there, Nearly, Got it); no scores and no flag. Agreed by Pat on 2026-11-03.
 
 ## Pat's answers (email of 2026-10-27)
 
@@ -107,10 +109,24 @@ Each colour also has a **summary sheet**: the end score of every exercise, a tot
 108, 27 exercises × 4, in two columns, probably start and end), and two comments: *personal, social and
 emotional development* and *academic achievement*.
 
+## Pat's answers (email of 2026-11-03)
+
+Questions sent on 2026-11-03 (the owner's email, 16 questions; 7 to 16 are about Motor Movers at Home, in
+`docs/home-programme-design.md`). Pat's replies on the assessments in school:
+
+| # | Question | Pat's answer | What the platform does |
+|---|---|---|---|
+| 1 | The other five colours' grids | **Received**: Red and Orange (18 rhymes each, start and end), Blue (40 exercises), Indigo (34) and Violet (24), each across modules 1 to 6 | All seven colours loaded (see *What was built*) |
+| 2 | The gaps in the grids (Motor Spin; Jack and Jill; Twinkle Twinkle) | A revised file was attached, but it arrived **empty (0 bytes)**, also in the saved `.msg` | Still as sent; ask Pat to send it again |
+| 3 | The flag rule | **Yes** | `ExtraSupportRule` stays as it is |
+| 4 | No date of birth or birth history | **Yes** | Not held |
+| 5 | What parents see (plain words, no scores, no flag) | **Yes** | `ParentProgress` stays as it is |
+| 6 | Retire the 0 to 3 check | Asked what "the old 0 to 3 readiness check" means | To explain: the single check from the first prototype, which suggests a starting colour; then ask again |
+
 ### Still to settle with Pat
 
-1. **The other colours.** Exercise grids for Red, Orange, Blue, Indigo and Violet.
-2. **Gaps in the grids sent.**
+1. **The revised descriptions.** Pat's file for Motor Spin, Jack and Jill and Twinkle Twinkle arrived empty.
+2. **Gaps in the grids sent** (2026-10-27; and see *What was built* for those of 2026-11-03).
    - Green exercise 4, *Motor Spin*, has no four descriptions.
    - Yellow *Jack and Jill* (11) has all four descriptions copied from *Grand Old Duke of York* (10), and
      *Twinkle Twinkle Little Star* (13) has those of *The Wheels on the Bus* (12).
@@ -119,16 +135,11 @@ emotional development* and *academic achievement*.
    - The booklet's gross motor chart repeats some 0 to 6 months rows (for example "Kicks legs vigorously when
      lying on back" three times), has a blank row in 3 to 4 years, and has typos ("caching games", "rise a
      two-wheel bike").
-3. **What "a pattern of low scores" is.** Suggested default: flag a child who scores 1 or 2 on the same exercise
-   at two points in a row, or 1 or 2 on half or more of the exercises assessed at the end of a module. The flag
-   says the child *may benefit from extra support*; it never names a cause.
-4. **The booklet header.** The paper booklet asks for date of birth, birth history and "any other significant
-   factors". The platform holds initials (or full names when the school chooses), not dates of birth, and
-   birth history is health information. Suggested default: the platform does not hold these; the teacher
-   records age in months, as Pat prefers.
-5. **The summary totals.** Are the two "X/108" columns the start and end totals? Suggested default: yes.
-6. **What parents see.** Not answered. Suggested default: the exercises their child is working on and the
-   movements now secure, without scores.
+3. **The 0 to 3 check.** Explain it to Pat (question 6), then retire it and update the induction lesson.
+4. **The summary totals.** Are the two "X/108" columns the start and end totals? Suggested default: yes (not asked
+   again on 2026-11-03).
+
+Settled on 2026-11-03: the flag rule, not holding a date of birth or birth history, and what parents see.
 
 ## Order of work
 
@@ -140,7 +151,8 @@ emotional development* and *academic achievement*.
 4. Retire the current 0 to 3 check and its readiness rules, and update the induction lesson on assessment.
 5. Regenerate the user guide and flow guide PDFs.
 
-Steps 1 to 3 are done for Green and Yellow (not the parent app). Steps 4 and 5 are still to do.
+Steps 1 to 3 are done for all seven colours, and the parent app shows the plain-words summary (2026-10-28). Steps 4
+and 5 are still to do.
 
 ## What was built (2026-10-27)
 
@@ -161,6 +173,22 @@ Changes made to Pat's text when loading it, for her to confirm:
   columns, is put back in reading order.
 - Kept as sent: "Swop Overs", "Hickory Tickory Tock", Motor Spin with no descriptions (scores 1 to 4 can still be
   recorded), and the copied descriptions of Jack and Jill and Twinkle Twinkle.
+
+**The other five colours (2026-11-04).** `exercises-red.json`, `-orange`, `-blue`, `-indigo` and `-violet`, made from
+Pat's grids of 2026-11-03 with a converter that reads the Word tables (checked against Green and Yellow first: it
+gives the same titles, descriptions and points). An existing deployment loads them on its next start. Red and Orange
+are rhymes with only a start and an end, like Yellow (Red is written for an adult with a baby); Blue, Indigo and
+Violet have modules 1 to 6, like Green. For Pat to confirm:
+- **Blue: Thumbs Up appears twice.** First Green's Thumbs Up (same text and descriptions, no points table), then a
+  shorter Blue version with its own points (start, end of modules 2, 3 and 6, end of Blue). Blue's version is loaded
+  ("thumbsup" corrected), so Blue has 40 exercises, as in its contents list.
+- **Indigo 14, Puppy Fun, has no instructions**, and its four descriptions are copies of Cat Stretch's (13). Loaded with
+  the title and the copied descriptions; the instructions are empty.
+- **Copied descriptions**, kept as sent: Orange *See Saw Marjory Daw* (2) has those of *Rock a Bye Baby* (1); Violet
+  *Motor Lift Four* has those of *Motor Lift Three*.
+- Titles are taken from each exercise's own table, not the contents list (so "Ring a Ring of Roses", "See Saw Marjory
+  Daw"); "Pat - a – Cake" is written "Pat-a-Cake", and capitals evened out in "Big Hugs" and "If You're Happy and You
+  Know It". One Blue points table says "Final end of Green"; it is read as the end of Blue.
 
 **Storage (migration V15).** As planned above, with these differences: the points an exercise is assessed at are
 stored per exercise (`exercise_point`: START, MODULE_n, END, in order), which replaces `module_exercise`; the

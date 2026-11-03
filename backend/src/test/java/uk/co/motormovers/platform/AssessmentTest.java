@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,20 @@ class AssessmentTest {
         // Motor Spin came without its four descriptions; it is still assessed.
         assertThat(green.get(3).getTitle()).isEqualTo("Motor Spin");
         assertThat(green.get(3).getLevels()).isEmpty();
+        // The other five colours (2026-11-03): rhymes for Red and Orange, modules for Blue, Indigo and Violet.
+        Map<ColourStage, Integer> sizes = Map.of(ColourStage.RED, 18, ColourStage.ORANGE, 18, ColourStage.BLUE, 40,
+                ColourStage.INDIGO, 34, ColourStage.VIOLET, 24);
+        sizes.forEach((stage, size) -> assertThat(exercises.findByStageOrderByNumber(stage)).hasSize(size));
+        assertThat(exercises.findByStageOrderByNumber(ColourStage.RED).getFirst().getPoints())
+                .containsExactly("START", "END");
+        assertThat(exercises.findByStageOrderByNumber(ColourStage.VIOLET).getFirst().getPoints())
+                .containsExactly("START", "MODULE_1", "END");
+        for (ColourStage stage : ColourStage.values()) {
+            assertThat(exercises.findByStageOrderByNumber(stage)).allSatisfy(e -> {
+                assertThat(e.getPoints()).startsWith("START").endsWith("END");
+                assertThat(e.getLevels().size()).as(stage + " " + e.getTitle()).isIn(0, 4);
+            });
+        }
 
         List<String> texts = new ArrayList<>();
         milestones.findAll().forEach(m -> texts.add(m.getDescription()));

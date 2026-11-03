@@ -29,7 +29,7 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 
 /**
  * Loads Pat's developmental charts and exercise grids (src/main/resources/assessment, made from her documents of
- * 2026-10-27) on start-up. It adds only what is missing: the charts on an empty platform, and the exercises of a
+ * 2026-10-27 and 2026-11-03) on start-up. It adds only what is missing: the charts on an empty platform, and the exercises of a
  * colour that has none yet, so a new colour's grid can be added as a file later without touching the others.
  */
 @Component
@@ -38,8 +38,8 @@ public class AssessmentContent implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(AssessmentContent.class);
 
-    /** The colours with a grid so far. Pat is to send the other five. */
-    static final List<ColourStage> STAGES_WITH_EXERCISES = List.of(ColourStage.YELLOW, ColourStage.GREEN);
+    /** The colours with a grid: all seven since Pat sent Red, Orange, Blue, Indigo and Violet (2026-11-03). */
+    static final List<ColourStage> STAGES_WITH_EXERCISES = List.of(ColourStage.values());
 
     record MilestoneFile(String source, List<MilestoneRow> fine, List<MilestoneRow> gross) {
     }
