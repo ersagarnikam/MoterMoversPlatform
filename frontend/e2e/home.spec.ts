@@ -30,18 +30,23 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByRole('heading', { name: 'Where to start' })).toBeVisible()
   await page.getByRole('button', { name: 'Start with Green' }).click()
 
-  // Today's session: Pat's Green exercises one at a time, then the first-time ratings in the parent's words.
+  // Mo (4 years 2 months) starts at Green, as children at school do. Week 1 of module 1 is Pat's first two exercises,
+  // one at a time after her safety note, then the first-time ratings in the parent's words.
   await expect(page.getByRole('heading', { name: 'Mo', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Today’s session for Mo' })).toBeVisible()
   await expectAccessible(page)
   await page.getByRole('link', { name: 'Start', exact: true }).click()
-  await expect(page.getByText('Exercise 1 of 4')).toBeVisible()
-  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Next exercise' }).click()
+  await expect(page.getByRole('heading', { name: 'Module 1 · week 1' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Before you start' })).toContainText('an adult is present')
+  await expect(page.getByText('Exercise 1 of 2')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Yes and No' })).toBeVisible()
+  await page.getByRole('button', { name: 'Next exercise' }).click()
+  await expect(page.getByRole('heading', { name: 'Flying Machines' })).toBeVisible()
   await page.getByRole('button', { name: 'We did it' }).click()
 
   await expect(page.getByRole('heading', { name: 'How did it go?' })).toBeVisible()
   const exercises = page.getByRole('group', { name: /^How .+ went$/ })
-  await expect(exercises).toHaveCount(4)
+  await expect(exercises).toHaveCount(2)
   for (const exercise of await exercises.all()) await exercise.getByRole('button', { name: 'Got it' }).click()
   await expectAccessible(page)
   await page.getByRole('button', { name: 'Save' }).click()

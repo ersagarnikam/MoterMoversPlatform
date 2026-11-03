@@ -83,7 +83,7 @@ export default function HomeChildPage() {
         <>
           {child.checkDue && (
             <p className="banner-info">
-              It has been a few months: time to do {child.name}’s check again.{' '}
+              A new part of the school year: time to do {child.name}’s check again.{' '}
               <Link to={`/home/child/${id}/check`}>Start the check</Link>
             </p>
           )}
@@ -164,10 +164,7 @@ function SessionCard({ today }: { today: HomeToday }) {
   return (
     <section className="card home-today">
       <p className="muted">
-        {today.colourComplete
-          ? `All ${today.modules} modules done: keep practising`
-          : `Module ${today.module} of ${today.modules} · session ${today.sessionInModule} of ${today.sessionsPerModule}`}{' '}
-        · about 10 minutes
+        {today.progressLabel} · about 10 minutes
       </p>
       <h2>{today.doneToday ? 'Done today' : `Today’s session for ${today.name}`}</h2>
       {/* Once today's is done, the exercises shown are the next session's. */}
@@ -175,6 +172,11 @@ function SessionCard({ today }: { today: HomeToday }) {
         {today.doneToday ? 'Tomorrow: ' : ''}
         {today.exercises.map((e) => e.title).join(' · ')}
       </p>
+      {!today.doneToday && today.newThisWeek.length > 0 && (
+        <p className="muted">
+          New this week: {today.exercises.filter((e) => today.newThisWeek.includes(e.id)).map((e) => e.title).join(', ')}
+        </p>
+      )}
       {today.doneToday && <p className="done-note">Done for today. Nice work, see you tomorrow.</p>}
       <Link to={`/home/child/${today.childId}/session`} className={`btn ${today.doneToday ? '' : 'btn-primary'}`}>
         {today.doneToday ? 'Do it again' : 'Start'}

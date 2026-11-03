@@ -2,15 +2,16 @@ import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Text, View } from 'react-native'
 import { RateExercises } from '@/components/RateExercises'
-import { Body, Button, Card, ErrorState, H1, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
+import { Banner, Body, Button, Card, ErrorState, H1, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
 import { api, localDate, newClientId } from '@/lib/api'
 import { homeSessions } from '@/lib/homeOutbox'
 import { space, stageInfo, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
 /**
- * Today's home session: a few of Pat's exercises from the child's current module, one at a time. Afterwards the
- * parent rates any exercise done for the first time (not for a child linked to a school, whose teacher rates).
+ * Today's home session: this week's rhyme, or the exercises of the child's module so far, one at a time, with Pat's
+ * safety note before the first session. Afterwards the parent rates any exercise done for the first time (not for a
+ * child linked to a school, whose teacher rates).
  */
 export default function HomeSessionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -65,7 +66,7 @@ export default function HomeSessionScreen() {
           <Body>
             {queued
               ? 'Saved on this phone. It will be sent next time you are online.'
-              : `That is session ${Math.min(today.sessionInModule, today.sessionsPerModule)} of ${today.sessionsPerModule} in module ${today.module}.`}
+              : `That was ${today.sessionTitle.toLowerCase()}. See you tomorrow.`}
           </Body>
         </Card>
         <Button label="Back to today" onPress={() => router.back()} />
@@ -78,12 +79,15 @@ export default function HomeSessionScreen() {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: `Module ${today.module} · session ${today.sessionInModule}` }} />
+      <Stack.Screen options={{ title: today.sessionTitle }} />
+      {step === 0 && today.sessionsDone === 0 && <Banner tone="ok">Before you start. {today.safetyNote}</Banner>}
       <Row style={{ justifyContent: 'space-between' }}>
         <StageBadge stage={today.stage} label={today.stageName} />
-        <Muted>
-          {step + 1} of {today.exercises.length}
-        </Muted>
+        {today.exercises.length > 1 && (
+          <Muted>
+            {step + 1} of {today.exercises.length}
+          </Muted>
+        )}
       </Row>
       <View style={{ height: 6, backgroundColor: p.track, borderRadius: 3, overflow: 'hidden' }}>
         <View
@@ -91,6 +95,7 @@ export default function HomeSessionScreen() {
         />
       </View>
       <Card accent={colour} style={{ gap: space.md }}>
+        {today.newThisWeek.includes(exercise.id) && <Muted>New this week</Muted>}
         <H1 style={{ fontSize: 24 }}>{exercise.title}</H1>
         <Text style={{ color: p.ink, fontSize: 17, lineHeight: 26 }}>{exercise.instructions}</Text>
       </Card>

@@ -7,8 +7,9 @@ import StageBadge from '../../components/StageBadge'
 import { reviewName } from '../../homeProgramme'
 
 /**
- * Today's home session: a few of Pat's exercises from the child's current module, one at a time. Afterwards the
- * parent rates any exercise done for the first time. With review, the end-of-module (or colour) ratings instead.
+ * Today's home session: this week's rhyme, or the exercises of the child's module so far, one at a time, with Pat's
+ * safety note before the first session. Afterwards the parent rates any exercise done for the first time. With
+ * review, the end-of-module (or colour) ratings instead.
  */
 export default function HomeSessionPage({ review = false }: { review?: boolean }) {
   const { childId } = useParams()
@@ -44,7 +45,7 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
           <p>
             {review
               ? `You can see how ${today.name} is getting on on their page.`
-              : `That is session ${Math.min(today.sessionInModule, today.sessionsPerModule)} of ${today.sessionsPerModule} in module ${today.module}.`}
+              : `That was ${today.sessionTitle.toLowerCase()}. See you tomorrow.`}
           </p>
           <Link to={`/home/child/${id}`} className="btn btn-primary">
             Back to {today.name}
@@ -96,16 +97,24 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
     <>
       {back}
       <div className="page-head">
-        <h1>
-          Module {today.module} · session {today.sessionInModule}
-        </h1>
+        <h1>{today.sessionTitle}</h1>
         <StageBadge stage={today.stage} label={today.stageName} />
       </div>
-      <p className="muted">
-        Exercise {step + 1} of {today.exercises.length}
-      </p>
-      <progress className="home-progress" value={step + 1} max={today.exercises.length} />
+      {step === 0 && today.sessionsDone === 0 && (
+        <section className="banner-info" aria-label="Before you start">
+          <strong>Before you start.</strong> {today.safetyNote}
+        </section>
+      )}
+      {today.exercises.length > 1 && (
+        <>
+          <p className="muted">
+            Exercise {step + 1} of {today.exercises.length}
+          </p>
+          <progress className="home-progress" value={step + 1} max={today.exercises.length} />
+        </>
+      )}
       <section className="card home-exercise">
+        {today.newThisWeek.includes(exercise.id) && <p className="muted">New this week</p>}
         <h2>{exercise.title}</h2>
         <p className="pre-line">{exercise.instructions}</p>
       </section>

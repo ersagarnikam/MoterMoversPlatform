@@ -125,7 +125,7 @@ export default function TodayScreen() {
               accessibilityRole="button"
               onPress={() => router.push({ pathname: '/check/[id]', params: { id: kid.id } })}
             >
-              <Banner tone="ok">It has been a few months: time to do {kid.name}'s check again. Tap to start.</Banner>
+              <Banner tone="ok">A new part of the school year: time to do {kid.name}'s check again. Tap to start.</Banner>
             </Pressable>
           )}
           <HomeSessionCard today={exercisesToday} />
@@ -278,9 +278,7 @@ function HomeSessionCard({ today }: { today: HomeToday }) {
           <Muted>about 10 min</Muted>
         </Row>
         <Muted>
-          {today.colourComplete
-            ? `All ${today.modules} modules done: keep practising`
-            : `Module ${today.module} of ${today.modules} · session ${today.sessionInModule} of ${today.sessionsPerModule}`}
+          {today.progressLabel}
         </Muted>
         <H1 style={{ fontSize: 22 }}>{today.doneToday ? 'Done today' : `Today's session for ${today.name}`}</H1>
         {/* Once today's is done, the exercises shown are the next session's. */}
@@ -288,6 +286,11 @@ function HomeSessionCard({ today }: { today: HomeToday }) {
           {today.doneToday ? 'Tomorrow: ' : ''}
           {today.exercises.map((e) => e.title).join(' · ')}
         </Body>
+        {!today.doneToday && today.newThisWeek.length > 0 && (
+          <Muted>
+            New this week: {today.exercises.filter((e) => today.newThisWeek.includes(e.id)).map((e) => e.title).join(', ')}
+          </Muted>
+        )}
         {today.doneToday ? (
           <>
             <Banner tone="ok">Done for today. Nice work, see you tomorrow.</Banner>

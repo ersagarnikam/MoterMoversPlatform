@@ -58,8 +58,9 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
  * Motor Movers at Home (docs/home-programme-design.md): a family's own children, not linked to a school. The parent
- * adds a child with an age in months, does a starting check from Pat's charts that suggests a colour, then a daily
- * session from Pat's exercises, rating each exercise the first time and at the end of each module. A second carer
+ * adds a child with an age in months, does a starting check from Pat's charts (the colour to start at comes from the
+ * age), then a daily session from Pat's exercises, rating each exercise the first time and at the end of each module
+ * and of the colour. A second carer
  * can join with a code, and a school can be linked later. Switched on with {@code platform.home-programme}.
  */
 @Service
@@ -309,8 +310,9 @@ public class HomeService {
     }
 
     /**
-     * Keeps each "Yes" as a secure movement with the child's age, and suggests a colour. The first check places the
-     * child at the suggested colour; after that the parent chooses whether to change.
+     * Keeps each "Yes" as a secure movement with the child's age. The colour to start at comes from the age, not the
+     * answers (Pat: children start at Orange, or at Green once at school, and move through the colours at their own
+     * pace). The first check places the child there; after that the check only records movements.
      */
     @Transactional
     public HomeViews.CheckResult submitCheck(Long childId, HomeViews.CheckIn in) {
@@ -343,17 +345,25 @@ public class HomeService {
                 default -> throw new IllegalArgumentException("Answers are YES, NOT_YET or NOT_SURE");
             }
         }
-        HomeRules.Suggestion s = HomeRules.suggest(age, yes, notYet);
-        if (child.getCurrentStage() == null) {
-            child.placeAt(s.colour());
+        ColourStage start = HomeRules.startingColour(age);
+        boolean first = child.getCurrentStage() == null;
+        if (first) {
+            child.placeAt(start);
         }
         child.checkedOn(today);
-        String explanation = s.earlier()
-                ? "Starting at " + s.colour().label() + ", the colour before the one for " + age + " months, gives "
-                        + "your child time to feel confident with the movements they are still learning."
-                : s.forAge().label() + " is the colour for children of " + age + " months.";
-        return new HomeViews.CheckResult(s.colour(), s.colour().displayName(), s.forAge(), s.forAge().displayName(),
-                s.earlier(), yes, notYet, notSure, explanation);
+        ColourStage colour = child.getCurrentStage();
+        String explanation = first ? startExplanation(start) : "Thank you. The movements you said yes to are kept "
+                + "on " + child.displayName() + "'s progress. " + colour.label() + " stays the colour to work on.";
+        return new HomeViews.CheckResult(colour, colour.displayName(), yes, notYet, notSure, explanation);
+    }
+
+    private static String startExplanation(ColourStage start) {
+        String why = switch (start) {
+            case RED -> "Red is where babies and toddlers begin.";
+            case ORANGE -> "Young children begin at Orange.";
+            default -> "Children at school begin at Green, the core of the programme, so that they do all of it.";
+        };
+        return why + " Every child then moves through the colours at their own pace, building on the one before.";
     }
 
     /** The parent picks the colour to work on (the suggestion, or another). */
@@ -393,10 +403,10 @@ public class HomeService {
         }
         boolean checkDue = checkDue(child, today);
         if (list.isEmpty()) {
-            return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), false, 0, 0, 0,
-                    HomeRules.SESSIONS_PER_MODULE, false, List.of(), List.of(), canRate, days.contains(today), grid,
+            return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), false, false, 0,
+                    0, 0, 0, 0, 0, false, "", "", List.of(), List.of(), List.of(), canRate, days.contains(today), grid,
                     days.size(), COUNTER_DAYS, sessions.countByChildId(childId), null, checkDue,
-                    new HomeViews.Support(false, null), levels);
+                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE);
         }
         List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
         Set<String> rated = theirs.stream().map(s -> s.getExercise().getId() + ":" + s.getPoint())
@@ -407,13 +417,16 @@ public class HomeService {
                 .filter(e -> e.getPoints().contains(ExercisePoints.START)
                         && !rated.contains(e.getId() + ":" + ExercisePoints.START))
                 .map(Exercise::getId).toList() : List.of();
-        return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), true, plan.module(),
-                plan.modules(), plan.sessionInModule(), HomeRules.SESSIONS_PER_MODULE, plan.colourComplete(),
-                plan.today().stream().map(AssessmentViews.ExerciseView::of).toList(), firstTime, canRate,
-                days.contains(today), grid, days.size(), COUNTER_DAYS, sessions.countByChildId(childId),
+        return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), true,
+                plan.rhymes(), plan.module(), plan.modules(), plan.week(), plan.weeks(), plan.sessionInModule(),
+                plan.sessionsPerModule(), plan.colourComplete(), HomeRules.progressLabel(plan),
+                HomeRules.sessionTitle(plan), plan.today().stream().map(AssessmentViews.ExerciseView::of).toList(),
+                plan.newThisWeek().stream().map(Exercise::getId).toList(), firstTime, canRate, days.contains(today),
+                grid, days.size(), COUNTER_DAYS, sessions.countByChildId(childId),
                 due == null ? null : new HomeViews.Review(due.point(), ExercisePoints.label(due.point(), stage),
                         due.exercises().stream().map(AssessmentViews.ExerciseView::of).toList()),
-                checkDue, canRate ? support(stage, theirs) : new HomeViews.Support(false, null), levels);
+                checkDue, canRate ? support(stage, theirs) : new HomeViews.Support(false, null), levels,
+                HomeViews.SAFETY_NOTE);
     }
 
     /** Accepts a batch of home sessions, typically saved on the phone while offline. Safe to resend. */
@@ -501,8 +514,7 @@ public class HomeService {
     }
 
     private static boolean checkDue(Child c, LocalDate today) {
-        return c.isAtHome() && (c.getHomeCheckOn() == null
-                || c.getHomeCheckOn().plusDays(HomeRules.RECHECK_AFTER_DAYS).isBefore(today));
+        return c.isAtHome() && HomeRules.checkDue(c.getHomeCheckOn(), today);
     }
 
     /** A home child of the signed-in parent's family. */

@@ -28,15 +28,17 @@ import uk.co.motormovers.platform.home.util.HomeRules;
 import uk.co.motormovers.platform.user.model.AppUser;
 
 /**
- * A demo family on Motor Movers at Home, not linked to a school: Priya Shah (home@example.test) with Ava, 44 months,
- * who did the starting check three weeks ago and is in her second Green module (module 1's review is due), and Leo,
- * 20 months, who has not done the check yet.
+ * A demo family on Motor Movers at Home, not linked to a school: Priya Shah (home@example.test) with Ava, 50 months
+ * (started at Green, as children at school do), who did the starting check six weeks ago and is in her second Green
+ * module (module 1's review is due), and Leo, 20 months, who has not done the check yet.
  */
 @Component
 class DemoHome {
 
-    /** Sessions Ava has done: module 1 (ten) and two of module 2. */
-    static final int AVA_SESSIONS = HomeRules.SESSIONS_PER_MODULE + 2;
+    /** Sessions Ava has done: module 1 (five weeks of five) and two of module 2. */
+    static final int AVA_SESSIONS = HomeRules.WEEKS_PER_MODULE * HomeRules.SESSIONS_PER_WEEK + 2;
+
+    static final int AVA_AGE = 50;
 
     private final AssessmentContent content;
     private final FamilyRepository families;
@@ -67,20 +69,20 @@ class DemoHome {
         Family family = families.save(new Family());
         members.save(new FamilyMember(family.getId(), parent.getId(), FamilyMember.Role.OWNER));
 
-        LocalDate checked = today.minusDays(21);
-        Child ava = Child.atHome(family.getId(), "Ava", 43, checked);
+        LocalDate checked = today.minusDays(42);
+        Child ava = Child.atHome(family.getId(), "Ava", AVA_AGE, checked);
         ava.placeAt(ColourStage.GREEN);
         ava.checkedOn(checked);
         children.save(ava);
-        // The check: movements up to her age are secure, a few of the 3 to 4 years ones not yet.
+        // The check: movements up to her age are secure, a few of the last year's ones not yet.
         int i = 0;
         for (var m : milestones.findAllByOrderByChartAscPositionAsc()) {
-            if (m.getAgeToMonths() <= 36 || (m.getAgeFromMonths() <= 43 && i++ % 3 != 0)) {
-                achievements.save(new MilestoneAchievement(UUID.randomUUID().toString(), ava, m, 43,
+            if (m.getAgeToMonths() <= AVA_AGE - 12 || (m.getAgeFromMonths() <= AVA_AGE && i++ % 3 != 0)) {
+                achievements.save(new MilestoneAchievement(UUID.randomUUID().toString(), ava, m, AVA_AGE,
                         YearPoint.on(checked), checked, parent.getEmail()));
             }
         }
-        // Ten sessions of module 1 and two of module 2, most days since the check.
+        // Module 1's sessions and two of module 2, most days since the check.
         for (int n = 0; n < AVA_SESSIONS; n++) {
             sessions.save(new HomeProgrammeSession(UUID.randomUUID().toString(), ava.getId(), ColourStage.GREEN,
                     checked.plusDays(1 + n + n / 4), parent.getEmail()));
