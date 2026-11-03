@@ -83,11 +83,7 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-11-04)
 
-**In progress (Sagar with Claude, branch `pat-answers-nov`, pull request #16): Pat's answers of 2026-11-03.** Done:
-the other five colours' grids, Motor Movers at Home's rules from her answers, the design notes; all tests pass (142
-backend, 51 web unit, 68 browser, mobile typecheck). Left: the owner reviews and merges. Remove this note once merged.
-
-**Pat's answers (email of 2026-11-03, forwarded to Rahul; saved as `F:\IHA\Pat\Fw_ Pat Preedy Prototype Response .eml`
+**Pat's answers (merged 2026-11-04, pull request #16, at the owner's request; email of 2026-11-03, forwarded to Rahul; saved as `F:\IHA\Pat\Fw_ Pat Preedy Prototype Response .eml`
 and `.msg`, attachments in `F:\IHA\Pat\RE__Pat_Preedy_Prototype_Response_`).** She answered the sixteen questions:
 - **Grids for all seven colours.** Red and Orange (18 rhymes each, start and end), Blue (40), Indigo (34) and Violet
   (24), modules 1-6, are now `exercises-<colour>.json` and `STAGES_WITH_EXERCISES` is every colour; an existing
