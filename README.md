@@ -253,6 +253,7 @@ docs/             guides and design notes (see Documentation)
 |---|---|---|
 | User guide | The people who use the platform: everyday tasks step by step, per role, with answers to common questions | `docs/user-guide/` (one PDF per role, and one with every role) |
 | Platform guides | Partners, investors and school leaders: what each role does and why, and an overview of the programme, safety, income and status | `docs/flow-guides/` |
+| Flow diagrams | Developers and reviewers: a sequence diagram of every flow for each role, with its endpoints and the rules the code enforces | `docs/flows/` (one Markdown file per role; GitHub draws the Mermaid diagrams) |
 | Runbook | Whoever runs the server: deployment, updates, backups, Zoom, phone notifications, card payments | `deploy/RUNBOOK.md` |
 | Assessment design | The developmental and exercise assessments, Pat's answers and what is still open | `docs/assessment-design.md` |
 | Home programme design | Motor Movers at Home: what parents do, and the questions for Pat | `docs/home-programme-design.md` |

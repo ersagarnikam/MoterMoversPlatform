@@ -83,6 +83,16 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-11-04)
 
+**In progress: flow sequence diagrams (2026-11-04, Claude for the owner, branch `docs/flow-sequence-diagrams`, pull
+request open; remove this note once merged).** Done: `docs/flows/`, 30 Mermaid sequence diagrams in one Markdown file
+per role (Everyone, Class teacher, Head teacher and SENCo, Trust or group lead, Practitioner, Parent with a school
+child, Parent on Motor Movers at Home, Trainer, Motor Movers team, Visitor and scheduled jobs) plus a `README.md`
+index. Each flow names its endpoints, the services and outside systems involved (PostgreSQL, Zoom, Stripe, Mailer,
+Expo push) and the rules the code enforces, traced from the controllers and services at commit 93da753. No code
+changed. **Keep them current:** when a pull request changes an endpoint, an access rule or a step a diagram shows,
+update that role's file in the same pull request. A browsable copy of the same diagrams is a private Claude artifact
+the owner can share.
+
 **Pat's answers (merged 2026-11-04, pull request #16, at the owner's request; email of 2026-11-03, forwarded to Rahul; saved as `F:\IHA\Pat\Fw_ Pat Preedy Prototype Response .eml`
 and `.msg`, attachments in `F:\IHA\Pat\RE__Pat_Preedy_Prototype_Response_`).** She answered the sixteen questions:
 - **Grids for all seven colours.** Red and Orange (18 rhymes each, start and end), Blue (40), Indigo (34) and Violet
@@ -342,6 +352,8 @@ Built so far:
 - Load test (`deploy/loadtest/`, k6): a school-day mix against the production stack with demo data. On one
   laptop (2026-10-19): 500 people with pauses at 6 ms median and no errors; ceiling about 800-900 requests a
   second with the machine's CPU saturated, never failing. Repeat from another machine against staging.
+- Flow sequence diagrams (2026-11-04, `docs/flows/`): one Markdown file per role with Mermaid sequence diagrams of
+  each flow, its endpoints and rules. Update the role's file when a flow it shows changes.
 - Guides, rebuilt 2026-10-26 for all seven roles (Trainer included): the **user guide** (`docs/user-guide/`, for the
   people who use the platform: getting started, "how do I…?" tasks with numbered steps, answers) and the **flow
   guides** (`docs/flow-guides/`, for partners, investors and school leaders, plus the platform overview with safety,
@@ -368,7 +380,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-04): Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-04): flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
