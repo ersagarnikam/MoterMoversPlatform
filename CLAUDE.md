@@ -83,6 +83,12 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Current state (2026-11-04)
 
+**Team board on monday.com (2026-11-04):** "Motor Movers Platform",
+https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
+filled from **Next steps** below and Pat's open points, in groups Waiting on Pat, Go-live, Built, to try for real, To
+build next and Later, with Status, Waiting on (Owner, Pat, Kay or Build team), Priority, Owner, Details and where to
+look in the repository. When an item here changes (done, answered, new), change it on the board too.
+
 **Flow sequence diagrams (merged 2026-11-04, pull request #17, at the owner's request).** `docs/flows/`, 30 Mermaid sequence diagrams in one Markdown file
 per role (Everyone, Class teacher, Head teacher and SENCo, Trust or group lead, Practitioner, Parent with a school
 child, Parent on Motor Movers at Home, Trainer, Motor Movers team, Visitor and scheduled jobs) plus a `README.md`
