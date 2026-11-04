@@ -22,6 +22,10 @@ public interface ExerciseScoreRepository extends JpaRepository<ExerciseScore, Lo
 
     List<ExerciseScore> findByChildIdInAndExerciseStage(Collection<Long> childIds, ColourStage stage);
 
+    /** Which of these children have an exercise score at all. */
+    @Query("select distinct s.child.id from ExerciseScore s where s.child.id in :childIds")
+    List<Long> findAssessedChildIds(Collection<Long> childIds);
+
     /** Moves a child's scores to another child, except where the other child already has a score at that point. */
     @Modifying
     @Query("update ExerciseScore s set s.child = :to where s.child = :from and not exists "

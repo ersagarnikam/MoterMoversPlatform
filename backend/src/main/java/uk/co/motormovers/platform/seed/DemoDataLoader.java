@@ -58,10 +58,6 @@ import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
 import uk.co.motormovers.platform.school.repository.SchoolRepository;
 import uk.co.motormovers.platform.school.repository.TrustRepository;
 import uk.co.motormovers.platform.school.service.PlanService;
-import uk.co.motormovers.platform.screening.model.ScreeningItem;
-import uk.co.motormovers.platform.screening.model.ScreeningResult;
-import uk.co.motormovers.platform.screening.repository.ScreeningItemRepository;
-import uk.co.motormovers.platform.screening.repository.ScreeningResultRepository;
 import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.Enrolment;
 import uk.co.motormovers.platform.training.model.Course;
@@ -96,8 +92,6 @@ public class DemoDataLoader implements ApplicationRunner {
     private final ChildRepository children;
     private final ProgrammeSessionRepository content;
     private final DailySessionRecordRepository records;
-    private final ScreeningItemRepository items;
-    private final ScreeningResultRepository results;
     private final CohortRepository cohorts;
     private final EnrolmentRepository enrolments;
     private final LiveSessionService live;
@@ -122,8 +116,8 @@ public class DemoDataLoader implements ApplicationRunner {
 
     public DemoDataLoader(TrustRepository trusts, SchoolRepository schools, LicenceRepository licences,
             SchoolClassRepository classes, AppUserRepository users, ChildRepository children,
-            ProgrammeSessionRepository content, DailySessionRecordRepository records, ScreeningItemRepository items,
-            ScreeningResultRepository results, CohortRepository cohorts, EnrolmentRepository enrolments,
+            ProgrammeSessionRepository content, DailySessionRecordRepository records, CohortRepository cohorts,
+            EnrolmentRepository enrolments,
             LiveSessionService live,
             HomeActivityRepository homeActivities, GuidanceArticleRepository guidance,
             ParentLinkRepository parentLinks, ParentInviteRepository parentInvites,
@@ -153,8 +147,6 @@ public class DemoDataLoader implements ApplicationRunner {
         this.children = children;
         this.content = content;
         this.records = records;
-        this.items = items;
-        this.results = results;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
         this.live = live;
@@ -210,25 +202,22 @@ public class DemoDataLoader implements ApplicationRunner {
             trained.completeInduction(today.minusMonths(4));
         }
 
-        List<SchoolClass> screenedClasses = new ArrayList<>();
-        screenedClasses.add(classWithHistory(oakfield, "Reception A", "Reception", null, ColourStage.RED, 26, 18,
-                sessions, today));
-        screenedClasses.add(classWithHistory(oakfield, "Year 1 M", "Year 1", null, ColourStage.ORANGE, 27, 16,
-                sessions, today));
+        classWithHistory(oakfield, "Reception A", "Reception", null, ColourStage.RED, 26, 18,
+                sessions, today);
+        classWithHistory(oakfield, "Year 1 M", "Year 1", null, ColourStage.ORANGE, 27, 16,
+                sessions, today);
         SchoolClass y2r = classWithHistory(oakfield, "Year 2 R", "Year 2", hardy, ColourStage.YELLOW, 28, 17,
                 sessions, today);
-        screenedClasses.add(y2r);
-        screenedClasses.add(classWithHistory(oakfield, "Year 2 T", "Year 2", lewis, ColourStage.YELLOW, 27, 12,
-                sessions, today));
+        classWithHistory(oakfield, "Year 2 T", "Year 2", lewis, ColourStage.YELLOW, 27, 12,
+                sessions, today);
         SchoolClass y3k = classWithHistory(oakfield, "Year 3 K", "Year 3", null, ColourStage.GREEN, 29, 18, sessions, today);
-        screenedClasses.add(classWithHistory(marlow, "Reception B", "Reception", null, ColourStage.RED, 25, 19,
-                sessions, today));
+        classWithHistory(marlow, "Reception B", "Reception", null, ColourStage.RED, 25, 19,
+                sessions, today);
         classWithHistory(marlow, "Year 1 P", "Year 1", null, ColourStage.ORANGE, 24, 17, sessions, today);
         classWithHistory(brookhouse, "Year 1 S", "Year 1", null, ColourStage.ORANGE, 26, 14, sessions, today);
         classWithHistory(brookhouse, "Year 2 L", "Year 2", null, ColourStage.YELLOW, 25, 12, sessions, today);
         classWithHistory(ferrers, "Reception F", "Reception", null, ColourStage.RED, 24, 12, sessions, today);
 
-        screenedClasses.forEach(c -> seedScreeningHistory(c, today));
         demoAssessments.seed(y2r, y3k, today);
         // Motor Movers at Home: a family whose school is not on Motor Movers.
         demoHome.seed(users.save(new AppUser("home@example.test", "Priya Shah", hash, Role.PARENT, null, null)),
@@ -319,24 +308,6 @@ public class DemoDataLoader implements ApplicationRunner {
                 "Movement for children with a diagnosis of ADHD.", 10, null,
                 List.of("Warm up", "Wall push", "Cool down")));
         return byStage;
-    }
-
-    private void seedScreeningHistory(SchoolClass schoolClass, LocalDate today) {
-        List<ScreeningItem> all = items.findAllByOrderByPosition();
-        List<Child> pupils = children.findBySchoolClassIdAndLeftOnIsNullOrderByInitials(schoolClass.getId());
-        LocalDate first = today.minusMonths(6);
-        LocalDate second = today.minusDays(20);
-        // Leave the last three children unscreened so the screening flow has someone to start with.
-        for (int i = 0; i < pupils.size() - 3; i++) {
-            Child child = pupils.get(i);
-            int base = random.nextInt(2);
-            for (ScreeningItem item : all) {
-                int s1 = Math.min(3, base + random.nextInt(2));
-                results.save(new ScreeningResult(UUID.randomUUID().toString(), child, item, 1, s1, first, "demo"));
-                results.save(new ScreeningResult(UUID.randomUUID().toString(), child, item, 2,
-                        Math.min(3, s1 + random.nextInt(2)), second, "demo"));
-            }
-        }
     }
 
     /**

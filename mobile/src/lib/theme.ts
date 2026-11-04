@@ -1,7 +1,7 @@
 // Motor Movers: navy and teal, with the seven colour stages as the only bright colours. Follows the
 // phone's light or dark setting. Values match the web app (frontend/src/styles.css).
 import { useColorScheme } from 'react-native'
-import type { Band, ColourStage } from './api'
+import type { ColourStage } from './api'
 
 const light = {
   navy: '#1f2b3a',
@@ -21,11 +21,6 @@ const light = {
   header: '#1f2b3a',
   headerInk: '#ffffff',
   tabInactive: '#8c96a0',
-  band: {
-    EMERGING: { bg: '#fdf1d8', ink: '#6b4a00' },
-    DEVELOPING: { bg: '#dce8f6', ink: '#1d4677' },
-    SECURE: { bg: '#dcebe7', ink: '#1d5a4f' },
-  } as Record<Band, { bg: string; ink: string }>,
 }
 
 export type Palette = typeof light
@@ -48,11 +43,6 @@ const dark: Palette = {
   header: '#18202b',
   headerInk: '#e6ebf1',
   tabInactive: '#7d8a98',
-  band: {
-    EMERGING: { bg: '#3a2f14', ink: '#f2d48a' },
-    DEVELOPING: { bg: '#1f3047', ink: '#a9c8ef' },
-    SECURE: { bg: '#1e3a35', ink: '#9fd9cb' },
-  },
 }
 
 export function usePalette(): Palette {

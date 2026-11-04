@@ -67,17 +67,19 @@ class GoLiveTest {
     @Test
     void badScoresAreRefusedNotStored() throws Exception {
         String teacher = login("teacher@oakfield.test", "password");
-        Integer childId = JsonPath.read(fetch(teacher, "/api/classes/" + firstClass(teacher) + "/today"), "$.roster[0].id");
+        String sheet = fetch(teacher, "/api/classes/" + firstClass(teacher) + "/exercise-sheet");
+        Integer childId = JsonPath.read(sheet, "$.children[0].id");
+        Integer exerciseId = JsonPath.read(sheet, "$.exercises[0].id");
+        String about = ",\"childId\":" + childId + ",\"exerciseId\":" + exerciseId + ",\"score\":2";
         String[] bad = {
-            "{\"clientId\":\"g1\",\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2}",
-            "{\"clientId\":\"g2\",\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\""
+            "{\"clientId\":\"g1\"" + about + ",\"point\":\"START\"}",
+            "{\"clientId\":\"g2\"" + about + ",\"point\":\"START\",\"assessedOn\":\""
                     + LocalDate.now(clock).plusYears(1) + "\"}",
-            "{\"childId\":" + childId + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\"" + LocalDate.now(clock) + "\"}",
-            "{\"clientId\":\"g3\",\"childId\":" + childId + ",\"itemCode\":\"NOPE\",\"score\":2,\"screenedOn\":\""
-                    + LocalDate.now(clock) + "\"}",
+            "{\"point\":\"START\"" + about + ",\"assessedOn\":\"" + LocalDate.now(clock) + "\"}",
+            "{\"clientId\":\"g3\"" + about + ",\"point\":\"NOPE\",\"assessedOn\":\"" + LocalDate.now(clock) + "\"}",
         };
         for (String score : bad) {
-            send(teacher, "/api/screening/results", "[" + score + "]").andExpect(status().isBadRequest());
+            send(teacher, "/api/assessment/exercise-scores", "[" + score + "]").andExpect(status().isBadRequest());
         }
     }
 

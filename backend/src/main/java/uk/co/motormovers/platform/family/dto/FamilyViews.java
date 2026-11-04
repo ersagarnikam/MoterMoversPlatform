@@ -11,8 +11,6 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.content.model.GuidanceArticle;
 import uk.co.motormovers.platform.content.model.HomeActivity;
 import uk.co.motormovers.platform.family.model.ParentLink;
-import uk.co.motormovers.platform.screening.model.MotorArea;
-import uk.co.motormovers.platform.screening.model.ReadinessBand;
 
 /** Response shapes for the parent app, and for the school's view of parent links. */
 public final class FamilyViews {
@@ -33,16 +31,11 @@ public final class FamilyViews {
         }
     }
 
-    /** Programme bands only. Parents are not shown raw scores or fractions, which read like test results. */
-    public record AreaBand(MotorArea area, String label, ReadinessBand band, String bandLabel) {
-    }
-
     /**
      * The school's assessments in the parent's words (ParentProgress): movements secure, and the exercises of the
      * child's colour with their first and latest rating. The school's extra-support flag is not shown to parents.
      */
-    public record Progress(LinkedChild child, String banner, boolean screened, List<AreaBand> areas,
-            List<LocalDate> screenings, int classSessionsDone, int counterDays,
+    public record Progress(LinkedChild child, String banner, int classSessionsDone, int counterDays,
             List<AssessmentViews.ChartProgress> charts, ColourStage exerciseStage, String exerciseStageName,
             List<AssessmentViews.ExerciseProgress> exercises) {
     }

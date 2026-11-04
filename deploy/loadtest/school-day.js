@@ -46,7 +46,7 @@ const SCENARIOS = {
 }
 
 /** Every page the journeys use, so the summary reports each one separately. */
-const PAGES = ['sign in', 'classes', 'today', 'readiness profile', 'save screening', 'school dashboard',
+const PAGES = ['sign in', 'classes', 'today', 'assessment profile', 'save exercise scores', 'school dashboard',
   'school payments', 'trust dashboard', 'trust payments', 'website home', 'parent home', 'parent children',
   'parent guidance']
 
@@ -88,10 +88,11 @@ export function setup() {
   for (const c of classes) {
     for (const k of http.get(`${BASE}/api/classes/${c.id}/today`, auth).json().roster) children.push(k.id)
   }
-  const items = http.get(`${BASE}/api/screening/items`, auth).json().map((i) => i.code)
+  // Green's exercises, all assessed at the start of the colour.
+  const exercises = http.get(`${BASE}/api/assessment/exercises?stage=GREEN`, auth).json().map((e) => e.id)
   // Teacher journeys use the team account so they spread across every class; it goes through the same
   // access checks and queries as each class's own teacher.
-  return { roles, classIds: classes.map((c) => c.id), children, items }
+  return { roles, classIds: classes.map((c) => c.id), children, exercises }
 }
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)]
@@ -102,31 +103,32 @@ const ok = (res) => check(res, { 'status 2xx': (r) => r.status >= 200 && r.statu
 const clientId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${__VU}-${__ITER}`
 
 export default function (data) {
-  const { roles, classIds, children, items } = data
+  const { roles, classIds, children, exercises } = data
   const roll = Math.random()
 
   if (roll < 0.6) {
-    // A teacher: their classes, today's session, then a child's readiness profile (logged as a view).
+    // A teacher: their classes, today's session, then a child's assessment profile (logged as a view).
     const t = roles.admin.token
     ok(get('/api/classes', t, 'classes'))
     think()
     ok(get(`/api/classes/${pick(classIds)}/today`, t, 'today'))
     think()
-    ok(get(`/api/children/${pick(children)}/profile`, t, 'readiness profile'))
+    ok(get(`/api/children/${pick(children)}/assessment`, t, 'assessment profile'))
   } else if (roll < 0.7) {
-    // Screening: one child's scores for every item, saved together as the device syncs.
+    // Exercise scores: one child's start scores for every Green exercise, saved together as the device syncs.
     const child = pick(children)
     const today = new Date().toISOString().slice(0, 10)
-    const scores = items.map((code) => ({
+    const scores = exercises.map((exerciseId) => ({
       clientId: clientId(),
       childId: child,
-      itemCode: code,
-      score: Math.floor(Math.random() * 4),
-      screenedOn: today,
+      exerciseId,
+      point: 'START',
+      score: 1 + Math.floor(Math.random() * 4),
+      assessedOn: today,
     }))
-    ok(http.post(`${BASE}/api/screening/results`, JSON.stringify(scores), {
+    ok(http.post(`${BASE}/api/assessment/exercise-scores`, JSON.stringify(scores), {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${roles.admin.token}` },
-      tags: { name: 'save screening' },
+      tags: { name: 'save exercise scores' },
     }))
   } else if (roll < 0.8) {
     // A head teacher: the progress dashboard, then payments.

@@ -11,8 +11,8 @@ const SESSION = [
 const PLATFORM = [
   { title: "Today's session", text: 'The session video, the activity plan and the rhyme, ready to play to the class.' },
   { title: 'Participation counter', text: 'A 20-day counter so the class can see its daily habit building.' },
-  { title: 'Assessment', text: 'One movement at a time, on a tablet or laptop, saved even if the connection drops.' },
-  { title: 'Readiness profiles', text: "Each child's stage and the areas that are secure or still emerging." },
+  { title: 'Assessment', text: 'Developmental charts and 1 to 4 exercise scores, on a tablet or laptop, saved even if the connection drops.' },
+  { title: 'Child profiles', text: "Each child's colour, the movements now secure, and their exercise scores over the colour." },
   { title: 'Staff induction', text: 'A one-hour induction in short lessons before staff run their first session.' },
   { title: 'Resource library', text: 'Rhymes and guidance for every stage your setting holds.' },
   { title: 'Dashboards', text: 'School and trust or group progress, flagged classes and a governor summary to download.' },
@@ -78,9 +78,10 @@ export default function ProgrammePage() {
         <div className="site-split">
           <div>
             <p>
-              Staff assess each child against the programme stages, one movement at a time. The result is a readiness
-              profile: the stage to work at, and which areas are secure or still emerging. Assessing again shows progress
-              over the year.
+              There are two assessments. At the start, middle and end of the school year, staff record the movements
+              each child now does securely on the fine and gross motor charts. Through each colour, they score every
+              exercise from 1 (not yet) to 4 (confident and accurate), at the start, at the end of each module and at
+              the end of the colour, so the profile shows progress across the year.
             </p>
             <p>
               Children are shown by their initials unless the school chooses full names, and only the people who work

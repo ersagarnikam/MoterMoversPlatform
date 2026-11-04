@@ -99,29 +99,17 @@ export const GUIDES = [
         title: 'Read a child’s assessment profile',
         steps: [
           'In your class list, choose a child.',
-          'The profile starts with the two assessments: movements secure on each chart, the table of exercise scores at each point, start and end totals, and the summary comments.',
+          'The profile shows the two assessments: movements secure on each chart, the table of exercise scores at each point, start and end totals, and the summary comments.',
           'If a pattern of low scores shows, the profile says May benefit from extra support, with the reasons.',
-          'The earlier readiness check (0 to 3) follows underneath.',
         ],
         tip: 'The profile describes progress with the programme. It is never a diagnosis, and every view of a child’s record is logged.',
         shots: ['teacher-assessment-profile'],
         captions: ['A child’s assessment profile.'],
       },
       {
-        title: 'Use the readiness check (0 to 3)',
-        steps: [
-          'In Assess children, choose Readiness check (0 to 3), then choose a child.',
-          'For each movement, ask the child to do it and choose the description that matches what you saw.',
-          'Choose Next item after each one, and Finish child at the end.',
-        ],
-        tip: 'This earlier check stays alongside the new assessments until Pat confirms it can go.',
-        shots: ['teacher-screening-item'],
-        captions: ['One movement: the instruction and four descriptions to choose from.'],
-      },
-      {
         title: 'Give a parent a code for the parent app',
         steps: [
-          'Open the child’s readiness profile.',
+          'Open the child’s profile.',
           'Under Parent app, choose Create a parent code.',
           'Give the code to the child’s parent or carer. It works once, and shows when it expires.',
         ],

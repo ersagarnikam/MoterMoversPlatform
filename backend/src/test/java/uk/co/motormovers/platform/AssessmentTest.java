@@ -220,6 +220,36 @@ class AssessmentTest {
     }
 
     @Test
+    void aSchoolChildWorksAtTheColourTheyAreAssessedAtAndNeverMovesDown() throws Exception {
+        // The old 0 to 3 check placed children; now their exercise assessments do (2026-11-04).
+        String head = login("head@oakfield.test");
+        String classes = mvc.perform(get("/api/classes").header("Authorization", bearer(head)))
+                .andReturn().getResponse().getContentAsString();
+        Integer classId = JsonPath.<List<Integer>>read(classes, "$[?(@.name == 'Year 1 M')].id").getFirst();
+        String added = mvc.perform(post("/api/schools/1/classes/" + classId + "/children")
+                .header("Authorization", bearer(head)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"children\":[{\"initials\":\"N.W.\"}]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].currentStage").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        Integer childId = JsonPath.read(added, "$[0].id");
+
+        Integer orange = exercises.findByStageOrderByNumber(ColourStage.ORANGE).getFirst().getId().intValue();
+        Integer yellow = exercises.findByStageOrderByNumber(ColourStage.YELLOW).getFirst().getId().intValue();
+        // Placed at Orange, moved up to Yellow, and an Orange score afterwards does not move them back down.
+        List<Integer> scored = List.of(orange, yellow, orange);
+        List<String> expected = List.of("ORANGE", "YELLOW", "YELLOW");
+        for (int i = 0; i < scored.size(); i++) {
+            mvc.perform(post("/api/assessment/exercise-scores").header("Authorization", bearer(head))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("[" + score(UUID.randomUUID().toString(), childId, scored.get(i), "START", 3) + "]"))
+                    .andExpect(status().isOk());
+            mvc.perform(get("/api/children/" + childId + "/assessment").header("Authorization", bearer(head)))
+                    .andExpect(jsonPath("$.currentStage").value(expected.get(i)));
+        }
+    }
+
+    @Test
     void trustLeadsSeeOnlyHowMany() throws Exception {
         String trust = login("trust@northbridge.test");
         String dashboard = mvc.perform(get("/api/trusts/1/dashboard").header("Authorization", bearer(trust)))

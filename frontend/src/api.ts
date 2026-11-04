@@ -56,38 +56,6 @@ export interface Today {
   fullNamesEnabled: boolean
 }
 
-export interface ScreeningItem {
-  code: string
-  position: number
-  area: string
-  areaLabel: string
-  title: string
-  instructions: string
-  levels: Record<string, string>
-}
-
-export interface Score {
-  clientId: string
-  childId: number
-  itemCode: string
-  score: number
-  screenedOn: string
-}
-
-export interface Profile {
-  childId: number
-  reference: string
-  name: string
-  className: string
-  banner: string
-  screened: boolean
-  suggestedStage: ColourStage | null
-  suggestedStageName: string | null
-  currentStage: ColourStage | null
-  areas: { area: string; label: string; fraction: number; band: string; bandLabel: string }[]
-  history: { round: number; screenedOn: string; overallFraction: number }[]
-}
-
 // Pat's two assessments (docs/assessment-design.md): developmental charts and 1 to 4 exercise scores.
 export type Chart = 'FINE' | 'GROSS'
 export type YearPoint = 'START' | 'MIDDLE' | 'END'
@@ -211,7 +179,7 @@ export interface AssessmentOverview {
 export interface SchoolDashboard {
   schoolId: number
   schoolName: string
-  childrenScreened: number
+  childrenAssessed: number
   childrenTotal: number
   movedUpRate: number
   dailyParticipation: number
@@ -232,7 +200,8 @@ export interface TrustDashboard {
     plan: string | null
     renewalDate: string | null
     stages: string
-    screenedRate: number
+    /** Share of children with either assessment, at any time. */
+    assessedRate: number
     participation: number
     /** Share of children with a developmental assessment this school year. */
     developmentalRate: number
@@ -994,10 +963,6 @@ export const api = {
       sessionId,
       absentChildIds,
     }),
-  screeningItems: () => request<ScreeningItem[]>('GET', '/api/screening/items'),
-  submitScores: (scores: Score[]) =>
-    request<{ saved: number; duplicates: number }>('POST', '/api/screening/results', scores),
-  profile: (childId: number) => request<Profile>('GET', `/api/children/${childId}/profile`),
   exerciseSheet: (classId: number, stage?: ColourStage) =>
     request<ClassSheet>('GET', `/api/classes/${classId}/exercise-sheet${stage ? `?stage=${stage}` : ''}`),
   submitExerciseScores: (scores: ExerciseScoreIn[]) =>

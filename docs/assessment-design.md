@@ -4,7 +4,8 @@
 the API, the teacher's Assess page and developmental charts, the profile, and the head and trust or group summaries),
 and on 2026-11-04 for the other five colours, from the grids Pat sent on 2026-11-03. See **What was built** at the
 end. Pat agreed the suggested defaults on 2026-11-03 (**Pat's answers of 2026-11-03**); what is still open is under
-*Still to settle with Pat*.
+*Still to settle with Pat*. The 0 to 3 readiness check was retired on 2026-11-04 (owner's decision; migration
+`V17__retire_readiness_check.sql`).
 
 Pat's feedback (2026-10-20) replaces today's single 0 to 3 check with two assessments. This note sets out
 how the platform stores and shows them. Pat replied on 2026-10-27 with the assessment booklet (the
@@ -76,7 +77,7 @@ date and a score.
     class list. For each child the teacher taps 1 to 4, with the four descriptions on screen. The platform
     suggests the right point: the start of the colour, the end of the current module, or the end of the
     colour.
-- **Readiness profile.** Both assessments, as Pat asked: the developmental charts with secure movements, the
+- **The child's profile.** Both assessments, as Pat asked: the developmental charts with secure movements, the
   age in months and the window each was secured in, then Pat's table for each exercise in the current colour
   (point, date, score). A note when the child "may benefit from extra support" (the low-score flag). "Not a
   diagnosis" stays on every profile.
@@ -121,7 +122,7 @@ Questions sent on 2026-11-03 (the owner's email, 16 questions; 7 to 16 are about
 | 3 | The flag rule | **Yes** | `ExtraSupportRule` stays as it is |
 | 4 | No date of birth or birth history | **Yes** | Not held |
 | 5 | What parents see (plain words, no scores, no flag) | **Yes** | `ParentProgress` stays as it is |
-| 6 | Retire the 0 to 3 check | Asked what "the old 0 to 3 readiness check" means | To explain: the single check from the first prototype, which suggests a starting colour; then ask again |
+| 6 | Retire the 0 to 3 check | Asked what "the old 0 to 3 readiness check" means | **Retired 2026-11-04** (the owner decided; not asked again): see *Retiring the 0 to 3 check* |
 
 ### Still to settle with Pat
 
@@ -135,11 +136,11 @@ Questions sent on 2026-11-03 (the owner's email, 16 questions; 7 to 16 are about
    - The booklet's gross motor chart repeats some 0 to 6 months rows (for example "Kicks legs vigorously when
      lying on back" three times), has a blank row in 3 to 4 years, and has typos ("caching games", "rise a
      two-wheel bike").
-3. **The 0 to 3 check.** Explain it to Pat (question 6), then retire it and update the induction lesson.
-4. **The summary totals.** Are the two "X/108" columns the start and end totals? Suggested default: yes (not asked
+3. **The summary totals.** Are the two "X/108" columns the start and end totals? Suggested default: yes (not asked
    again on 2026-11-03).
 
-Settled on 2026-11-03: the flag rule, not holding a date of birth or birth history, and what parents see.
+Settled on 2026-11-03: the flag rule, not holding a date of birth or birth history, and what parents see. Decided on
+2026-11-04: the 0 to 3 check is retired.
 
 ## Order of work
 
@@ -151,8 +152,8 @@ Settled on 2026-11-03: the flag rule, not holding a date of birth or birth histo
 4. Retire the current 0 to 3 check and its readiness rules, and update the induction lesson on assessment.
 5. Regenerate the user guide and flow guide PDFs.
 
-Steps 1 to 3 are done for all seven colours, and the parent app shows the plain-words summary (2026-10-28). Steps 4
-and 5 are still to do.
+Steps 1 to 3 are done for all seven colours, and the parent app shows the plain-words summary (2026-10-28). Step 4 is
+done (2026-11-04, below). Step 5 is still to do.
 
 ## What was built (2026-10-27)
 
@@ -225,3 +226,22 @@ their latest scores (the lower middle when even), rather than raw counts of scor
 
 **School year.** September to August. The point in the year is suggested from the date (September to December
 start, January to April middle, May to August end); the teacher can change it.
+
+## Retiring the 0 to 3 check (2026-11-04)
+
+Pat asked on 2026-11-03 what "the old 0 to 3 readiness check" was. The owner decided to retire it without asking her
+again, since her two assessments replace it.
+
+- **Gone:** the `screening` package (items, results, the six-area readiness profile, `ReadinessRules`), its endpoints
+  (`/api/screening/items`, `/api/screening/results`, `/api/children/{id}/profile`), the teacher's Readiness check
+  page and its offline queue, the readiness card on the child's profile, and the six areas in the parent app.
+  Migration `V17__retire_readiness_check.sql` drops `screening_result`, `screening_item_level` and `screening_item`.
+- **Placement:** the old check placed a child at a suggested colour. Now a school child works at the colour they are
+  assessed at: their first exercise score places them there, and a score at a later colour moves them up, never down
+  (`AssessmentService.submitScores`). A home child's colour still follows `HomeRules`.
+- **Counts:** "Children assessed" on the head's dashboard, the trust or group's "Assessed" column and the governor
+  summary (`children_assessed`) count children with an exercise score or a secure movement.
+- **Induction:** the starter lesson "Assessing the children" describes the two assessments, and the practitioner
+  course's second quiz asks about them. Starter content loads only into an empty deployment, so one that already
+  has the old lesson keeps it (none is live yet).
+- **Website:** the public pages describe the two assessments instead of a readiness profile.

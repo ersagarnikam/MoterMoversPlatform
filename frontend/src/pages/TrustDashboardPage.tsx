@@ -38,7 +38,7 @@ export default function TrustDashboardPage() {
               <th>Licence</th>
               <th>Renewal</th>
               <th>Stages</th>
-              <th className="num">Assessed (0 to 3 check)</th>
+              <th className="num">Assessed</th>
               <th className="num">Developmental this year</th>
               <th className="num">May benefit from extra support</th>
               <th className="num">Participation</th>
@@ -51,7 +51,7 @@ export default function TrustDashboardPage() {
                 <td className={s.licenceStatus === 'RENEWAL_DUE' ? 'strong' : ''}>{STATUS_LABEL[s.licenceStatus]}</td>
                 <td>{s.renewalDate ? day(s.renewalDate) : '-'}</td>
                 <td>{s.stages}</td>
-                <td className="num">{pct(s.screenedRate)}</td>
+                <td className="num">{pct(s.assessedRate)}</td>
                 <td className="num">{pct(s.developmentalRate)}</td>
                 <td className="num">{s.extraSupport}</td>
                 <td className="num">{pct(s.participation)}</td>

@@ -342,7 +342,7 @@ test('the team marks attendance and the assessment, and the learner gets a certi
     ['The daily session', ['10 minutes', 'The whole class together', 'Little and often is what makes the difference']],
     [
       'Colour stages and assessment',
-      ['Seven', 'Red', /A child's readiness/.source, 'Each movement, one at a time'],
+      ['Seven', 'Red', /How the child is getting on/.source, /Each exercise, from 1/.source],
     ],
     ['Keeping children and families safe', ['By initials', 'Adults only', 'Signpost them to their GP']],
   ]

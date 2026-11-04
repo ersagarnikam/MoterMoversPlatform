@@ -173,6 +173,12 @@ public class AssessmentService {
                 scores.save(new ExerciseScore(s.clientId(), child, exercise, s.point(), s.score(), s.assessedOn(),
                         me.email()));
             }
+            // A school child works at the colour they are assessed at: placed there the first time, moved up (never
+            // down) when their class starts a later colour. A home child's colour follows HomeRules instead.
+            if (!child.isAtHome() && (child.getCurrentStage() == null
+                    || exercise.getStage().compareTo(child.getCurrentStage()) > 0)) {
+                child.placeAt(exercise.getStage());
+            }
             saved++;
         }
         return new AssessmentViews.SubmitResult(saved, duplicates);

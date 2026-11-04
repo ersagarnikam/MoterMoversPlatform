@@ -189,32 +189,15 @@ details summary::-webkit-details-marker { display: none; }
 .player-placeholder { border: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; font: inherit; font-size: 1.3rem; cursor: pointer; }
 .player-placeholder .play { color: #fff; border-color: #fff; width: 64px; height: 64px; }
 
-/* Screening */
-.screening { display: flex; justify-content: center; }
-.screening-card { width: min(640px, 100%); }
-.options { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
-.option { text-align: left; padding: 0.75rem 0.9rem; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; }
-.option-on { border: 2px solid var(--bar); background: var(--accent-soft); }
-.radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--icon); flex-shrink: 0; }
-.option-on .radio { background: var(--bar); border-color: var(--bar); box-shadow: inset 0 0 0 3px var(--paper); }
-.dashed-note { border: 1px dashed var(--border-strong); border-radius: 8px; padding: 0.4rem 0.7rem; color: var(--muted); font-size: 0.85rem; }
 .offline-pill { background: var(--warn-bg); color: var(--warn-ink); border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.85rem; }
 
 /* Profile */
 .profile { max-width: 900px; }
-.stage-title .badge { font-size: 1.1rem; padding: 0.3rem 0.8rem; font-weight: 600; }
 .area-bars { display: flex; flex-direction: column; gap: 0.55rem; margin: 1rem 0; }
 .area-row { display: grid; grid-template-columns: 170px 1fr 170px; align-items: center; gap: 0.75rem; }
 .bar { height: 10px; background: var(--bar-track); border-radius: 5px; overflow: hidden; }
 .bar span { display: block; height: 100%; background: var(--bar); border-radius: 5px; }
 .bar-flag span { background: var(--flag); }
-.band { font-size: 0.88rem; }
-.band-secure { color: var(--ok-ink); }
-.band-emerging { color: var(--muted); }
-.sparkline { width: 100%; max-width: 420px; height: auto; }
-.sparkline .axis { stroke: var(--line); }
-.sparkline .line { fill: none; stroke: var(--bar); stroke-width: 2; }
-.sparkline .point { fill: var(--bar); }
 
 /* Dashboards */
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }

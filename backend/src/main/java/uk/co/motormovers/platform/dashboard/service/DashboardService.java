@@ -3,6 +3,7 @@ package uk.co.motormovers.platform.dashboard.service;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.assessment.repository.ExerciseScoreRepository;
+import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepository;
 import uk.co.motormovers.platform.assessment.service.AssessmentService;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildAccessLogRepository;
@@ -30,7 +33,6 @@ import uk.co.motormovers.platform.school.repository.LicenceRepository;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
 import uk.co.motormovers.platform.school.repository.SchoolRepository;
 import uk.co.motormovers.platform.school.repository.TrustRepository;
-import uk.co.motormovers.platform.screening.repository.ScreeningResultRepository;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
 
 @Service
@@ -46,7 +48,8 @@ public class DashboardService {
     private final TrustRepository trusts;
     private final SchoolClassRepository classes;
     private final ChildRepository children;
-    private final ScreeningResultRepository screening;
+    private final ExerciseScoreRepository exerciseScores;
+    private final MilestoneAchievementRepository achievements;
     private final DailySessionRecordRepository records;
     private final LicenceRepository licences;
     private final ChildAccessLogRepository accessLog;
@@ -56,14 +59,16 @@ public class DashboardService {
     private final Clock clock;
 
     public DashboardService(SchoolRepository schools, TrustRepository trusts, SchoolClassRepository classes,
-            ChildRepository children, ScreeningResultRepository screening, DailySessionRecordRepository records,
+            ChildRepository children, ExerciseScoreRepository exerciseScores,
+            MilestoneAchievementRepository achievements, DailySessionRecordRepository records,
             LicenceRepository licences, ChildAccessLogRepository accessLog, AssessmentService assessments,
             AccessPolicy access, PlatformProperties properties, Clock clock) {
         this.schools = schools;
         this.trusts = trusts;
         this.classes = classes;
         this.children = children;
-        this.screening = screening;
+        this.exerciseScores = exerciseScores;
+        this.achievements = achievements;
         this.records = records;
         this.licences = licences;
         this.accessLog = accessLog;
@@ -94,7 +99,7 @@ public class DashboardService {
                     licence == null ? null : licence.getPlan().getLabel(),
                     licence == null ? null : licence.getEndsOn(),
                     licence == null ? "" : describeStages(licence.getStages()),
-                    d.childrenTotal() == 0 ? 0 : (double) d.childrenScreened() / d.childrenTotal(),
+                    d.childrenTotal() == 0 ? 0 : (double) d.childrenAssessed() / d.childrenTotal(),
                     d.dailyParticipation(),
                     a.children() == 0 ? 0 : (double) a.developmentallyAssessed() / a.children(), a.extraSupport());
         }).toList();
@@ -117,7 +122,7 @@ public class DashboardService {
         StringBuilder csv = new StringBuilder("class,stage,participation_last_20_days,flagged\n");
         d.classes().forEach(c -> csv.append(csvField(c.name())).append(',').append(csvField(c.stageName()))
                 .append(',').append(percent(c.participation())).append(',').append(c.flagged()).append('\n'));
-        csv.append("\nchildren_screened,").append(d.childrenScreened()).append('/').append(d.childrenTotal())
+        csv.append("\nchildren_assessed,").append(d.childrenAssessed()).append('/').append(d.childrenTotal())
                 .append("\nmoved_up_a_stage,").append(percent(d.movedUpRate()))
                 .append("\ndaily_participation,").append(percent(d.dailyParticipation()))
                 .append("\nclasses_active,").append(d.classesActive()).append('/').append(d.classesTotal())
@@ -146,8 +151,13 @@ public class DashboardService {
         LocalDate today = LocalDate.now(clock);
         List<SchoolClass> schoolClasses = classes.findBySchoolIdOrderByName(school.getId());
         List<Child> pupils = children.findBySchoolClassSchoolIdAndLeftOnIsNull(school.getId());
-        Set<Long> screened = pupils.isEmpty() ? Set.of()
-                : Set.copyOf(screening.findScreenedChildIds(pupils.stream().map(Child::getId).toList()));
+        // Assessed: an exercise score or a secure movement on the developmental charts, at any time.
+        Set<Long> assessed = new HashSet<>();
+        if (!pupils.isEmpty()) {
+            List<Long> ids = pupils.stream().map(Child::getId).toList();
+            assessed.addAll(exerciseScores.findAssessedChildIds(ids));
+            assessed.addAll(achievements.findAssessedChildIds(ids));
+        }
         long movedUp = pupils.stream().filter(Child::hasMovedUp).count();
         long placed = pupils.stream().filter(c -> c.getStartingStage() != null).count();
 
@@ -171,7 +181,7 @@ public class DashboardService {
         double participation = rows.stream().mapToDouble(DashboardViews.ClassParticipation::participation)
                 .average().orElse(0);
 
-        return new DashboardViews.SchoolDashboard(school.getId(), school.getName(), screened.size(), pupils.size(),
+        return new DashboardViews.SchoolDashboard(school.getId(), school.getName(), assessed.size(), pupils.size(),
                 placed == 0 ? 0 : (double) movedUp / placed, participation, active, schoolClasses.size(),
                 WINDOW_DAYS, threshold, rows);
     }

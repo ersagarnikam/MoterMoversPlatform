@@ -6,9 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +24,6 @@ class ApiIntegrationTest {
     @Autowired
     MockMvc mvc;
 
-    /** The platform's clock (UK time), so dates match what the API calls today wherever the tests run. */
-    @Autowired
-    Clock clock;
 
     @Test
     void rejectsAnonymousAndBadPasswords() throws Exception {
@@ -62,7 +56,7 @@ class ApiIntegrationTest {
         String teacher = login("teacher@oakfield.test");
         Integer childId = firstChildOfTeacher(teacher);
 
-        mvc.perform(get("/api/children/" + childId + "/profile").header("Authorization", bearer(teacher)))
+        mvc.perform(get("/api/children/" + childId + "/assessment").header("Authorization", bearer(teacher)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.banner").value(containsString("Not a diagnosis")));
 
@@ -79,25 +73,10 @@ class ApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.schools.length()").value(4));
         Integer childId = firstChildOfTeacher(login("teacher@oakfield.test"));
-        mvc.perform(get("/api/children/" + childId + "/profile").header("Authorization", bearer(trust)))
+        mvc.perform(get("/api/children/" + childId + "/assessment").header("Authorization", bearer(trust)))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/api/schools/1/dashboard").header("Authorization", bearer(trust)))
                 .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void offlineScoresSentTwiceAreStoredOnce() throws Exception {
-        String teacher = login("teacher@oakfield.test");
-        Integer childId = firstChildOfTeacher(teacher);
-        String clientId = UUID.randomUUID().toString();
-        String score = "{\"clientId\":\"" + clientId + "\",\"childId\":" + childId
-                + ",\"itemCode\":\"GM_HOP\",\"score\":2,\"screenedOn\":\"" + LocalDate.now(clock) + "\"}";
-
-        mvc.perform(post("/api/screening/results").header("Authorization", bearer(teacher))
-                .contentType(MediaType.APPLICATION_JSON).content("[" + score + "," + score + "]"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.saved").value(1))
-                .andExpect(jsonPath("$.duplicates").value(1));
     }
 
     @Test

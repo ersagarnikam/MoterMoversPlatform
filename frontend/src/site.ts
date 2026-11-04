@@ -16,7 +16,7 @@ export const SIGN_IN_ROLES = [
   {
     key: 'teacher',
     label: 'Class teacher',
-    blurb: "Today's session, assessing children and your class's readiness profiles.",
+    blurb: "Today's session, assessing children and each child's profile.",
     demo: 'teacher@oakfield.test',
   },
   {

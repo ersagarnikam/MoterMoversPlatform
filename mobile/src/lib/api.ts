@@ -4,7 +4,6 @@ import { Platform } from 'react-native'
 
 export type ColourStage = 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'INDIGO' | 'VIOLET'
 export type Role = 'TEACHER' | 'HEAD' | 'TRUST_LEAD' | 'PRACTITIONER' | 'PARENT' | 'ADMIN'
-export type Band = 'EMERGING' | 'DEVELOPING' | 'SECURE'
 
 export interface CurrentUser {
   id: number
@@ -49,9 +48,6 @@ export interface ExerciseProgress {
 export interface Progress {
   child: LinkedChild
   banner: string
-  screened: boolean
-  areas: { area: string; label: string; band: Band; bandLabel: string }[]
-  screenings: string[]
   classSessionsDone: number
   counterDays: number
   /** The school's assessments, in plain words (never the scores or the extra-support flag). */

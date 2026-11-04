@@ -136,6 +136,7 @@ sequenceDiagram
       API->>API: requireRecorder (record access, not trust lead, not a leaver)
       API->>API: point valid for exercise, score 1 to 4, not backdated too far
       API->>DB: rescore existing at same point, or save ExerciseScore
+      API->>DB: school child: move up to the exercise's colour (first score places them; never down)
       API->>DB: ChildAccessLog entry
     end
   end
@@ -152,6 +153,7 @@ sequenceDiagram
 - A later score at the same point replaces the earlier one.
 - Trust leads cannot record. Children who have left cannot be scored.
 - The suggested point waits until every child is scored, unless half the class is already further on.
+- A school child works at the colour they are assessed at: their first score places them, a later colour moves them up, never down (home children follow HomeRules).
 
 <a id="developmental"></a>
 
@@ -205,7 +207,7 @@ sequenceDiagram
 
 Both assessments, Pat's score table and summary comments. A pattern of low scores shows 'May benefit from extra support', never a cause.
 
-**Endpoints:** `GET /api/children/{id}/assessment` · `PUT /api/children/{id}/colour-summary` · `GET /api/children/{id}/profile`
+**Endpoints:** `GET /api/children/{id}/assessment` · `PUT /api/children/{id}/colour-summary`
 
 ```mermaid
 sequenceDiagram
@@ -224,8 +226,6 @@ sequenceDiagram
   R-->>API: flagged and reasons
   API-->>W: Profile (score table, start and end totals, flag)
   W-->>T: May benefit from extra support, with reasons
-  W->>API: GET /api/children/{id}/profile
-  API-->>W: older 0 to 3 readiness profile (six areas)
   W-->>T: Not a diagnosis banner
   T->>W: Write summary comments for the colour
   W->>API: PUT /api/children/{id}/colour-summary
@@ -235,7 +235,7 @@ sequenceDiagram
 **Rules in the code**
 
 - Flag: 1 or 2 on the same exercise at two points in a row, or on half or more of the exercises (at least two) at a module or colour end.
-- The older 0 to 3 readiness profile still shows, with its permanent Not a diagnosis banner.
+- The profile carries a permanent Not a diagnosis banner. (The older 0 to 3 readiness check was retired on 2026-11-04.)
 
 <a id="parent-invite"></a>
 
