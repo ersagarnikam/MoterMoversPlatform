@@ -94,7 +94,7 @@ items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
 
-**In progress (Sagar with Claude, branch `retire-readiness-check`): retiring the 0 to 3 readiness check.** Done: the
+**In progress (Sagar with Claude, branch `retire-readiness-check`, pull request #19): retiring the 0 to 3 readiness check.** Done: the
 check is gone from the API, website, parent app, starter content, load test and docs; tests pass (140 backend, 51 web
 unit, 67 browser, mobile typecheck). Left: the owner reviews and merges the pull request, then rebuild the guides
 (their screenshots still show the old check). Remove this note once merged.
