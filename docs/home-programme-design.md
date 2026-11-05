@@ -32,7 +32,8 @@ the owner are happy with the questions at the end of this note.
    times that week**, then the next rhyme. From Green on: **each module builds up over five weeks**. The first week
    has the exercises carried on from the module before and the first two new ones; one or two more are added each
    week, in your order, so all of the module's exercises are in by week 5 (your Green module 1 example: Yes and No and
-   Flying Machines, then Starfish and Motor Spin, and so on). Each exercise is shown with your movement text.
+   Flying Machines, then Starfish and Motor Spin, and so on). Each exercise is shown with your movement text. From
+   Green to Indigo the session ends with the cool-down (your answer of 5 November); a rhyme ends with its own.
 6. **Rates exercises from time to time.** The first time the child does an exercise, and again at the end of each
    module the exercise is in and at the end of the colour (your points: Start, End of module, End of the colour; your
    answer to question 8).
@@ -74,18 +75,24 @@ and **Leo**, 1 year 8 months, who has not done the starting check yet (he will s
 | 9 | Safety note | Written | Shown before the first session |
 | 10 | Videos | Green and Orange are filmed as examples (on neuroway.co.uk, Motor Movers Schools); demonstration videos with adults would be good, perhaps animation | To plan with the video work (sessions still show your text only) |
 
+## Your answers (5 November 2026)
+
+| # | Question | Your answer | What changes |
+|---|---|---|---|
+| 1 | Where Red fits | Yes: under 2 at Red, from 2 at Orange | As before: Red under 2, Orange from 2, Green from 4 |
+| 2 | Induction for parents | A short induction like the staff one | A parent induction before the first session: lessons to read, then the sessions unlock (your lessons to follow) |
+| 3 | The rhyme order at home | "The rhyme order is the grid" | As before: each colour's rhymes in the order of its grid |
+| 4 | Cool Down 1 | Red, Orange and Yellow: the cool-down is written at the end of each rhyme. Green to Indigo: each block of exercises has its cool-down; Green's Cool Down 1 ends each session ("Touch your head, touch your nose, touch your knee. Stand straight, feet together. Count to 10.") | From Green to Indigo the session ends with the cool-down, after the exercises. A rhyme's own cool-down is already in its words. Only Cool Down 1 has its text so far, so it ends every Green session until the later ones arrive |
+| 5 | Module length | Yes, for Green to Indigo; Red, Orange and Yellow have a rhyme each week | As before: five weeks of five sessions a module, one rhyme a week |
+| 6 | Videos | The Green and Orange films can be used for launch | Shown in the sessions once the files arrive |
+
 ## Still to settle
 
-1. **Where Red fits.** Your table puts Red "from 6 months/toddlers", and your answer says young children start at
-   Orange. *Suggested: babies and toddlers under 2 start at Red; from 2, Orange.*
-2. **Induction for parents.** What should it cover and how long should it be? Is it the existing parent course, or a
-   short induction like the staff one (lessons to read, then the sessions unlock)?
-3. **The rhyme order at home.** Your list mixes rhymes from Red, Orange and Yellow. *Suggested: each colour's rhymes in
-   the order of its grid.*
-4. **Cool Down 1** ends every session in your example. *Should it be added to the session (with its text), and for
-   which colours?*
-5. **Module length.** Your example builds module 1 over five weeks. *Suggested: five weeks of five sessions for every
-   module.*
+1. **The other cool-downs.** The text of the cool-down for Green modules 2 to 6, and for Blue and Indigo.
+2. **Violet.** Five weeks a module, and a cool-down, as for Green to Indigo? *Assumed for now: five weeks, no separate
+   cool-down.*
+3. **The parent induction's lessons**: what the short induction says, as for the staff one.
+4. **The film files**, from you or Laura.
 
 ## The questions as asked (27 October 2026)
 

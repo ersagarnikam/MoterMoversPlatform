@@ -10,7 +10,7 @@ import { useLoad } from '@/lib/useLoad'
 
 /**
  * Today's home session: this week's rhyme, or the exercises of the child's module so far, one at a time, with Pat's
- * safety note before the first session. Afterwards the parent rates any exercise done for the first time (not for a
+ * safety note before the first session and, from Green to Indigo, the cool-down last. Afterwards the parent rates any exercise done for the first time (not for a
  * child linked to a school, whose teacher rates).
  */
 export default function HomeSessionScreen() {
@@ -74,8 +74,10 @@ export default function HomeSessionScreen() {
     )
   }
 
-  const exercise = today.exercises[step]
-  const last = step === today.exercises.length - 1
+  const steps = today.exercises.length + (today.coolDown ? 1 : 0)
+  const coolingDown = step === today.exercises.length
+  const exercise = coolingDown ? null : today.exercises[step]
+  const last = step === steps - 1
 
   return (
     <Screen>
@@ -83,21 +85,27 @@ export default function HomeSessionScreen() {
       {step === 0 && today.sessionsDone === 0 && <Banner tone="ok">Before you start. {today.safetyNote}</Banner>}
       <Row style={{ justifyContent: 'space-between' }}>
         <StageBadge stage={today.stage} label={today.stageName} />
-        {today.exercises.length > 1 && (
-          <Muted>
-            {step + 1} of {today.exercises.length}
-          </Muted>
-        )}
+        {steps > 1 && <Muted>{coolingDown ? 'Cool down' : `${step + 1} of ${today.exercises.length}`}</Muted>}
       </Row>
       <View style={{ height: 6, backgroundColor: p.track, borderRadius: 3, overflow: 'hidden' }}>
         <View
-          style={{ height: 6, width: `${((step + 1) / today.exercises.length) * 100}%`, backgroundColor: colour }}
+          style={{ height: 6, width: `${((step + 1) / steps) * 100}%`, backgroundColor: colour }}
         />
       </View>
       <Card accent={colour} style={{ gap: space.md }}>
-        {today.newThisWeek.includes(exercise.id) && <Muted>New this week</Muted>}
-        <H1 style={{ fontSize: 24 }}>{exercise.title}</H1>
-        <Text style={{ color: p.ink, fontSize: 17, lineHeight: 26 }}>{exercise.instructions}</Text>
+        {exercise ? (
+          <>
+            {today.newThisWeek.includes(exercise.id) && <Muted>New this week</Muted>}
+            <H1 style={{ fontSize: 24 }}>{exercise.title}</H1>
+            <Text style={{ color: p.ink, fontSize: 17, lineHeight: 26 }}>{exercise.instructions}</Text>
+          </>
+        ) : (
+          <>
+            <Muted>To finish</Muted>
+            <H1 style={{ fontSize: 24 }}>{today.coolDown!.title}</H1>
+            <Text style={{ color: p.ink, fontSize: 17, lineHeight: 26 }}>{today.coolDown!.text}</Text>
+          </>
+        )}
       </Card>
       <Muted>Video coming soon. Read each step aloud and do it together.</Muted>
       <Row>
@@ -110,7 +118,10 @@ export default function HomeSessionScreen() {
           {last ? (
             <Button label="We did it" onPress={finish} busy={busy} />
           ) : (
-            <Button label="Next exercise" onPress={() => setStep(step + 1)} />
+            <Button
+              label={step === today.exercises.length - 1 ? 'Cool down' : 'Next exercise'}
+              onPress={() => setStep(step + 1)}
+            />
           )}
         </View>
       </Row>

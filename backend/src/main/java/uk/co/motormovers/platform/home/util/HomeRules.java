@@ -13,15 +13,16 @@ import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.common.model.ColourStage;
 
 /**
- * The rules of Motor Movers at Home, from Pat's answers of 2026-11-03 (docs/home-programme-design.md). Children move
+ * The rules of Motor Movers at Home, from Pat's answers of 2026-11-03 and 2026-11-05 (docs/home-programme-design.md). Children move
  * through the colours at their own pace, so the colour does not follow the age: young children start at Orange and
  * older ones at Green, the core programme, then go on through the colours. A rhyme colour (Red, Orange, Yellow) does
- * one rhyme a week, five times; a colour with modules (Green to Violet) builds each module up over five weeks, adding
- * one or two exercises a week.
+ * one rhyme a week, five times, in the order of its grid; a colour with modules (Green to Violet) builds each module up
+ * over five weeks, adding one or two exercises a week. Pat confirmed five weeks for Green to Indigo; Violet is assumed
+ * the same until she says otherwise.
  */
 public final class HomeRules {
 
-    /** Babies and toddlers start at Red (Pat's "from 6 months/toddlers"). Pat to confirm where Red fits. */
+    /** Babies and toddlers under 2 start at Red, from 2 at Orange (Pat confirmed, 2026-11-05). */
     static final int ORANGE_FROM_MONTHS = 24;
 
     /** From the age children start school in the UK (Pat's "4/5"), they start at Green, the core programme. */
@@ -32,7 +33,7 @@ public final class HomeRules {
 
     public static final int SESSIONS_PER_WEEK = 5;
 
-    /** Pat's example builds Green module 1 up over five weeks. */
+    /** Five weeks of five sessions a module: confirmed for Green to Indigo (2026-11-05). */
     public static final int WEEKS_PER_MODULE = 5;
 
     /** New exercises in a module's first week; the rest are added one or two a week after that. */

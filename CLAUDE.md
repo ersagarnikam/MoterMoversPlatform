@@ -7,6 +7,7 @@ full feature description and demo accounts; `deploy/RUNBOOK.md` has production o
 request, not only when a feature lands: the **Current state** (with the date), **Next steps**, test counts, the latest
 migration, the recent commits line, and an **In progress** note while work is under way (who, branch, pull request,
 what is done and left; remove it once merged). Start from the latest `main`, and keep other people's notes.
+(added by Dev, 2026-11-05) Several agents write here; the Developer Agent marks what it adds with "(added by Dev, date)".
 
 ## What this is
 
@@ -50,7 +51,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 142 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 143 unit + API integration tests (H2)
 cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -81,13 +82,72 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
+## Go-live plan (set 2026-11-05, with the owner)
+
+**Dates.** Dev and production ready in the UK, Ireland and Australia by **Thu 31 Dec 2026**. Go/no-go UK and Ireland Wed
+6 Jan 2027; **UK and Ireland open for sign-ups and sales Mon 11 Jan**. Go/no-go Australia Thu 14 Jan; **Australia live Mon
+18 Jan**. First training cohorts 25 Jan. **Release 2 by 26 Feb.** Anything that needs Pat, Kay or pilot teachers is due by
+Fri 18 Dec (they are away over Christmas); 21-31 Dec is production readiness for the build team only. School calendars:
+UK (Wokingham) back 4 Jan, Ireland 6 Jan, Queensland school year starts 27 Jan.
+
+**Release 1 (ready 31 Dec).** Schools: licences signed up by the team, session player, both of Pat's assessments for all
+seven colours, head and trust dashboards, induction, resources. Live practitioner and parent courses with card payment.
+Motor Movers at Home sold as a 12-month pass (card payment that already works), gated by payment and Pat's parent
+induction; `HOME_PROGRAMME` on in production. Parent app in both stores, asking for the country at first launch. Text
+session plans, plus the Green and Orange films if Pat agrees. **Release 2 (26 Feb):** SENCo interventions, inspection
+evidence pack PDF, self-service school sign-up, free introductory course, calendar invites, session recordings, monthly
+billing, filmed sessions. Out of both: movement analysis from video and at-risk prediction (medical-device rules).
+
+**Three deployments, one build.** UK (London, GBP, VAT 20%, Europe/London, school year Sep-Aug), Ireland (EU region, EUR,
+VAT 23%, Europe/Dublin, Sep-Jun, Junior/Senior Infants), Australia (Sydney, AUD, GST 10%, Australia/Brisbane for
+Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board tasks in brackets):
+- Country settings per deployment: currency, tax rate and label, time zone, school-year months and assessment points,
+  year names, legal entity and contact details (task 25). Today `ClockConfig` hard-codes Australia/Sydney for AU.
+- Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
+  `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices.
+- `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
+  year, so year-on-year figures must not split it).
+- Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
+- Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26).
+- Licence not checked when a session is recorded: `ClassroomService.complete` checks stage and induction but not
+  `Licence.covers` (task 14).
+- Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
+  (`site.ts`) and leads with "From the Movement for Learning Project"; Pat said Movement for Learning will not be
+  reopened, so the credit wording must be agreed with her. `PLATFORM_ENQUIRY_EMAIL` still defaults to the owner.
+This supersedes Next steps item 13 (Australia "later").
+
+**Tracking.** monday.com board "Motor Movers Go-Live (Dec 2026)", id 5032300138
+(https://ihau-company.monday.com/boards/5032300138): 53 tasks with Status, Due, Owner, Area and Task #, in groups
+"Decide and build: 9 Nov - 11 Dec" and "Test, prod-ready and launch: 11 Dec - 26 Feb". When a task here is done, set it
+to Done there. Plan doc: https://claude.ai/artifact/6dYqws3w9cdpzhaARayV3d; requirements review (45 requirements against
+the platform, conflicts between the business documents): https://claude.ai/artifact/1WPp7mq67e8dqkCiBCN5Wq; designed PDF:
+`F:\IHA\Pat\Motor Movers go-live plan - January 2027.pdf`. A scheduled check (weekdays 7:38 and 17:38 Brisbane) reads the
+board and the owner's inbox and emails him a digest; it never emails anyone else.
+
+**Waiting on Pat and Kay (email of 2026-11-05, decisions due Fri 13 Nov).** Each was sent with a suggested answer:
+1 contracting company per country until the joint venture exists (suggested: Neuroway for UK and Ireland, an
+Australian company of ours for Australia); 2 brand (Motor Movers Programme or Professor Pat Preedy Programme); 3 prices in
+GBP, EUR and AUD (start from the proposal's: early years 450, primary core 900, full 1,750 a year, trusts 15% off;
+practitioner 180 then 60 a year; parent course 45; home 35 a year); 4 home billing (12-month pass at launch, monthly from
+February); 5 Green and Orange films at launch; 6 stages on sale first (Green, Yellow, Orange); 7 pilot schools (Pat's
+four UK schools plus the Berkshire school improvement team; one or two each in Ireland and Australia); 8 scope sign-off.
+(added by Dev, 2026-11-05) The owner's reply to Pat's email of 2026-11-03 (**sent 2026-11-05**, Kay and Rahul copied) explains the retired 0 to 3 check, asks her to
+resend the revised Motor Spin / Jack and Jill / Twinkle Twinkle file (empty inside her original winmail.dat too), and asks
+four grid queries (Blue Thumbs Up twice; Indigo Puppy Fun; Orange See Saw and Violet Motor Lift Four repeating
+another's descriptions; a Blue table headed "Final end of Green", read as the end of Blue) and five Motor Movers at
+Home questions (Red for under 2s, the parent induction, rhyme order, Cool Down 1, module length; listed in
+`docs/assessment-design.md` and `docs/home-programme-design.md`), and asks to use the Green and Orange films. Both
+emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshirode@ihau.au, which bounced; it was
+forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
+
 ## Current state (2026-11-05)
 
 **Testing (updated by tester, 2026-11-05).** A tester session checks the platform and records its results here,
 each update marked "updated by tester". Baseline on `main` at 077a5d5, on the owner's Windows machine: backend 142
 tests pass (JDK 26), web 51 unit tests, build and parent app typecheck pass, and all 67 browser tests pass (65
 desktop, 2 phone; installed Chrome, API with demo data and `LOGIN_LIMIT_PER_IP=500`, run at 14:18 Brisbane time).
-No bugs found yet. Not run: load tests, the production compose stack, a real phone. Next: an exploratory pass of the
+No bugs found yet. Since then pull request #25 (Pat's revised content) merged and the backend has 143 tests; the
+tester has not rerun the suites on it yet. Not run: load tests, the production compose stack, a real phone. Next: an exploratory pass of the
 recent changes, role by role.
 
 **Team board on monday.com (2026-11-04):** "Motor Movers Platform",
@@ -100,6 +160,22 @@ features to try for real, then work waiting on Pat, then later plans) and a **Wo
 items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs/flows/` by role) and "User Journeys"
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
+
+(added by Dev, 2026-11-05) **Pat's answers of 2026-11-05 (her reply to the go-live plan, file "Revised 2"; merged 2026-11-05,
+pull request #25).** Go-Live
+board tasks 54 and 55:
+- **54, assessment content.** Green 4 Motor Spin, Yellow 11 Jack and Jill and 13 Twinkle Twinkle, and Orange 1 Rock a
+  Bye Baby have her own descriptions; Indigo 14 Puppy Fun has instructions and descriptions; Blue 5 Thumbs Up uses
+  Green's version with Blue's points; "Final end of Green" in Blue is the end of Blue. `AssessmentContent` now brings
+  an exercise's title, instructions and descriptions up to date from the files on every start (never its points), so
+  an existing deployment takes revised wording. Still open: See Saw Marjory Daw and Motor Lift Four keep copied
+  descriptions (`docs/assessment-design.md`).
+- **55, home rules.** Confirmed as built: Red under 2, rhyme order = the grid, one rhyme a week, five weeks a module for
+  Green to Indigo (Violet assumed the same). New: from Green to Indigo a home session ends with the module's cool-down
+  (`assessment/cool-downs.json`, `home/service/CoolDowns`, `coolDown` on Today, the last step on web and app); a
+  rhyme ends with its own, in its words. Only Green's Cool Down 1 has text so far, so it ends every Green session.
+- **56, parent induction:** a short induction like the staff one; her lessons to follow. **57, films:** she agreed
+  they can be used for launch; blocked until the files arrive (Stuck on the board).
 
 **The 0 to 3 readiness check is retired (merged 2026-11-05, pull request #19; the owner's decision, migration V17).**
 Pat's two assessments replace it, so it was not put to Pat again (her question about it is answered in the reply drafted for her). Gone: the
@@ -411,7 +487,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-05): guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-05): (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -449,8 +525,9 @@ Not started unless noted. Confirm priorities with the owner.
    specific licence or course booking.
 10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two
    assessments above); all seven colours since 2026-11-04.** Pat answered the questions of 2026-11-03 (see Current
-   state): the flag rule agreed. The 0-3 check was retired on 2026-11-04 (the owner decided; see Current state). Next:
-   her revised descriptions (the file arrived empty) and the grid queries. Pat's model replaced the single 0-3
+   state): the flag rule agreed. The 0-3 check was retired on 2026-11-04 (the owner decided; see Current state).
+   (added by Dev, 2026-11-05) Her revised descriptions and grid answers came on 2026-11-05 and are loaded (pull request
+   #25); left: See Saw's and Motor Lift Four's copied descriptions. Pat's model replaced the single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
    when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,
@@ -478,10 +555,11 @@ Not started unless noted. Confirm priorities with the owner.
    General app's production credentials.
 12. **Motor Movers at Home (merged 2026-10-27, switched off in production).** Pat answered the ten questions on
    2026-11-03 and the rules follow her answers (see Current state). Before switching `HOME_PROGRAMME` on in production:
-   the parent induction she asked for (content from her; then a gate before the first session), where Red fits, the
+   the parent induction she asked for (content from her; then a gate before the first session), the
    other points under Still to settle in `docs/home-programme-design.md`, a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions.
+   subscriptions. (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
+   2026-11-05, and the cool-down ends a session from Green to Indigo (pull request #25).
 13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
    its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the
    deployment (A$ there, £ in the UK), not a currency picker: money is hard-wired to £ today (`frontend/src/money.ts`
