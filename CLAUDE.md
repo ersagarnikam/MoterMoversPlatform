@@ -94,11 +94,6 @@ items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
 
-**In progress (Sagar with Claude, branch `rebuild-guides-after-19`, pull request #21): guides rebuilt after the 0 to 3
-check was retired.** Done: screenshots retaken from the demo, both sets of guides (normal and prototype) rebuilt, and
-their status pages updated (all seven colours, 140 backend checks, what is left with Pat). Left: the owner merges.
-Remove this note once merged.
-
 **The 0 to 3 readiness check is retired (merged 2026-11-05, pull request #19; the owner's decision, migration V17).**
 Pat's two assessments replace it, so it was not put to Pat again (her question about it is answered in the reply drafted for her). Gone: the
 `screening` package and its endpoints (`/api/screening/*`, `/api/children/{id}/profile`), the teacher's Readiness check
@@ -111,7 +106,7 @@ exercise score or a secure movement. The starter induction lesson is now "Assess
 course's second quiz asks about the two assessments. The public website describes the two assessments.
 `deploy/loadtest/school-day.js` opens assessment profiles and saves exercise scores. Details:
 `docs/assessment-design.md`, *Retiring the 0 to 3 check*. The guides (normal and prototype) were
-rebuilt without it on 2026-11-05 (pull request #21).
+rebuilt without it on 2026-11-05 (merged, pull request #21).
 
 **Flow sequence diagrams (merged 2026-11-04, pull request #17, at the owner's request).** `docs/flows/`, 30 Mermaid sequence diagrams in one Markdown file
 per role (Everyone, Class teacher, Head teacher and SENCo, Trust or group lead, Practitioner, Parent with a school
