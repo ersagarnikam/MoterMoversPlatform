@@ -153,11 +153,8 @@ items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
 
-(added by Dev, 2026-11-05) **In progress (Developer Agent with Sagar, branch `pat-revised-content`, pull request #25):
-Go-Live board tasks 54 and 55.** Done: both, with backend, web, browser and app checks passing. Left: the owner
-merges, then set tasks 54 and 55 to Done on the Go-Live board. Remove this note once merged.
-
-(added by Dev, 2026-11-05) **Pat's answers of 2026-11-05 (her reply to the go-live plan, file "Revised 2").** Go-Live
+(added by Dev, 2026-11-05) **Pat's answers of 2026-11-05 (her reply to the go-live plan, file "Revised 2"; merged 2026-11-05,
+pull request #25).** Go-Live
 board tasks 54 and 55:
 - **54, assessment content.** Green 4 Motor Spin, Yellow 11 Jack and Jill and 13 Twinkle Twinkle, and Orange 1 Rock a
   Bye Baby have her own descriptions; Indigo 14 Puppy Fun has instructions and descriptions; Blue 5 Thumbs Up uses
