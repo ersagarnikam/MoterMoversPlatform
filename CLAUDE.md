@@ -188,9 +188,10 @@ and build, 67/67 browser tests (UK). `GET /api/settings` (open) is right for UK,
 sign-in and today's session work in all three; overrides (`PLATFORM_COUNTRIES_IE_TAXPERCENT=13.5`, an AU legal
 entity name) show; bad values (currency, time zone, locale, tax 100 or below 0, month 13, a start month that is not
 the first month, region FR) stop start-up naming the setting. No bugs. Minor, sent to the Developer: a bad country
-value is named only inside a long stack trace (no "APPLICATION FAILED TO START" summary), and only the deployment's
-own country block is checked at start-up (a test could check all three). For Pat: Ireland's end point starts in
-April and runs past June, the school year's last month.
+value is named only inside a long stack trace (no "APPLICATION FAILED TO START" summary); the Developer will add a
+clean start-up message with part E. Start-up checks only the deployment's own country block, but `CountrySettingsTest`
+validates all three, so a typo in any block fails CI. For Pat: Ireland's end point starts in April and runs past June,
+the school year's last month.
 How the tester runs things while the owner's platform uses 8080, 5173 and 8082: a worktree, the built jar on
 `--server.port=8091` (wait for "Demo data loaded", which comes after "Started"), `API_URL=http://localhost:8091` for
 the browser tests, and before 11am Brisbane time a local Playwright config with `timezoneId: 'Europe/London'`.
