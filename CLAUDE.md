@@ -50,7 +50,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 140 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 142 unit + API integration tests (H2)
 cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -82,6 +82,13 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   tear down with `down -v`.
 
 ## Current state (2026-11-05)
+
+**Testing (updated by tester, 2026-11-05).** A tester session checks the platform and records its results here,
+each update marked "updated by tester". Baseline on `main` at 077a5d5, on the owner's Windows machine: backend 142
+tests pass (JDK 26), web 51 unit tests, build and parent app typecheck pass, and all 67 browser tests pass (65
+desktop, 2 phone; installed Chrome, API with demo data and `LOGIN_LIMIT_PER_IP=500`, run at 14:18 Brisbane time).
+No bugs found yet. Not run: load tests, the production compose stack, a real phone. Next: an exploratory pass of the
+recent changes, role by role.
 
 **Team board on monday.com (2026-11-04):** "Motor Movers Platform",
 https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
