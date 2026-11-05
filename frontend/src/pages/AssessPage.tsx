@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type ClassSheet } from '../api'
 import { exerciseOutbox } from '../outbox'
+import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
 import StageBadge from '../components/StageBadge'
 import { suggestedPoint } from '../assessment'
@@ -66,21 +67,23 @@ function Exercises({ sheet, onChange }: { sheet: ClassSheet; onChange: (s: Class
   const [point, setPoint] = useState<string | null>(null)
   const [unsent, setUnsent] = useState(exerciseOutbox.pending().length)
   const [online, setOnline] = useState(navigator.onLine)
+  // A score the server refuses is dropped from the queue (flush passes the reason), and the teacher is told why.
+  const toast = useToast()
 
   useEffect(() => {
     const up = () => {
       setOnline(true)
-      exerciseOutbox.flush().then(setUnsent)
+      exerciseOutbox.flush((reason) => toast(reason, 'error')).then(setUnsent)
     }
     const down = () => setOnline(false)
     window.addEventListener('online', up)
     window.addEventListener('offline', down)
-    exerciseOutbox.flush().then(setUnsent)
+    exerciseOutbox.flush((reason) => toast(reason, 'error')).then(setUnsent)
     return () => {
       window.removeEventListener('online', up)
       window.removeEventListener('offline', down)
     }
-  }, [])
+  }, [toast])
 
   if (sheet.exercises.length === 0) {
     return (
@@ -119,7 +122,7 @@ function Exercises({ sheet, onChange }: { sheet: ClassSheet; onChange: (s: Class
       ),
     })
     setUnsent(exerciseOutbox.pending().length)
-    setUnsent(await exerciseOutbox.flush())
+    setUnsent(await exerciseOutbox.flush((reason) => toast(reason, 'error')))
   }
 
   return (
