@@ -7,6 +7,7 @@ full feature description and demo accounts; `deploy/RUNBOOK.md` has production o
 request, not only when a feature lands: the **Current state** (with the date), **Next steps**, test counts, the latest
 migration, the recent commits line, and an **In progress** note while work is under way (who, branch, pull request,
 what is done and left; remove it once merged). Start from the latest `main`, and keep other people's notes.
+(added by Dev, 2026-11-05) Several agents write here; the Developer Agent marks what it adds with "(added by Dev, date)".
 
 ## What this is
 
@@ -130,7 +131,7 @@ GBP, EUR and AUD (start from the proposal's: early years 450, primary core 900, 
 practitioner 180 then 60 a year; parent course 45; home 35 a year); 4 home billing (12-month pass at launch, monthly from
 February); 5 Green and Orange films at launch; 6 stages on sale first (Green, Yellow, Orange); 7 pilot schools (Pat's
 four UK schools plus the Berkshire school improvement team; one or two each in Ireland and Australia); 8 scope sign-off.
-The owner's reply to Pat's email of 2026-11-03 (**sent 2026-11-05**, Kay and Rahul copied) explains the retired 0 to 3 check, asks her to
+(added by Dev, 2026-11-05) The owner's reply to Pat's email of 2026-11-03 (**sent 2026-11-05**, Kay and Rahul copied) explains the retired 0 to 3 check, asks her to
 resend the revised Motor Spin / Jack and Jill / Twinkle Twinkle file (empty inside her original winmail.dat too), and asks
 four grid queries (Blue Thumbs Up twice; Indigo Puppy Fun; Orange See Saw and Violet Motor Lift Four repeating
 another's descriptions; a Blue table headed "Final end of Green", read as the end of Blue) and five Motor Movers at
