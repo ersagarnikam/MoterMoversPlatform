@@ -142,6 +142,14 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-05)
 
+**Testing (updated by tester, 2026-11-05).** A tester session checks the platform and records its results here,
+each update marked "updated by tester". Baseline on `main` at 077a5d5, on the owner's Windows machine: backend 142
+tests pass (JDK 26), web 51 unit tests, build and parent app typecheck pass, and all 67 browser tests pass (65
+desktop, 2 phone; installed Chrome, API with demo data and `LOGIN_LIMIT_PER_IP=500`, run at 14:18 Brisbane time).
+No bugs found yet. Since then pull request #25 (Pat's revised content) merged and the backend has 143 tests; the
+tester has not rerun the suites on it yet. Not run: load tests, the production compose stack, a real phone. Next: an exploratory pass of the
+recent changes, role by role.
+
 **Team board on monday.com (2026-11-04):** "Motor Movers Platform",
 https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
 filled from **Next steps** below and Pat's open points, in groups Waiting on Pat, Go-live, Built, to try for real, To
