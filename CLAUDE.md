@@ -124,6 +124,19 @@ the platform, conflicts between the business documents): https://claude.ai/artif
 `F:\IHA\Pat\Motor Movers go-live plan - January 2027.pdf`. A scheduled check (weekdays 7:38 and 17:38 Brisbane) reads the
 board and the owner's inbox and emails him a digest; it never emails anyone else.
 
+[PM: Claude, 2026-11-06] **Developer tasks and their specs.** Work for the Developer is a go-live board item named
+**"DEV: ..."** (Owner "Dev agent (Claude Code)", Area Build). Its **full spec is the item's update** (notes) on monday.com,
+not a file in this repository: source, problem, what to build, tests, docs to update, and when it is done. Read it with
+the monday.com tools before starting, set the item to Working on it, and reply to the spec with the pull request link;
+the owner sets Done when he merges. Specs so far: 14 licence check
+(https://ihau-company.monday.com/boards/5032300138/pulses/2899865015), 25 country settings
+(https://ihau-company.monday.com/boards/5032300138/pulses/2899847796), 27 country chooser in the parent app
+(https://ihau-company.monday.com/boards/5032300138/pulses/2899865399), and 56 and 57 (parent induction gate, films).
+The board now has 57 items (54 onwards added after the plan). **One board per task:** go-live work lives only on the
+go-live board; on 2026-11-06 fifteen duplicates were archived from the "Motor Movers Platform" board (5032277063, details
+carried over as notes on the go-live items), which now keeps only what the go-live board does not track (Pat's grid
+queries, trying Stripe for real, Release 2 and later work).
+
 **Waiting on Pat and Kay (email of 2026-11-05, decisions due Fri 13 Nov).** Each was sent with a suggested answer:
 1 contracting company per country until the joint venture exists (suggested: Neuroway for UK and Ireland, an
 Australian company of ours for Australia); 2 brand (Motor Movers Programme or Professor Pat Preedy Programme); 3 prices in
@@ -140,7 +153,7 @@ Home questions (Red for under 2s, the parent induction, rhyme order, Cool Down 1
 emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshirode@ihau.au, which bounced; it was
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
-## Current state (2026-11-05)
+## Current state (2026-11-06)
 
 **Testing (updated by tester, 2026-11-05).** A tester session checks the platform and records its results here,
 each update marked "updated by tester". Baseline on `main` at 077a5d5, on the owner's Windows machine: backend 142
@@ -487,7 +500,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-05): (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
