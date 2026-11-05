@@ -22,7 +22,7 @@ mkdirSync(HTML_DIR, { recursive: true })
 const FONTS = join(ROOT, 'frontend', 'node_modules', '@fontsource')
 const shot = (name) => pathToFileURL(join(HERE, 'shots', `${name}.png`)).href
 const font = (family, weight) => pathToFileURL(join(FONTS, family, 'files', `${family}-latin-${weight}-normal.woff2`)).href
-const DATE = PROTOTYPE ? 'November 2026' : 'October 2026'
+const DATE = 'November 2026'
 const PROTO_NOTE =
   'A prototype in design, shown with demonstration data. Schools, people, children and figures are examples, and features and wording may change.'
 
@@ -326,9 +326,9 @@ function overviewBody() {
         <li>Parent phone app for iPhone and Android, with phone notifications.</li>
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates emailed as PDFs.</li>
         <li>Content approval with the wording check, school onboarding, staff training approved by heads, and payments by card online.</li>
-        <li>Pat Preedy’s two assessments for the Green and Yellow colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
+        <li>Pat Preedy’s two assessments for all seven colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
         <li>Motor Movers at Home for families without a school, in the app and on the website (switched off until Pat and the owner agree).</li>
-        <li>Checked automatically on every change: 135 checks of the system behind the screens, 51 of the web app’s building blocks, 67 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
+        <li>Checked automatically on every change: 140 checks of the system behind the screens, 51 of the web app’s building blocks, 67 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
         <li>Production set-up tried in full: secure web address (HTTPS), nightly backups with copies off the server, and a refusal to start with unsafe settings.</li>
       </ul></div>
       <div class="card no"><h3>Next steps</h3><ul>
@@ -336,7 +336,7 @@ function overviewBody() {
         <li>Publish the parent app in the Apple and Google app stores, which also switches on phone notifications.</li>
         <li>Connect the Motor Movers card payment account, and confirm VAT.</li>
         <li>Upload the filmed session videos and rhyme recordings.</li>
-        <li>Pat’s exercise grids for the other five colours, and her answers on Motor Movers at Home, with a privacy notice for families.</li>
+        <li>Pat’s revised descriptions for three exercises, and the induction she wants for families on Motor Movers at Home, with a privacy notice for families.</li>
       </ul></div>
     </div>
     ${guideList()}
@@ -380,12 +380,12 @@ function protoStatus() {
         <li>A parent phone app for iPhone and Android, with phone notifications.</li>
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates.</li>
         <li>Content approval with a wording check, school onboarding, staff training approved by heads, and payment by card.</li>
-        <li>Pat Preedy’s two assessments, starting with the Green and Yellow colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
+        <li>Pat Preedy’s two assessments for all seven colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
         <li>Motor Movers at Home for families whose school does not use the programme, in the app and on the website.</li>
       </ul></div>
       <div class="card no"><h3>Still to settle</h3><ul>
-        <li>Pat’s answers to the open questions on the assessments and on Motor Movers at Home.</li>
-        <li>The exercise grids for the other five colours.</li>
+        <li>Pat’s revised descriptions for Motor Spin, Jack and Jill and Twinkle Twinkle, and a few queries on the grids.</li>
+        <li>The induction for families on Motor Movers at Home, and where Red fits for the youngest children.</li>
         <li>The filmed session videos and rhyme recordings.</li>
         <li>Prices, and a privacy notice for families.</li>
       </ul></div>
