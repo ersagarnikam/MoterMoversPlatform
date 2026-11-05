@@ -1,0 +1,21 @@
+import { useEffect, useState } from 'react'
+import { api, type CountrySettings } from './api'
+
+// The deployment's country (UK, Ireland or Australia): currency, tax, year names and the legal entity, from the open
+// GET /api/settings. Money, tax lines and year names on screen follow it (go-live task 25).
+
+let settings: Promise<CountrySettings | null> | null = null
+
+/** The country settings, asked once per page load; null until known, or if the call fails. */
+export function useCountry(): CountrySettings | null {
+  const [country, setCountry] = useState<CountrySettings | null>(null)
+  useEffect(() => {
+    settings ??= api.settings().catch(() => null)
+    let live = true
+    settings.then((v) => live && setCountry(v))
+    return () => {
+      live = false
+    }
+  }, [])
+  return country
+}

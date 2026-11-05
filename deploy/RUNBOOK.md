@@ -37,6 +37,37 @@ Only Caddy is published. The database is not reachable from outside the server.
 If the API will not start, read its log first: `docker compose -f deploy/docker-compose.prod.yml logs api`.
 "Not safe to start in production" lists exactly which settings are missing.
 
+## Country settings
+
+One build serves three countries, each as its own deployment: `PLATFORM_REGION` is `UK`, `IE` (Ireland) or `AU`. It
+picks the country's settings from `platform.countries` in `backend/src/main/resources/application.yml`:
+
+| | UK | Ireland | Australia |
+|---|---|---|---|
+| Currency, locale | GBP, en-GB | EUR, en-IE | AUD, en-AU |
+| Tax | VAT 20% | VAT 23% | GST 10% |
+| Time zone (the platform's clock) | Europe/London | Europe/Dublin | Australia/Brisbane (Queensland, no daylight saving) |
+| School year | September to August, 3 terms | September to June, 3 terms | January to December, 4 terms |
+| Assessment points start | Sep / Jan / May | Sep / Jan / Apr | Jan / May / Sep |
+| Year names | Nursery, Reception, Year 1-3 | Preschool, Junior Infants, Senior Infants, First Class, Second Class | Kindy, Prep, Year 1-3 |
+| Legal entity | To be confirmed | To be confirmed | To be confirmed |
+
+Ireland's and Australia's points and year names, and every legal entity, are still to be confirmed. Anyone can read a
+deployment's settings at `GET /api/settings` (no sign-in); the website and the parent app use them.
+
+To change a value for one deployment without a new build, add it to `deploy/country.env` (read by the API container
+if present) as `PLATFORM_COUNTRIES_<REGION>_<NAME>`, with the name's dashes and dots removed, for example:
+
+```bash
+PLATFORM_COUNTRIES_IE_TAXPERCENT=23
+PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME=Motor Movers Australia Pty Ltd
+PLATFORM_COUNTRIES_AU_YEARNAMES=Kindy,Prep,Year 1,Year 2,Year 3
+```
+
+then `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d api`. A value that cannot work
+(an unknown currency or time zone, a month outside 1 to 12) stops the API at start-up with a message naming it. Keep a
+deployment's region once schools are signed up: schools are stored with it.
+
 ## Updating
 
 ```bash
