@@ -140,7 +140,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state ((added by Dev, 2026-11-06) 2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `licence-check`, pull request #26): the licence is
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `licence-check`, pull request #27): the licence is
 checked when a session is recorded (Go-Live task 14).** Done: the rule, both callers, the resource library, the offline
 queue's handling of refusals, tests (backend 149, web unit 54, build, browser tests, mobile typecheck) and the flow
 diagram. Left: the owner reviews and merges the pull request. Remove this note once merged.
