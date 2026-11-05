@@ -164,16 +164,6 @@ await desk(async (page) => {
     await page.getByText(/Secure at 80 months/).waitFor()
     await shot(page, 'teacher-development')
   })
-  await step('screening', async () => {
-    await page.goto(`${WEB}/classes`)
-    await page.getByRole('link', { name: 'Assess children' }).click()
-    await page.getByRole('link', { name: 'Readiness check (0 to 3)' }).click()
-    await shot(page, 'teacher-screening-roster')
-    await page.locator('.roster-child').first().click()
-    await page.getByText(/Item 1 of \d+/).waitFor()
-    await page.getByRole('radio').nth(2).click()
-    await shot(page, 'teacher-screening-item')
-  })
   await step('resources', async () => {
     await page.getByRole('link', { name: 'Resources' }).click()
     await page.getByRole('heading', { name: 'Motor Movers rhyme book' }).waitFor()

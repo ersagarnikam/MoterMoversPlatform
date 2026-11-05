@@ -17,9 +17,6 @@ import uk.co.motormovers.platform.content.model.ResourceKind;
 import uk.co.motormovers.platform.content.repository.GuidanceArticleRepository;
 import uk.co.motormovers.platform.content.repository.HomeActivityRepository;
 import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
-import uk.co.motormovers.platform.screening.model.MotorArea;
-import uk.co.motormovers.platform.screening.model.ScreeningItem;
-import uk.co.motormovers.platform.screening.repository.ScreeningItemRepository;
 import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.model.CourseQuiz;
@@ -31,7 +28,7 @@ import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
 import uk.co.motormovers.platform.training.repository.QuizQuestionRepository;
 
 /**
- * The programme content a new deployment can start from: the assessment items, nursery rhymes and
+ * The programme content a new deployment can start from: nursery rhymes and
  * printables, the one-hour induction, home activities and guidance for the parent app, and the two live
  * courses, with short quizzes between the practitioner course's sessions (for Pat to check and replace). The demo loads it approved; a real deployment loads it as drafts (StarterContentLoader), so
  * nothing reaches teachers or parents until the team has checked and approved it in Content approval.
@@ -45,7 +42,6 @@ public class StarterContent {
             Map<ColourStage, List<HomeActivity>> homeActivities, Course professional, Course parent) {
     }
 
-    private final ScreeningItemRepository items;
     private final LibraryResourceRepository resources;
     private final InductionLessonRepository inductionLessons;
     private final HomeActivityRepository homeActivities;
@@ -54,11 +50,10 @@ public class StarterContent {
     private final CourseQuizRepository quizzes;
     private final QuizQuestionRepository quizQuestions;
 
-    public StarterContent(ScreeningItemRepository items, LibraryResourceRepository resources,
+    public StarterContent(LibraryResourceRepository resources,
             InductionLessonRepository inductionLessons, HomeActivityRepository homeActivities,
             GuidanceArticleRepository guidance, CourseRepository courses, CourseQuizRepository quizzes,
             QuizQuestionRepository quizQuestions) {
-        this.items = items;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.homeActivities = homeActivities;
@@ -71,7 +66,6 @@ public class StarterContent {
     /** Loads everything. With {@code approvedBy} null, reviewable content is left as drafts. */
     @Transactional
     public Loaded load(String approvedBy) {
-        assessmentItems();
         Map<ColourStage, List<LibraryResource>> rhymes = resources(approvedBy);
         List<InductionLesson> induction = induction(approvedBy);
         Map<ColourStage, List<HomeActivity>> activities = homeActivities(approvedBy);
@@ -102,12 +96,12 @@ public class StarterContent {
         quiz(course, 2, "Colour stages and assessment", List.of(
                 question("How many colour stages does the programme have?", List.of("Three", "Five", "Seven"), 2),
                 question("Which colour stage comes first?", List.of("Violet", "Red", "Green"), 1),
-                question("What does a readiness profile show?",
-                        List.of("A child's readiness for the movements of the programme, to plan their next steps",
+                question("What does a child's assessment profile show?",
+                        List.of("How the child is getting on with the programme's movements, to plan their next steps",
                                 "A medical label for the child", "A score to share with other parents"), 0),
-                question("When you assess a child, you score...",
-                        List.of("Each movement, one at a time", "The whole class at once", "Only the movements they "
-                                + "get right"), 0)));
+                question("In the exercise assessment, you score each child on...",
+                        List.of("Each exercise, from 1 (Not yet) to 4 (Confident and accurate)",
+                                "The whole class with one score", "Only the exercises they get right"), 0)));
         quiz(course, 3, "Keeping children and families safe", List.of(
                 question("How are children shown on the platform unless the school chooses otherwise?",
                         List.of("By full name", "By initials", "By photo"), 1),
@@ -130,53 +124,6 @@ public class StarterContent {
         for (int i = 0; i < list.size(); i++) {
             Question q = list.get(i);
             quizQuestions.save(new QuizQuestion(quiz, i + 1, q.text(), q.options(), q.correct()));
-        }
-    }
-
-    private void assessmentItems() {
-        Object[][] defs = {
-            {"BAL_SINGLE_LEG", MotorArea.BALANCE, "Single-leg balance, eyes open",
-                "Watch for up to 10 seconds on each leg. Record the better attempt. Do not prompt.",
-                new String[] {"Cannot hold for 2 seconds", "2 to 4 seconds, marked sway", "5 to 9 seconds, some sway", "10 seconds, steady"}},
-            {"BAL_HEEL_TOE", MotorArea.BALANCE, "Heel-to-toe walk along a line",
-                "Ten steps along a floor line, arms by the sides.",
-                new String[] {"Steps off the line within 3 steps", "4 to 6 steps on the line", "7 to 9 steps on the line", "10 steps, steady"}},
-            {"GM_HOP", MotorArea.GROSS_MOTOR, "Hopping on one foot",
-                "Up to 5 hops on the preferred foot, staying in a hoop.",
-                new String[] {"Cannot hop", "1 to 2 hops", "3 to 4 hops", "5 hops, controlled"}},
-            {"GM_JUMP", MotorArea.GROSS_MOTOR, "Two-footed jump forward",
-                "Jump from a standing start, landing on both feet together.",
-                new String[] {"Does not leave the floor with both feet", "Jumps, unbalanced landing", "Jumps, lands with a step", "Jumps and lands together, steady"}},
-            {"MD_THREAD", MotorArea.MANUAL_DEXTERITY, "Threading beads",
-                "Thread as many large beads as possible in 30 seconds.",
-                new String[] {"0 to 1 beads", "2 to 3 beads", "4 to 5 beads", "6 or more beads"}},
-            {"MD_PEGS", MotorArea.MANUAL_DEXTERITY, "Posting pegs",
-                "Post 6 pegs into a board with the preferred hand.",
-                new String[] {"Fewer than 3 pegs", "3 to 4 pegs", "5 pegs", "All 6 pegs, smoothly"}},
-            {"AC_CATCH", MotorArea.AIMING_AND_CATCHING, "Two-handed catch",
-                "Five underarm throws of a beanbag from 2 metres.",
-                new String[] {"No catches", "1 to 2 catches", "3 to 4 catches", "5 catches"}},
-            {"AC_THROW", MotorArea.AIMING_AND_CATCHING, "Throwing at a target",
-                "Five beanbag throws at a hoop on the floor 2 metres away.",
-                new String[] {"None in the hoop", "1 to 2 in the hoop", "3 to 4 in the hoop", "5 in the hoop"}},
-            {"PC_SIT", MotorArea.POSTURAL_CONTROL, "Sitting posture at a table",
-                "Observe for one minute while the child draws.",
-                new String[] {"Slumps or leans on the table throughout", "Frequently slumps", "Occasionally slumps", "Upright throughout"}},
-            {"PC_SUPERMAN", MotorArea.POSTURAL_CONTROL, "Lying on the tummy, arms and legs raised",
-                "Hold the position for up to 10 seconds.",
-                new String[] {"Cannot lift arms and legs together", "Under 3 seconds", "3 to 9 seconds", "10 seconds"}},
-            {"BC_CRAWL", MotorArea.BILATERAL_COORDINATION, "Cross-crawl",
-                "Ten cross-crawl movements, opposite hand to opposite knee.",
-                new String[] {"Same-side movements only", "Fewer than 5 correct", "5 to 9 correct", "10 correct, rhythmic"}},
-            {"BC_CLAP", MotorArea.BILATERAL_COORDINATION, "Clap and jump pattern",
-                "Copy a clap-jump-clap pattern three times.",
-                new String[] {"Cannot copy the pattern", "Copies once", "Copies twice", "Copies three times"}},
-        };
-        int position = 1;
-        for (Object[] d : defs) {
-            String[] levels = (String[]) d[4];
-            items.save(new ScreeningItem((String) d[0], position++, (MotorArea) d[1], (String) d[2], (String) d[3],
-                    Map.of(0, levels[0], 1, levels[1], 2, levels[2], 3, levels[3])));
         }
     }
 
@@ -269,19 +216,22 @@ public class StarterContent {
                         + "At the end, tap any child who was absent and press Complete session. The half-term "
                         + "counter on the Today screen shows how many school days the class has managed. Little "
                         + "and often is what makes the difference."},
-            {"Assessment and the readiness profile", "What the scores tell you, and what they do not.",
-                "Assess each child at the start and again later in the year, one movement at a time on a 0 to 3 "
-                        + "scale. The readiness profile shows six areas as Emerging, Developing or Secure and "
-                        + "suggests a colour stage.\n\n"
-                        + "The profile describes movement readiness only. If a child is not moving on after a "
-                        + "good run of daily sessions, share what you have seen with your SENCo, who can decide "
-                        + "on next steps."},
+            {"Assessing the children", "The two assessments, when to do them, and what they do not tell you.",
+                "There are two assessments, both under Assess children. The developmental assessment uses the "
+                        + "fine and gross motor charts: at the start, middle and end of the school year, tap each "
+                        + "movement the child does confidently and securely, with the child's age in months. The "
+                        + "exercise assessment scores each exercise of your colour from 1 (Not yet) to 4 (Confident "
+                        + "and accurate): at the start of the colour, at the end of each module the exercise is in, "
+                        + "and at the end of the colour. Scores save on the device and send when you are online.\n\n"
+                        + "The child's profile shows both. A pattern of low scores shows as \"May benefit from extra "
+                        + "support\", with the reasons. It describes movement only: share what you have seen with "
+                        + "your SENCo, who can decide on next steps."},
             {"Keeping children and families safe", "Names, video, parents and the words we use.",
                 "The platform shows initials and year group unless your school switches full names on, never "
                         + "records dates of birth, and keeps video off unless the school and each family agree.\n\n"
                         + "When you talk to families, describe what you see: \"finds balancing on one leg tricky\" "
                         + "rather than a label. If a parent wants the app, create a parent code from the child's "
-                        + "readiness profile. Codes work once and expire after 14 days."},
+                        + "profile. Codes work once and expire after 14 days."},
         };
         List<InductionLesson> lessons = new ArrayList<>();
         int position = 1;

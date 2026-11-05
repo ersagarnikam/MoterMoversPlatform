@@ -36,7 +36,7 @@ class FamilyApiTest {
     Clock clock;
 
     @Test
-    void parentSeesLinkedChildAsBandsOnlyAndEveryViewIsLogged() throws Exception {
+    void parentSeesLinkedChildInPlainWordsAndEveryViewIsLogged() throws Exception {
         String parent = login("parent@example.test");
         String children = mvc.perform(get("/api/family/children").header("Authorization", bearer(parent)))
                 .andExpect(status().isOk())
@@ -47,8 +47,7 @@ class FamilyApiTest {
         mvc.perform(get("/api/family/children/" + childId + "/progress").header("Authorization", bearer(parent)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.banner").value(containsString("Not a diagnosis")))
-                .andExpect(jsonPath("$.areas[0].bandLabel").exists())
-                .andExpect(jsonPath("$.areas[0].fraction").doesNotExist())
+                .andExpect(jsonPath("$.areas").doesNotExist())
                 .andExpect(jsonPath("$.counterDays").value(20))
                 // The school's assessments in plain words: movements secure, and each exercise's first and latest
                 // rating. Never the 1-4 scores or the extra-support flag.
@@ -71,7 +70,7 @@ class FamilyApiTest {
         List<Integer> roster = rosterOfTeacher();
         mvc.perform(get("/api/family/children/" + roster.get(3) + "/progress").header("Authorization", bearer(parent)))
                 .andExpect(status().isForbidden());
-        mvc.perform(get("/api/children/" + roster.get(0) + "/profile").header("Authorization", bearer(parent)))
+        mvc.perform(get("/api/children/" + roster.get(0) + "/assessment").header("Authorization", bearer(parent)))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/api/classes/1/today").header("Authorization", bearer(parent)))
                 .andExpect(status().isForbidden());

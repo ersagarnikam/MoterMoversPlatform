@@ -30,9 +30,9 @@ describe('rosterChild', () => {
   })
 
   it('offers the full name on hover and to screen readers when the school shows names', () => {
-    const { props, content } = rosterChild(child('Zara Zed', 'Z.Z.'), 'open readiness profile')
+    const { props, content } = rosterChild(child('Zara Zed', 'Z.Z.'), 'open profile')
     expect(props.title).toBe('Zara Zed')
-    expect(props['aria-label']).toBe('Zara Zed, open readiness profile')
+    expect(props['aria-label']).toBe('Zara Zed, open profile')
     // The full name is never shown on the button itself.
     expect(texts(content)).toEqual(['ZZ', 'Z.Z.'])
   })

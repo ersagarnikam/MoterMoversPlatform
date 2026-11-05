@@ -1,12 +1,12 @@
 # Load testing
 
 `school-day.js` is a [k6](https://grafana.com/docs/k6/latest/) script that simulates a busy school day:
-teachers opening today's session and children's readiness profiles (each view is logged), screening saves,
+teachers opening today's session and children's assessment profiles (each view is logged), exercise score saves,
 head and trust dashboards and payments, and parents using the app. Every simulated user signs in once at the
 start, because sign-in is rate limited, and then repeats their journey.
 
-**Never run it against production with real data.** It needs the demo accounts, and it writes screening
-results and access-log entries. Use a local copy of the production stack, or a staging server, with demo
+**Never run it against production with real data.** It needs the demo accounts, and it writes exercise
+scores and access-log entries. Use a local copy of the production stack, or a staging server, with demo
 data (below).
 
 ## Run it on this machine

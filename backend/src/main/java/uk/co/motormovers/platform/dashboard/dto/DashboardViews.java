@@ -14,7 +14,7 @@ public final class DashboardViews {
             boolean flagged) {
     }
 
-    public record SchoolDashboard(Long schoolId, String schoolName, int childrenScreened, int childrenTotal,
+    public record SchoolDashboard(Long schoolId, String schoolName, int childrenAssessed, int childrenTotal,
             double movedUpRate, double dailyParticipation, int classesActive, int classesTotal, int windowDays,
             double flagThreshold, List<ClassParticipation> classes) {
     }
@@ -24,7 +24,7 @@ public final class DashboardViews {
      * a developmental assessment this school year; {@code extraSupport} how many may benefit from extra support.
      */
     public record TrustSchoolRow(Long schoolId, String schoolName, Licence.Status licenceStatus, String plan,
-            LocalDate renewalDate, String stages, double screenedRate, double participation,
+            LocalDate renewalDate, String stages, double assessedRate, double participation,
             double developmentalRate, int extraSupport) {
     }
 

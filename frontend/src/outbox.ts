@@ -1,6 +1,6 @@
 // Assessment records are queued on the device and sent when the connection allows.
 // The server ignores a clientId it has already stored, so resending is safe.
-import { api, type AchievementIn, type ExerciseScoreIn, type Score } from './api'
+import { api, type AchievementIn, type ExerciseScoreIn } from './api'
 
 export interface Outbox<T extends { clientId: string }> {
   pending: () => T[]
@@ -47,10 +47,6 @@ export function makeOutbox<T extends { clientId: string }>(
     },
   }
 }
-
-/** The current 0 to 3 readiness check. */
-const screening = makeOutbox<Score>('mm.screening.outbox', (q) => api.submitScores(q))
-export const { pending, enqueue, flush } = screening
 
 /** Pat's exercise scores (1 to 4). */
 export const exerciseOutbox = makeOutbox<ExerciseScoreIn>('mm.exercise.outbox', (q) => api.submitExerciseScores(q))

@@ -4,7 +4,7 @@ import { STAGES } from '../../stages'
 const STEPS = [
   {
     title: 'Assess',
-    text: 'Staff assess each child one movement at a time. Each child gets a readiness profile showing which colour stage to start at.',
+    text: 'Staff record the movements each child does securely, and score each exercise of their colour from 1 to 4. Each child has a profile of both.',
   },
   {
     title: 'Move every day',
@@ -17,7 +17,7 @@ const STEPS = [
 ]
 
 const AUDIENCES = [
-  { title: 'Class teachers', text: "Today's session ready to play, ongoing assessment, and each child's readiness profile.", to: '/programme' },
+  { title: 'Class teachers', text: "Today's session ready to play, ongoing assessment, and each child's profile.", to: '/programme' },
   { title: 'Heads and SENCos', text: 'Progress across the school, classes that need support, and summaries for governors.', to: '/for-schools' },
   { title: 'Trusts and school groups', text: 'Licences and summary results for every school in the trust or group.', to: '/for-schools' },
   { title: 'Practitioners', text: 'Courses with live sessions to learn to run the programme well.', to: '/for-schools' },

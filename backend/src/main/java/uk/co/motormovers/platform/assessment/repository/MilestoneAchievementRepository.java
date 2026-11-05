@@ -21,6 +21,10 @@ public interface MilestoneAchievementRepository extends JpaRepository<MilestoneA
 
     List<MilestoneAchievement> findByChildIdInAndSchoolYear(Collection<Long> childIds, int schoolYear);
 
+    /** Which of these children have a movement recorded as secure at all. */
+    @Query("select distinct a.child.id from MilestoneAchievement a where a.child.id in :childIds")
+    List<Long> findAssessedChildIds(Collection<Long> childIds);
+
     /** Moves a child's secure movements to another child, except those the other child already has. */
     @Modifying
     @Query("update MilestoneAchievement a set a.child = :to where a.child = :from and not exists "

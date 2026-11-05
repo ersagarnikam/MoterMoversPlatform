@@ -100,8 +100,8 @@ export default function TodayPage() {
         </div>
         <div className="roster">
           {today.roster.map((c) => (
-            <Link key={c.id} to={`/child/${c.id}`} className="roster-child" {...rosterChild(c, 'open readiness profile').props}>
-              {rosterChild(c, 'open readiness profile').content}
+            <Link key={c.id} to={`/child/${c.id}`} className="roster-child" {...rosterChild(c, 'open profile').props}>
+              {rosterChild(c, 'open profile').content}
             </Link>
           ))}
         </div>

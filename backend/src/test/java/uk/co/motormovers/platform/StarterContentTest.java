@@ -11,7 +11,6 @@ import uk.co.motormovers.platform.content.repository.GuidanceArticleRepository;
 import uk.co.motormovers.platform.content.repository.HomeActivityRepository;
 import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
-import uk.co.motormovers.platform.screening.repository.ScreeningItemRepository;
 import uk.co.motormovers.platform.seed.StarterContentLoader;
 import uk.co.motormovers.platform.content.util.WordingGuard;
 import uk.co.motormovers.platform.training.repository.CourseQuizRepository;
@@ -30,9 +29,6 @@ class StarterContentTest {
 
     @Autowired
     StarterContentLoader loader;
-
-    @Autowired
-    ScreeningItemRepository items;
 
     @Autowired
     LibraryResourceRepository resources;
@@ -66,7 +62,6 @@ class StarterContentTest {
 
     @Test
     void anEmptyPlatformGetsTheStarterContentAsDrafts() {
-        assertThat(items.count()).isEqualTo(12);
         assertThat(induction.findAll()).hasSize(6).allMatch(l -> l.getStatus() == ContentStatus.DRAFT);
         assertThat(resources.findAll()).hasSize(9).allMatch(r -> r.getStatus() == ContentStatus.DRAFT);
         assertThat(homeActivities.findAll()).hasSize(35).allMatch(a -> a.getStatus() == ContentStatus.DRAFT);
@@ -85,8 +80,8 @@ class StarterContentTest {
 
     @Test
     void itNeverAddsToContentAlreadyThere() {
-        long before = resources.count() + induction.count() + courses.count() + items.count();
+        long before = resources.count() + induction.count() + courses.count();
         loader.run(null);
-        assertThat(resources.count() + induction.count() + courses.count() + items.count()).isEqualTo(before);
+        assertThat(resources.count() + induction.count() + courses.count()).isEqualTo(before);
     }
 }

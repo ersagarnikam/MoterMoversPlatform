@@ -53,9 +53,6 @@ export default function AssessPage() {
         >
           Developmental charts
         </button>
-        <Link className="chip" to={`/class/${classId}/screening`}>
-          Readiness check (0 to 3)
-        </Link>
       </div>
       {tab === 'exercises' ? <Exercises sheet={sheet} onChange={setSheet} /> : <Developmental sheet={sheet} />}
     </>

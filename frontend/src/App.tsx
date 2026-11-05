@@ -5,7 +5,6 @@ import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
 import TodayPage from './pages/TodayPage'
 import PlayerPage from './pages/PlayerPage'
-import ScreeningPage from './pages/ScreeningPage'
 import ProfilePage from './pages/ProfilePage'
 import AssessPage from './pages/AssessPage'
 import DevelopmentPage from './pages/DevelopmentPage'
@@ -98,7 +97,6 @@ export default function App() {
         <Route path="/classes" element={<ClassListPage />} />
         <Route path="/class/:classId/today" element={<TodayPage />} />
         <Route path="/class/:classId/play" element={<PlayerPage />} />
-        <Route path="/class/:classId/screening" element={<ScreeningPage />} />
         <Route path="/class/:classId/assess" element={<AssessPage />} />
         <Route path="/child/:childId" element={<ProfilePage />} />
         <Route path="/child/:childId/development" element={<DevelopmentPage />} />

@@ -1,74 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { api, type ParentInvite, type Profile } from '../api'
+import { api, type ParentInvite } from '../api'
 import { useAuth } from '../auth'
 import AssessmentProfileCard from '../components/AssessmentProfileCard'
-import NotADiagnosis from '../components/NotADiagnosis'
-import Sparkline from '../components/Sparkline'
-import StageBadge from '../components/StageBadge'
 import { day } from '../dates'
-import Skeleton from '../components/Skeleton'
 
-/**
- * A child's profile: Pat's two assessments first, then the current readiness check (six areas, the suggested starting
- * stage and the change over the year), which stays until Pat confirms it can go.
- */
+/** A child's profile: Pat's two assessments, then (for staff) a code for the parent app. */
 export default function ProfilePage() {
   const { childId } = useParams()
   const { user } = useAuth()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    api.profile(Number(childId)).then(setProfile).catch((e) => setError(e.message))
-  }, [childId])
-
-  if (error) return <p className="error">{error}</p>
-  if (!profile) return <Skeleton />
+  const id = Number(childId)
 
   return (
     <div className="profile">
-      <AssessmentProfileCard childId={profile.childId} />
-      <div className="card">
-        <div className="section-head">
-          <h2>Readiness check (0 to 3) · {profile.name}</h2>
-          <span className="muted">
-            {profile.reference} · {profile.className}
-          </span>
-        </div>
-        <NotADiagnosis />
-        {!profile.screened ? (
-          <p className="muted">Not assessed yet.</p>
-        ) : (
-          <>
-            <p className="muted">Suggested starting stage</p>
-            <p className="stage-title">
-              <StageBadge stage={profile.suggestedStage} label={profile.suggestedStageName ?? undefined} />
-            </p>
-            <p className="muted">
-              Working at: <StageBadge stage={profile.currentStage} />
-            </p>
-            <div className="area-bars">
-              {profile.areas.map((a) => (
-                <div key={a.area} className="area-row">
-                  <span>{a.label}</span>
-                  <span className="bar">
-                    <span style={{ width: `${Math.max(6, a.fraction * 100)}%` }} />
-                  </span>
-                  <span className={`band band-${a.band.toLowerCase()}`}>{a.bandLabel}</span>
-                </div>
-              ))}
-            </div>
-            <h3>Change since the first assessment</h3>
-            <Sparkline
-              values={profile.history.map((h) => h.overallFraction)}
-              labels={profile.history.map((h) => `Assessment ${h.round} · ${day(h.screenedOn)}`)}
-            />
-          </>
-        )}
-        <p className="fine">Consent recorded · every view of this record is logged</p>
-      </div>
-      {(user?.role === 'TEACHER' || user?.role === 'HEAD') && <ParentInviteCard childId={profile.childId} />}
+      <AssessmentProfileCard childId={id} />
+      {(user?.role === 'TEACHER' || user?.role === 'HEAD') && <ParentInviteCard childId={id} />}
     </div>
   )
 }

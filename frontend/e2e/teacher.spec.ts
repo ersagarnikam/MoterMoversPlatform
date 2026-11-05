@@ -52,25 +52,12 @@ test('a teacher records movements on the developmental charts with the age in mo
   await expect(page.getByText('Fine motor')).toBeVisible()
 })
 
-test('a teacher can still use the readiness check, one movement at a time', async ({ page }) => {
-  await signIn(page, 'teacher@oakfield.test')
-  await page.getByRole('link', { name: 'Assess children' }).click()
-  await page.getByRole('link', { name: 'Readiness check (0 to 3)' }).click()
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Assessment')
-  await page.locator('.roster-child').first().click()
-  await expect(page.getByText(/Item 1 of \d+/)).toBeVisible()
-  await page.getByRole('radio').nth(2).click()
-  await page.getByRole('button', { name: 'Next item' }).click()
-  await expect(page.getByText(/Item 2 of \d+/)).toBeVisible()
-  await expectAccessible(page)
-})
-
 test('the roster shows initials, with the full name on hover only when the school shows names', async ({ page }) => {
   // Initials only (the demo default): no full name anywhere, not even on hover.
   await signIn(page, 'teacher@oakfield.test')
   const first = page.locator('.roster .roster-child').first()
   await expect(first).not.toHaveAttribute('title')
-  await expect(first).toHaveAccessibleName(/^[A-Z]\.[A-Z]\., open readiness profile$/)
+  await expect(first).toHaveAccessibleName(/^[A-Z]\.[A-Z]\., open profile$/)
 
   // The head switches full names on and adds a child with a name to the same class.
   await page.getByRole('button', { name: 'Sign out' }).click()
@@ -89,7 +76,7 @@ test('the roster shows initials, with the full name on hover only when the schoo
 
     await page.getByRole('button', { name: 'Sign out' }).click()
     await signIn(page, 'teacher@oakfield.test')
-    const zara = page.getByRole('link', { name: 'Zara Zed, open readiness profile' })
+    const zara = page.getByRole('link', { name: 'Zara Zed, open profile' })
     await expect(zara).toHaveAttribute('title', 'Zara Zed')
     await expect(zara).toContainText('ZZ')
     await expect(zara).toContainText('Z.Z.')
@@ -109,8 +96,8 @@ test('the profile shows both assessments and always says it is not a diagnosis',
   await page.locator('.roster .roster-child').first().click()
   await expect(page.getByRole('heading', { name: /^Assessment · / })).toBeVisible()
   await expect(page.getByRole('heading', { name: /^Exercises · Stage / })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /Readiness check/ })).toBeVisible()
-  await expect(page.getByText('Not a diagnosis.')).toHaveCount(2)
+  await expect(page.getByRole('heading', { name: /Readiness check/ })).toHaveCount(0)
+  await expect(page.getByText('Not a diagnosis.')).toHaveCount(1)
   await expectAccessible(page)
 })
 

@@ -23,7 +23,7 @@ parents take courses, and parents use a phone app. UK schools first; one data re
 
 Backend packages (`backend/src/main/java/uk/co/motormovers/platform/`) are by feature, each layered into
 `model / repository / service / controller / dto`: `child, classroom, common, content, dashboard, family,
-school, screening, security, seed, training, user`.
+school, security, seed, training, user`, plus `assessment` (Pat's two assessments), `home` (Motor Movers at Home) and others.
 
 ## Rules the code relies on
 
@@ -31,16 +31,16 @@ school, screening, security, seed, training, user`.
   class, heads their school, trust leads summaries only (unless the school grants more), parents only
   linked children. Every new endpoint must go through it; the UI hiding things is not enough.
 - **No diagnostic wording.** The platform assesses motor readiness; it never diagnoses. Content approval
-  blocks diagnostic terms (`WordingGuardTest`), and readiness profiles always say they are not a diagnosis.
+  blocks diagnostic terms (`WordingGuardTest`), and assessment profiles always say they are not a diagnosis.
   On screen it is always "assess" / "assessment", never "screen" / "screening" (Pat, 2026-10-20: screening
-  sounds diagnostic). Code and API paths still say `screening`. The `TRUST_LEAD` role is shown as "Trust or
+  sounds diagnostic). The old `screening` package (the 0 to 3 check) is gone since 2026-11-04. The `TRUST_LEAD` role is shown as "Trust or
   group lead", since it covers academy trusts, other school groups and independent groups.
 - **Children are identified by initials** unless a school switches full names on. While it is off, the API
   refuses new full names and never sends saved ones (they are kept, hidden, until it is on again). Leavers are deleted
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V16`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V17`);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -50,13 +50,13 @@ school, screening, security, seed, training, user`.
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 142 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 140 unit + API integration tests (H2)
 cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 68 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # 67 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -87,7 +87,30 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
 filled from **Next steps** below and Pat's open points, in groups Waiting on Pat, Go-live, Built, to try for real, To
 build next and Later, with Status, Waiting on (Owner, Pat, Kay or Build team), Priority, Owner, Details and where to
-look in the repository. When an item here changes (done, answered, new), change it on the board too.
+look in the repository. When an item here changes (done, answered, new), change it on the board too. Since
+2026-11-04 the board has an **Order** column (1 first: what unblocks others, then the go-live chain, then built
+features to try for real, then work waiting on Pat, then later plans) and a **Work order** view sorted by it, with done
+items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs/flows/` by role) and "User Journeys"
+(5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
+item, sets the next step and notifies its owner; to review and publish in monday.com).
+
+**In progress (Sagar with Claude, branch `retire-readiness-check`, pull request #19): retiring the 0 to 3 readiness check.** Done: the
+check is gone from the API, website, parent app, starter content, load test and docs; tests pass (140 backend, 51 web
+unit, 67 browser, mobile typecheck). Left: the owner reviews and merges the pull request, then rebuild the guides
+(their screenshots still show the old check). Remove this note once merged.
+
+**The 0 to 3 readiness check is retired (2026-11-04, the owner's decision, migration V17).** Pat's two assessments
+replace it, so it was not put to Pat again (her question about it is answered in the reply drafted for her). Gone: the
+`screening` package and its endpoints (`/api/screening/*`, `/api/children/{id}/profile`), the teacher's Readiness check
+page and its offline queue, the readiness card on the profile (now Pat's assessments and the parent code only), and
+the six areas in the parent app. V17 drops `screening_result`, `screening_item_level` and `screening_item`.
+**Placement:** a school child now works at the colour they are assessed at: the first exercise score places them,
+a later colour moves them up, never down (`AssessmentService.submitScores`; home children still follow `HomeRules`).
+"Children assessed" (head), "Assessed" (trust or group) and `children_assessed` (governor CSV) count children with an
+exercise score or a secure movement. The starter induction lesson is now "Assessing the children" and the practitioner
+course's second quiz asks about the two assessments. The public website describes the two assessments.
+`deploy/loadtest/school-day.js` opens assessment profiles and saves exercise scores. Details:
+`docs/assessment-design.md`, *Retiring the 0 to 3 check*.
 
 **Flow sequence diagrams (merged 2026-11-04, pull request #17, at the owner's request).** `docs/flows/`, 30 Mermaid sequence diagrams in one Markdown file
 per role (Everyone, Class teacher, Head teacher and SENCo, Trust or group lead, Practitioner, Parent with a school
@@ -107,7 +130,7 @@ and `.msg`, attachments in `F:\IHA\Pat\RE__Pat_Preedy_Prototype_Response_`).** S
   listed for Pat in `docs/assessment-design.md`. Her revised Motor Spin, Jack and Jill and Twinkle Twinkle file
   arrived **empty (0 bytes)** in every copy: ask her to send it again.
 - **Agreed:** the flag rule, no date of birth or birth history, what parents see, parents rating, her descriptions as
-  they are. She asked what "the old 0 to 3 readiness check" is: explain, then ask again whether it can go.
+  they are. She asked what "the old 0 to 3 readiness check" is: the owner retired it on 2026-11-04 without asking again.
 - **Motor Movers at Home, changed to her answers** (`HomeRules`, `HomeViews`, web and app): the colour no longer
   follows the age; children start at Orange when young and at Green from school age (Red for under 2s, to confirm with
   her), and the check only records movements. Rhyme colours: one rhyme a week, five times. Green to Violet: each
@@ -213,7 +236,7 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
   mistake can be taken off.
 - Profile (`/child/:id`): both assessments first (movements secure, Pat's table of scores per point, start and end
   totals, the summary comments on personal, social and emotional development and on academic achievement), then the
-  old 0-3 readiness check, which stays (also reachable from the Assess page) until Pat confirms it can go.
+  parent code. (The old 0-3 readiness check was retired on 2026-11-04.)
 - Flag: `ExtraSupportRule` (agreed by Pat 2026-11-03): 1 or 2 on the same exercise at two
   points in a row, or 1 or 2 on half or more of the exercises (at least two) at a module end or the colour end. It
   shows as "May benefit from extra support" with its reasons, never a cause. Up to three exercises low at two points
@@ -227,8 +250,7 @@ ten questions for Pat: `docs/home-programme-design.md` (also shared with the own
   group leads see per school only the share developmentally assessed this year and how many are flagged.
 - Demo: Ms Hardy's Year 2 R (Yellow) has start scores and start-of-year charts; Year 3 K (Green, no teacher) is four
   modules in, with two children flagged. The last three children of each class are left to assess.
-- Not built: editing the charts or grids on screen (change the JSON), the induction lesson on assessment, retiring
-  the 0-3 check.
+- Not built: editing the charts or grids on screen (change the JSON).
 
 `main` is GitHub's default branch (since 2026-10-19). New work goes on short branches. Since 2026-10-26 `main` only accepts changes
 through a **pull request** (a GitHub rule): push the branch and open a pull request with a detailed description. **Never merge it: the owner
@@ -238,7 +260,7 @@ GitHub CLI is installed and signed in (`C:\Program Files\GitHub CLI\gh.exe`, acc
 requests with `gh pr create` and check CI with `gh pr checks`. GitHub also has `rahul-work`, a teammate's branch: leave it alone. One old stash remains
 ("zoom video size tweak (unverified)"), superseded by the merged fix; drop it if the owner agrees.
 GitHub CI is green on every job (backend, frontend, e2e, loadtest, mobile). Everything below is built and passing: backend tests, web build, mobile typecheck,
-68/68 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
+67/67 browser tests, and the production compose stack run locally (HTTPS, headers, migrations,
 rate limits, backup dump all checked).
 
 **Training team (2026-10-24).** Pat has a team of trainers. `Role.TRAINER` ("Trainer") sees only Live sessions, and
@@ -308,8 +330,8 @@ Built so far:
   research, the programme, for schools (licence, price chart, how to join, an enquiry form for the price guide and applying), for families, and a
   role chooser at `/sign-in` that opens `/login?as=<role>`. Content is adapted from
   movementforlearningproject.co.uk; the contact email and phone are theirs, so confirm them with the owner.
-- Teacher: today's session player with nursery rhymes, 20-day participation counter, assessment one item at
-  a time, readiness profiles, one-hour staff induction gate, resource library.
+- Teacher: today's session player with nursery rhymes, 20-day participation counter, Pat's two assessments and
+  each child's profile, one-hour staff induction gate, resource library.
 - Head: progress dashboard, flagged classes, governor summary CSV, record access log, **School setup**
   (invite staff, switch accounts off, classes, add children, leavers, move children, privacy settings).
 - Trust or group lead: schools, licences, summary results. Practitioner: courses, bookings and a printable
@@ -385,7 +407,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-04): flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-04): retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -423,8 +445,8 @@ Not started unless noted. Confirm priorities with the owner.
    specific licence or course booking.
 10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two
    assessments above); all seven colours since 2026-11-04.** Pat answered the questions of 2026-11-03 (see Current
-   state): the flag rule agreed. Next: her revised descriptions (the file arrived empty), explain the 0-3 check to her,
-   then retire it and update the induction lesson. Pat's model replaces today's single 0-3
+   state): the flag rule agreed. The 0-3 check was retired on 2026-11-04 (the owner decided; see Current state). Next:
+   her revised descriptions (the file arrived empty) and the grid queries. Pat's model replaced the single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
    when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,

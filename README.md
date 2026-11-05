@@ -118,7 +118,7 @@ first deployment, updates, backups and restores.
 
 | Role | What they can do |
 |---|---|
-| Class teacher | See their own class only: today's session, the half-term counter, assessing children, readiness profiles. Take the one-hour induction, use the resource library, and ask their head for a place on a course |
+| Class teacher | See their own class only: today's session, the half-term counter, assessing children, each child's profile. Take the one-hour induction, use the resource library, and ask their head for a place on a course |
 | Head teacher / SENCo | Progress and participation for their school, flagged classes, exports, the record access log, school setup, approving staff course places, their school's payments (with Pay by card). Take the induction and use the resource library |
 | Trust or school group lead | Each school's licence, renewal date and summary results, spending per school. Never individual children, unless a school grants it |
 | Practitioner | Live course catalogue, booking and cancelling, joining live sessions, quizzes between sessions, the certificate (emailed as a PDF), a Payments page with Pay by card. Can also take the induction |
@@ -149,17 +149,16 @@ today, drafts to sign off, overdue invoices, licences to renew, Zoom clashes and
   school's licence. Files are URLs (`library_resource.file_url`) until uploads are built.
 - **Exercise assessment** (Pat's model, the `assessment` package): the class does an exercise together and the teacher
   scores every child 1 to 4 (Not yet, Developing, Nearly there, Confident and accurate) with Pat's descriptions, at the
-  start of the colour, the end of each module the exercise is in and the end of the colour. Green and Yellow are loaded.
+  start of the colour, the end of each module the exercise is in and the end of the colour. All seven colours are
+  loaded. A school child works at the colour they are assessed at (placed there first, moved up, never down).
 - **Developmental assessment**: Pat's fine and gross motor charts (birth to 7 years). At the start, middle and end of
   the school year the teacher marks each movement the child can do securely; the child's age in months is recorded with
   it (no date of birth is held), with a comment per chart.
 - **Assessment profile**: both assessments, Pat's table of scores, start and end totals, summary comments, and a note
-  when a pattern of low scores means a child *may benefit from extra support* (never a cause).
-- **Readiness check** (the older `screening` package, kept until Pat confirms it can go): one movement at a time with what to watch for and a 0 to 3 scale. Scores are queued on the
-  device and sent when online. Each score carries a client id, so resending is safe.
-- **Readiness profile**: six areas (balance, gross motor, manual dexterity, aiming and catching, postural
-  control, bilateral coordination) in programme terms (Emerging, Developing, Secure), the suggested stage
-  and the change since the first assessment. The *Not a diagnosis* banner is permanent.
+  when a pattern of low scores means a child *may benefit from extra support* (never a cause). The 0 to 3 readiness
+  check of the first prototype was retired on 2026-11-04 (migration V17).
+- **Offline**: scores and secure movements are queued on the device and sent when online. Each carries a client id,
+  so resending is safe.
 
 ### Dashboards
 - **Head teacher**: children assessed, moved up a stage, daily participation, classes active, and
@@ -223,7 +222,6 @@ backend/
     child/        children, access log, retention
     content/      programme sessions, resource library (rhymes, books, printables), approval, wording check
     classroom/    today's session, the induction gate, completing a session
-    screening/    screening items, results, readiness profile
     dashboard/    head teacher and trust dashboards, exports
     training/     staff induction, courses, cohorts, enrolments, live sessions (zoom/), quizzes, certificates
     family/       parent app: invite codes, parent links, progress, home activities, guidance
@@ -238,7 +236,7 @@ backend/
 frontend/
   src/pages/      one file per screen
   src/api.ts      typed API client
-  src/outbox.ts   offline queue for screening scores
+  src/outbox.ts   offline queue for exercise scores and secure movements
 mobile/
   src/app/        one file per screen (Expo Router); (tabs)/ holds the five tabs
   src/components/ shared UI
@@ -284,7 +282,7 @@ and a payment due; a tap opens the right screen (`deploy/RUNBOOK.md`, Phone noti
 How a parent gets linked to a child:
 
 1. The platform team switches **Parent app** on for the school (*Schools & licences*). It is off by default.
-2. A teacher or head opens a child's readiness profile and creates a parent code, for example `K7QX-3MPA`.
+2. A teacher or head opens a child's profile and creates a parent code, for example `K7QX-3MPA`.
    Codes work once and expire after 14 days.
 3. The parent creates an account in the app and enters the code.
 4. The head sees every link under *Parent app links* on the progress dashboard and can remove any of them.
@@ -335,9 +333,7 @@ These come later in the roadmap or need decisions first:
 - Parent app: filmed home activity videos and email verification
 - Nursery mode
 - Self-service school sign-up (the team signs schools up)
-- Exercise grids for Red, Orange, Blue, Indigo and Violet (waiting on Pat), and retiring the 0 to 3 check
-- The real screening items and stage mapping. `screening/util/ReadinessRules.java` holds placeholder
-  thresholds until Pat and Laura confirm them.
+- Pat's revised descriptions (Motor Spin, Jack and Jill, Twinkle Twinkle) and the grid queries sent to her
 - Uploading files to the resource library (rhyme recordings, the rhyme book, printables), and rhymes in
   the parent app. The induction's real wording and videos replace the demo text.
 - Adapting the programme for older children and for children with special educational needs: today a

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Score } from './api'
+import type { ExerciseScoreIn } from './api'
 
 // A plain stand-in for the API (not a vi.fn spy, which keeps its own copy of a failed promise and reports it as
 // unhandled): it records each send and answers with whatever the test sets.
@@ -9,14 +9,15 @@ const server = vi.hoisted(() => ({
 }))
 vi.mock('./api', () => ({
   api: {
-    submitScores: (scores: unknown[]) => {
+    submitExerciseScores: (scores: unknown[]) => {
       server.sent.push(scores)
       return server.answer()
     },
   },
 }))
 
-const { enqueue, flush, pending } = await import('./outbox')
+const { exerciseOutbox } = await import('./outbox')
+const { enqueue, flush, pending } = exerciseOutbox
 
 /** A minimal localStorage, and whether the device is online. */
 function stubBrowser(online: boolean, store = new Map<string, string>()) {
@@ -28,12 +29,13 @@ function stubBrowser(online: boolean, store = new Map<string, string>()) {
   return store
 }
 
-const score = (clientId: string): Score => ({
+const score = (clientId: string): ExerciseScoreIn => ({
   clientId,
   childId: 7,
-  itemCode: 'GM_HOP',
+  exerciseId: 3,
+  point: 'START',
   score: 2,
-  screenedOn: '2026-10-24',
+  assessedOn: '2026-10-24',
 })
 
 describe('the offline assessment queue', () => {
@@ -87,7 +89,7 @@ describe('the offline assessment queue', () => {
   })
 
   it('treats unreadable storage as an empty queue rather than failing', () => {
-    stubBrowser(true, new Map([['mm.screening.outbox', 'not json']]))
+    stubBrowser(true, new Map([['mm.exercise.outbox', 'not json']]))
     expect(pending()).toEqual([])
   })
 })

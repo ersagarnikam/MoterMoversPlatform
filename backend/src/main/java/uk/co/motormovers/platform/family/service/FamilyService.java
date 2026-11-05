@@ -38,8 +38,6 @@ import uk.co.motormovers.platform.family.repository.HomeSessionRecordRepository;
 import uk.co.motormovers.platform.family.repository.ParentInviteRepository;
 import uk.co.motormovers.platform.family.repository.ParentLinkRepository;
 import uk.co.motormovers.platform.family.util.InviteCodes;
-import uk.co.motormovers.platform.screening.dto.ScreeningViews;
-import uk.co.motormovers.platform.screening.service.ScreeningService;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
@@ -67,7 +65,6 @@ public class FamilyService {
     private final GuidanceArticleRepository guidance;
     private final DailySessionRecordRepository classRecords;
     private final AppUserRepository users;
-    private final ScreeningService screening;
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
@@ -77,7 +74,7 @@ public class FamilyService {
     public FamilyService(ParentLinkRepository links, ParentInviteRepository invites, ChildRepository children,
             ChildAccessLogRepository accessLog, HomeActivityRepository activities,
             HomeSessionRecordRepository homeRecords, GuidanceArticleRepository guidance,
-            DailySessionRecordRepository classRecords, AppUserRepository users, ScreeningService screening,
+            DailySessionRecordRepository classRecords, AppUserRepository users,
             AccessPolicy access, CurrentUserResolver currentUser, Clock clock, ParentProgress parentProgress,
             ExerciseScoreRepository scores) {
         this.links = links;
@@ -89,7 +86,6 @@ public class FamilyService {
         this.guidance = guidance;
         this.classRecords = classRecords;
         this.users = users;
-        this.screening = screening;
         this.access = access;
         this.currentUser = currentUser;
         this.clock = clock;
@@ -136,7 +132,7 @@ public class FamilyService {
 
     /**
      * The parent's view of progress: stage, the school's assessments in plain words (never the scores or the
-     * extra-support flag), and the programme bands. Every view is logged for the school.
+     * extra-support flag), and how often the class has done its daily session. Every view is logged for the school.
      */
     @Transactional
     public FamilyViews.Progress progress(Long childId) {
@@ -149,12 +145,6 @@ public class FamilyService {
         accessLog.save(new ChildAccessLog(child.getId(), child.getSchoolClass().getSchool().getId(), me.email(),
                 "PARENT_VIEW_PROGRESS"));
         ParentLink link = links.findByParentIdAndChildId(me.id(), childId).orElseThrow();
-
-        ScreeningViews.Readiness readiness = screening.readiness(childId);
-        List<FamilyViews.AreaBand> areas = readiness.areas().stream()
-                .map(a -> new FamilyViews.AreaBand(a.area(), a.label(), a.band(), a.bandLabel()))
-                .toList();
-        List<LocalDate> screenings = readiness.history().stream().map(ScreeningViews.RoundPoint::screenedOn).toList();
 
         List<LocalDate> window = SchoolDays.lastSchoolDays(LocalDate.now(clock), ClassroomService.COUNTER_DAYS);
         int classSessions = classRecords.findBySchoolClassIdInAndSessionDateBetween(
@@ -172,8 +162,8 @@ public class FamilyService {
                 break;
             }
         }
-        return new FamilyViews.Progress(FamilyViews.LinkedChild.of(link), ScreeningViews.NOT_A_DIAGNOSIS,
-                readiness.screened(), areas, screenings, classSessions, ClassroomService.COUNTER_DAYS,
+        return new FamilyViews.Progress(FamilyViews.LinkedChild.of(link), AssessmentViews.NOT_A_DIAGNOSIS,
+                classSessions, ClassroomService.COUNTER_DAYS,
                 parentProgress.charts(childId, LocalDate.now(clock)), exerciseStage,
                 exerciseStage == null ? null : exerciseStage.displayName(), exercises);
     }

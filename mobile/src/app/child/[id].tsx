@@ -18,16 +18,15 @@ import {
   Screen,
   StageBadge,
 } from '@/components/ui'
-import { api, formatDate } from '@/lib/api'
+import { api } from '@/lib/api'
 import { useNicknames } from '@/lib/nicknames'
 import { radius, space, STAGES, stageInfo, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
-/** A child's progress in programme terms: stage, the six areas as bands, and how often the class moves. */
+/** A child's progress in programme terms: stage, the school's assessments in plain words, and how often the class moves. */
 export default function ChildScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const childId = Number(id)
-  const p = usePalette()
   const { data, error, refreshing, reload } = useLoad(() => api.progress(childId), [childId])
   const { names, nameFor, setNickname } = useNicknames()
   const [nickname, setNicknameDraft] = useState('')
@@ -94,46 +93,6 @@ export default function ChildScreen() {
         exercises={data.exercises}
         note={`How ${name} is getting on with each exercise at school, from the first time to the latest.`}
       />
-
-      <Card>
-        <H2>Six areas</H2>
-        {!data.screened ? (
-          <Muted>The school has not done the movement check with {name} yet.</Muted>
-        ) : (
-          <>
-            <Muted>From the latest movement check at school.</Muted>
-            {data.areas.map((a) => {
-              const c = p.band[a.band]
-              return (
-                <Row key={a.area} style={{ justifyContent: 'space-between', paddingVertical: 4 }}>
-                  <Body style={{ flexShrink: 1 }}>{a.label}</Body>
-                  <Text
-                    style={{
-                      backgroundColor: c.bg,
-                      color: c.ink,
-                      borderRadius: 999,
-                      overflow: 'hidden',
-                      paddingHorizontal: 10,
-                      paddingVertical: 3,
-                      fontSize: 13,
-                      fontWeight: '600',
-                    }}
-                  >
-                    {a.bandLabel}
-                  </Text>
-                </Row>
-              )
-            })}
-            <Muted>
-              Emerging, Developing and Secure describe where {name} is in the programme. Every child moves through
-              them.
-            </Muted>
-            {data.screenings.length > 0 && (
-              <Muted>Movement checks: {data.screenings.map(formatDate).join(', ')}</Muted>
-            )}
-          </>
-        )}
-      </Card>
 
       <Card>
         <H2>At school</H2>
