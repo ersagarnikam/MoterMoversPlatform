@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
+import { useToast } from '../components/Feedback'
 import { rosterChild } from '../components/RosterChild'
 import Skeleton from '../components/Skeleton'
 
@@ -17,6 +18,7 @@ export default function PlayerPage() {
   const [absent, setAbsent] = useState<Set<number>>(new Set())
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const toast = useToast()
 
   useEffect(() => {
     api.today(Number(classId)).then(setToday).catch((e) => setError(e.message))
@@ -36,7 +38,17 @@ export default function PlayerPage() {
       </p>
     )
   }
-  if (!today?.nextSession) return <Skeleton />
+  if (!today) return <Skeleton />
+  if (!today.nextSession) {
+    return (
+      <p className="banner-info">
+        {today.stageLicensed
+          ? 'No approved sessions for this stage yet.'
+          : `${today.schoolClass.stageName} is not on this school’s licence today. Please ask your head teacher.`}{' '}
+        <Link to={`/class/${today.schoolClass.id}/today`}>Back to today</Link>
+      </p>
+    )
+  }
   const session = today.nextSession
   const total = session.durationMinutes * 60
   const perStep = total / session.activities.length
@@ -58,7 +70,8 @@ export default function PlayerPage() {
       await api.completeSession(today!.schoolClass.id, session.id, [...absent])
       navigate(`/class/${today!.schoolClass.id}/today`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save')
+      // Not queued: the teacher sees why (for example, the licence no longer covers the colour) and can try again.
+      toast(e instanceof Error ? e.message : 'Could not save', 'error')
       setSaving(false)
     }
   }

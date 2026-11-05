@@ -76,8 +76,9 @@ sequenceDiagram
   W->>API: GET /api/classes
   W->>API: GET /api/classes/{id}/today
   API->>API: requireClassAccess
-  API->>DB: next approved session for stage, last 20 school days
-  API-->>W: next session, counter, doneToday
+  API->>DB: LicenceService.licensedFor (school, stage, today)
+  API->>DB: next approved session for stage (only when licensed), last 20 school days
+  API-->>W: stageLicensed, next session, counter, doneToday
   T->>W: Start session (/class/{id}/play)
   W-->>T: Plan ticks along, video (placeholder), rhyme for Red, Orange, Yellow
   T->>W: Tap children who are absent
@@ -85,8 +86,10 @@ sequenceDiagram
   W->>API: POST /api/classes/{id}/sessions (sessionId, absentChildIds)
   API->>API: requireClassAccess
   API->>API: InductionService.requireComplete
-  alt induction not done, wrong stage or not a school day
+  API->>DB: LicenceService.licensedFor (school, stage, today)
+  alt induction not done, colour not licensed today, wrong stage or not a school day
     API-->>W: 400 problem detail
+    W-->>T: Toast with the reason (not queued, so nothing is retried)
   else ok
     API->>DB: save DailySessionRecord with absences
     API-->>W: Completed
@@ -96,6 +99,10 @@ sequenceDiagram
 
 **Rules in the code**
 
+- The class's colour must be licensed today: one of the school's licences has started, has not ended, and covers
+  the colour (`Licence.isValidOn`, `LicenceService.licensedFor`). Today hides the session otherwise, and recording
+  refuses it with "This class's colour is not covered by your school's licence today. Please ask your head teacher."
+  A later renewal for other colours does not hide a licence still running.
 - The session must belong to the class's colour stage.
 - Sessions are recorded on school days only.
 - The 20-day counter on Today shows when a class is quietly dropping off.
@@ -142,14 +149,20 @@ sequenceDiagram
   end
   API-->>Q: SubmitResult
   Q->>Q: remove sent items
-  alt network fails
+  alt network fails or server unavailable
     Q->>Q: keep queue, retry later
+  else 400 (the server will never accept it)
+    Q->>API: resend the batch one score at a time
+    Q->>Q: drop only the refused scores
+    W-->>T: Toast with each reason
   end
 ```
 
 **Rules in the code**
 
 - Each score has a clientId, so resending is safe.
+- A score the server refuses (400) is dropped from the queue with a toast saying why, so one bad record never blocks
+  the rest or is retried for ever (`outbox.ts`, the same for movements).
 - A later score at the same point replaces the earlier one.
 - Trust leads cannot record. Children who have left cannot be scored.
 - The suggested point waits until every child is scored, unless half the class is already further on.

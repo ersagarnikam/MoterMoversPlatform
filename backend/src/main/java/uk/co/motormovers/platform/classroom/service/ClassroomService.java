@@ -20,10 +20,9 @@ import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
-import uk.co.motormovers.platform.school.model.Licence;
 import uk.co.motormovers.platform.school.model.SchoolClass;
-import uk.co.motormovers.platform.school.repository.LicenceRepository;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
+import uk.co.motormovers.platform.school.service.LicenceService;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
@@ -40,14 +39,14 @@ public class ClassroomService {
     private final ChildRepository children;
     private final ProgrammeSessionRepository content;
     private final DailySessionRecordRepository records;
-    private final LicenceRepository licences;
+    private final LicenceService licences;
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
     private final InductionService induction;
     private final Clock clock;
 
     public ClassroomService(SchoolClassRepository classes, ChildRepository children,
-            ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceRepository licences,
+            ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceService licences,
             AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock) {
         this.classes = classes;
         this.children = children;
@@ -78,10 +77,7 @@ public class ClassroomService {
         CurrentUser me = access.requireClassAccess(schoolClass);
         LocalDate today = LocalDate.now(clock);
 
-        boolean licensed = licences.findFirstBySchoolIdOrderByEndsOnDesc(schoolClass.getSchool().getId())
-                .filter(l -> l.statusOn(today) != Licence.Status.EXPIRED)
-                .map(l -> l.covers(schoolClass.getStage()))
-                .orElse(false);
+        boolean licensed = licensedToday(schoolClass, today);
 
         // Once today's session is done, keep showing it rather than jumping ahead to tomorrow's.
         Optional<ProgrammeSession> todays = records.findBySchoolClassIdAndSessionDate(classId, today)
@@ -108,19 +104,27 @@ public class ClassroomService {
                 schoolClass.getSchool().isFullNamesEnabled());
     }
 
-    /** Marks today's session as done. Absent children are removed from today's count. */
+    /**
+     * Marks today's session as done. Absent children are removed from today's count. The licence is checked here as
+     * well as when today's session is shown: a direct call, or a session queued offline before the licence ran out,
+     * is refused.
+     */
     @Transactional
     public ClassroomViews.Completed complete(Long classId, Long sessionId, Set<Long> absentChildIds) {
         SchoolClass schoolClass = findClass(classId);
         CurrentUser me = access.requireClassAccess(schoolClass);
         induction.requireComplete(me);
+        LocalDate today = LocalDate.now(clock);
+        if (!licensedToday(schoolClass, today)) {
+            throw new IllegalStateException(
+                    "This class's colour is not covered by your school's licence today. Please ask your head teacher.");
+        }
         ProgrammeSession session = content.findById(sessionId)
                 .filter(s -> s.getStatus() == ContentStatus.APPROVED)
                 .orElseThrow(() -> new NotFoundException("Approved session", sessionId));
         if (session.getStage() != schoolClass.getStage()) {
             throw new IllegalArgumentException("Session is not for this class's stage");
         }
-        LocalDate today = LocalDate.now(clock);
         if (!SchoolDays.isSchoolDay(today)) {
             throw new IllegalStateException("Sessions are recorded on school days only");
         }
@@ -144,6 +148,10 @@ public class ClassroomService {
         }
         long completed = records.countBySchoolClassIdAndSessionStage(schoolClass.getId(), schoolClass.getStage());
         return Optional.of(sequence.get((int) (completed % sequence.size())));
+    }
+
+    private boolean licensedToday(SchoolClass schoolClass, LocalDate today) {
+        return licences.licensedFor(schoolClass.getSchool().getId(), schoolClass.getStage(), today);
     }
 
     private SchoolClass findClass(Long id) {

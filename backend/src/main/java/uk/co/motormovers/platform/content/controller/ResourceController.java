@@ -26,8 +26,7 @@ import uk.co.motormovers.platform.content.model.LibraryResource;
 import uk.co.motormovers.platform.content.model.ResourceKind;
 import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.content.util.WordingGuard;
-import uk.co.motormovers.platform.school.model.Licence;
-import uk.co.motormovers.platform.school.repository.LicenceRepository;
+import uk.co.motormovers.platform.school.service.LicenceService;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 
@@ -40,12 +39,12 @@ import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 public class ResourceController {
 
     private final LibraryResourceRepository resources;
-    private final LicenceRepository licences;
+    private final LicenceService licences;
     private final WordingGuard wordingGuard;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
 
-    public ResourceController(LibraryResourceRepository resources, LicenceRepository licences,
+    public ResourceController(LibraryResourceRepository resources, LicenceService licences,
             WordingGuard wordingGuard, CurrentUserResolver currentUser, Clock clock) {
         this.resources = resources;
         this.licences = licences;
@@ -110,14 +109,7 @@ public class ResourceController {
     private Set<ColourStage> licensedStages(CurrentUser me) {
         return switch (me.role()) {
             case ADMIN -> Set.of(ColourStage.values());
-            case TEACHER, HEAD -> {
-                LocalDate today = LocalDate.now(clock);
-                yield licences.findFirstBySchoolIdOrderByEndsOnDesc(me.schoolId())
-                        .filter(l -> l.statusOn(today) != Licence.Status.EXPIRED)
-                        .map(Licence::getStages)
-                        .map(Set::copyOf)
-                        .orElse(Set.of());
-            }
+            case TEACHER, HEAD -> licences.licensedStages(me.schoolId(), LocalDate.now(clock));
             default -> throw new AccessDeniedException("The resource library is for school staff");
         };
     }

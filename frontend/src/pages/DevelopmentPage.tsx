@@ -40,8 +40,8 @@ export default function DevelopmentPage() {
         if (ages.length > 0) setAge(String(Math.max(...ages)))
       })
       .catch((e) => setError(e.message))
-    milestoneOutbox.flush()
-  }, [id])
+    milestoneOutbox.flush((reason) => toast(reason, 'error'))
+  }, [id, toast])
 
   if (error) return <p className="error">{error}</p>
   if (!data) return <Skeleton />
@@ -96,7 +96,7 @@ export default function DevelopmentPage() {
       achievedOn: today,
     })
     update(chart, m.id, { ageMonths, yearPoint, yearPointLabel: pointLabel, schoolYear: data!.schoolYear, achievedOn: today })
-    const left = await milestoneOutbox.flush()
+    const left = await milestoneOutbox.flush((reason) => toast(reason, 'error'))
     if (left > 0) toast(`${left} saved on this device, to send when back online`)
   }
 
