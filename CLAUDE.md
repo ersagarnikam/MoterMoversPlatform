@@ -102,7 +102,7 @@ billing, filmed sessions. Out of both: movement analysis from video and at-risk 
 VAT 23%, Europe/Dublin, Sep-Jun, Junior/Senior Infants), Australia (Sydney, AUD, GST 10%, Australia/Brisbane for
 Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board tasks in brackets):
 - Country settings per deployment: currency, tax rate and label, time zone, school-year months and assessment points,
-  year names, legal entity and contact details (task 25). (added by Dev, 2026-11-06) Part A is built (pull request #28):
+  year names, legal entity and contact details (task 25). (added by Dev, 2026-11-06) Part A is built (pull request #29):
   the settings, Ireland (`Region.IE`), the clock's zone from them (Australia/Brisbane, not Sydney) and the open
   `GET /api/settings`; parts B (money), C (tax), D (school year and year names) and E (legal entity) follow.
 - Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
@@ -155,11 +155,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `country-settings`, pull request #28): go-live task 25,
-part A.** Done: country settings, Ireland, the clock and `GET /api/settings`, with tests and docs. Left: CI, the merge
-(the owner asked for it to be merged, then tested by the tester agent), then parts B to E. Remove this note once merged.
-
-(added by Dev, 2026-11-06) **Country settings (go-live task 25, part A).** `PLATFORM_REGION` (`UK`, `IE` new, or `AU`)
+(added by Dev, 2026-11-06) **Country settings (go-live task 25, part A; pull request #29).** `PLATFORM_REGION` (`UK`, `IE` new, or `AU`)
 picks a block of `platform.countries` in application.yml: country name, currency and locale, tax label and percent,
 time zone, school year (first and last month, terms, the months the start, middle and end points begin) and year names,
 and the legal entity (placeholders until Kay's decision 1). Ireland's and Australia's points and year names are to be
