@@ -81,7 +81,7 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
-## Current state (2026-11-04)
+## Current state (2026-11-05)
 
 **Team board on monday.com (2026-11-04):** "Motor Movers Platform",
 https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
@@ -94,13 +94,8 @@ items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
 
-**In progress (Sagar with Claude, branch `retire-readiness-check`, pull request #19): retiring the 0 to 3 readiness check.** Done: the
-check is gone from the API, website, parent app, starter content, load test and docs; tests pass (140 backend, 51 web
-unit, 67 browser, mobile typecheck). Left: the owner reviews and merges the pull request, then rebuild the guides
-(their screenshots still show the old check). Remove this note once merged.
-
-**The 0 to 3 readiness check is retired (2026-11-04, the owner's decision, migration V17).** Pat's two assessments
-replace it, so it was not put to Pat again (her question about it is answered in the reply drafted for her). Gone: the
+**The 0 to 3 readiness check is retired (merged 2026-11-05, pull request #19; the owner's decision, migration V17).**
+Pat's two assessments replace it, so it was not put to Pat again (her question about it is answered in the reply drafted for her). Gone: the
 `screening` package and its endpoints (`/api/screening/*`, `/api/children/{id}/profile`), the teacher's Readiness check
 page and its offline queue, the readiness card on the profile (now Pat's assessments and the parent code only), and
 the six areas in the parent app. V17 drops `screening_result`, `screening_item_level` and `screening_item`.
@@ -110,7 +105,8 @@ a later colour moves them up, never down (`AssessmentService.submitScores`; home
 exercise score or a secure movement. The starter induction lesson is now "Assessing the children" and the practitioner
 course's second quiz asks about the two assessments. The public website describes the two assessments.
 `deploy/loadtest/school-day.js` opens assessment profiles and saves exercise scores. Details:
-`docs/assessment-design.md`, *Retiring the 0 to 3 check*.
+`docs/assessment-design.md`, *Retiring the 0 to 3 check*. Still to do: rebuild the guides (normal and prototype),
+whose screenshots still show the old check.
 
 **Flow sequence diagrams (merged 2026-11-04, pull request #17, at the owner's request).** `docs/flows/`, 30 Mermaid sequence diagrams in one Markdown file
 per role (Everyone, Class teacher, Head teacher and SENCo, Trust or group lead, Practitioner, Parent with a school
