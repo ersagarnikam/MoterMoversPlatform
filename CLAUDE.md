@@ -94,7 +94,7 @@ items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
 
-(added by Dev, 2026-11-05) **In progress (Developer Agent with Sagar, branch `pat-revised-content`, pull request #24):
+(added by Dev, 2026-11-05) **In progress (Developer Agent with Sagar, branch `pat-revised-content`, pull request #25):
 Go-Live board tasks 54 and 55.** Done: both, with backend, web, browser and app checks passing. Left: the owner
 merges, then set tasks 54 and 55 to Done on the Go-Live board. Remove this note once merged.
 
@@ -463,7 +463,7 @@ Not started unless noted. Confirm priorities with the owner.
    assessments above); all seven colours since 2026-11-04.** Pat answered the questions of 2026-11-03 (see Current
    state): the flag rule agreed. The 0-3 check was retired on 2026-11-04 (the owner decided; see Current state).
    (added by Dev, 2026-11-05) Her revised descriptions and grid answers came on 2026-11-05 and are loaded (pull request
-   #24); left: See Saw's and Motor Lift Four's copied descriptions. Pat's model replaced the single 0-3
+   #25); left: See Saw's and Motor Lift Four's copied descriptions. Pat's model replaced the single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
    when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,
@@ -495,7 +495,7 @@ Not started unless noted. Confirm priorities with the owner.
    other points under Still to settle in `docs/home-programme-design.md`, a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
    subscriptions. (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
-   2026-11-05, and the cool-down ends a session from Green to Indigo (pull request #24).
+   2026-11-05, and the cool-down ends a session from Green to Indigo (pull request #25).
 13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
    its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the
    deployment (A$ there, £ in the UK), not a currency picker: money is hard-wired to £ today (`frontend/src/money.ts`
