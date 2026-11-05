@@ -51,8 +51,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 143 unit + API integration tests (H2)
-cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 149 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-06) 54 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -109,8 +109,6 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
   year, so year-on-year figures must not split it).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
 - Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26).
-- Licence not checked when a session is recorded: `ClassroomService.complete` checks stage and induction but not
-  `Licence.covers` (task 14).
 - Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
   (`site.ts`) and leads with "From the Movement for Learning Project"; Pat said Movement for Learning will not be
   reopened, so the credit wording must be agreed with her. `PLATFORM_ENQUIRY_EMAIL` still defaults to the owner.
@@ -140,7 +138,24 @@ Home questions (Red for under 2s, the parent induction, rhyme order, Cool Down 1
 emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshirode@ihau.au, which bounced; it was
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
-## Current state (2026-11-05)
+## Current state ((added by Dev, 2026-11-06) 2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `licence-check`, pull request #26): the licence is
+checked when a session is recorded (Go-Live task 14).** Done: the rule, both callers, the resource library, the offline
+queue's handling of refusals, tests (backend 149, web unit 54, build, browser tests, mobile typecheck) and the flow
+diagram. Left: the owner reviews and merges the pull request. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Licence rule (Go-Live task 14).** A school is licensed for a colour on a day when **any** of
+its licences runs that day (`Licence.isValidOn`: from `startsOn` to `endsOn`, both included) and covers the colour:
+`LicenceService.licensedFor` / `licensedStages`, the one place for it. Today (`ClassroomService.today`) hides the
+session without it, recording (`ClassroomService.complete`) refuses it with a 400 ("This class's colour is not covered
+by your school's licence today. Please ask your head teacher."), and the resource library uses the same rule. Before,
+only the licence with the latest end date was looked at and its start date was ignored, and recording did not check at
+all. Screens that show a school's licence status (trust dashboard, Schools & licences, team overview) still show the
+latest licence and `statusOn`, which ignores the start date (a licence starting next month shows Active): left as it
+is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
+the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
+for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
 **Testing (updated by tester, 2026-11-05).** A tester session checks the platform and records its results here,
 each update marked "updated by tester". Baseline on `main` at 077a5d5, on the owner's Windows machine: backend 142
@@ -487,7 +502,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-05): (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, (added by Dev, 2026-11-06) 2026-11-06): (added by Dev, 2026-11-06) check the licence when a session is recorded; (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
