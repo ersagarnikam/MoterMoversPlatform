@@ -51,7 +51,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # 140 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # 143 unit + API integration tests (H2)
 cd frontend && npm test             # 51 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -152,6 +152,25 @@ features to try for real, then work waiting on Pat, then later plans) and a **Wo
 items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs/flows/` by role) and "User Journeys"
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
+
+(added by Dev, 2026-11-05) **In progress (Developer Agent with Sagar, branch `pat-revised-content`, pull request #25):
+Go-Live board tasks 54 and 55.** Done: both, with backend, web, browser and app checks passing. Left: the owner
+merges, then set tasks 54 and 55 to Done on the Go-Live board. Remove this note once merged.
+
+(added by Dev, 2026-11-05) **Pat's answers of 2026-11-05 (her reply to the go-live plan, file "Revised 2").** Go-Live
+board tasks 54 and 55:
+- **54, assessment content.** Green 4 Motor Spin, Yellow 11 Jack and Jill and 13 Twinkle Twinkle, and Orange 1 Rock a
+  Bye Baby have her own descriptions; Indigo 14 Puppy Fun has instructions and descriptions; Blue 5 Thumbs Up uses
+  Green's version with Blue's points; "Final end of Green" in Blue is the end of Blue. `AssessmentContent` now brings
+  an exercise's title, instructions and descriptions up to date from the files on every start (never its points), so
+  an existing deployment takes revised wording. Still open: See Saw Marjory Daw and Motor Lift Four keep copied
+  descriptions (`docs/assessment-design.md`).
+- **55, home rules.** Confirmed as built: Red under 2, rhyme order = the grid, one rhyme a week, five weeks a module for
+  Green to Indigo (Violet assumed the same). New: from Green to Indigo a home session ends with the module's cool-down
+  (`assessment/cool-downs.json`, `home/service/CoolDowns`, `coolDown` on Today, the last step on web and app); a
+  rhyme ends with its own, in its words. Only Green's Cool Down 1 has text so far, so it ends every Green session.
+- **56, parent induction:** a short induction like the staff one; her lessons to follow. **57, films:** she agreed
+  they can be used for launch; blocked until the files arrive (Stuck on the board).
 
 **The 0 to 3 readiness check is retired (merged 2026-11-05, pull request #19; the owner's decision, migration V17).**
 Pat's two assessments replace it, so it was not put to Pat again (her question about it is answered in the reply drafted for her). Gone: the
@@ -463,7 +482,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-05): guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-05): (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -501,8 +520,9 @@ Not started unless noted. Confirm priorities with the owner.
    specific licence or course booking.
 10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two
    assessments above); all seven colours since 2026-11-04.** Pat answered the questions of 2026-11-03 (see Current
-   state): the flag rule agreed. The 0-3 check was retired on 2026-11-04 (the owner decided; see Current state). Next:
-   her revised descriptions (the file arrived empty) and the grid queries. Pat's model replaced the single 0-3
+   state): the flag rule agreed. The 0-3 check was retired on 2026-11-04 (the owner decided; see Current state).
+   (added by Dev, 2026-11-05) Her revised descriptions and grid answers came on 2026-11-05 and are loaded (pull request
+   #25); left: See Saw's and Motor Lift Four's copied descriptions. Pat's model replaced the single 0-3
    check with two assessments: (a) a developmental assessment, with fine and gross motor milestone charts
    from birth to 7 years, done at the start, middle and end of the year, recording the child's age in months
    when each movement is secure; (b) an exercise assessment, scoring each programme exercise 1-4 (Not yet,
@@ -530,10 +550,11 @@ Not started unless noted. Confirm priorities with the owner.
    General app's production credentials.
 12. **Motor Movers at Home (merged 2026-10-27, switched off in production).** Pat answered the ten questions on
    2026-11-03 and the rules follow her answers (see Current state). Before switching `HOME_PROGRAMME` on in production:
-   the parent induction she asked for (content from her; then a gate before the first session), where Red fits, the
+   the parent induction she asked for (content from her; then a gate before the first session), the
    other points under Still to settle in `docs/home-programme-design.md`, a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions.
+   subscriptions. (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
+   2026-11-05, and the cool-down ends a session from Green to Indigo (pull request #25).
 13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
    its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the
    deployment (A$ there, £ in the UK), not a currency picker: money is hard-wired to £ today (`frontend/src/money.ts`

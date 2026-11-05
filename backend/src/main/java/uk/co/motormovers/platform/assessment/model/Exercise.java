@@ -3,6 +3,7 @@ package uk.co.motormovers.platform.assessment.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import jakarta.persistence.CollectionTable;
@@ -69,6 +70,19 @@ public class Exercise {
         this.instructions = instructions;
         this.levels = new TreeMap<>(levels);
         this.points = new ArrayList<>(points);
+    }
+
+    /** Pat's revised wording for the same exercise; its points, and so its scores, stay as they are. */
+    public boolean revise(String title, String instructions, Map<Integer, String> levels) {
+        if (Objects.equals(this.title, title) && Objects.equals(this.instructions, instructions)
+                && this.levels.equals(levels)) {
+            return false;
+        }
+        this.title = title;
+        this.instructions = instructions;
+        this.levels.clear();
+        this.levels.putAll(levels);
+        return true;
     }
 
     public Long getId() {

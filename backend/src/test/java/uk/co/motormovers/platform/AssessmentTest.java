@@ -30,6 +30,7 @@ import com.jayway.jsonpath.JsonPath;
 import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
+import uk.co.motormovers.platform.assessment.service.AssessmentContent;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.content.util.WordingGuard;
 
@@ -50,6 +51,9 @@ class AssessmentTest {
     @Autowired
     ExerciseRepository exercises;
 
+    @Autowired
+    AssessmentContent content;
+
     @Test
     void patsChartsAndGridsAreLoadedAndPassTheWordingCheck() {
         assertThat(milestones.count()).isEqualTo(133);
@@ -59,9 +63,19 @@ class AssessmentTest {
         assertThat(yellow).hasSize(18);
         assertThat(green.get(0).getPoints()).containsExactly("START", "MODULE_1", "MODULE_2", "END");
         assertThat(yellow.get(0).getPoints()).containsExactly("START", "END");
-        // Motor Spin came without its four descriptions; it is still assessed.
+        // Pat's revisions of 2026-11-05: Motor Spin's descriptions, Puppy Fun's instructions and descriptions, and
+        // Green's Thumbs Up for Blue's (Blue keeps its own points).
         assertThat(green.get(3).getTitle()).isEqualTo("Motor Spin");
-        assertThat(green.get(3).getLevels()).isEmpty();
+        assertThat(green.get(3).getLevels()).hasSize(4);
+        Exercise puppyFun = exercises.findByStageOrderByNumber(ColourStage.INDIGO).get(13);
+        assertThat(puppyFun.getTitle()).isEqualTo("Puppy Fun");
+        assertThat(puppyFun.getInstructions()).startsWith("Stretch out on your hands and feet.");
+        assertThat(puppyFun.getLevels().get(4)).contains("count of 10");
+        Exercise blueThumbs = exercises.findByStageOrderByNumber(ColourStage.BLUE).get(4);
+        assertThat(blueThumbs.getTitle()).isEqualTo("Thumbs Up");
+        assertThat(blueThumbs.getInstructions()).isEqualTo(green.get(8).getInstructions());
+        assertThat(blueThumbs.getLevels()).isEqualTo(green.get(8).getLevels());
+        assertThat(blueThumbs.getPoints()).containsExactly("START", "MODULE_2", "MODULE_3", "MODULE_6", "END");
         // The other five colours (2026-11-03): rhymes for Red and Orange, modules for Blue, Indigo and Violet.
         Map<ColourStage, Integer> sizes = Map.of(ColourStage.RED, 18, ColourStage.ORANGE, 18, ColourStage.BLUE, 40,
                 ColourStage.INDIGO, 34, ColourStage.VIOLET, 24);
@@ -85,6 +99,26 @@ class AssessmentTest {
             texts.addAll(e.getLevels().values());
         }
         assertThat(new WordingGuard().check(texts)).isEmpty();
+    }
+
+    @Test
+    void revisedWordingInTheFilesReachesAnExerciseAlreadyLoaded() {
+        Exercise rockABye = exercises.findByStageOrderByNumber(ColourStage.ORANGE).getFirst();
+        String instructions = rockABye.getInstructions();
+        Map<Integer, String> levels = Map.copyOf(rockABye.getLevels());
+        List<String> points = List.copyOf(rockABye.getPoints());
+        // As if this deployment still had the wording from before Pat's revision.
+        rockABye.revise("Rock a Bye", "Old instructions", Map.of(1, "Old 1", 2, "Old 2", 3, "Old 3", 4, "Old 4"));
+        exercises.save(rockABye);
+
+        content.loadMissing();
+
+        Exercise after = exercises.findById(rockABye.getId()).orElseThrow();
+        assertThat(after.getTitle()).isEqualTo("Rock a Bye Baby");
+        assertThat(after.getInstructions()).isEqualTo(instructions);
+        assertThat(after.getLevels()).isEqualTo(levels);
+        assertThat(after.getLevels().get(1)).startsWith("Finds it difficult to coordinate the rocking");
+        assertThat(after.getPoints()).isEqualTo(points);
     }
 
     @Test

@@ -31,7 +31,7 @@ test('a family signs up on the website, does the check and the first session', a
   await page.getByRole('button', { name: 'Start with Green' }).click()
 
   // Mo (4 years 2 months) starts at Green, as children at school do. Week 1 of module 1 is Pat's first two exercises,
-  // one at a time after her safety note, then the first-time ratings in the parent's words.
+  // one at a time after her safety note, then Green's Cool Down 1, then the first-time ratings in the parent's words.
   await expect(page.getByRole('heading', { name: 'Mo', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Today’s session for Mo' })).toBeVisible()
   await expectAccessible(page)
@@ -42,6 +42,9 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByRole('heading', { name: 'Yes and No' })).toBeVisible()
   await page.getByRole('button', { name: 'Next exercise' }).click()
   await expect(page.getByRole('heading', { name: 'Flying Machines' })).toBeVisible()
+  await page.getByRole('button', { name: 'Cool down' }).click()
+  await expect(page.getByRole('heading', { name: 'Cool Down 1' })).toBeVisible()
+  await expect(page.getByText('Stand straight, feet together. Count to 10.')).toBeVisible()
   await page.getByRole('button', { name: 'We did it' }).click()
 
   await expect(page.getByRole('heading', { name: 'How did it go?' })).toBeVisible()

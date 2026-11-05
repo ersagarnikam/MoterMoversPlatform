@@ -8,7 +8,7 @@ import { reviewName } from '../../homeProgramme'
 
 /**
  * Today's home session: this week's rhyme, or the exercises of the child's module so far, one at a time, with Pat's
- * safety note before the first session. Afterwards the parent rates any exercise done for the first time. With
+ * safety note before the first session and, from Green to Indigo, the cool-down last. Afterwards the parent rates any exercise done for the first time. With
  * review, the end-of-module (or colour) ratings instead.
  */
 export default function HomeSessionPage({ review = false }: { review?: boolean }) {
@@ -90,8 +90,10 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
     }
   }
 
-  const exercise = today.exercises[step]
-  const last = step === today.exercises.length - 1
+  const steps = today.exercises.length + (today.coolDown ? 1 : 0)
+  const coolingDown = step === today.exercises.length
+  const exercise = coolingDown ? null : today.exercises[step]
+  const last = step === steps - 1
 
   return (
     <>
@@ -105,19 +107,27 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
           <strong>Before you start.</strong> {today.safetyNote}
         </section>
       )}
-      {today.exercises.length > 1 && (
+      {steps > 1 && (
         <>
           <p className="muted">
-            Exercise {step + 1} of {today.exercises.length}
+            {coolingDown ? 'Cool down' : `Exercise ${step + 1} of ${today.exercises.length}`}
           </p>
-          <progress className="home-progress" value={step + 1} max={today.exercises.length} />
+          <progress className="home-progress" value={step + 1} max={steps} />
         </>
       )}
-      <section className="card home-exercise">
-        {today.newThisWeek.includes(exercise.id) && <p className="muted">New this week</p>}
-        <h2>{exercise.title}</h2>
-        <p className="pre-line">{exercise.instructions}</p>
-      </section>
+      {exercise ? (
+        <section className="card home-exercise">
+          {today.newThisWeek.includes(exercise.id) && <p className="muted">New this week</p>}
+          <h2>{exercise.title}</h2>
+          <p className="pre-line">{exercise.instructions}</p>
+        </section>
+      ) : (
+        <section className="card home-exercise">
+          <p className="muted">To finish</p>
+          <h2>{today.coolDown!.title}</h2>
+          <p className="pre-line">{today.coolDown!.text}</p>
+        </section>
+      )}
       <p className="muted">Video coming soon. Read each step aloud and do it together.</p>
       {error && (
         <p className="error" role="alert">
@@ -136,7 +146,7 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
           </button>
         ) : (
           <button className="btn btn-primary" onClick={() => setStep(step + 1)}>
-            Next exercise
+            {step === today.exercises.length - 1 ? 'Cool down' : 'Next exercise'}
           </button>
         )}
       </div>
