@@ -1,0 +1,11 @@
+{
+  "source": "Pat's answers of 2026-11-05: each block of exercises from Green to Indigo has its cool-down; Red, Orange and Yellow end each rhyme with their own. Only Green's Cool Down 1 has been sent so far.",
+  "coolDowns": [
+    {
+      "stage": "GREEN",
+      "module": 1,
+      "title": "Cool Down 1",
+      "text": "Touch your head, touch your nose, touch your knee.\nStand straight, feet together. Count to 10."
+    }
+  ]
+}

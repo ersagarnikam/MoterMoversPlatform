@@ -78,8 +78,9 @@ sequenceDiagram
   API->>API: requireFamilyOf
   API->>DB: exercises for stage, sessions done, ratings
   API->>HR: plan(list, done) and reviewDue
-  API-->>A: week, sessionTitle, exercises, newThisWeek, safetyNote
-  P->>A: Do the session
+  API->>API: CoolDowns.forModule (Green to Indigo)
+  API-->>A: week, sessionTitle, exercises, newThisWeek, safetyNote, coolDown
+  P->>A: Do the session, then the cool-down
   A->>Q: enqueue session (clientId)
   Q->>API: POST /api/home/sessions
   API->>DB: save HomeProgrammeSession
@@ -97,6 +98,8 @@ sequenceDiagram
 **Rules in the code**
 
 - The safety note shows before the first session.
+- From Green to Indigo the session ends with the module's cool-down (the latest one sent for that colour); a rhyme
+  ends with its own, in its words (Pat, 2026-11-05).
 - Parents rate with the same 1 to 4 scale. A flag shows only the gentle prompt (nursery or health visitor).
 
 <a id="home-family"></a>

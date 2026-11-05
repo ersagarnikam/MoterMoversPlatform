@@ -38,6 +38,7 @@ import com.jayway.jsonpath.JsonPath;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.content.util.WordingGuard;
 import uk.co.motormovers.platform.home.dto.HomeViews;
+import uk.co.motormovers.platform.home.service.CoolDowns;
 
 /**
  * Motor Movers at Home against the demo data: Priya Shah's family (Ava on Green, Leo not checked yet), who sees a
@@ -58,6 +59,9 @@ class HomeProgrammeTest {
 
     @MockitoBean
     Mailer mailer;
+
+    @Autowired
+    CoolDowns coolDowns;
 
     @Test
     void aFamilyAddsAChildWithoutASchool() throws Exception {
@@ -125,7 +129,9 @@ class HomeProgrammeTest {
                 .andExpect(jsonPath("$.exercises.length()").value(1))
                 .andExpect(jsonPath("$.exercises[0].title").value("Rock a Bye Baby"))
                 .andExpect(jsonPath("$.progressLabel").value("Rhyme 1 of 18 · session 1 of 5"))
-                .andExpect(jsonPath("$.safetyNote").value(containsString("an adult is present")));
+                .andExpect(jsonPath("$.safetyNote").value(containsString("an adult is present")))
+                // A rhyme ends with its own cool-down, in its instructions (Pat, 2026-11-05).
+                .andExpect(jsonPath("$.coolDown").doesNotExist());
         // The yes answers are secure movements on Pat's charts, with his age.
         mvc.perform(get("/api/children/" + leo + "/development").header("Authorization", bearer(priya)))
                 .andExpect(status().isOk())
@@ -149,6 +155,9 @@ class HomeProgrammeTest {
                 .andExpect(jsonPath("$.modules").value(6))
                 .andExpect(jsonPath("$.progressLabel").value("Module 2 of 6 · week 1 of 5"))
                 .andExpect(jsonPath("$.sessionTitle").value("Module 2 · week 1"))
+                // Green ends with a cool-down; module 2 has none of its own yet, so Cool Down 1 carries on.
+                .andExpect(jsonPath("$.coolDown.title").value("Cool Down 1"))
+                .andExpect(jsonPath("$.coolDown.text").value(containsString("Count to 10")))
                 // The first week of a module: what carries on from module 1 and the first new ones, nothing added yet.
                 .andExpect(jsonPath("$.exercises.length()").value(greaterThan(1)))
                 .andExpect(jsonPath("$.newThisWeek.length()").value(0))
@@ -321,6 +330,7 @@ class HomeProgrammeTest {
         texts.add(HomeViews.SUPPORT_PROMPT);
         texts.add(HomeViews.SAFETY_NOTE);
         texts.add(HomeViews.NOT_A_DIAGNOSIS.replace("Not a diagnosis.", ""));
+        texts.addAll(coolDowns.texts());
         assertThat(new WordingGuard().check(texts)).isEmpty();
     }
 
