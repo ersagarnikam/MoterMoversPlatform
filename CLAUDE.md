@@ -181,13 +181,22 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
-**Testing (updated by tester, 2026-11-05).** A tester session checks the platform and records its results here,
-each update marked "updated by tester". Baseline on `main` at 077a5d5, on the owner's Windows machine: backend 142
-tests pass (JDK 26), web 51 unit tests, build and parent app typecheck pass, and all 67 browser tests pass (65
-desktop, 2 phone; installed Chrome, API with demo data and `LOGIN_LIMIT_PER_IP=500`, run at 14:18 Brisbane time).
-No bugs found yet. Since then pull request #25 (Pat's revised content) merged and the backend has 143 tests; the
-tester has not rerun the suites on it yet. Not run: load tests, the production compose stack, a real phone. Next: an exploratory pass of the
-recent changes, role by role.
+**Testing (updated by tester, 2026-11-06).** A tester session checks the platform and records its results here,
+each update marked "updated by tester". Latest: **pull request #29 (country settings, go-live task 25 part A) passes**
+on `main` at 20db19c, tested at the Developer's request (the owner asked for it). Backend 159/159, web 54 unit tests
+and build, 67/67 browser tests (UK). `GET /api/settings` (open) is right for UK, IE and AU; demo data, teacher
+sign-in and today's session work in all three; overrides (`PLATFORM_COUNTRIES_IE_TAXPERCENT=13.5`, an AU legal
+entity name) show; bad values (currency, time zone, locale, tax 100 or below 0, month 13, a start month that is not
+the first month, region FR) stop start-up naming the setting. No bugs. Minor, sent to the Developer: a bad country
+value is named only inside a long stack trace (no "APPLICATION FAILED TO START" summary); the Developer will add a
+clean start-up message with part E. Start-up checks only the deployment's own country block, but `CountrySettingsTest`
+validates all three, so a typo in any block fails CI. For Pat: Ireland's end point starts in April and runs past June,
+the school year's last month.
+How the tester runs things while the owner's platform uses 8080, 5173 and 8082: a worktree, the built jar on
+`--server.port=8091` (wait for "Demo data loaded", which comes after "Started"), `API_URL=http://localhost:8091` for
+the browser tests, and before 11am Brisbane time a local Playwright config with `timezoneId: 'Europe/London'`.
+Earlier (2026-11-05, `main` at 077a5d5): the first baseline, all suites green. Not run yet: load tests, the
+production compose stack, a real phone, and the exploratory pass role by role.
 
 **Team board on monday.com (2026-11-04):** "Motor Movers Platform",
 https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
