@@ -30,7 +30,9 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 /**
  * Loads Pat's developmental charts and exercise grids (src/main/resources/assessment, made from her documents of
  * 2026-10-27 and 2026-11-03) on start-up. It adds only what is missing: the charts on an empty platform, and the exercises of a
- * colour that has none yet, so a new colour's grid can be added as a file later without touching the others.
+ * colour that has none yet, so a new colour's grid can be added as a file later without touching the others. When Pat
+ * revises an exercise's wording (as on 2026-11-05), the file is changed and the next start brings a deployment's copy
+ * up to date; points are never changed this way, since scores are recorded against them.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -79,16 +81,43 @@ public class AssessmentContent implements ApplicationRunner {
             log.info("Assessment: loaded {} developmental milestones", rows.size());
         }
         for (ColourStage stage : STAGES_WITH_EXERCISES) {
-            if (exercises.existsByStage(stage)) {
-                continue;
-            }
             ExerciseFile file = read("assessment/exercises-" + stage.name().toLowerCase(Locale.ROOT)
                     + ".json", ExerciseFile.class);
             if (file.stage() != stage) {
                 throw new IllegalStateException("The " + stage.label() + " exercise file is for " + file.stage());
             }
+            if (exercises.existsByStage(stage)) {
+                revise(stage, file);
+                continue;
+            }
             exercises.saveAll(file.exercises().stream().map(e -> exercise(stage, e)).toList());
             log.info("Assessment: loaded {} {} exercises", file.exercises().size(), stage.label());
+        }
+    }
+
+    private void revise(ColourStage stage, ExerciseFile file) {
+        Map<Integer, Exercise> saved = new TreeMap<>();
+        exercises.findByStageOrderByNumber(stage).forEach(e -> saved.put(e.getNumber(), e));
+        List<Exercise> revised = new ArrayList<>();
+        for (ExerciseRow row : file.exercises()) {
+            Exercise current = saved.get(row.number());
+            if (current == null) {
+                log.warn("Assessment: {} exercise {} is in the file but not loaded; not added", stage.label(),
+                        row.number());
+                continue;
+            }
+            Exercise wanted = exercise(stage, row);
+            if (current.revise(wanted.getTitle(), wanted.getInstructions(), wanted.getLevels())) {
+                revised.add(current);
+            }
+            if (!current.getPoints().equals(wanted.getPoints())) {
+                log.warn("Assessment: {} exercise {} has different points in the file; left as they are",
+                        stage.label(), row.number());
+            }
+        }
+        if (!revised.isEmpty()) {
+            exercises.saveAll(revised);
+            log.info("Assessment: revised the wording of {} {} exercises", revised.size(), stage.label());
         }
     }
 

@@ -1,5 +1,5 @@
 {
-  "source": "Pat's Green assessment grid, September 2026 (2026-10-27)",
+  "source": "Pat's Green assessment grid, September 2026 (2026-10-27), revised 2026-11-05",
   "stage": "GREEN",
   "exercises": [
     {
@@ -58,10 +58,10 @@
       "title": "Motor Spin",
       "instructions": "Feet slightly apart. Stretch both arms out to the side at shoulder height.\nSpin one arm forwards to make small circles 5 times.\nStop and spin the other arm forwards 5 times.\nRepeat circling the other way.\nArms by your side. Count to 5.\nRaise your arms out to the side and spin both arms together.",
       "levels": [
-        null,
-        null,
-        null,
-        null
+        "Finds it difficult to maintain the starting position with arms held at shoulder height. Has difficulty making controlled circles or isolating one arm at a time. Needs considerable prompting or physical support to complete the sequence.",
+        "Can hold the starting position briefly and make some arm circles, but movements may be uneven, large or poorly controlled. May find it difficult to keep the body still, change direction, or move one arm without the other joining in. Needs reminders to complete the sequence.",
+        "Maintains a stable position and completes five circles with each arm in both directions with reasonable control. Mostly isolates the working arm and can spin both arms together. Occasional loss of rhythm, position or control may occur.",
+        "Maintains a stable, upright position throughout. Holds arms at shoulder height and completes five small, controlled circles with each arm independently in both directions. Changes direction smoothly and then circles both arms together with good coordination, rhythm and control."
       ],
       "points": [
         "START",

@@ -118,7 +118,7 @@ Questions sent on 2026-11-03 (the owner's email, 16 questions; 7 to 16 are about
 | # | Question | Pat's answer | What the platform does |
 |---|---|---|---|
 | 1 | The other five colours' grids | **Received**: Red and Orange (18 rhymes each, start and end), Blue (40 exercises), Indigo (34) and Violet (24), each across modules 1 to 6 | All seven colours loaded (see *What was built*) |
-| 2 | The gaps in the grids (Motor Spin; Jack and Jill; Twinkle Twinkle) | A revised file was attached, but it arrived **empty (0 bytes)**, also in the saved `.msg` | Still as sent; ask Pat to send it again |
+| 2 | The gaps in the grids (Motor Spin; Jack and Jill; Twinkle Twinkle) | A revised file was attached, but it arrived **empty (0 bytes)**, also in the saved `.msg`. **Sent again 2026-11-05** ("Revised 2", PDF and Word) | Loaded: see *Pat's revisions (2026-11-05)* |
 | 3 | The flag rule | **Yes** | `ExtraSupportRule` stays as it is |
 | 4 | No date of birth or birth history | **Yes** | Not held |
 | 5 | What parents see (plain words, no scores, no flag) | **Yes** | `ParentProgress` stays as it is |
@@ -126,11 +126,10 @@ Questions sent on 2026-11-03 (the owner's email, 16 questions; 7 to 16 are about
 
 ### Still to settle with Pat
 
-1. **The revised descriptions.** Pat's file for Motor Spin, Jack and Jill and Twinkle Twinkle arrived empty.
-2. **Gaps in the grids sent** (2026-10-27; and see *What was built* for those of 2026-11-03).
-   - Green exercise 4, *Motor Spin*, has no four descriptions.
-   - Yellow *Jack and Jill* (11) has all four descriptions copied from *Grand Old Duke of York* (10), and
-     *Twinkle Twinkle Little Star* (13) has those of *The Wheels on the Bus* (12).
+1. **Copied descriptions still open** after Pat's revisions of 2026-11-05: Orange *See Saw Marjory Daw* (2) keeps the
+   descriptions *Rock a Bye Baby* had before (they speak of arm swings and turns, which See Saw does not have), and
+   Violet *Motor Lift Four* still has those of *Motor Lift Three*. Pat sent new descriptions for Rock a Bye Baby only.
+2. **Gaps in the grids sent** (2026-10-27): Motor Spin, Jack and Jill and Twinkle Twinkle were settled on 2026-11-05.
    - Small typos: "Roudabout March", "Swop Overs", "Half A Pund Of Pudding Rice", "Hickory Tickory Tock",
      "Assessmentt", "achivement".
    - The booklet's gross motor chart repeats some 0 to 6 months rows (for example "Kicks legs vigorously when
@@ -161,8 +160,9 @@ done (2026-11-04, below). Step 5 is still to do.
 `exercises-green.json` (27) and `exercises-yellow.json` (18), made from Pat's Word documents. `AssessmentContent` loads
 them on start-up in every deployment, adding only what is missing (the charts on an empty platform, a colour's
 exercises if it has none). To add a colour: a new `exercises-<colour>.json` and the colour in
-`AssessmentContent.STAGES_WITH_EXERCISES`. To correct a description already loaded, change the database too (there is
-no editing screen yet). A test checks every text against the wording guard.
+`AssessmentContent.STAGES_WITH_EXERCISES`. To correct a description already loaded, change the file: since 2026-11-05
+the next start brings each exercise's title, instructions and descriptions up to date (never its points, since scores
+are recorded against them). A test checks every text against the wording guard.
 
 Changes made to Pat's text when loading it, for her to confirm:
 - Typos corrected: "Roudabout March" to Roundabout March, "Half A Pund" to Half A Pound, "caching games" to
@@ -173,7 +173,7 @@ Changes made to Pat's text when loading it, for her to confirm:
   "(CD Track n)". The rhyme words and actions are the exercise's instructions; *Sing a Song of Sixpence*, set in two
   columns, is put back in reading order.
 - Kept as sent: "Swop Overs", "Hickory Tickory Tock", Motor Spin with no descriptions (scores 1 to 4 can still be
-  recorded), and the copied descriptions of Jack and Jill and Twinkle Twinkle.
+  recorded), and the copied descriptions of Jack and Jill and Twinkle Twinkle (the last three replaced 2026-11-05).
 
 **The other five colours (2026-11-04).** `exercises-red.json`, `-orange`, `-blue`, `-indigo` and `-violet`, made from
 Pat's grids of 2026-11-03 with a converter that reads the Word tables (checked against Green and Yellow first: it
@@ -181,15 +181,27 @@ gives the same titles, descriptions and points). An existing deployment loads th
 are rhymes with only a start and an end, like Yellow (Red is written for an adult with a baby); Blue, Indigo and
 Violet have modules 1 to 6, like Green. For Pat to confirm:
 - **Blue: Thumbs Up appears twice.** First Green's Thumbs Up (same text and descriptions, no points table), then a
-  shorter Blue version with its own points (start, end of modules 2, 3 and 6, end of Blue). Blue's version is loaded
-  ("thumbsup" corrected), so Blue has 40 exercises, as in its contents list.
+  shorter Blue version with its own points (start, end of modules 2, 3 and 6, end of Blue). Blue's version was loaded
+  ("thumbsup" corrected), so Blue has 40 exercises, as in its contents list. Pat chose Green's version on 2026-11-05.
 - **Indigo 14, Puppy Fun, has no instructions**, and its four descriptions are copies of Cat Stretch's (13). Loaded with
-  the title and the copied descriptions; the instructions are empty.
+  the title and the copied descriptions; the instructions were empty until Pat sent them on 2026-11-05.
 - **Copied descriptions**, kept as sent: Orange *See Saw Marjory Daw* (2) has those of *Rock a Bye Baby* (1); Violet
   *Motor Lift Four* has those of *Motor Lift Three*.
 - Titles are taken from each exercise's own table, not the contents list (so "Ring a Ring of Roses", "See Saw Marjory
   Daw"); "Pat - a – Cake" is written "Pat-a-Cake", and capitals evened out in "Big Hugs" and "If You're Happy and You
   Know It". One Blue points table says "Final end of Green"; it is read as the end of Blue.
+
+**Pat's revisions (2026-11-05).** Her file "Revised 2" (sent with her reply to the go-live plan) answered the grid
+queries. Loaded into the files above; an existing deployment takes the new wording on its next start:
+- Green 4 *Motor Spin*: her four descriptions (it had none).
+- Yellow 11 *Jack and Jill* and 13 *Twinkle Twinkle Little Star*: their own four descriptions, in place of those
+  copied from the rhyme before. The words and actions were already right.
+- Indigo 14 *Puppy Fun*: its instructions and four descriptions; its points (start, end of modules 2 and 3, end of
+  Indigo) are as loaded.
+- Orange 1 *Rock a Bye Baby*: new descriptions, so See Saw Marjory Daw no longer shares them (see *Still to settle*).
+- Blue 5 *Thumbs Up*: "Use the version in Green": Green's instructions and descriptions, with Blue's points (start,
+  end of modules 2, 3 and 6, end of Blue), which match her table.
+- "Final end of Green" in Blue: confirmed as the end of Blue.
 
 **Storage (migration V15).** As planned above, with these differences: the points an exercise is assessed at are
 stored per exercise (`exercise_point`: START, MODULE_n, END, in order), which replaces `module_exercise`; the

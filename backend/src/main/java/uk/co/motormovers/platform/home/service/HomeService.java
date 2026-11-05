@@ -104,13 +104,14 @@ public class HomeService {
     private final Clock clock;
     private final Mailer mailer;
     private final ParentProgress parentProgress;
+    private final CoolDowns coolDowns;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
-            Mailer mailer, ParentProgress parentProgress) {
+            Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -128,6 +129,7 @@ public class HomeService {
         this.clock = clock;
         this.mailer = mailer;
         this.parentProgress = parentProgress;
+        this.coolDowns = coolDowns;
     }
 
     public boolean isEnabled() {
@@ -406,7 +408,7 @@ public class HomeService {
             return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), false, false, 0,
                     0, 0, 0, 0, 0, false, "", "", List.of(), List.of(), List.of(), canRate, days.contains(today), grid,
                     days.size(), COUNTER_DAYS, sessions.countByChildId(childId), null, checkDue,
-                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE);
+                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE, null);
         }
         List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
         Set<String> rated = theirs.stream().map(s -> s.getExercise().getId() + ":" + s.getPoint())
@@ -426,7 +428,7 @@ public class HomeService {
                 due == null ? null : new HomeViews.Review(due.point(), ExercisePoints.label(due.point(), stage),
                         due.exercises().stream().map(AssessmentViews.ExerciseView::of).toList()),
                 checkDue, canRate ? support(stage, theirs) : new HomeViews.Support(false, null), levels,
-                HomeViews.SAFETY_NOTE);
+                HomeViews.SAFETY_NOTE, plan.rhymes() ? null : coolDowns.forModule(stage, plan.module()));
     }
 
     /** Accepts a batch of home sessions, typically saved on the phone while offline. Safe to resend. */

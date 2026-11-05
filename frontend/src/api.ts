@@ -752,6 +752,8 @@ export interface HomeToday {
   levels: { score: number; label: string }[]
   /** Pat's safety note, shown before the first session. */
   safetyNote: string
+  /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
+  coolDown: { title: string; text: string } | null
 }
 
 /** Movements secure on one of Pat's charts, and those secured in the last few months. */
