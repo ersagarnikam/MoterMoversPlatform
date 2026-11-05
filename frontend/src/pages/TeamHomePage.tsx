@@ -5,7 +5,7 @@ import { useAuth } from '../auth'
 import Skeleton from '../components/Skeleton'
 import { day } from '../dates'
 import { sessionTime, startsIn } from '../live'
-import { gbp } from '../money'
+import { money } from '../money'
 
 /**
  * The Motor Movers team's home: what needs attention today, each with a link to where it is done. Things that need
@@ -69,7 +69,7 @@ export default function TeamHomePage() {
       node: (
         <HomeCard key="overdue" title="Invoices overdue" link="/admin/payments" linkLabel="Payments" count={data.overdue.length}>
           {data.overdue.length === 0 ? (
-            <p className="muted">Nothing overdue. {gbp(data.dueTotalPence)} is due in all.</p>
+            <p className="muted">Nothing overdue. {money(data.dueTotalPence)} is due in all.</p>
           ) : (
             <>
               <ul className="home-list">
@@ -79,11 +79,11 @@ export default function TeamHomePage() {
                       <strong>{p.payerName}</strong> · {p.description}
                       <span className="muted"> · sent {day(p.invoicedOn)}</span>
                     </span>
-                    <strong className="nowrap">{gbp(p.amountPence)}</strong>
+                    <strong className="nowrap">{money(p.amountPence)}</strong>
                   </li>
                 ))}
               </ul>
-              <p className="muted">Unpaid over 30 days. {gbp(data.dueTotalPence)} is due in all.</p>
+              <p className="muted">Unpaid over 30 days. {money(data.dueTotalPence)} is due in all.</p>
             </>
           )}
         </HomeCard>

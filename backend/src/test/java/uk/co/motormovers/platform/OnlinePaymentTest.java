@@ -34,6 +34,7 @@ import org.springframework.web.client.RestClient;
 
 import com.jayway.jsonpath.JsonPath;
 
+import uk.co.motormovers.platform.common.util.Money;
 import uk.co.motormovers.platform.payment.stripe.StripeApiClient;
 import uk.co.motormovers.platform.payment.stripe.StripeClient;
 import uk.co.motormovers.platform.payment.stripe.StripeSignature;
@@ -53,6 +54,9 @@ class OnlinePaymentTest {
 
     @Autowired
     Clock clock;
+
+    @Autowired
+    Money money;
 
     @MockitoBean
     StripeClient stripe;
@@ -114,21 +118,30 @@ class OnlinePaymentTest {
     }
 
     @Test
-    void stripeIsAskedForACheckoutPageInPounds() {
+    void stripeIsAskedForACheckoutPageInTheDeploymentsCurrency() {
+        // The UK deployment (these tests) asks in pounds.
+        assertThat(money.stripeCurrency()).isEqualTo("gbp");
+        stripeAsksIn("gbp");
+        // Ireland's and Australia's deployments ask in their own (go-live task 25).
+        stripeAsksIn(new Money("EUR", "en-IE").stripeCurrency());
+        stripeAsksIn(new Money("AUD", "en-AU").stripeCurrency());
+    }
+
+    private static void stripeAsksIn(String currency) {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer api = MockRestServiceServer.bindTo(builder).build();
         api.expect(requestTo("https://api.stripe.com/v1/checkout/sessions"))
                 .andExpect(header("Authorization", "Bearer sk_test_x"))
                 .andExpect(content().formDataContains(java.util.Map.of(
                         "mode", "payment",
-                        "line_items[0][price_data][currency]", "gbp",
+                        "line_items[0][price_data][currency]", currency,
                         "line_items[0][price_data][unit_amount]", "4500",
                         "metadata[paymentId]", "7",
                         "customer_email", "jo@example.test")))
                 .andRespond(withSuccess("{\"id\":\"cs_1\",\"url\":\"https://checkout.stripe.com/c/pay/cs_1\"}",
                         MediaType.APPLICATION_JSON));
-        StripeClient.Checkout checkout = new StripeApiClient(builder, "sk_test_x").createCheckout(7L, 4500,
-                "Parent course", "jo@example.test", "https://app/payments?paid=1", "https://app/payments");
+        StripeClient.Checkout checkout = new StripeApiClient(builder, "sk_test_x", currency).createCheckout(7L,
+                4500, "Parent course", "jo@example.test", "https://app/payments?paid=1", "https://app/payments");
         assertThat(checkout.url()).isEqualTo("https://checkout.stripe.com/c/pay/cs_1");
         api.verify();
     }

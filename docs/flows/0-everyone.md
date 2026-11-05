@@ -136,7 +136,7 @@ sequenceDiagram
   alt not the payer, or not DUE
     API-->>W: 403 or 400
   else ok
-    API->>S: create Checkout Session (amount in pence, GBP, paymentId in metadata)
+    API->>S: create Checkout Session (amount in the minor unit, the deployment's currency, paymentId in metadata)
     S-->>API: checkout URL
     API-->>W: url
     W->>S: redirect

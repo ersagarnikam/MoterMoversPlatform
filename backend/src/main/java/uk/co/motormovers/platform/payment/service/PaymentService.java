@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.common.util.Money;
 import uk.co.motormovers.platform.payment.dto.PaymentViews;
 import uk.co.motormovers.platform.payment.dto.PaymentViews.GroupTotal;
 import uk.co.motormovers.platform.payment.dto.PaymentViews.PaymentView;
@@ -53,10 +54,11 @@ public class PaymentService {
     private final CurrentUserResolver currentUser;
     private final PushService push;
     private final Clock clock;
+    private final Money money;
 
     public PaymentService(PaymentRepository payments, SchoolRepository schools, TrustRepository trusts,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, PushService push,
-            Clock clock) {
+            Clock clock, Money money) {
         this.payments = payments;
         this.schools = schools;
         this.trusts = trusts;
@@ -65,6 +67,7 @@ public class PaymentService {
         this.currentUser = currentUser;
         this.push = push;
         this.clock = clock;
+        this.money = money;
     }
 
     @Transactional(readOnly = true)
@@ -163,7 +166,7 @@ public class PaymentService {
         if (payment.getPayer() != null && payment.getStatus() == PaymentStatus.DUE) {
             // A parent with the app hears about it there too; a tap opens their Payments screen.
             push.notify(List.of(payment.getPayer().getId()), "A payment is due",
-                    PaymentViews.pounds(payment.getAmountPence()) + " for " + payment.getDescription()
+                    money.format(payment.getAmountPence()) + " for " + payment.getDescription()
                             + ". Tap to see how to pay.", "/payments");
         }
         return PaymentView.of(payment);

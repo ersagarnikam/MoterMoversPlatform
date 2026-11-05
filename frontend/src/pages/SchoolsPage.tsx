@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type ColourStage, type NewSchool, type Plan, type SchoolRow, type TrustRow } from '../api'
 import StageBadge from '../components/StageBadge'
-import { gbp } from '../money'
+import { currencySymbol, money } from '../money'
 import { STAGES } from '../stages'
 import { day } from '../dates'
 import { useToast } from '../components/Feedback'
@@ -99,7 +99,7 @@ export default function SchoolsPage() {
                 <td>
                   <PriceCell
                     school={s}
-                    onSave={(p) => run(() => api.agreeSchoolPrice(s.id, p), `${s.name} now pays ${gbp(p)} a year`)}
+                    onSave={(p) => run(() => api.agreeSchoolPrice(s.id, p), `${s.name} now pays ${money(p)} a year`)}
                   />
                 </td>
                 <td>{s.licenceStatus.replace('_', ' ').toLowerCase()}</td>
@@ -215,13 +215,13 @@ function NewSchoolForm({
           <select value={plan} onChange={(e) => setPlan(e.target.value)}>
             {plans.map((p) => (
               <option key={p.code} value={p.code}>
-                {p.label} ({gbp(p.currentPricePence)})
+                {p.label} ({money(p.currentPricePence)})
               </option>
             ))}
           </select>
         </label>
         <label>
-          Agreed yearly price (£, optional)
+          Agreed yearly price ({currencySymbol()}, optional)
           <input
             type="number"
             min={0}
@@ -229,7 +229,7 @@ function NewSchoolForm({
             value={chosen?.freeTrial ? '0' : price}
             disabled={chosen?.freeTrial}
             onChange={(e) => setPrice(e.target.value)}
-            placeholder={chosen ? `Plan price ${gbp(chosen.currentPricePence)}` : undefined}
+            placeholder={chosen ? `Plan price ${money(chosen.currentPricePence)}` : undefined}
           />
         </label>
         <label>
@@ -285,7 +285,7 @@ function PriceCell({ school: s, onSave }: { school: SchoolRow; onSave: (pence: n
           step={0.01}
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          aria-label={`Yearly price for ${s.name} (£)`}
+          aria-label={`Yearly price for ${s.name} (${currencySymbol()})`}
           required
         />
         <button className="btn btn-primary">Save</button>
@@ -298,8 +298,8 @@ function PriceCell({ school: s, onSave }: { school: SchoolRow; onSave: (pence: n
   const discounted = s.listPricePence !== null && s.listPricePence !== s.agreedPricePence
   return (
     <span className="nowrap">
-      {gbp(s.agreedPricePence)}
-      {discounted && <span className="muted"> (plan {gbp(s.listPricePence!)})</span>}{' '}
+      {money(s.agreedPricePence)}
+      {discounted && <span className="muted"> (plan {money(s.listPricePence!)})</span>}{' '}
       <button
         className="btn btn-small"
         onClick={() => {
