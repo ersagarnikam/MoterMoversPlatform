@@ -130,10 +130,14 @@ the owner sets Done when he merges. Specs so far: 14 licence check
 (https://ihau-company.monday.com/boards/5032300138/pulses/2899865015), 25 country settings
 (https://ihau-company.monday.com/boards/5032300138/pulses/2899847796), 27 country chooser in the parent app
 (https://ihau-company.monday.com/boards/5032300138/pulses/2899865399), and 56 and 57 (parent induction gate, films).
-The board now has 57 items (54 onwards added after the plan). **One board per task:** go-live work lives only on the
-go-live board; on 2026-11-06 fifteen duplicates were archived from the "Motor Movers Platform" board (5032277063, details
-carried over as notes on the go-live items), which now keeps only what the go-live board does not track (Pat's grid
-queries, trying Stripe for real, Release 2 and later work).
+[PM: Claude, 2026-11-06] **One board for all open work.** At the owner's request the old team board "Motor Movers
+Platform" (5032277063) was merged into the go-live board and **archived** on 2026-11-06 (restorable from monday.com's
+archive; its done items stay there as history). Fifteen duplicates were archived first, with their details carried over
+as notes on the go-live items; the 14 open items were moved across with their notes as tasks **58 to 71** (Pat's grid
+queries, prototype PDFs, refunds and credit notes, the old git stash, the enquiry email, Zoom, Stripe and phone
+notifications tried for real, the staging load test, and in the new group **"Release 2 and later (after 26 Feb)"**:
+videos, home subscriptions, a shared rate-limit store, Zoom attendance, renewing certificates online). The go-live
+board now also has **Details** and **Where in the repository** columns. Add new work only there.
 
 **Waiting on Pat and Kay (email of 2026-11-05, decisions due Fri 13 Nov).** Each was sent with a suggested answer:
 1 contracting company per country until the joint venture exists (suggested: Neuroway for UK and Ireland, an
@@ -173,14 +177,10 @@ No bugs found yet. Since then pull request #25 (Pat's revised content) merged an
 tester has not rerun the suites on it yet. Not run: load tests, the production compose stack, a real phone. Next: an exploratory pass of the
 recent changes, role by role.
 
-**Team board on monday.com (2026-11-04):** "Motor Movers Platform",
-https://ihau-company.monday.com/boards/5032277063 (account ihau-company, Main workspace). The open work as items,
-filled from **Next steps** below and Pat's open points, in groups Waiting on Pat, Go-live, Built, to try for real, To
-build next and Later, with Status, Waiting on (Owner, Pat, Kay or Build team), Priority, Owner, Details and where to
-look in the repository. When an item here changes (done, answered, new), change it on the board too. Since
-2026-11-04 the board has an **Order** column (1 first: what unblocks others, then the go-live chain, then built
-features to try for real, then work waiting on Pat, then later plans) and a **Work order** view sorted by it, with done
-items hidden. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs/flows/` by role) and "User Journeys"
+[PM: Claude, 2026-11-06] **Boards on monday.com** (account ihau-company, Main workspace). All open work is on the
+go-live board "Motor Movers Go-Live (Dec 2026)", https://ihau-company.monday.com/boards/5032300138 (see Go-live plan,
+Tracking). When an item here changes (done, answered, new), change it on that board too. The old team board "Motor
+Movers Platform" (5032277063, 2026-11-04) was merged into it and archived on 2026-11-06. Two more boards: "Motor Movers" (5032278115, the 30 flows of `docs/flows/` by role) and "User Journeys"
 (5032278564, one item per customer from Interested to Active, with a draft workflow "User journey" that moves the
 item, sets the next step and notifies its owner; to review and publish in monday.com).
 
@@ -510,7 +510,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
