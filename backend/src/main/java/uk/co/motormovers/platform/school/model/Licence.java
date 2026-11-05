@@ -80,6 +80,11 @@ public class Licence {
         return Status.ACTIVE;
     }
 
+    /** Whether the licence runs on the day: from its start to its end date, both included. */
+    public boolean isValidOn(LocalDate day) {
+        return !day.isBefore(startsOn) && !day.isAfter(endsOn);
+    }
+
     public boolean covers(ColourStage stage) {
         return stages.contains(stage);
     }

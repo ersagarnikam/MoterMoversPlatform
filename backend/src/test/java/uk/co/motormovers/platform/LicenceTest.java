@@ -35,6 +35,16 @@ class LicenceTest {
     }
 
     @Test
+    void validFromItsStartToItsEndDate() {
+        Licence licence = new Licence(school, fullProgramme, 0, today, today.plusYears(1), EnumSet.of(ColourStage.RED));
+        assertThat(licence.isValidOn(today.minusDays(1))).isFalse();
+        assertThat(licence.isValidOn(today)).isTrue();
+        assertThat(licence.isValidOn(today.plusMonths(6))).isTrue();
+        assertThat(licence.isValidOn(today.plusYears(1))).isTrue();
+        assertThat(licence.isValidOn(today.plusYears(1).plusDays(1))).isFalse();
+    }
+
+    @Test
     void onlyLicensedStagesOpen() {
         Licence licence = licence(fullProgramme, today.plusYears(1));
         assertThat(licence.covers(ColourStage.ORANGE)).isTrue();
