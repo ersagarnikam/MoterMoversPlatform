@@ -26,6 +26,18 @@ class ApiIntegrationTest {
 
 
     @Test
+    void theCountrySettingsAreOpenAndBritishByDefault() throws Exception {
+        mvc.perform(get("/api/settings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.region").value("UK"))
+                .andExpect(jsonPath("$.currency").value("GBP"))
+                .andExpect(jsonPath("$.taxLabel").value("VAT"))
+                .andExpect(jsonPath("$.taxPercent").value(20))
+                .andExpect(jsonPath("$.timeZone").value("Europe/London"))
+                .andExpect(jsonPath("$.yearNames[1]").value("Reception"));
+    }
+
+    @Test
     void rejectsAnonymousAndBadPasswords() throws Exception {
         mvc.perform(get("/api/classes")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)

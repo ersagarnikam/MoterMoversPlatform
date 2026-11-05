@@ -51,7 +51,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 149 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 159 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 54 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -102,7 +102,9 @@ billing, filmed sessions. Out of both: movement analysis from video and at-risk 
 VAT 23%, Europe/Dublin, Sep-Jun, Junior/Senior Infants), Australia (Sydney, AUD, GST 10%, Australia/Brisbane for
 Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board tasks in brackets):
 - Country settings per deployment: currency, tax rate and label, time zone, school-year months and assessment points,
-  year names, legal entity and contact details (task 25). Today `ClockConfig` hard-codes Australia/Sydney for AU.
+  year names, legal entity and contact details (task 25). (added by Dev, 2026-11-06) Part A is built (pull request #28):
+  the settings, Ireland (`Region.IE`), the clock's zone from them (Australia/Brisbane, not Sydney) and the open
+  `GET /api/settings`; parts B (money), C (tax), D (school year and year names) and E (legal entity) follow.
 - Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
   `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices.
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
@@ -152,6 +154,24 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `country-settings`, pull request #28): go-live task 25,
+part A.** Done: country settings, Ireland, the clock and `GET /api/settings`, with tests and docs. Left: CI, the merge
+(the owner asked for it to be merged, then tested by the tester agent), then parts B to E. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Country settings (go-live task 25, part A).** `PLATFORM_REGION` (`UK`, `IE` new, or `AU`)
+picks a block of `platform.countries` in application.yml: country name, currency and locale, tax label and percent,
+time zone, school year (first and last month, terms, the months the start, middle and end points begin) and year names,
+and the legal entity (placeholders until Kay's decision 1). Ireland's and Australia's points and year names are to be
+confirmed by Pat. `CountrySettings` (common/config, checked at start-up: a bad currency, zone or month stops the API),
+`CountryProperties`, `CountryConfig`. Every value can be overridden by an environment variable,
+`PLATFORM_COUNTRIES_<REGION>_<NAME>` (keys are lower case in the yml so the overrides match; in production through the
+optional `deploy/country.env`, RUNBOOK, Country settings). `ClockConfig` takes the zone from it: Australia is now
+Australia/Brisbane. `GET /api/settings` is open (like `/api/home/available`); the web has `useCountry` (`src/country.ts`),
+not yet used by a screen. `school.region` is VARCHAR(10) with no check constraint, so IE needed no migration
+(`RegionIrelandTest` saves an Irish school). Tests: `CountrySettingsTest` (per region, environment overrides, bad values),
+`RegionIrelandTest` and `RegionAustraliaTest` (own contexts started with `PLATFORM_REGION`). Not yet: money, tax lines,
+the school year by country and the legal entity on screens (parts B to E).
 
 (added by Dev, 2026-11-06) **Licence rule (Go-Live task 14; merged 2026-11-06, pull request #27).** A school is licensed for a colour on a day when **any** of
 its licences runs that day (`Licence.isValidOn`: from `startsOn` to `endsOn`, both included) and covers the colour:
@@ -510,7 +530,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

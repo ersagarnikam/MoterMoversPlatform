@@ -1,6 +1,6 @@
 # Everyone: sequence diagrams
 
-Signing in, accounts and paying by card. Used by every role.
+Signing in, accounts, paying by card and the country settings. Used by every role.
 
 [All roles](README.md) · Traced from the code at commit 93da753 (4 Nov 2026). Errors are problem details: 400 a rule broken, 403 no access, 429 a rate limit. When an endpoint or rule shown here changes, update the diagram in the same pull request.
 
@@ -9,6 +9,7 @@ Signing in, accounts and paying by card. Used by every role.
 1. [Sign in and every request after it](#sign-in)
 2. [Staff invite, set password and reset](#invite)
 3. [Pay by card (Stripe Checkout)](#pay-card)
+4. [The country settings](#country)
 
 <a id="sign-in"></a>
 
@@ -157,3 +158,40 @@ sequenceDiagram
 - Only the payer can start checkout, and only for a payment that is DUE.
 - The webhook is refused unless Stripe's signature is valid.
 - A bank debit still on its way waits for async_payment_succeeded.
+
+<a id="country"></a>
+
+## The country settings
+
+Each deployment serves one country: the UK, Ireland or Australia (`PLATFORM_REGION`). Its settings are open to anyone,
+so the website and the parent app can show money, tax and year names the way that country does (added 6 Nov 2026,
+go-live task 25).
+
+**Endpoints:** `GET /api/settings` (no sign-in)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Y as application.yml and country.env
+  participant API as API start-up (CountryConfig)
+  participant C as Clock
+  actor V as Anyone (website, parent app)
+  participant W as Web app (useCountry)
+  Y->>API: platform.region and platform.countries
+  API->>API: pick the region's block and check it
+  alt a value cannot work
+    API-->>Y: refuse to start, naming the value
+  else ok
+    API->>C: the country's time zone
+  end
+  V->>W: open a page
+  W->>API: GET /api/settings
+  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity
+```
+
+**Rules in the code**
+
+- One region per deployment; schools are stored with it.
+- The platform's clock follows the country's time zone (Australia: Queensland time, no daylight saving).
+- Every value can be overridden by an environment variable, `PLATFORM_COUNTRIES_<REGION>_<NAME>`.
+- Nothing in the settings is private, so the endpoint needs no sign-in.
