@@ -81,6 +81,64 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
+## Go-live plan (set 2026-11-05, with the owner)
+
+**Dates.** Dev and production ready in the UK, Ireland and Australia by **Thu 31 Dec 2026**. Go/no-go UK and Ireland Wed
+6 Jan 2027; **UK and Ireland open for sign-ups and sales Mon 11 Jan**. Go/no-go Australia Thu 14 Jan; **Australia live Mon
+18 Jan**. First training cohorts 25 Jan. **Release 2 by 26 Feb.** Anything that needs Pat, Kay or pilot teachers is due by
+Fri 18 Dec (they are away over Christmas); 21-31 Dec is production readiness for the build team only. School calendars:
+UK (Wokingham) back 4 Jan, Ireland 6 Jan, Queensland school year starts 27 Jan.
+
+**Release 1 (ready 31 Dec).** Schools: licences signed up by the team, session player, both of Pat's assessments for all
+seven colours, head and trust dashboards, induction, resources. Live practitioner and parent courses with card payment.
+Motor Movers at Home sold as a 12-month pass (card payment that already works), gated by payment and Pat's parent
+induction; `HOME_PROGRAMME` on in production. Parent app in both stores, asking for the country at first launch. Text
+session plans, plus the Green and Orange films if Pat agrees. **Release 2 (26 Feb):** SENCo interventions, inspection
+evidence pack PDF, self-service school sign-up, free introductory course, calendar invites, session recordings, monthly
+billing, filmed sessions. Out of both: movement analysis from video and at-risk prediction (medical-device rules).
+
+**Three deployments, one build.** UK (London, GBP, VAT 20%, Europe/London, school year Sep-Aug), Ireland (EU region, EUR,
+VAT 23%, Europe/Dublin, Sep-Jun, Junior/Senior Infants), Australia (Sydney, AUD, GST 10%, Australia/Brisbane for
+Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board tasks in brackets):
+- Country settings per deployment: currency, tax rate and label, time zone, school-year months and assessment points,
+  year names, legal entity and contact details (task 25). Today `ClockConfig` hard-codes Australia/Sydney for AU.
+- Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
+  `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices.
+- `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
+  year, so year-on-year figures must not split it).
+- Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
+- Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26).
+- Licence not checked when a session is recorded: `ClassroomService.complete` checks stage and induction but not
+  `Licence.covers` (task 14).
+- Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
+  (`site.ts`) and leads with "From the Movement for Learning Project"; Pat said Movement for Learning will not be
+  reopened, so the credit wording must be agreed with her. `PLATFORM_ENQUIRY_EMAIL` still defaults to the owner.
+This supersedes Next steps item 13 (Australia "later").
+
+**Tracking.** monday.com board "Motor Movers Go-Live (Dec 2026)", id 5032300138
+(https://ihau-company.monday.com/boards/5032300138): 53 tasks with Status, Due, Owner, Area and Task #, in groups
+"Decide and build: 9 Nov - 11 Dec" and "Test, prod-ready and launch: 11 Dec - 26 Feb". When a task here is done, set it
+to Done there. Plan doc: https://claude.ai/artifact/6dYqws3w9cdpzhaARayV3d; requirements review (45 requirements against
+the platform, conflicts between the business documents): https://claude.ai/artifact/1WPp7mq67e8dqkCiBCN5Wq; designed PDF:
+`F:\IHA\Pat\Motor Movers go-live plan - January 2027.pdf`. A scheduled check (weekdays 7:38 and 17:38 Brisbane) reads the
+board and the owner's inbox and emails him a digest; it never emails anyone else.
+
+**Waiting on Pat and Kay (email of 2026-11-05, decisions due Fri 13 Nov).** Each was sent with a suggested answer:
+1 contracting company per country until the joint venture exists (suggested: Neuroway for UK and Ireland, an
+Australian company of ours for Australia); 2 brand (Motor Movers Programme or Professor Pat Preedy Programme); 3 prices in
+GBP, EUR and AUD (start from the proposal's: early years 450, primary core 900, full 1,750 a year, trusts 15% off;
+practitioner 180 then 60 a year; parent course 45; home 35 a year); 4 home billing (12-month pass at launch, monthly from
+February); 5 Green and Orange films at launch; 6 stages on sale first (Green, Yellow, Orange); 7 pilot schools (Pat's
+four UK schools plus the Berkshire school improvement team; one or two each in Ireland and Australia); 8 scope sign-off.
+The owner's reply to Pat's email of 2026-11-03 (**sent 2026-11-05**, Kay and Rahul copied) explains the retired 0 to 3 check, asks her to
+resend the revised Motor Spin / Jack and Jill / Twinkle Twinkle file (empty inside her original winmail.dat too), and asks
+four grid queries (Blue Thumbs Up twice; Indigo Puppy Fun; Orange See Saw and Violet Motor Lift Four repeating
+another's descriptions; a Blue table headed "Final end of Green", read as the end of Blue) and five Motor Movers at
+Home questions (Red for under 2s, the parent induction, rhyme order, Cool Down 1, module length; listed in
+`docs/assessment-design.md` and `docs/home-programme-design.md`), and asks to use the Green and Orange films. Both
+emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshirode@ihau.au, which bounced; it was
+forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
+
 ## Current state (2026-11-05)
 
 **Team board on monday.com (2026-11-04):** "Motor Movers Platform",
