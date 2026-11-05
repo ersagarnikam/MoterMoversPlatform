@@ -1,8 +1,8 @@
 package uk.co.motormovers.platform.user.model;
 
-/** The six kinds of user on the platform. */
+/** The seven kinds of user on the platform. */
 public enum Role {
-    /** Class teacher: screens children, plays the daily session, marks participation. */
+    /** Class teacher: assesses children, plays the daily session, marks participation. */
     TEACHER,
     /** Head teacher or SENCo: progress and participation by class, exports. */
     HEAD,
