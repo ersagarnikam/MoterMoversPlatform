@@ -28,6 +28,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # Optional: overrides of this country's settings, PLATFORM_COUNTRIES_<REGION>_<NAME>=... (RUNBOOK, Country
+    # settings). The values in application.yml apply without it.
+    env_file:
+      - path: country.env
+        required: false
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DATABASE_URL: jdbc:postgresql://db:5432/motormovers

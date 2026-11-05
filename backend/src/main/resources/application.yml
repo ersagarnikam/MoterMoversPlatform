@@ -20,8 +20,58 @@ management:
         include: health,info
 
 platform:
-  # A deployment serves one data region. UK data stays in UK hosting, Australian data in Australia.
-  region: UK
+  # A deployment serves one data region (UK, IE or AU): UK data stays in UK hosting, Irish data in the EU, Australian
+  # data in Australia. It also picks the country settings below.
+  region: ${PLATFORM_REGION:UK}
+  # Country settings (common/config/CountrySettings), one block per region. Any value can be overridden by an
+  # environment variable: PLATFORM_COUNTRIES_<REGION>_<NAME>, e.g. PLATFORM_COUNTRIES_IE_TAXPERCENT=23 or
+  # PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME. Months are 1 (January) to 12. "To confirm" marks values Pat (school year,
+  # year names) or Kay (legal entity, go-live decision 1) have still to confirm.
+  countries:
+    uk:
+      name: United Kingdom
+      currency: GBP
+      locale: en-GB
+      tax-label: VAT
+      tax-percent: 20
+      time-zone: Europe/London
+      # September to August, three terms; assessment points: start Sep-Dec, middle Jan-Apr, end May-Aug.
+      school-year: { first-month: 9, last-month: 8, terms: 3, start-month: 9, middle-month: 1, end-month: 5 }
+      year-names: Nursery, Reception, Year 1, Year 2, Year 3
+      legal-entity: &placeholder-entity
+        # To confirm (Kay): suggested Neuroway for the UK and Ireland.
+        name: To be confirmed
+        address: To be confirmed
+        company-number: To be confirmed
+        tax-number: To be confirmed
+        email: To be confirmed
+        phone: To be confirmed
+    ie:
+      name: Ireland
+      currency: EUR
+      locale: en-IE
+      tax-label: VAT
+      tax-percent: 23
+      time-zone: Europe/Dublin
+      # September to June, three terms. To confirm (Pat): start Sep-Dec, middle Jan-Mar, end Apr-Aug.
+      school-year: { first-month: 9, last-month: 6, terms: 3, start-month: 9, middle-month: 1, end-month: 4 }
+      # To confirm (Pat).
+      year-names: Preschool, Junior Infants, Senior Infants, First Class, Second Class
+      legal-entity: *placeholder-entity
+    au:
+      name: Australia
+      currency: AUD
+      locale: en-AU
+      tax-label: GST
+      tax-percent: 10
+      # Queensland: no daylight saving.
+      time-zone: Australia/Brisbane
+      # January to December, four terms. To confirm (Pat): start Jan-Apr, middle May-Aug, end Sep-Dec.
+      school-year: { first-month: 1, last-month: 12, terms: 4, start-month: 1, middle-month: 5, end-month: 9 }
+      # To confirm (Pat).
+      year-names: Kindy, Prep, Year 1, Year 2, Year 3
+      # To confirm (Kay): suggested one of our Australian companies.
+      legal-entity: *placeholder-entity
   # Records of children who have left are deleted this many days after their leaving date.
   retention-days: 365
   # A class below this daily participation rate is flagged on the head teacher dashboard.

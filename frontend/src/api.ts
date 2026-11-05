@@ -713,6 +713,35 @@ export interface HomeExercise {
   points: { point: string; label: string }[]
 }
 
+/** The deployment's country settings (GET /api/settings, open to anyone). taxPercent is e.g. 20 for VAT at 20%. */
+export interface CountrySettings {
+  region: 'UK' | 'IE' | 'AU'
+  country: string
+  currency: string
+  locale: string
+  taxLabel: string
+  taxPercent: number
+  timeZone: string
+  /** Months 1 (January) to 12; each assessment point runs until the next one starts. */
+  schoolYear: {
+    firstMonth: number
+    lastMonth: number
+    terms: number
+    startMonth: number
+    middleMonth: number
+    endMonth: number
+  }
+  yearNames: string[]
+  legalEntity: {
+    name: string
+    address: string
+    companyNumber: string
+    taxNumber: string
+    email: string
+    phone: string
+  }
+}
+
 export interface HomeToday {
   childId: number
   name: string
@@ -1077,6 +1106,8 @@ export const api = {
     request<{ token: string; user: CurrentUser }>('POST', '/api/auth/register', { email, password, displayName }),
   /** Open to anyone: whether Motor Movers at Home is switched on. */
   homeAvailable: () => request<{ enabled: boolean }>('GET', '/api/home/available'),
+  /** Open to anyone: the deployment's country settings. */
+  settings: () => request<CountrySettings>('GET', '/api/settings'),
   sendEnquiry: (enquiry: Enquiry) => request<void>('POST', '/api/enquiries', enquiry),
   plansForSale: () => request<PublicPlan[]>('GET', '/api/plans'),
   homeOverview: () => request<HomeOverview>('GET', '/api/home'),

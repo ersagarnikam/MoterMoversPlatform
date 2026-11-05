@@ -70,6 +70,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
                         // Whether Motor Movers at Home is switched on, for the public website's sign-up.
                         .requestMatchers(HttpMethod.GET, "/api/home/available").permitAll()
+                        // The deployment's country settings (currency, tax, year names), for the website and app.
+                        .requestMatchers(HttpMethod.GET, "/api/settings").permitAll()
                         // The public website's enquiry form (price guide, applying); rate limited per address.
                         .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
                         // The licence plans and today's prices, for the website's price chart.

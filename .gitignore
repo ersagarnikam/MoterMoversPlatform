@@ -21,6 +21,7 @@ frontend/coverage/
 
 # Deployment secrets and backups
 deploy/.env
+deploy/country.env
 deploy/backups/
 
 # Browser tests
