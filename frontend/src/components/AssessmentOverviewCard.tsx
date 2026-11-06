@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type AssessmentOverview } from '../api'
+import { schoolYearLabel, useCountry } from '../country'
 import Skeleton from './Skeleton'
 import StageBadge from './StageBadge'
 
@@ -13,6 +14,7 @@ import StageBadge from './StageBadge'
 export default function AssessmentOverviewCard({ schoolId }: { schoolId: number }) {
   const [data, setData] = useState<AssessmentOverview | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const country = useCountry()
 
   useEffect(() => {
     api.assessmentOverview(schoolId).then(setData).catch((e) => setError(e.message))
@@ -24,7 +26,7 @@ export default function AssessmentOverviewCard({ schoolId }: { schoolId: number 
   return (
     <section className="card">
       <h3>
-        Assessments · school year {data.schoolYear} to {data.schoolYear + 1}
+        Assessments · school year {schoolYearLabel(data.schoolYear, country)}
       </h3>
       <div className="table-wrap" tabIndex={0} role="region" aria-label="Assessments by class">
         <table className="cards">

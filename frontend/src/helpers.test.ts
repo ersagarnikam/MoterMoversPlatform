@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import type { CountrySettings } from './api'
+import { schoolYearLabel } from './country'
 import { sessionTime, startsIn, ZOOM_SDK } from './live'
 import { currencySymbol, money, setCurrency, taxLine } from './money'
 import { CONTACT_EMAIL, mailto, signInRole, SIGN_IN_ROLES } from './site'
@@ -44,6 +46,19 @@ describe('money', () => {
 
   it('labels forms with the currency symbol', () => {
     expect(currencySymbol()).toBe('£')
+  })
+})
+
+describe('schoolYearLabel', () => {
+  const months = (firstMonth: number) => ({ schoolYear: { firstMonth } }) as CountrySettings
+
+  it('names both years where the school year crosses new year', () => {
+    expect(schoolYearLabel(2026, months(9))).toBe('2026 to 2027')
+    expect(schoolYearLabel(2026, null)).toBe('2026 to 2027')
+  })
+
+  it('names one year where it is the calendar year', () => {
+    expect(schoolYearLabel(2026, months(1))).toBe('2026')
   })
 })
 
