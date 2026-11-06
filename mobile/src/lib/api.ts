@@ -324,6 +324,11 @@ export function apiUrl(): string {
   return baseUrl
 }
 
+/** A file link is full, except the relative ones of a development API's local store. */
+export function fullUrl(link: string): string {
+  return link.startsWith('/') ? baseUrl + link : link
+}
+
 export function setApiUrl(url: string) {
   baseUrl = url
 }

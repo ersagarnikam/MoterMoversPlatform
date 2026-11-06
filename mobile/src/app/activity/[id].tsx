@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { Linking, Pressable, Text, View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H1, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
-import { api, localDate, newClientId } from '@/lib/api'
+import { api, fullUrl, localDate, newClientId } from '@/lib/api'
 import { enqueue, flush } from '@/lib/outbox'
 import { radius, space, stageInfo, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
@@ -90,7 +90,7 @@ export default function ActivityScreen() {
       </View>
 
       {activity.videoUrl ? (
-        <Button label="Watch the video" variant="secondary" onPress={() => Linking.openURL(activity.videoUrl!)} />
+        <Button label="Watch the video" variant="secondary" onPress={() => Linking.openURL(fullUrl(activity.videoUrl!))} />
       ) : (
         <Muted>Video coming soon. Follow the steps below together.</Muted>
       )}
