@@ -271,8 +271,26 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
-**Testing (updated by tester, 2026-11-06).** A tester session checks the platform and records its results here,
-each update marked "updated by tester". Latest: **pull request #29 (country settings, go-live task 25 part A) passes**
+**Three-country test pass (updated by tester, 2026-11-06, `main` at 8497412, the Project manager's brief).** Backend
+185/185, web 57 unit tests and build, parent app typecheck, 68/68 browser tests. On screen in UK, IE and AU, as eight
+roles: the right currency everywhere (no pound sign left on web, app or emails), tax lines, year names on the class
+form, the legal line in the footer, payment pages, PDFs and emails (hidden while a placeholder), no browser errors,
+no overflow at phone width, 36 of 36 cross-role access checks. Refunds, about 60 checks per country: part and full,
+over-refund refused, totals net on every view, gapless numbers, PDFs, only payers see their own; the Stripe webhook by
+signed test events. Parent induction gate: passes, website and web preview. Country chooser: passes in the web
+preview, including the refusal with unsent items. School year: Australia turns over on 1 January with figures from
+zero; Ireland stays on the same year through July and August, at the end point, with sessions still offered on
+weekdays (term dates are not modelled), and moves on 1 September.
+**12 bugs, sent to the Project manager.** Major: reminder emails and the session-open phone notification say "(UK
+time)" in Ireland and Australia, though the time is local (`SessionReminderJob`); the website says "Data is held in the
+UK" everywhere (`ProgrammePage`). Medium: the Australian head's card says "school year 2026 to 2027"
+(`AssessmentOverviewCard`); "Prices for UK settings" on the price chart; "Start time (UK)" on the cohort form. Minor:
+"credit note" on the Australian refund form and app; "This half-term" outside the UK; the certificate email's raw date;
+the app's unsent banner counts ratings as sessions; a `clientId` reused on another payment refunds nothing but answers
+200; tax on a last tiny part refund can be negative; a failed Stripe refund leaves the payer with a credit note and no
+word. Not tested: the team's card refund against Stripe (mock only, `RefundTest`), a real phone, real email and push,
+load tests, the production stack.
+Earlier (updated by tester, 2026-11-06): **pull request #29 (country settings, go-live task 25 part A) passes**
 on `main` at 20db19c, tested at the Developer's request (the owner asked for it). Backend 159/159, web 54 unit tests
 and build, 67/67 browser tests (UK). `GET /api/settings` (open) is right for UK, IE and AU; demo data, teacher
 sign-in and today's session work in all three; overrides (`PLATFORM_COUNTRIES_IE_TAXPERCENT=13.5`, an AU legal
@@ -286,7 +304,7 @@ How the tester runs things while the owner's platform uses 8080, 5173 and 8082: 
 `--server.port=8091` (wait for "Demo data loaded", which comes after "Started"), `API_URL=http://localhost:8091` for
 the browser tests, and before 11am Brisbane time a local Playwright config with `timezoneId: 'Europe/London'`.
 Earlier (2026-11-05, `main` at 077a5d5): the first baseline, all suites green. Not run yet: load tests, the
-production compose stack, a real phone, and the exploratory pass role by role.
+production compose stack and a real phone.
 
 [PM: Claude, 2026-11-06] **Boards on monday.com** (account ihau-company, Main workspace). All open work is on the
 go-live board "Motor Movers Go-Live (Dec 2026)", https://ihau-company.monday.com/boards/5032300138 (see Go-live plan,
