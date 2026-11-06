@@ -17,7 +17,7 @@ public class CountryConfig {
         String key = region.name().toLowerCase(Locale.ROOT);
         CountrySettings settings = countries.countries() == null ? null : countries.countries().get(region);
         if (settings == null) {
-            throw new IllegalStateException("No country settings for region " + region + " (platform.countries." + key
+            throw new CountrySettingsException("No country settings for region " + region + " (platform.countries." + key
                     + " in application.yml)");
         }
         return settings.validated(key);

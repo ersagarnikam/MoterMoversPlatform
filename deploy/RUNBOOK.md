@@ -55,6 +55,22 @@ picks the country's settings from `platform.countries` in `backend/src/main/reso
 Ireland's and Australia's points and year names, and every legal entity, are still to be confirmed. Anyone can read a
 deployment's settings at `GET /api/settings` (no sign-in); the website and the parent app use them.
 
+**The legal entity must be set before a production deployment will start.** While any of its values says "To be
+confirmed", the API refuses to start in production and names the settings to fill in. Put them in `deploy/country.env`
+(leave a value blank if it does not apply, for example a VAT number before registration):
+
+```bash
+PLATFORM_COUNTRIES_UK_LEGALENTITY_NAME=Neuroway Ltd
+PLATFORM_COUNTRIES_UK_LEGALENTITY_ADDRESS=1 High Street, Wokingham
+PLATFORM_COUNTRIES_UK_LEGALENTITY_COMPANYNUMBER=01234567
+PLATFORM_COUNTRIES_UK_LEGALENTITY_TAXNUMBER=GB123456789
+PLATFORM_COUNTRIES_UK_LEGALENTITY_EMAIL=hello@example.org
+PLATFORM_COUNTRIES_UK_LEGALENTITY_PHONE=0118 000 0000
+```
+
+The entity then shows in one line in the website footer, on payment pages, at the foot of the certificate PDF and of
+every email. To try the production stack locally, a throwaway `deploy/country.env` with made-up values is enough.
+
 To change a value for one deployment without a new build, add it to `deploy/country.env` (read by the API container
 if present) as `PLATFORM_COUNTRIES_<REGION>_<NAME>`, with the name's dashes and dots removed, for example:
 

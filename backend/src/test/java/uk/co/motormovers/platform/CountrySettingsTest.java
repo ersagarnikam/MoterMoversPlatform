@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.diagnostics.FailureAnalysis;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -18,6 +19,8 @@ import org.springframework.core.io.ClassPathResource;
 
 import uk.co.motormovers.platform.common.config.CountryProperties;
 import uk.co.motormovers.platform.common.config.CountrySettings;
+import uk.co.motormovers.platform.common.config.CountrySettingsException;
+import uk.co.motormovers.platform.common.config.CountrySettingsFailureAnalyzer;
 import uk.co.motormovers.platform.common.model.Region;
 
 /** The country settings in application.yml, region by region (go-live plan, three deployments). */
@@ -56,6 +59,45 @@ class CountrySettingsTest {
         assertThat(au.timeZone()).isEqualTo("Australia/Brisbane");
         assertThat(au.schoolYear()).isEqualTo(new CountrySettings.SchoolYear(1, 12, 4, 1, 5, 9));
         assertThat(au.yearNames()).startsWith("Kindy", "Prep");
+    }
+
+    @Test
+    void australiaLabelsItsTaxNumberAnAbnAndTheOthersAVatNumber() {
+        assertThat(countries(Map.of()).get(Region.AU).legalEntity().taxNumberLabel()).isEqualTo("ABN");
+        assertThat(countries(Map.of()).get(Region.IE).legalEntity().taxNumberLabel()).isEqualTo("VAT number");
+    }
+
+    @Test
+    void theLegalEntityReadsAsOneLineOnceItIsReal() {
+        CountrySettings.LegalEntity real = new CountrySettings.LegalEntity("Neuroway Ltd", "1 High Street", "123",
+                "VAT number", "GB456", "a@example.org", "0118");
+        assertThat(real.isPlaceholder()).isFalse();
+        assertThat(real.line()).isEqualTo("Neuroway Ltd, 1 High Street. Company number 123. VAT number GB456.");
+        // A value that does not apply can be left blank.
+        CountrySettings.LegalEntity noVat = new CountrySettings.LegalEntity("Neuroway Ltd", "1 High Street", "123",
+                "VAT number", "", "a@example.org", "");
+        assertThat(noVat.isPlaceholder()).isFalse();
+        assertThat(noVat.line()).isEqualTo("Neuroway Ltd, 1 High Street. Company number 123.");
+    }
+
+    @Test
+    void aPlaceholderLegalEntityShowsNothing() {
+        CountrySettings.LegalEntity partly = new CountrySettings.LegalEntity("Neuroway Ltd",
+                CountrySettings.LegalEntity.PLACEHOLDER, "123", "VAT number", "GB456", "a@example.org", "0118");
+        assertThat(partly.isPlaceholder()).isTrue();
+        assertThat(partly.line()).isNull();
+        for (CountrySettings c : countries(Map.of()).values()) {
+            assertThat(c.legalEntity().line()).isNull();
+        }
+    }
+
+    @Test
+    void aBadValueIsExplainedInOneLineAtStartUp() {
+        CountrySettingsException bad = new CountrySettingsException("platform.countries.uk.currency is not an ISO 4217 "
+                + "code: POUNDS");
+        FailureAnalysis analysis = new CountrySettingsFailureAnalyzer().analyze(new RuntimeException("wrapped", bad));
+        assertThat(analysis.getDescription()).contains("platform.countries.uk.currency");
+        assertThat(analysis.getAction()).contains("deploy/country.env");
     }
 
     @Test

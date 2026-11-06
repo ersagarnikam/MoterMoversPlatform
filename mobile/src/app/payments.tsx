@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Linking, View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
-import { api, formatDate, money, taxLine, type Payment } from '@/lib/api'
+import { api, formatDate, legalLine, money, taxLine, type Payment } from '@/lib/api'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '@/lib/contact'
 import { space, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
@@ -82,6 +82,7 @@ export default function PaymentsScreen() {
           data.payments.map((x) => <PaymentRow key={x.id} payment={x} showStatus />)
         )}
       </Card>
+      {legalLine() && <Muted>{legalLine()}</Muted>}
     </Screen>
   )
 }
