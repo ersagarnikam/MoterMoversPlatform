@@ -27,7 +27,9 @@ the owner are happy with the questions at the end of this note.
    not follow the age (your answer to question 2): young children start at **Orange**, and children at school start at
    **Green**, the core programme, so that they go through all of it. Babies and toddlers (under 2) start at **Red**,
    which is written for an adult with a baby. The parent can choose another colour.
-4. **Reads your safety note** before the first session (your words, question 9).
+4. **Does a short induction, then reads your safety note** before the first session. The induction is like the staff
+   one (your answer of 5 November): lessons to read, then the sessions unlock. Each carer does their own. *Its lessons
+   are placeholders until yours arrive.*
 5. **Does a daily session, about ten minutes.** In a rhyme colour (Red, Orange, Yellow): **one rhyme a week, done five
    times that week**, then the next rhyme. From Green on: **each module builds up over five weeks**. The first week
    has the exercises carried on from the module before and the first two new ones; one or two more are added each
@@ -91,7 +93,8 @@ and **Leo**, 1 year 8 months, who has not done the starting check yet (he will s
 1. **The other cool-downs.** The text of the cool-down for Green modules 2 to 6, and for Blue and Indigo.
 2. **Violet.** Five weeks a module, and a cool-down, as for Green to Indigo? *Assumed for now: five weeks, no separate
    cool-down.*
-3. **The parent induction's lessons**: what the short induction says, as for the staff one.
+3. **The parent induction's lessons**: what the short induction says, as for the staff one. The way it works is
+   considered in the design, with placeholder lessons for now.
 4. **The film files**, from you or Laura.
 
 ## The questions as asked (27 October 2026)

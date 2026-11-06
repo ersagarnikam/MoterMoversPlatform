@@ -15,6 +15,7 @@ import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
+import uk.co.motormovers.platform.training.model.InductionAudience;
 import uk.co.motormovers.platform.training.model.InductionLesson;
 import uk.co.motormovers.platform.training.model.InductionProgress;
 import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
@@ -24,8 +25,10 @@ import uk.co.motormovers.platform.user.model.Role;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
- * The one-hour induction. School staff work through the approved lessons at their own pace; once the
- * last one is done the induction is complete for good and the daily sessions unlock.
+ * The inductions. School staff work through the approved lessons of the one-hour induction at their own pace; once
+ * the last one is done it is complete for good and the daily sessions unlock. Parents on Motor Movers at Home do the
+ * same with the short parent induction, through HomeService, before their first home session. Lessons added later
+ * lock nobody out.
  */
 @Service
 public class InductionService {
@@ -47,10 +50,30 @@ public class InductionService {
 
     @Transactional(readOnly = true)
     public TrainingViews.InductionView mine() {
-        CurrentUser me = requireStaff();
+        return view(requireStaff(), InductionAudience.STAFF);
+    }
+
+    @Transactional
+    public TrainingViews.InductionView completeLesson(Long lessonId) {
+        return complete(requireStaff(), InductionAudience.STAFF, lessonId);
+    }
+
+    /** The parent induction for the signed-in parent. */
+    @Transactional(readOnly = true)
+    public TrainingViews.InductionView mineAsParent(CurrentUser parent) {
+        return view(parent, InductionAudience.PARENT);
+    }
+
+    @Transactional
+    public TrainingViews.InductionView completeParentLesson(CurrentUser parent, Long lessonId) {
+        return complete(parent, InductionAudience.PARENT, lessonId);
+    }
+
+    private TrainingViews.InductionView view(CurrentUser me, InductionAudience audience) {
         Set<Long> done = progress.findByIdUserId(me.id()).stream()
                 .map(InductionProgress::getLessonId).collect(Collectors.toSet());
-        List<TrainingViews.LessonView> list = lessons.findByStatusOrderByPosition(ContentStatus.APPROVED).stream()
+        List<TrainingViews.LessonView> list = lessons
+                .findByAudienceAndStatusOrderByPosition(audience, ContentStatus.APPROVED).stream()
                 .map(l -> TrainingViews.LessonView.of(l, done.contains(l.getId())))
                 .toList();
         return new TrainingViews.InductionView(list, list.stream().mapToInt(TrainingViews.LessonView::minutes).sum(),
@@ -58,11 +81,9 @@ public class InductionService {
                 users.findById(me.id()).map(AppUser::getInductionCompletedOn).orElse(null));
     }
 
-    @Transactional
-    public TrainingViews.InductionView completeLesson(Long lessonId) {
-        CurrentUser me = requireStaff();
+    private TrainingViews.InductionView complete(CurrentUser me, InductionAudience audience, Long lessonId) {
         InductionLesson lesson = lessons.findById(lessonId)
-                .filter(l -> l.getStatus() == ContentStatus.APPROVED)
+                .filter(l -> l.getStatus() == ContentStatus.APPROVED && l.getAudience() == audience)
                 .orElseThrow(() -> new NotFoundException("Induction lesson", lessonId));
         InductionProgress.Key key = new InductionProgress.Key(me.id(), lesson.getId());
         if (!progress.existsById(key)) {
@@ -70,12 +91,12 @@ public class InductionService {
         }
         Set<Long> done = progress.findByIdUserId(me.id()).stream()
                 .map(InductionProgress::getLessonId).collect(Collectors.toSet());
-        boolean allDone = lessons.findByStatusOrderByPosition(ContentStatus.APPROVED).stream()
+        boolean allDone = lessons.findByAudienceAndStatusOrderByPosition(audience, ContentStatus.APPROVED).stream()
                 .allMatch(l -> done.contains(l.getId()));
         if (allDone) {
             users.findById(me.id()).ifPresent(u -> u.completeInduction(LocalDate.now(clock)));
         }
-        return mine();
+        return view(me, audience);
     }
 
     /** The platform team runs no sessions of its own, so it is never held back by the induction. */

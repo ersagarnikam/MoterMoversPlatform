@@ -109,6 +109,27 @@ class InductionAndResourcesTest {
         mvc.perform(post("/api/admin/induction/" + JsonPath.read(lesson, "$.id") + "/approve")
                 .header("Authorization", bearer(admin)))
                 .andExpect(status().isBadRequest());
+        // The parent induction goes through the same wording check.
+        String parentLesson = mvc.perform(post("/api/admin/parent-induction").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"position\":99,\"title\":\"Spotting a disorder\",\"summary\":\"Early signs\","
+                        + "\"body\":\"Look closely.\",\"minutes\":5}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        mvc.perform(post("/api/admin/parent-induction/" + JsonPath.read(parentLesson, "$.id") + "/approve")
+                .header("Authorization", bearer(admin)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void staffSeeOnlyTheStaffInductionAndTheTeamSeesEachSeparately() throws Exception {
+        String admin = login("admin@motormovers.test");
+        mvc.perform(get("/api/admin/induction").header("Authorization", bearer(admin)))
+                .andExpect(jsonPath("$[0].label").value("Induction · Part 1"));
+        mvc.perform(get("/api/admin/parent-induction").header("Authorization", bearer(admin)))
+                .andExpect(jsonPath("$[0].label").value("Parent induction · Part 1"));
+        mvc.perform(get("/api/training/induction").header("Authorization", bearer(login("teacher@oakfield.test"))))
+                .andExpect(jsonPath("$.lessons.length()").value(6));
     }
 
     private String fetch(String token, String path) throws Exception {

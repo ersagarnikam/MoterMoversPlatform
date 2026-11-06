@@ -70,7 +70,7 @@ function InductionSection() {
   )
 }
 
-function Lessons({ lessons, onComplete }: { lessons: Induction['lessons']; onComplete: (id: number) => void }) {
+export function Lessons({ lessons, onComplete }: { lessons: Induction['lessons']; onComplete: (id: number) => void }) {
   return (
     <div className="cohorts">
       {lessons.map((l) => (

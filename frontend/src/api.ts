@@ -464,7 +464,7 @@ export interface TrustRow {
 }
 
 /** The kinds of content Pat and Laura sign off. All share the ContentItem shape. */
-export type ContentKind = 'content' | 'home-activities' | 'guidance' | 'resources' | 'induction'
+export type ContentKind = 'content' | 'home-activities' | 'guidance' | 'resources' | 'induction' | 'parent-induction'
 
 export type CourseTrack = 'PROFESSIONAL' | 'PARENT'
 
@@ -781,6 +781,8 @@ export interface HomeToday {
   levels: { score: number; label: string }[]
   /** Pat's safety note, shown before the first session. */
   safetyNote: string
+  /** This parent has finished the parent induction; sessions stay locked until they have. */
+  inductionDone: boolean
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
 }
@@ -1123,6 +1125,9 @@ export const api = {
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
   homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
+  homeInduction: () => request<Induction>('GET', '/api/home/induction'),
+  completeHomeInductionLesson: (lessonId: number) =>
+    request<Induction>('POST', `/api/home/induction/lessons/${lessonId}/complete`),
   recordHomeSession: (childId: number) =>
     request<{ saved: number; duplicates: number }>('POST', '/api/home/sessions', [
       { clientId: newClientId(), childId, doneOn: localDate() },

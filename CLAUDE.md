@@ -41,7 +41,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V17`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V19`, added by Dev 2026-11-06; V18 is in pull request #32);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -51,7 +51,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 159 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 161 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 54 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -110,7 +110,8 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
   year, so year-on-year figures must not split it).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
-- Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26).
+- Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26). (added by Dev,
+  2026-11-06) The gate has one place, `HomeService.requireReadyForSessions`: add the payment check there.
 - Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
   (`site.ts`) and leads with "From the Movement for Learning Project"; Pat said Movement for Learning will not be
   reopened, so the credit wording must be agreed with her. `PLATFORM_ENQUIRY_EMAIL` still defaults to the owner.
@@ -158,6 +159,25 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `parent-induction`, pull request #35): go-live task 56.**
+Done: the gate, with tests. Left: the owner merges; Pat's lessons replace the placeholders. Merge #32 before this if
+you can, so migrations run in order (V18, then V19). Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Parent induction gate (go-live task 56, migration V19).** Pat (2026-11-05): a short induction
+like the staff one. `induction_lesson` gains `audience` (STAFF or PARENT), and `part` replaces `position` so that each
+audience numbers its own parts (the column was replaced because the old unique constraint is named differently on H2
+and PostgreSQL). Parents use `GET /api/home/induction` and `POST /api/home/induction/lessons/{id}/complete`, behind the
+home programme setting; `InductionService` serves both audiences, and a parent's completion is the same
+`app_user.induction_completed_on`, so it is permanent and lessons added later lock nobody out. The team writes and
+approves lessons on the Content page's **Parent induction** tab (`/api/admin/parent-induction`), with the wording check.
+`POST /api/home/sessions` is refused with a 400 until the parent has finished (`HomeService.requireReadyForSessions`, the
+one place for this; **task 26 adds the pass check there**), and each carer does their own. Today gains `inductionDone`:
+the website (`/home/induction`, `HomeInductionPage`) and the parent app (`home-induction`) show the induction in place of
+Start. **The lessons are two placeholders** ("Placeholder lesson 1" and 2), marked on screen, approved in the demo and
+drafts in the starter content; replace them when Pat's arrive. With no approved parent lessons, sessions stay closed and
+the page says the induction is being prepared, so `HOME_PROGRAMME` must not be switched on before they are approved.
+Demo parents (Priya, Jo) are past the gate; a family signing up in the demo sees it.
 
 (added by Dev, 2026-11-06) **Country settings (go-live task 25, part A; pull request #29).** `PLATFORM_REGION` (`UK`, `IE` new, or `AU`)
 picks a block of `platform.countries` in application.yml: country name, currency and locale, tax label and percent,
@@ -266,7 +286,7 @@ and `.msg`, attachments in `F:\IHA\Pat\RE__Pat_Preedy_Prototype_Response_`).** S
   school year (it was every 91 days). Her gentle prompt (nursery or health visitor) and her safety note (shown before
   the first session) word for word. Today gains `rhymes`, `week`, `weeks`, `progressLabel`, `sessionTitle`,
   `newThisWeek` and `safetyNote`; the check result loses `forAge` and `earlier`.
-- **Not built:** the induction training she wants home parents to do first (no content yet; ask her what it covers
+- **Not built:** (added by Dev, 2026-11-06: the induction's mechanism is built, see Current state, its lessons are still to come) the induction training she wants home parents to do first (no content yet; ask her what it covers
   and whether the parent course counts), Cool Down 1 at the end of each session, and videos (Green and Orange are
   filmed on neuroway.co.uk). Open questions in `docs/home-programme-design.md` (Still to settle).
 - **Browser tests and time zones:** the API's clock is UK time and the web sends the browser's date, so between
@@ -535,7 +555,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) parent induction before the first home session; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

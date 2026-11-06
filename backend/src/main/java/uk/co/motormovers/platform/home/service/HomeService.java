@@ -53,6 +53,8 @@ import uk.co.motormovers.platform.home.util.HomeRules;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
+import uk.co.motormovers.platform.training.dto.TrainingViews;
+import uk.co.motormovers.platform.training.service.InductionService;
 import uk.co.motormovers.platform.user.model.AppUser;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
@@ -105,13 +107,15 @@ public class HomeService {
     private final Mailer mailer;
     private final ParentProgress parentProgress;
     private final CoolDowns coolDowns;
+    private final InductionService induction;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
-            Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns) {
+            Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns,
+            InductionService induction) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -130,6 +134,7 @@ public class HomeService {
         this.mailer = mailer;
         this.parentProgress = parentProgress;
         this.coolDowns = coolDowns;
+        this.induction = induction;
     }
 
     public boolean isEnabled() {
@@ -379,6 +384,30 @@ public class HomeService {
         return homeChild(child, today());
     }
 
+    // --- The parent induction ---------------------------------------------------------------------------------------
+
+    @Transactional(readOnly = true)
+    public TrainingViews.InductionView induction() {
+        requireEnabled();
+        return induction.mineAsParent(currentUser.current());
+    }
+
+    @Transactional
+    public TrainingViews.InductionView completeInductionLesson(Long lessonId) {
+        requireEnabled();
+        return induction.completeParentLesson(currentUser.current(), lessonId);
+    }
+
+    /**
+     * What a parent needs before a home session, the one place it is decided: the parent induction (each carer does
+     * their own). Task 26 (the 12-month pass) adds its payment check here, so both are one rule.
+     */
+    private void requireReadyForSessions(CurrentUser parent) {
+        if (!induction.isComplete(parent)) {
+            throw new IllegalStateException("Please finish the short parent induction before your first session");
+        }
+    }
+
     // --- The daily session ------------------------------------------------------------------------------------------
 
     /**
@@ -408,7 +437,8 @@ public class HomeService {
             return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), false, false, 0,
                     0, 0, 0, 0, 0, false, "", "", List.of(), List.of(), List.of(), canRate, days.contains(today), grid,
                     days.size(), COUNTER_DAYS, sessions.countByChildId(childId), null, checkDue,
-                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE, null);
+                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE, null,
+                    induction.isComplete(currentUser.current()));
         }
         List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
         Set<String> rated = theirs.stream().map(s -> s.getExercise().getId() + ":" + s.getPoint())
@@ -428,7 +458,8 @@ public class HomeService {
                 due == null ? null : new HomeViews.Review(due.point(), ExercisePoints.label(due.point(), stage),
                         due.exercises().stream().map(AssessmentViews.ExerciseView::of).toList()),
                 checkDue, canRate ? support(stage, theirs) : new HomeViews.Support(false, null), levels,
-                HomeViews.SAFETY_NOTE, plan.rhymes() ? null : coolDowns.forModule(stage, plan.module()));
+                HomeViews.SAFETY_NOTE, plan.rhymes() ? null : coolDowns.forModule(stage, plan.module()),
+                induction.isComplete(currentUser.current()));
     }
 
     /** Accepts a batch of home sessions, typically saved on the phone while offline. Safe to resend. */
@@ -436,6 +467,7 @@ public class HomeService {
     public HomeViews.SubmitResult recordSessions(List<HomeViews.SessionIn> batch) {
         requireEnabled();
         CurrentUser me = currentUser.current();
+        requireReadyForSessions(me);
         LocalDate today = today();
         int saved = 0;
         int duplicates = 0;

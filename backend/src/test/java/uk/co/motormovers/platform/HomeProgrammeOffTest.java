@@ -38,5 +38,7 @@ class HomeProgrammeOffTest {
         mvc.perform(post("/api/home/children").header("Authorization", token)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Sam\",\"ageMonths\":40}"))
                 .andExpect(status().isForbidden());
+        // The parent induction is behind the same setting.
+        mvc.perform(get("/api/home/induction").header("Authorization", token)).andExpect(status().isForbidden());
     }
 }
