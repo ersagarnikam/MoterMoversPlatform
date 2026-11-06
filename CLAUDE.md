@@ -170,8 +170,8 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 [PM: Claude, 2026-11-06] **Contracting company, decision 1 (go-live task 2), part answered.** The owner: for Australia only,
-International Healthcare Australia contracts, with Motor Movers as a brand under that registration, for now. The UK and
-Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. The exact registered name and numbers are still
+International Healthcare Australia Pty Ltd contracts, with Motor Movers as a brand under that registration, for now. The UK and
+Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. Its ACN and ABN are still
 to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_...`, `deploy/country.env`); production
 refuses placeholders.
 
