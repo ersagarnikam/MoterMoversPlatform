@@ -226,6 +226,46 @@ and the money has to go back another way), and "more than is left to refund" (a 
 refunded here by hand, so the money went back twice, and it is not recorded). Both are for the team to sort out in
 Stripe. Refunds of tax are not reported anywhere: prices include tax, and each credit note shows the tax in it.
 
+## File storage
+
+Films, rhyme recordings and printables live in a private bucket, one per deployment. Without one the platform still
+works: the team pastes links, as before. **This has not yet been tried on a real bucket**: do the checks below first.
+
+1. In DigitalOcean, create a **Standard** Spaces bucket (not Cold Storage, which has no CORS) near the deployment's
+   viewers: LON1 for the UK, FRA1 or AMS3 for Ireland, SYD1 for Australia. Keep file listing restricted. Files are private
+   by default; do not make them public, or anyone with a link could open paid content.
+2. Leave the bucket's CDN off. Signed requests are not cached there, may be charged twice, and an upload through it stops
+   at 8100 KiB (Spaces limits); `ProductionChecks` refuses a CDN endpoint. If it is ever switched on, purge its cache after
+   any CORS change, or browsers keep failing.
+3. Add one CORS rule to the bucket, so browsers can upload to it: origin `https://<APP_DOMAIN>` (the full origin), method
+   `PUT`, allowed header `content-type`, max age 5 seconds. Playing a file needs no rule.
+4. Create an access key limited to this bucket, then set these in `deploy/.env` and restart `api` and `web`:
+
+| Setting | Example |
+|---|---|
+| `STORAGE_ENDPOINT` | `https://lon1.digitaloceanspaces.com` |
+| `STORAGE_REGION` | `lon1` |
+| `STORAGE_BUCKET` | `motor-movers-uk` |
+| `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` | the key from step 4 |
+| `STORAGE_ORIGIN` | `https://motor-movers-uk.lon1.digitaloceanspaces.com` |
+
+The API needs all of the first five, or production refuses to start. Without `STORAGE_ORIGIN`, the content page's own
+security policy blocks the upload and the form says the file could not be sent.
+
+**First checks on a real bucket:** upload a small file and a film of a few hundred MB on Content approval; open it from
+the draft; approve it, then play it as a teacher and drag the video's position bar (seeking); try a file that is too
+large; open a link after `STORAGE_READ_HOURS`, which must fail; and open the film in the parent app.
+
+**Limits (DigitalOcean's docs, checked 2026-11-06).** One PUT can be up to 5 GB, and the platform sends each file as one
+PUT, so a film stops at `STORAGE_MAX_UPLOAD_MB` (2048 by default, 5120 at most); a failed upload starts again. A new bucket
+takes 800 operations a second (LON1 and SYD1 are not in the table of older limits); every seek is a request, and the docs
+suggest the CDN above 400 reads a second, which signed links cannot use. Signed links last `STORAGE_READ_HOURS` (8, up to
+168): a link that expires while a page is open stops the file until the page is reloaded. The docs state range requests
+are supported on GET.
+
+A signed link works for anyone who has it until it expires, so a shared link can be opened without a licence for those
+hours. Uploaded files are never deleted by the platform: one uploaded for a draft that was not saved stays in the bucket.
+
 ## Everyday operations
 
 | Task | How |

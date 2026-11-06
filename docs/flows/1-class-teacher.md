@@ -78,7 +78,7 @@ sequenceDiagram
   API->>API: requireClassAccess
   API->>DB: LicenceService.licensedFor (school, stage, today)
   API->>DB: next approved session for stage (only when licensed), last 20 school days
-  API-->>W: stageLicensed, next session, counter, doneToday
+  API-->>W: stageLicensed, next session (an uploaded film or rhyme as a signed link), counter, doneToday
   T->>W: Start session (/class/{id}/play)
   W-->>T: Plan ticks along, video (placeholder), rhyme for Red, Orange, Yellow
   T->>W: Tap children who are absent

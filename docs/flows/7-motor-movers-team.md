@@ -15,7 +15,10 @@ Content, schools and licences, courses and trainers, plans, prices and payments.
 
 ## Write and approve content
 
-Sessions, home activities, guidance, resources and induction lessons start as drafts. Approval runs the wording guard.
+Sessions, home activities, guidance, resources and induction lessons start as drafts. Approval runs the wording guard. A
+film, recording or printable is a pasted link, or a file uploaded first: `POST /api/admin/files` (ADMIN; type and size
+checked) gives an upload link, the browser sends the file straight to the store, and the form saves its key. The draft
+shows Open the file. The content page alone may reach the store, so it opens with a full page load.
 
 **Endpoints:** `POST /api/admin/content` · `GET /api/admin/content` · `POST /api/admin/content/{id}/approve` · `POST /api/admin/content/{id}/reject`
 
@@ -53,6 +56,8 @@ sequenceDiagram
 - Diagnostic terms block approval (WordingGuard).
 - Only approved content reaches teachers and parents.
 - The same pattern covers /home-activities, /guidance, /resources and /induction.
+- An upload link takes one file of the agreed type and size; video, audio, PDF and image types only.
+- An uploaded file gets a signed link only after the reader's access checks; pasted links are sent as they are.
 
 <a id="sign-up-school"></a>
 

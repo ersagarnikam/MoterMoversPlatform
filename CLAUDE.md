@@ -41,7 +41,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V20`, added by Dev 2026-11-06);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V21`, added by Dev 2026-11-06);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -51,13 +51,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 189 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 206 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 59 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # (added by Dev, 2026-11-06) 68 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-06) 69 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -161,6 +161,24 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `file-storage`, pull request to come): go-live task 29.** Done:
+uploads and signed links, tested against the local store. Left: the Project manager merges once CI is green. Nothing has
+been tried on a real bucket yet (no DigitalOcean account). Remove this note once merged.
+
+(added by Dev, 2026-11-06) **File storage (go-live task 29, the owner chose DigitalOcean Spaces; migration V21).** `common/storage`:
+`FileStorage` with `S3FileStorage` (any S3-compatible bucket; Signature Version 4 written by hand, no AWS SDK, pinned to AWS's
+published example in `S3FileStorageTest`) and `LocalFileStorage` (dev and tests, on by default in the `dev` profile, refused
+in production). With no store, pasted links work as before. Items keep their pasted link and gain a key beside it
+(`video_key`, `file_key`); a key wins. The team (`/api/admin/files`, ADMIN) gets a one-hour upload link bound to the file's
+type and size, and the browser sends the file straight to the store (`src/upload.ts`), so films skip nginx's 2 MB limit.
+`FileLinks.link` signs a read link for 8 hours (`STORAGE_READ_HOURS`): after the licence check for sessions, rhymes and
+resources (a resource for all stages needs some licence), for a parent with a linked child or a family for home
+activities, and for anyone who can already see an induction lesson. **Reads and uploads go to the bucket, never the CDN.**
+**Only `/admin/content` allows the bucket in connect-src** (`STORAGE_ORIGIN`, nginx.conf and vite.config.ts), and a CSP is set
+when a page loads, so links to that page must be full page loads (`reloadDocument`), as with `/live`. Drafts show "Open the
+file" so a reviewer can check it. Not built: deleting files, including ones uploaded for a draft never saved or a draft
+sent back. Details: RUNBOOK, File storage.
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings`, pull request #39): go-live task 72.** Done:
 the Tester's findings 1 to 6 and 8 to 11, with tests. Left: the Project manager merges once CI is green. Findings 7
@@ -657,7 +675,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -674,8 +692,9 @@ Not started unless noted. Confirm priorities with the owner.
    sending domain, then follow `deploy/RUNBOOK.md`.
 2. Parent app store builds via EAS with (added by Dev, 2026-11-06) `EXPO_PUBLIC_API_URL_UK`, `_IE` and `_AU` set to the production `https://` addresses (RUNBOOK, Parent app builds). `eas init`
    gives the project id phone notifications need; then set `PUSH_ENABLED=true` (RUNBOOK, Phone notifications).
-3. Session videos are timed placeholders until filmed sessions are uploaded (`programme_session.video_url`);
-   content upload and hosting for videos/audio is still to be designed.
+3. Session videos are timed placeholders until filmed sessions are uploaded. (added by Dev, 2026-11-06) Upload and hosting
+   are built (go-live task 29, see Current state); still to do: create the buckets (RUNBOOK, File storage) and upload the
+   films (go-live task 57).
 4. Rate limits are per API instance (in memory). Move to a shared store (e.g. Redis) before running more
    than one API container.
 5. Done 2026-10-21: off-server copies (`offsite` compose profile, rclone to an S3-compatible bucket) and
