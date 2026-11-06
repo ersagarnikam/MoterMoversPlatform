@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.payment.model.Payment;
@@ -59,11 +60,13 @@ public class TrainingService {
     private final CertificateService certificates;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final CountrySettings country;
 
     public TrainingService(CourseRepository courses, CohortRepository cohorts, CohortSessionRepository sessions,
             EnrolmentRepository enrolments, CourseRequestRepository requests, SessionAttendanceRepository attendance,
             AppUserRepository users, PaymentRepository payments, SchoolRepository schools, AccessPolicy access,
-            Mailer mailer, CertificateService certificates, CurrentUserResolver currentUser, Clock clock) {
+            Mailer mailer, CertificateService certificates, CurrentUserResolver currentUser, Clock clock,
+            CountrySettings country) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.sessions = sessions;
@@ -78,6 +81,7 @@ public class TrainingService {
         this.certificates = certificates;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.country = country;
     }
 
     @Transactional(readOnly = true)
@@ -270,9 +274,11 @@ public class TrainingService {
         Enrolment e = enrolments.save(new Enrolment(cohort, learner));
         int price = cohort.getCourse().getPricePence();
         if (schoolId != null && price > 0) {
-            e.invoicedWith(payments.save(Payment.bySchool(schools.getReferenceById(schoolId), PaymentPurpose.COURSE,
+            Payment invoice = Payment.bySchool(schools.getReferenceById(schoolId), PaymentPurpose.COURSE,
                     cohort.getCourse().getTitle() + " · " + learner.getDisplayName() + " (" + cohort.getName() + ")",
-                    price, LocalDate.now(clock), null, bookedBy + " (booking)", clock.instant())));
+                    price, LocalDate.now(clock), null, bookedBy + " (booking)", clock.instant());
+            invoice.includesTaxAt(country.taxRateBp());
+            e.invoicedWith(payments.save(invoice));
         }
         return e;
     }

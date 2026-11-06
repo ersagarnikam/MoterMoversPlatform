@@ -79,6 +79,9 @@ class BookingRequestTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value(containsString("already been approved")));
         assertThat(lewisInvoices(head, oakfield)).containsExactly("DUE");
+        // The invoice for an approved place includes VAT, like one the team records.
+        assertThat((List<Integer>) JsonPath.read(fetch(head, "/api/schools/" + oakfield + "/payments"),
+                "$.payments[?(@.description =~ /.*Mr Lewis.*/)].taxPence")).containsExactly(3_000);
         String mine = fetch(lewis, "/api/training/enrolments/mine");
         assertThat((List<String>) JsonPath.read(mine, "$[*].cohortName")).contains("Cohort A · UK evening");
 
