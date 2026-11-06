@@ -166,7 +166,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `log-safety`, pull request to come): go-live task 73.** Done:
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `log-safety`, pull request #44): go-live task 73.** Done:
 log limits, safe logs and the optional shipper, tried on a local production stack with a local Loki. Left: the Project
 manager merges once CI is green. No log service has been chosen. Remove this note once merged.
 
