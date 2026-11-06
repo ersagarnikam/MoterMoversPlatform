@@ -162,10 +162,6 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings`, pull request #39): go-live task 72.** Done:
-the Tester's findings 1 to 6 and 8 to 11, with tests. Left: the Project manager merges once CI is green. Findings 7
-("This half-term", for Pat) and 12 (what the payer is told about a failed refund) are held. Remove this note once merged.
-
 (added by Dev, 2026-11-06) **The Tester's findings on country and refunds (go-live task 72).** Two more country settings,
 both in `GET /api/settings`: `time-label` ("UK time", "Irish time", "Queensland time"; required), used by session reminders,
 phone notices and the cohort form, and `data-held-in` ("the UK", "the EU", "Australia"), which the programme page states.
@@ -174,7 +170,7 @@ settings too, so the refund form and the parent app call it an adjustment note i
 names a calendar school year as one year (`schoolYearLabel`, `src/country.ts`). The price chart's note no longer says UK;
 task 28 decides any VAT wording. Certificate emails write dates in words. Today in the parent app counts what is waiting by
 name ("1 session and 2 ratings are saved…"), both queues from the first load. A refund's `clientId` already used on
-another payment is refused with a 400; on the same payment it stays a harmless repeat.
+another payment is refused with a 400; on the same payment it stays a harmless repeat. Findings 7 ("This half-term", for Pat) and 12 (what the payer is told about a failed refund) are held.
 
 (added by Dev, 2026-11-06) **Refunds and credit notes (go-live task 60, migration V20).** A paid payment stays PAID;
 `payment_refund` rows say what went back (part refunds allowed, never more than was paid). The team refunds on
