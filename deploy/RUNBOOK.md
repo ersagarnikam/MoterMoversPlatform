@@ -232,7 +232,7 @@ Films, rhyme recordings and printables live in a private bucket, one per deploym
 works: the team pastes links, as before. **This has not yet been tried on a real bucket**: do the checks below first.
 
 1. In DigitalOcean, create a **Standard** Spaces bucket (not Cold Storage, which has no CORS) near the deployment's
-   viewers: LON1 for the UK, FRA1 or AMS3 for Ireland, SYD1 for Australia. Keep file listing restricted. Files are private
+   viewers: LON1 for the UK, AMS3 (Amsterdam) for Ireland, SYD1 for Australia. Keep file listing restricted. Files are private
    by default; do not make them public, or anyone with a link could open paid content.
 2. Leave the bucket's CDN off. Signed requests are not cached there, may be charged twice, and an upload through it stops
    at 8100 KiB (Spaces limits); `ProductionChecks` refuses a CDN endpoint. If it is ever switched on, purge its cache after
