@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api, newClientId, type Payment } from '../api'
+import { useCountry } from '../country'
 import { currencySymbol, money } from '../money'
 import { useConfirm } from './Feedback'
 
@@ -22,6 +23,8 @@ export default function RefundForm({
   // One id for this form: pressing the button twice cannot refund twice.
   const [clientId] = useState(newClientId)
   const byCard = payment.paidOnline
+  const noteName = (useCountry()?.creditNoteTitle ?? 'Credit note').toLowerCase()
+  const aNote = `${/^[aeiou]/.test(noteName) ? 'an' : 'a'} ${noteName}`
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -29,8 +32,8 @@ export default function RefundForm({
     const ok = await confirm({
       title: `Refund ${money(amountPence)} to ${payment.payerName}?`,
       body: byCard
-        ? 'The money goes back to their card through Stripe, and they are emailed a credit note.'
-        : 'This records the refund and emails a credit note. The money must be returned by hand.',
+        ? `The money goes back to their card through Stripe, and they are emailed ${aNote}.`
+        : `This records the refund and emails ${aNote}. The money must be returned by hand.`,
       confirmLabel: 'Refund',
       cancelLabel: 'Keep it',
       danger: true,
@@ -73,7 +76,7 @@ export default function RefundForm({
         />
       </label>
       <label>
-        Reason (shown on the credit note)
+        Reason (shown on the {noteName})
         <input value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} required />
       </label>
       {error && (

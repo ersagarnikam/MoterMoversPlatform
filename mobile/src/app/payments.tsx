@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Linking, View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
-import { api, formatDate, legalLine, money, taxLine, type Payment } from '@/lib/api'
+import { api, creditNoteName, formatDate, legalLine, money, taxLine, type Payment } from '@/lib/api'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '@/lib/contact'
 import { space, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
@@ -140,7 +140,7 @@ function RefundRow({ refund }: { refund: Payment['refunds'][number] }) {
         <Muted>Sent to your email.</Muted>
       ) : (
         <Button
-          label={state === 'failed' ? 'Could not send. Try again' : 'Email me the credit note'}
+          label={state === 'failed' ? 'Could not send. Try again' : `Email me the ${creditNoteName()}`}
           variant="secondary"
           busy={state === 'busy'}
           onPress={() => void send()}

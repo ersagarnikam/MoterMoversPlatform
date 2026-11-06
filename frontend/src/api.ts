@@ -765,6 +765,8 @@ export interface CountrySettings {
   timeLabel: string
   /** Where this deployment's data is held, e.g. "the UK"; empty when it is not stated. */
   dataHeldIn: string | null
+  /** "Credit note", or "Adjustment note" in Australia. */
+  creditNoteTitle: string
 }
 
 export interface HomeToday {
