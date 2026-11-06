@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.util.Money;
 import uk.co.motormovers.platform.payment.dto.PaymentViews;
@@ -55,10 +56,11 @@ public class PaymentService {
     private final PushService push;
     private final Clock clock;
     private final Money money;
+    private final CountrySettings country;
 
     public PaymentService(PaymentRepository payments, SchoolRepository schools, TrustRepository trusts,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, PushService push,
-            Clock clock, Money money) {
+            Clock clock, Money money, CountrySettings country) {
         this.payments = payments;
         this.schools = schools;
         this.trusts = trusts;
@@ -68,6 +70,7 @@ public class PaymentService {
         this.push = push;
         this.clock = clock;
         this.money = money;
+        this.country = country;
     }
 
     @Transactional(readOnly = true)
@@ -159,6 +162,7 @@ public class PaymentService {
             payment = Payment.byPerson(payer, r.purpose(), r.description().strip(), r.amountPence(), r.invoicedOn(),
                     reference, recordedBy, clock.instant());
         }
+        payment.includesTaxAt(country.taxRateBp());
         if (r.paidOn() != null) {
             payment.markPaid(r.paidOn());
         }

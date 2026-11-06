@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform.common.config;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.ZoneId;
 import java.util.Currency;
 import java.util.IllformedLocaleException;
@@ -72,6 +73,11 @@ public record CountrySettings(
         require(yearNames != null && !yearNames.isEmpty(), where + "year-names is missing");
         require(legalEntity != null, where + "legal-entity is missing");
         return this;
+    }
+
+    /** The tax rate in basis points: 2000 for 20%, 1350 for 13.5%. */
+    public int taxRateBp() {
+        return taxPercent.movePointRight(2).setScale(0, RoundingMode.HALF_UP).intValueExact();
     }
 
     public ZoneId zone() {

@@ -15,7 +15,7 @@ function RootStack() {
 
   // Amounts follow the server's currency (go-live task 25); the call is open, so it needs no sign-in.
   useEffect(() => {
-    api.settings().then((s) => setCurrency(s.currency), () => {})
+    api.settings().then((s) => setCurrency(s.currency, s.taxLabel), () => {})
   }, [])
 
   // Notifications for live sessions and payments, once signed in; a tap opens the screen it is about.

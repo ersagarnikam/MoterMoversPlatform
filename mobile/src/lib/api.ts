@@ -276,6 +276,8 @@ export interface LiveJoin {
 
 /** One of the signed-in person's own payments. Amounts are in pence. */
 export interface Payment {
+  /** The tax included in amountPence; null on payments from before it was kept. */
+  taxPence: number | null
   id: number
   purposeLabel: string
   description: string
@@ -444,16 +446,23 @@ export const api = {
 const CURRENCY_SYMBOLS: Record<string, string> = { GBP: '£', EUR: '€', AUD: '$' }
 
 let currencySymbol = '£'
+let taxLabel = 'VAT'
 
-/** The server's currency from GET /api/settings, e.g. 'EUR'; until it is known, amounts show in pounds. */
-export function setCurrency(code: string): void {
+/** The server's currency and tax label from GET /api/settings; until they are known, amounts show in pounds. */
+export function setCurrency(code: string, tax: string): void {
   currencySymbol = CURRENCY_SYMBOLS[code] ?? `${code} `
+  taxLabel = tax
 }
 
 /** Amounts in the minor unit (pence or cents): 4500 -> "£45", 1550 -> "£15.50", 175000 -> "£1,750". */
 export function money(minor: number): string {
   const units = minor % 100 === 0 ? String(minor / 100) : (minor / 100).toFixed(2)
   return currencySymbol + units.replace(/B(?=(d{3})+(?!d))/g, ',')
+}
+
+/** "includes VAT £75"; empty for a payment with no tax kept or none in it. */
+export function taxLine(taxPence: number | null | undefined): string {
+  return taxPence ? `includes ${taxLabel} ${money(taxPence)}` : ''
 }
 
 /** Today's date on this phone, as the API expects it (YYYY-MM-DD). */
