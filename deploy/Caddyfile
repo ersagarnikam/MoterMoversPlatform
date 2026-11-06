@@ -1,6 +1,24 @@
 # HTTPS with an automatic Let's Encrypt certificate for APP_DOMAIN, and http redirected to https.
+
+# What may reach a log. Query strings go, because a password link carries its token there; request headers go, because
+# the Referer repeats that link; addresses are cut to their network. Errors log the request too, so both logs use this.
+(safe_log) {
+	format filter {
+		request>uri regexp "\?.*$" ""
+		request>headers delete
+		request>remote_ip ip_mask 24 32
+		request>client_ip ip_mask 24 32
+		request>remote_port delete
+		resp_headers delete
+		wrap json
+	}
+}
+
 {
 	email {$ACME_EMAIL}
+	log {
+		import safe_log
+	}
 }
 
 {$APP_DOMAIN} {
@@ -8,6 +26,6 @@
 	reverse_proxy web:80
 	log {
 		output stdout
-		format json
+		import safe_log
 	}
 }
