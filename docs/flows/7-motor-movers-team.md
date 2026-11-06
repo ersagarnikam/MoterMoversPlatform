@@ -17,7 +17,8 @@ Content, schools and licences, courses and trainers, plans, prices and payments.
 
 Sessions, home activities, guidance, resources and induction lessons start as drafts. Approval runs the wording guard. A
 film, recording or printable is a pasted link, or a file uploaded first: `POST /api/admin/files` (ADMIN; type and size
-checked) gives an upload link, the browser sends the file straight to the store, and the form saves its key. The draft
+checked) gives an upload link, the browser sends the file straight to the store, and the form saves its key, which the
+API checks the store holds. The draft
 shows Open the file. The content page alone may reach the store, so it opens with a full page load.
 
 **Endpoints:** `POST /api/admin/content` · `GET /api/admin/content` · `POST /api/admin/content/{id}/approve` · `POST /api/admin/content/{id}/reject`

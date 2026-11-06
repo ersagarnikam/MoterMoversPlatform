@@ -13,7 +13,8 @@ The public website without signing in, and the jobs that run on their own.
 
 ## Price chart and enquiry form
 
-For schools shows the active plans at today's price and an enquiry form. The enquiry is emailed, not stored.
+For schools shows the active plans at today's price and an enquiry form. The enquiry is emailed, not stored, so if the
+email fails the visitor gets a 503 and the form gives the other ways to reach us.
 
 **Endpoints:** `GET /api/plans` · `POST /api/enquiries`
 

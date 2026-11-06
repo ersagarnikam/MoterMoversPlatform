@@ -252,8 +252,9 @@ works: the team pastes links, as before. **This has not yet been tried on a real
 The API needs all of the first five, or production refuses to start. Without `STORAGE_ORIGIN`, the content page's own
 security policy blocks the upload and the form says the file could not be sent.
 
-**First checks on a real bucket:** upload a small file and a film of a few hundred MB on Content approval; open it from
-the draft; approve it, then play it as a teacher and drag the video's position bar (seeking); try a file that is too
+**First checks on a real bucket:** upload a small file and a film of a few hundred MB on Content approval; save the draft
+(the API checks the file is there, with a signed HEAD); open it from the draft; download a printable, which must save
+under its title; approve it, then play it as a teacher and drag the video's position bar (seeking); try a file that is too
 large; open a link after `STORAGE_READ_HOURS`, which must fail; and open the film in the parent app.
 
 **Limits (DigitalOcean's docs, checked 2026-11-06).** One PUT can be up to 5 GB, and the platform sends each file as one
@@ -290,7 +291,7 @@ so copy out what you need soon after a problem.
 | Caddy (`deploy/Caddyfile`) | Drops query strings and all request and response headers, and cuts addresses to their network (/24 for IPv4, /32 for IPv6), in the access and error logs |
 | nginx (`frontend/nginx.conf`) | Logs no requests (Caddy does) and only serious errors. A failed call to the API shows as a 502 in Caddy's log |
 | PostgreSQL | Terse errors, with no values and no statement |
-| API | Logs errors by type and place, never their messages (`SafeErrors`) |
+| API | Logs errors by type and place, never their messages (`SafeErrors`). A refused email logs the mail server's code, such as 550, and Tomcat logs no refused request's address |
 
 To trace a person's problem, go by time and path: the logs will not find an email address. A stack trace from outside the
 API's error handler (a scheduled job, say) can still hold an error's message, which is one reason for the shipper's own
