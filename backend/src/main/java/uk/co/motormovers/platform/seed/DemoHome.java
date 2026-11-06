@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.model.ExerciseScore;
 import uk.co.motormovers.platform.assessment.model.MilestoneAchievement;
-import uk.co.motormovers.platform.assessment.model.YearPoint;
 import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.assessment.repository.ExerciseScoreRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
 import uk.co.motormovers.platform.assessment.service.AssessmentContent;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.common.model.ColourStage;
@@ -41,6 +41,7 @@ class DemoHome {
     static final int AVA_AGE = 50;
 
     private final AssessmentContent content;
+    private final SchoolYear schoolYear;
     private final FamilyRepository families;
     private final FamilyMemberRepository members;
     private final ChildRepository children;
@@ -52,8 +53,10 @@ class DemoHome {
 
     DemoHome(AssessmentContent content, FamilyRepository families, FamilyMemberRepository members,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
-            ExerciseRepository exercises, ExerciseScoreRepository scores, HomeProgrammeSessionRepository sessions) {
+            ExerciseRepository exercises, ExerciseScoreRepository scores, HomeProgrammeSessionRepository sessions,
+            SchoolYear schoolYear) {
         this.content = content;
+        this.schoolYear = schoolYear;
         this.families = families;
         this.members = members;
         this.children = children;
@@ -81,7 +84,7 @@ class DemoHome {
         for (var m : milestones.findAllByOrderByChartAscPositionAsc()) {
             if (m.getAgeToMonths() <= AVA_AGE - 12 || (m.getAgeFromMonths() <= AVA_AGE && i++ % 3 != 0)) {
                 achievements.save(new MilestoneAchievement(UUID.randomUUID().toString(), ava, m, AVA_AGE,
-                        YearPoint.on(checked), checked, parent.getEmail()));
+                        schoolYear.pointOn(checked), schoolYear.yearOf(checked), checked, parent.getEmail()));
             }
         }
         // Module 1's sessions and two of module 2, most days since the check.

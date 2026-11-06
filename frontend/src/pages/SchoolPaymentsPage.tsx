@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
+import LegalLine from '../components/LegalLine'
 import { api, type CourseRequest, type Payment, type Totals } from '../api'
 import { useAuth } from '../auth'
 import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
 import PaymentTable from '../components/PaymentTable'
-import { gbp } from '../money'
+import { money } from '../money'
 import { day } from '../dates'
 import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
@@ -64,11 +65,11 @@ export default function SchoolPaymentsPage() {
       <div className="kpis">
         <div className="card kpi">
           <span className="muted">Paid</span>
-          <strong>{gbp(data.paidPence)}</strong>
+          <strong>{money(data.paidPence)}</strong>
         </div>
         <div className="card kpi">
           <span className="muted">Outstanding</span>
-          <strong>{gbp(data.outstandingPence)}</strong>
+          <strong>{money(data.outstandingPence)}</strong>
         </div>
       </div>
       <section className="card">
@@ -84,7 +85,7 @@ export default function SchoolPaymentsPage() {
                     {r.learnerName} · {r.courseTitle}
                   </strong>
                   <p className="muted">
-                    {r.cohortName} · starts {day(r.startsOn)} · {r.timeSlot} · {gbp(r.pricePence)}
+                    {r.cohortName} · starts {day(r.startsOn)} · {r.timeSlot} · {money(r.pricePence)}
                   </p>
                 </div>
                 <div className="actions">
@@ -128,6 +129,7 @@ export default function SchoolPaymentsPage() {
           to the Motor Movers team.
         </p>
       </section>
+      <LegalLine />
     </>
   )
 }

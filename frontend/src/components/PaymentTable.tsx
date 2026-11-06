@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Payment } from '../api'
-import { gbp } from '../money'
+import { money, taxLine } from '../money'
 import { day } from '../dates'
 
 const STATUS = { DUE: 'Due', PAID: 'Paid', CANCELLED: 'Cancelled' }
@@ -44,7 +44,10 @@ export default function PaymentTable({
                 {p.description} <span className="muted">· {p.purposeLabel}</span>
               </td>
               <td>{p.reference ?? '-'}</td>
-              <td className="num nowrap">{gbp(p.amountPence)}</td>
+              <td className="num nowrap">
+                {money(p.amountPence)}
+                {taxLine(p.taxPence) && <div className="muted">{taxLine(p.taxPence)}</div>}
+              </td>
               <td className="nowrap">
                 <span className={`status status-payment-${p.status.toLowerCase()}`}>{STATUS[p.status]}</span>
                 {p.paidOn && <span className="muted"> {day(p.paidOn)}</span>}

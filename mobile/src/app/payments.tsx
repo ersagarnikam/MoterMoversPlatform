@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Linking, View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
-import { api, formatDate, gbp, type Payment } from '@/lib/api'
+import { api, formatDate, legalLine, money, taxLine, type Payment } from '@/lib/api'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '@/lib/contact'
 import { space, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
@@ -43,11 +43,11 @@ export default function PaymentsScreen() {
       <Row>
         <Card style={{ flex: 1, minWidth: 140 }}>
           <Muted>Paid in total</Muted>
-          <H2>{gbp(data.paidPence)}</H2>
+          <H2>{money(data.paidPence)}</H2>
         </Card>
         <Card style={{ flex: 1, minWidth: 140 }} accent={data.outstandingPence > 0 ? p.warnInk : undefined}>
           <Muted>Due now</Muted>
-          <H2>{gbp(data.outstandingPence)}</H2>
+          <H2>{money(data.outstandingPence)}</H2>
         </Card>
       </Row>
 
@@ -82,6 +82,7 @@ export default function PaymentsScreen() {
           data.payments.map((x) => <PaymentRow key={x.id} payment={x} showStatus />)
         )}
       </Card>
+      {legalLine() && <Muted>{legalLine()}</Muted>}
     </Screen>
   )
 }
@@ -96,15 +97,16 @@ function PaymentRow({ payment, showStatus = false }: { payment: Payment; showSta
     <View
       style={{ gap: 2, paddingVertical: space.sm, borderTopWidth: 1, borderTopColor: p.line }}
       accessible
-      accessibilityLabel={`${payment.description}, ${gbp(payment.amountPence)}, ${status}`}
+      accessibilityLabel={`${payment.description}, ${money(payment.amountPence)}, ${status}`}
     >
       <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
         <Body style={{ fontWeight: '600', flexShrink: 1 }}>{payment.description}</Body>
-        <Body style={{ fontWeight: '600' }}>{gbp(payment.amountPence)}</Body>
+        <Body style={{ fontWeight: '600' }}>{money(payment.amountPence)}</Body>
       </Row>
       <Muted>
         {payment.purposeLabel} · invoiced {formatDate(payment.invoicedOn)}
         {payment.reference ? ` · reference ${payment.reference}` : ''}
+        {taxLine(payment.taxPence) ? ` · ${taxLine(payment.taxPence)}` : ''}
       </Muted>
       {showStatus && <Muted style={payment.status === 'DUE' ? { color: p.warnInk } : undefined}>{status}</Muted>}
     </View>

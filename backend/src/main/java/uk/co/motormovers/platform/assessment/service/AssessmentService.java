@@ -37,6 +37,7 @@ import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepo
 import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.assessment.util.ExtraSupportRule;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.model.ChildAccessLog;
 import uk.co.motormovers.platform.child.repository.ChildAccessLogRepository;
@@ -79,11 +80,13 @@ public class AssessmentService {
     private final ChildAccessLogRepository accessLog;
     private final AccessPolicy access;
     private final Clock clock;
+    private final SchoolYear schoolYear;
 
     public AssessmentService(MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             DevelopmentCommentRepository comments, ExerciseRepository exercises, ExerciseScoreRepository scores,
             ColourSummaryRepository summaries, ChildRepository children, SchoolClassRepository classes,
-            SchoolRepository schools, ChildAccessLogRepository accessLog, AccessPolicy access, Clock clock) {
+            SchoolRepository schools, ChildAccessLogRepository accessLog, AccessPolicy access, Clock clock,
+            SchoolYear schoolYear) {
         this.milestones = milestones;
         this.achievements = achievements;
         this.comments = comments;
@@ -96,6 +99,7 @@ public class AssessmentService {
         this.accessLog = accessLog;
         this.access = access;
         this.clock = clock;
+        this.schoolYear = schoolYear;
     }
 
     // --- Programme content -----------------------------------------------------------------------------------------
@@ -215,7 +219,7 @@ public class AssessmentService {
                             .toList()));
         });
         return new AssessmentViews.Development(child.getId(), child.displayName(), placeOf(child),
-                AssessmentViews.NOT_A_DIAGNOSIS, YearPoint.schoolYear(today), YearPoint.on(today), charts);
+                AssessmentViews.NOT_A_DIAGNOSIS, schoolYear.yearOf(today), schoolYear.pointOn(today), charts);
     }
 
     /** Records movements as secure. A movement already secure stays as first recorded. Safe to resend. */
@@ -246,7 +250,7 @@ public class AssessmentService {
                 continue;
             }
             achievements.save(new MilestoneAchievement(a.clientId(), child, milestone, a.ageMonths(), a.yearPoint(),
-                    a.achievedOn(), me.email()));
+                    schoolYear.yearOf(a.achievedOn()), a.achievedOn(), me.email()));
             saved++;
         }
         return new AssessmentViews.SubmitResult(saved, duplicates);
@@ -269,7 +273,7 @@ public class AssessmentService {
         Child child = findChild(childId);
         CurrentUser me = requireRecorder(child);
         LocalDate today = LocalDate.now(clock);
-        int year = YearPoint.schoolYear(today);
+        int year = schoolYear.yearOf(today);
         String note = trimmed(in.note());
         Optional<DevelopmentComment> existing = comments.findByChildIdAndChartAndSchoolYearAndYearPoint(childId,
                 in.chart(), year, in.yearPoint());
@@ -294,7 +298,7 @@ public class AssessmentService {
     public AssessmentViews.Profile profile(Long childId, ColourStage requested) {
         Child child = findChild(childId);
         log(child, access.requireRecordAccess(child), "VIEW_ASSESSMENT");
-        int year = YearPoint.schoolYear(LocalDate.now(clock));
+        int year = schoolYear.yearOf(LocalDate.now(clock));
 
         List<MilestoneAchievement> mine = achievements.findByChildId(childId);
         Map<Chart, Long> totals = milestones.findAll().stream()
@@ -375,7 +379,7 @@ public class AssessmentService {
     public AssessmentViews.SchoolOverview schoolOverview(Long schoolId) {
         School school = schools.findById(schoolId).orElseThrow(() -> new NotFoundException("School", schoolId));
         access.requireSchoolAccess(school);
-        int year = YearPoint.schoolYear(LocalDate.now(clock));
+        int year = schoolYear.yearOf(LocalDate.now(clock));
         List<AssessmentViews.ClassOverview> rows = new ArrayList<>();
         List<AssessmentViews.FlaggedChild> flagged = new ArrayList<>();
         for (SchoolClass c : classes.findBySchoolIdOrderByName(schoolId)) {
@@ -390,7 +394,7 @@ public class AssessmentService {
     /** For a trust or group lead's summary: no children, only how many. Callers check access. */
     @Transactional(readOnly = true)
     public SchoolFigures schoolFigures(Long schoolId) {
-        int year = YearPoint.schoolYear(LocalDate.now(clock));
+        int year = schoolYear.yearOf(LocalDate.now(clock));
         int pupils = 0;
         int assessed = 0;
         int support = 0;

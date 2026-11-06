@@ -14,7 +14,7 @@ import {
 import { sessionTime } from '../live'
 import PaymentTable from '../components/PaymentTable'
 import { useAuth } from '../auth'
-import { gbp } from '../money'
+import { money } from '../money'
 import { day } from '../dates'
 import { useConfirm, useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
@@ -197,7 +197,7 @@ function PaymentDue() {
   if (due === 0) return null
   return (
     <p className="banner-warn">
-      You have {gbp(due)} to pay. <Link to="/payments">See what it is for and how to pay</Link>
+      You have {money(due)} to pay. <Link to="/payments">See what it is for and how to pay</Link>
     </p>
   )
 }
@@ -216,7 +216,7 @@ function YourPayments() {
       <div className="section-head">
         <h3>Your payments</h3>
         <span className="muted">
-          {gbp(data.paidPence)} paid{data.outstandingPence ? ` · ${gbp(data.outstandingPence)} due` : ''}
+          {money(data.paidPence)} paid{data.outstandingPence ? ` · ${money(data.outstandingPence)} due` : ''}
         </span>
       </div>
       <PaymentTable payments={data.payments} />
@@ -367,9 +367,9 @@ export default function TrainingPage() {
           <div className="section-head">
             <h3>{c.title}</h3>
             <span className="price">
-              {gbp(c.pricePence)}
+              {money(c.pricePence)}
               {c.track === 'PARENT' ? ' per family' : ''}
-              {c.renewalPence ? `, then ${gbp(c.renewalPence)} / year` : ''}
+              {c.renewalPence ? `, then ${money(c.renewalPence)} / year` : ''}
             </span>
           </div>
           <p>{c.description}</p>

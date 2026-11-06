@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { homeFor } from '../App'
 import { useAuth } from '../auth'
+import { useCountry } from '../country'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '../site'
 import StageStripe from './StageStripe'
 import ThemeSwitch from './ThemeSwitch'
@@ -18,6 +19,7 @@ const NAV = [
 export default function SiteLayout() {
   const { user } = useAuth()
   const { pathname } = useLocation()
+  const legalLine = useCountry()?.legalLine
 
   // A new page starts at the top, as it would on an ordinary website.
   useEffect(() => {
@@ -77,6 +79,7 @@ export default function SiteLayout() {
             <p className="muted-on-dark">{CONTACT_PHONE}</p>
           </div>
         </div>
+        {legalLine && <p className="site-footer-legal muted-on-dark">{legalLine}</p>}
       </footer>
     </div>
   )

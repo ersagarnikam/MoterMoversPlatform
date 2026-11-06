@@ -41,7 +41,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V19`, added by Dev 2026-11-06; V18 is in pull request #32);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V19`, added by Dev 2026-11-06);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -51,8 +51,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 161 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-06) 54 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 178 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-06) 57 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -106,9 +106,10 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
   the settings, Ireland (`Region.IE`), the clock's zone from them (Australia/Brisbane, not Sydney) and the open
   `GET /api/settings`; parts B (money), C (tax), D (school year and year names) and E (legal entity) follow.
 - Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
-  `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices.
+  `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices. (added by Dev,
+  2026-11-06) Money is done in part B (pull request #30), the tax amount in part C (pull request #32).
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
-  year, so year-on-year figures must not split it).
+  year, so year-on-year figures must not split it). (added by Dev, 2026-11-06) Done in part D (pull request #33).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
 - Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26). (added by Dev,
   2026-11-06) The gate has one place, `HomeService.requireReadyForSessions`: add the payment check there.
@@ -161,8 +162,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 ## Current state (2026-11-06)
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `parent-induction`, pull request #35): go-live task 56.**
-Done: the gate, with tests. Left: the owner merges; Pat's lessons replace the placeholders. Merge #32 before this if
-you can, so migrations run in order (V18, then V19). Remove this note once merged.
+Done: the gate, with tests. Left: the owner merges; Pat's lessons replace the placeholders. Remove this note once merged.
 
 (added by Dev, 2026-11-06) **Parent induction gate (go-live task 56, migration V19).** Pat (2026-11-05): a short induction
 like the staff one. `induction_lesson` gains `audience` (STAFF or PARENT), and `part` replaces `position` so that each
@@ -178,6 +178,43 @@ Start. **The lessons are two placeholders** ("Placeholder lesson 1" and 2), mark
 drafts in the starter content; replace them when Pat's arrive. With no approved parent lessons, sessions stay closed and
 the page says the induction is being prepared, so `HOME_PROGRAMME` must not be switched on before they are approved.
 Demo parents (Priya, Jo) are past the gate; a family signing up in the demo sees it.
+
+(added by Dev, 2026-11-06) **Legal entity (go-live task 25, part E).** `CountrySettings.LegalEntity` gains
+`taxNumberLabel` ("VAT number", "ABN" in Australia), `isPlaceholder()` and `line()`, one line such as "Neuroway Ltd, 1 High
+Street. Company number 123. VAT number GB456.", null while any value says "To be confirmed", so nothing untrue is
+shown. `GET /api/settings` adds `legalLine`. It shows in the website footer (`SiteLayout`), on the My payments and school
+Payments pages (`components/LegalLine`), on the parent app's Payments screen, at the foot of the certificate PDF, and at
+the foot of every email (`Mailer`). `ProductionChecks` refuses to start with a placeholder; a value that does not apply
+can be left blank. A bad country setting now stops start-up with one clear "APPLICATION FAILED TO START" message
+(`CountrySettingsException`, `CountrySettingsFailureAnalyzer`, the tester's suggestion). The website's contact details and
+credit wording stay with task 28.
+
+(added by Dev, 2026-11-06) **School year by country (go-live task 25, part D).** `assessment/util/SchoolYear` (a bean from
+the country settings) replaces `YearPoint.on` and `YearPoint.schoolYear`: `pointOn(date)` and `yearOf(date)`. The UK is as
+before; Ireland's end point starts in April; Australia's school year is the calendar year, so the head's and trust
+lead's "this school year" figures are never split. `YearPoint` keeps only its labels. `MilestoneAchievement` is given
+its school year, and `AssessmentService`, `HomeService`, `HomeRules.checkDue` and the demo seeds use the bean (the
+home check's start, middle and end follow the same rule). The school setup class form offers the country's year names
+as suggestions (a datalist; free text is still allowed). `SchoolDays` stays weekdays only; term dates are not modelled.
+Tests: `SchoolYearTest`, Australian cases in `HomeRulesTest`, and the bean in `RegionIrelandTest` and `RegionAustraliaTest`.
+
+(added by Dev, 2026-11-06) **Tax on payments (go-live task 25, part C, migration V18).** Prices stay tax-inclusive (the
+amount charged). `payment.tax_rate_bp` (basis points, nullable) is set from the country settings when a payment is
+created (`PaymentService`, `CountrySettings.taxRateBp`) and stays with the payment; older rows stay null and show no
+tax line. `Payment.taxPence` is amount x rate / (1 + rate), rounded half up to the minor unit, and `taxPence` is on the
+payment views. Web (`taxLine` in `src/money.ts`, on `PaymentTable` and My payments) and parent app (`taxLine` in
+`lib/api.ts`, on Payments) show "includes VAT £75" or "includes GST $4.09". No Stripe Tax. Tests: `PaymentTaxTest`.
+
+(added by Dev, 2026-11-06) **Money by country (go-live task 25, part B).** Amounts are held in the currency's minor
+unit (pence or cents; every `*Pence` field and column keeps its name) and shown in the deployment's currency from its
+country settings. Web: `money(minor)` and `currencySymbol()` in `src/money.ts` replace `gbp()`; `App` calls
+`setCurrency` once `useCountry` has the settings (pounds until then), and the money fields on Plans & prices, Schools
+& licences, Payments and Courses are labelled with the symbol ("Price (€)"). Parent app: `money()` and `setCurrency` in
+`lib/api.ts` (a symbol per currency, no `Intl`), set from `GET /api/settings` in the root layout. Backend:
+`common/util/Money` (one formatter from the settings) for the payment-due notification and the certificate renewal
+email, in place of `PaymentViews.pounds`; `StripeApiClient` sends the settings' currency (`gbp`, `eur` or `aud`).
+Tests: `MoneyTest`, the Stripe request in GBP, EUR and AUD (`OnlinePaymentTest`), and web `money()` in the three
+currencies.
 
 (added by Dev, 2026-11-06) **Country settings (go-live task 25, part A; pull request #29).** `PLATFORM_REGION` (`UK`, `IE` new, or `AU`)
 picks a block of `platform.countries` in application.yml: country name, currency and locale, tax label and percent,
@@ -555,7 +592,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) parent induction before the first home session; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

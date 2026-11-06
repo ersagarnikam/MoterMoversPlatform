@@ -13,8 +13,11 @@ public class StripeApiClient implements StripeClient {
     }
 
     private final RestClient api;
+    private final String currency;
 
-    public StripeApiClient(RestClient.Builder builder, String secretKey) {
+    /** {@code currency}: the deployment's, in lower case as Stripe wants it ("gbp", "eur", "aud"). */
+    public StripeApiClient(RestClient.Builder builder, String secretKey, String currency) {
+        this.currency = currency;
         this.api = builder.baseUrl("https://api.stripe.com/v1")
                 .defaultHeader("Authorization", "Bearer " + secretKey.strip())
                 .build();
@@ -26,7 +29,7 @@ public class StripeApiClient implements StripeClient {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("mode", "payment");
         form.add("line_items[0][quantity]", "1");
-        form.add("line_items[0][price_data][currency]", "gbp");
+        form.add("line_items[0][price_data][currency]", currency);
         form.add("line_items[0][price_data][unit_amount]", String.valueOf(amountPence));
         form.add("line_items[0][price_data][product_data][name]", description);
         form.add("client_reference_id", String.valueOf(paymentId));

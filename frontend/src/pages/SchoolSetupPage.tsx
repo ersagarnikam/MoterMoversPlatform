@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useId, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   api,
@@ -11,6 +11,7 @@ import {
   type SetupClass,
 } from '../api'
 import { useAuth } from '../auth'
+import { useCountry } from '../country'
 import { STAGES } from '../stages'
 import { day } from '../dates'
 import { useConfirm, useToast } from '../components/Feedback'
@@ -214,6 +215,9 @@ function ClassForm({
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [yearGroup, setYearGroup] = useState(initial?.yearGroup ?? '')
+  // The country's year names as suggestions; anything else can still be typed.
+  const yearNames = useCountry()?.yearNames ?? []
+  const yearNamesId = useId()
   const [stage, setStage] = useState<ColourStage>(initial?.stage ?? 'RED')
   const [teacherId, setTeacherId] = useState<number | null>(initial?.teacherId ?? null)
 
@@ -233,7 +237,19 @@ function ClassForm({
       </label>
       <label>
         Year group
-        <input value={yearGroup} onChange={(e) => setYearGroup(e.target.value)} maxLength={30} placeholder="Reception" required />
+        <input
+          value={yearGroup}
+          onChange={(e) => setYearGroup(e.target.value)}
+          maxLength={30}
+          placeholder={yearNames[1]}
+          list={yearNamesId}
+          required
+        />
+        <datalist id={yearNamesId}>
+          {yearNames.map((n) => (
+            <option key={n} value={n} />
+          ))}
+        </datalist>
       </label>
       <label>
         Stage

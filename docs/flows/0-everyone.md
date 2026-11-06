@@ -136,7 +136,7 @@ sequenceDiagram
   alt not the payer, or not DUE
     API-->>W: 403 or 400
   else ok
-    API->>S: create Checkout Session (amount in pence, GBP, paymentId in metadata)
+    API->>S: create Checkout Session (amount in the minor unit, the deployment's currency, paymentId in metadata)
     S-->>API: checkout URL
     API-->>W: url
     W->>S: redirect
@@ -186,7 +186,7 @@ sequenceDiagram
   end
   V->>W: open a page
   W->>API: GET /api/settings
-  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity
+  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity and legalLine
 ```
 
 **Rules in the code**
@@ -195,3 +195,5 @@ sequenceDiagram
 - The platform's clock follows the country's time zone (Australia: Queensland time, no daylight saving).
 - Every value can be overridden by an environment variable, `PLATFORM_COUNTRIES_<REGION>_<NAME>`.
 - Nothing in the settings is private, so the endpoint needs no sign-in.
+- `legalLine` is null while any legal entity value says "To be confirmed", and a production deployment refuses to start
+  until they are set.

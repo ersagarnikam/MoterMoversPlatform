@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneId;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+
+import uk.co.motormovers.platform.assessment.model.YearPoint;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 
 /** A deployment started with PLATFORM_REGION=AU: Australia's settings, on Queensland time. */
 @SpringBootTest(properties = "PLATFORM_REGION=AU")
@@ -24,6 +28,9 @@ class RegionAustraliaTest {
 
     @Autowired
     Clock clock;
+
+    @Autowired
+    SchoolYear schoolYear;
 
     @Test
     void theSettingsAreAustraliasOnQueenslandTime() throws Exception {
@@ -39,5 +46,8 @@ class RegionAustraliaTest {
                 .andExpect(jsonPath("$.yearNames[0]").value("Kindy"));
         // Not Sydney: Queensland has no daylight saving.
         assertThat(clock.getZone()).isEqualTo(ZoneId.of("Australia/Brisbane"));
+        // The school year is the calendar year: this deployment's bean follows the settings.
+        assertThat(schoolYear.pointOn(LocalDate.of(2027, 1, 27))).isEqualTo(YearPoint.START);
+        assertThat(schoolYear.yearOf(LocalDate.of(2027, 12, 31))).isEqualTo(2027);
     }
 }

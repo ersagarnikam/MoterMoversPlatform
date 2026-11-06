@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, type PublicPlan } from '../api'
-import { gbp } from '../money'
+import { money } from '../money'
 
 /**
  * The licence plans and what each costs a year from today, as the team sets them on Plans & prices. Choosing one
@@ -32,7 +32,7 @@ export default function PriceChart({ chosen, onChoose }: { chosen: string; onCho
             onClick={() => onChoose(chosen === p.label ? '' : p.label)}
           >
             <span className="price-plan-name">{p.label}</span>
-            <span className="price-plan-price">{p.freeTrial ? 'Free' : gbp(p.annualPricePence)}</span>
+            <span className="price-plan-price">{p.freeTrial ? 'Free' : money(p.annualPricePence)}</span>
             <span className="muted">{p.freeTrial ? 'to try it out' : 'a year'}</span>
           </button>
         ))}

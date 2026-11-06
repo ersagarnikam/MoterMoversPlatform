@@ -1,4 +1,4 @@
-import { gbp } from '../money'
+import { money } from '../money'
 
 const MONTH = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'UTC' })
 const MONTH_YEAR = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
@@ -37,7 +37,7 @@ export default function MonthBars({ months }: { months: { month: string; paidPen
               {/* A full-height hit area, so empty and small months still show their tooltip. */}
               <rect x={i * slot} y={0} width={slot} height={h - bottom} className="hit">
                 <title>
-                  {MONTH_YEAR.format(monthDate(m.month))}: {gbp(m.paidPence)}
+                  {MONTH_YEAR.format(monthDate(m.month))}: {money(m.paidPence)}
                 </title>
               </rect>
               {m.paidPence > 0 && <path d={bar(x, m.paidPence)} className="bar" />}
@@ -61,7 +61,7 @@ export default function MonthBars({ months }: { months: { month: string; paidPen
             {months.map((m) => (
               <tr key={m.month}>
                 <td>{MONTH_YEAR.format(monthDate(m.month))}</td>
-                <td className="num">{gbp(m.paidPence)}</td>
+                <td className="num">{money(m.paidPence)}</td>
               </tr>
             ))}
           </tbody>

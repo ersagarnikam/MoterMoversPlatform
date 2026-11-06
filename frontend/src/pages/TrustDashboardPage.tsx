@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, type TrustDashboard } from '../api'
 import { useAuth } from '../auth'
-import { gbp } from '../money'
+import { money } from '../money'
 import { pct } from '../stages'
 import { day } from '../dates'
 import Skeleton from '../components/Skeleton'
@@ -92,16 +92,16 @@ function TrustSpending({ trustId }: { trustId: number }) {
           {data.schools.map((s) => (
             <tr key={s.schoolId}>
               <td>{s.schoolName}</td>
-              <td className="num">{gbp(s.paidPence)}</td>
-              <td className="num">{s.outstandingPence ? gbp(s.outstandingPence) : '-'}</td>
+              <td className="num">{money(s.paidPence)}</td>
+              <td className="num">{s.outstandingPence ? money(s.outstandingPence) : '-'}</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr>
             <th>All schools</th>
-            <th className="num">{gbp(data.paidPence)}</th>
-            <th className="num">{data.outstandingPence ? gbp(data.outstandingPence) : '-'}</th>
+            <th className="num">{money(data.paidPence)}</th>
+            <th className="num">{data.outstandingPence ? money(data.outstandingPence) : '-'}</th>
           </tr>
         </tfoot>
       </table>

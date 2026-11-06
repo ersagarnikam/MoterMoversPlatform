@@ -12,7 +12,7 @@ import {
 } from '../api'
 import CourseQuizzes from '../components/CourseQuizzes'
 import { sessionTime } from '../live'
-import { gbp } from '../money'
+import { currencySymbol, money } from '../money'
 import { day } from '../dates'
 import { useConfirm, useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
@@ -95,7 +95,7 @@ export default function CoursesPage() {
             <Link key={c.id} to={`/admin/courses/${c.id}`} className="card course-summary">
               <div className="section-head">
                 <h3>{c.title}</h3>
-                <span className="price">{gbp(c.pricePence)}</span>
+                <span className="price">{money(c.pricePence)}</span>
               </div>
               <p className="muted">
                 {c.track === 'PARENT' ? 'Parents and carers' : 'Professionals'} · {c.liveSessions} live sessions
@@ -182,8 +182,8 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
       <div className="section-head">
         <h3>{course.title}</h3>
         <span className="price">
-          {gbp(course.pricePence)}
-          {course.renewalPence ? `, then ${gbp(course.renewalPence)} / year` : ''}
+          {money(course.pricePence)}
+          {course.renewalPence ? `, then ${money(course.renewalPence)} / year` : ''}
         </span>
       </div>
       <p className="muted">
@@ -562,11 +562,11 @@ function CourseForm({
         />
       </label>
       <label>
-        Price (£)
+        Price ({currencySymbol()})
         <input type="number" min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} required />
       </label>
       <label>
-        Yearly renewal (£, optional)
+        Yearly renewal ({currencySymbol()}, optional)
         <input type="number" min={0} step={0.01} value={renewal} onChange={(e) => setRenewal(e.target.value)} />
       </label>
       {track === 'PROFESSIONAL' && (

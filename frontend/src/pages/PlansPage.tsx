@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, type Plan } from '../api'
-import { gbp } from '../money'
+import { currencySymbol, money } from '../money'
 import { day } from '../dates'
 import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
@@ -57,7 +57,7 @@ export default function PlansPage() {
 
       <section className="card">
         <h3>Add a plan</h3>
-        <NewPlanForm onAdd={(p) => run(() => api.addPlan(p), `${p.label} added at ${gbp(p.pricePence)} a year`)} />
+        <NewPlanForm onAdd={(p) => run(() => api.addPlan(p), `${p.label} added at ${money(p.pricePence)} a year`)} />
       </section>
     </>
   )
@@ -73,7 +73,7 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
   async function changePrice(e: FormEvent) {
     e.preventDefault()
     const when = from === today() ? 'from today' : `from ${day(from)}`
-    if (await run(() => api.changePlanPrice(p.code, pence(price), from), `${p.label}: ${gbp(pence(price))} a year ${when}`)) {
+    if (await run(() => api.changePlanPrice(p.code, pence(price), from), `${p.label}: ${money(pence(price))} a year ${when}`)) {
       setPrice('')
     }
   }
@@ -84,17 +84,17 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
         <h3>
           {p.label} {!p.active && <span className="badge">Retired</span>} {p.freeTrial && <span className="badge">Free trial</span>}
         </h3>
-        <span className="price">{gbp(p.currentPricePence)} a year</span>
+        <span className="price">{money(p.currentPricePence)} a year</span>
       </div>
       <p className="muted">
         {p.licences} {p.licences === 1 ? 'licence' : 'licences'} on this plan
-        {p.nextPrice && ` · changes to ${gbp(p.nextPrice.pricePence)} from ${day(p.nextPrice.effectiveFrom)}`}
+        {p.nextPrice && ` · changes to ${money(p.nextPrice.pricePence)} from ${day(p.nextPrice.effectiveFrom)}`}
       </p>
 
       {!p.freeTrial && (
         <form className="inline-form" onSubmit={changePrice}>
           <label>
-            New yearly price (£)
+            New yearly price ({currencySymbol()})
             <input type="number" min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} required />
           </label>
           <label>
@@ -147,7 +147,7 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
             {p.history.map((h) => (
               <tr key={h.effectiveFrom}>
                 <td>{h.effectiveFrom === '2000-01-01' ? 'Launch' : day(h.effectiveFrom)}</td>
-                <td className="num">{gbp(h.pricePence)}</td>
+                <td className="num">{money(h.pricePence)}</td>
                 <td>
                   {h.changedBy} <span className="muted">· {day(h.changedAt)}</span>
                 </td>
@@ -182,7 +182,7 @@ function NewPlanForm({ onAdd }: { onAdd: (p: { label: string; freeTrial: boolean
         <input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={100} required />
       </label>
       <label>
-        Yearly price (£)
+        Yearly price ({currencySymbol()})
         <input
           type="number"
           min={0}

@@ -12,10 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import uk.co.motormovers.platform.assessment.model.Exercise;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.home.util.HomeRules;
 
 class HomeRulesTest {
+
+    private static final SchoolYear UK = new SchoolYear(9, 9, 1, 5);
+
+    private static final SchoolYear AUSTRALIA = new SchoolYear(1, 1, 5, 9);
 
     @Test
     void youngChildrenStartAtOrangeAndSchoolChildrenAtGreen() {
@@ -28,12 +33,21 @@ class HomeRulesTest {
     }
 
     @Test
+    void inAustraliaTheCheckFollowsTheCalendarSchoolYear() {
+        LocalDate february = LocalDate.of(2027, 2, 8);
+        assertThat(HomeRules.checkDue(february, LocalDate.of(2027, 4, 30), AUSTRALIA)).isFalse();
+        assertThat(HomeRules.checkDue(february, LocalDate.of(2027, 5, 3), AUSTRALIA)).isTrue();
+        // December is the end of one year and January the start of the next.
+        assertThat(HomeRules.checkDue(LocalDate.of(2026, 12, 1), february, AUSTRALIA)).isTrue();
+    }
+
+    @Test
     void theCheckIsDueAtTheStartMiddleAndEndOfEachSchoolYear() {
         LocalDate october = LocalDate.of(2026, 10, 5);
-        assertThat(HomeRules.checkDue(null, october)).isTrue();
-        assertThat(HomeRules.checkDue(october, LocalDate.of(2026, 12, 20))).isFalse();
-        assertThat(HomeRules.checkDue(october, LocalDate.of(2027, 1, 4))).isTrue();
-        assertThat(HomeRules.checkDue(october, LocalDate.of(2027, 10, 5))).isTrue();
+        assertThat(HomeRules.checkDue(null, october, UK)).isTrue();
+        assertThat(HomeRules.checkDue(october, LocalDate.of(2026, 12, 20), UK)).isFalse();
+        assertThat(HomeRules.checkDue(october, LocalDate.of(2027, 1, 4), UK)).isTrue();
+        assertThat(HomeRules.checkDue(october, LocalDate.of(2027, 10, 5), UK)).isTrue();
     }
 
     @Test

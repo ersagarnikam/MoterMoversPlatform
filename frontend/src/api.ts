@@ -575,6 +575,8 @@ export type PaymentPurpose = 'LICENCE' | 'COURSE' | 'OTHER'
 
 /** One recorded payment. Amounts are in pence; payerEmail is null when a school pays. */
 export interface Payment {
+  /** The tax included in amountPence; null on payments from before it was kept. */
+  taxPence: number | null
   id: number
   payerType: PayerType
   payerName: string
@@ -736,10 +738,13 @@ export interface CountrySettings {
     name: string
     address: string
     companyNumber: string
+    taxNumberLabel: string
     taxNumber: string
     email: string
     phone: string
   }
+  /** The legal entity in one line, or null while it is a placeholder. */
+  legalLine: string | null
 }
 
 export interface HomeToday {

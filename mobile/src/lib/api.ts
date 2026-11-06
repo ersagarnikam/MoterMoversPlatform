@@ -294,6 +294,8 @@ export interface LiveJoin {
 
 /** One of the signed-in person's own payments. Amounts are in pence. */
 export interface Payment {
+  /** The tax included in amountPence; null on payments from before it was kept. */
+  taxPence: number | null
   id: number
   purposeLabel: string
   description: string
@@ -453,14 +455,43 @@ export const api = {
   joinSchool: (id: number, code: string) =>
     request<LinkedChild>('POST', `/api/home/children/${id}/join-school`, { code }),
 
+  /** Open to anyone: the server's country settings (currency, tax, year names). */
+  settings: () =>
+    request<{ currency: string; taxLabel: string; legalLine: string | null }>('GET', '/api/settings'),
+
   registerPushToken: (token: string, platform: string) =>
     request<void>('POST', '/api/me/push-tokens', { token, platform }),
   removePushToken: (token: string) => request<void>('POST', '/api/me/push-tokens/remove', { token }),
 }
 
-/** 4500 -> "£45", 1550 -> "£15.50" */
-export function gbp(pence: number): string {
-  return `£${pence % 100 === 0 ? pence / 100 : (pence / 100).toFixed(2)}`
+/** The symbols of the deployments' currencies (go-live task 25); another currency shows its code. */
+const CURRENCY_SYMBOLS: Record<string, string> = { GBP: '£', EUR: '€', AUD: '$' }
+
+let currencySymbol = '£'
+let taxLabel = 'VAT'
+let legal: string | null = null
+
+/** The server's currency, tax label and legal entity from GET /api/settings; until known, amounts show in pounds. */
+export function setCountry(settings: { currency: string; taxLabel: string; legalLine: string | null }): void {
+  currencySymbol = CURRENCY_SYMBOLS[settings.currency] ?? `${settings.currency} `
+  taxLabel = settings.taxLabel
+  legal = settings.legalLine
+}
+
+/** Who the invoices come from, in one line; null while the legal entity is a placeholder. */
+export function legalLine(): string | null {
+  return legal
+}
+
+/** Amounts in the minor unit (pence or cents): 4500 -> "£45", 1550 -> "£15.50", 175000 -> "£1,750". */
+export function money(minor: number): string {
+  const units = minor % 100 === 0 ? String(minor / 100) : (minor / 100).toFixed(2)
+  return currencySymbol + units.replace(/B(?=(d{3})+(?!d))/g, ',')
+}
+
+/** "includes VAT £75"; empty for a payment with no tax kept or none in it. */
+export function taxLine(taxPence: number | null | undefined): string {
+  return taxPence ? `includes ${taxLabel} ${money(taxPence)}` : ''
 }
 
 /** Today's date on this phone, as the API expects it (YYYY-MM-DD). */

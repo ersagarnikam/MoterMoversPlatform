@@ -24,10 +24,17 @@ public class Mailer {
 
     private final ObjectProvider<JavaMailSender> sender;
     private final PlatformProperties properties;
+    private final String legalLine;
 
-    public Mailer(ObjectProvider<JavaMailSender> sender, PlatformProperties properties) {
+    public Mailer(ObjectProvider<JavaMailSender> sender, PlatformProperties properties, CountrySettings country) {
         this.sender = sender;
         this.properties = properties;
+        this.legalLine = country.legalEntity().line();
+    }
+
+    /** The email's text, with the legal entity at the foot once it is known. */
+    private String withFooter(String body) {
+        return legalLine == null ? body : body + "\n\n-- \n" + legalLine;
     }
 
     /** A link into the web app, e.g. link("/reset-password?token=abc"). */
@@ -41,7 +48,7 @@ public class Mailer {
         JavaMailSender mail = sender.getIfAvailable();
         if (mail == null) {
             log.info("Email not sent (no mail server configured)\nTo: {}\nSubject: {}\nAttached: {} ({} bytes)\n\n{}",
-                    to, subject, fileName, file.length, body);
+                    to, subject, fileName, file.length, withFooter(body));
             return;
         }
         try {
@@ -50,7 +57,7 @@ public class Mailer {
             helper.setFrom(properties.mail().from());
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(body);
+            helper.setText(withFooter(body));
             helper.addAttachment(fileName, new ByteArrayResource(file), contentType);
             mail.send(message);
         } catch (MailException | MessagingException e) {
@@ -62,14 +69,15 @@ public class Mailer {
     public void send(String to, String subject, String body) {
         JavaMailSender mail = sender.getIfAvailable();
         if (mail == null) {
-            log.info("Email not sent (no mail server configured)\nTo: {}\nSubject: {}\n\n{}", to, subject, body);
+            log.info("Email not sent (no mail server configured)\nTo: {}\nSubject: {}\n\n{}", to, subject,
+                    withFooter(body));
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(properties.mail().from());
         message.setTo(to);
         message.setSubject(subject);
-        message.setText(body);
+        message.setText(withFooter(body));
         try {
             mail.send(message);
         } catch (MailException e) {

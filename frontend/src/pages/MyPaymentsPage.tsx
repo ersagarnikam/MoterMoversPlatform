@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import LegalLine from '../components/LegalLine'
 import { api, type Payment, type Totals } from '../api'
 import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
 import PaymentTable from '../components/PaymentTable'
-import { gbp } from '../money'
+import { money, taxLine } from '../money'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '../site'
 import { day } from '../dates'
 import Skeleton from '../components/Skeleton'
@@ -35,11 +36,11 @@ export default function MyPaymentsPage() {
       <div className="kpis">
         <div className="card kpi">
           <span className="muted">Paid in total</span>
-          <strong>{gbp(data.paidPence)}</strong>
+          <strong>{money(data.paidPence)}</strong>
         </div>
         <div className="card kpi">
           <span className="muted">Due now</span>
-          <strong>{gbp(data.outstandingPence)}</strong>
+          <strong>{money(data.outstandingPence)}</strong>
         </div>
       </div>
 
@@ -54,10 +55,11 @@ export default function MyPaymentsPage() {
                   <p className="muted">
                     {p.purposeLabel} · invoiced {day(p.invoicedOn)}
                     {p.reference && <> · reference {p.reference}</>}
+                    {taxLine(p.taxPence) && <> · {taxLine(p.taxPence)}</>}
                   </p>
                 </div>
                 <span className="actions">
-                  <strong className="nowrap">{gbp(p.amountPence)}</strong>
+                  <strong className="nowrap">{money(p.amountPence)}</strong>
                   {cards && <PayByCard payment={p} onError={setError} />}
                 </span>
               </li>
@@ -80,6 +82,7 @@ export default function MyPaymentsPage() {
           <PaymentTable payments={data.payments} />
         )}
       </section>
+      <LegalLine />
     </>
   )
 }
