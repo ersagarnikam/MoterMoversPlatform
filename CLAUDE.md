@@ -169,6 +169,12 @@ Home questions (Red for under 2s, the parent induction, rhyme order, Cool Down 1
 emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshirode@ihau.au, which bounced; it was
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
+[PM: Claude, 2026-11-06] **Contracting company, decision 1 (go-live task 2), part answered.** The owner: for Australia only,
+International Healthcare Australia contracts, with Motor Movers as a brand under that registration, for now. The UK and
+Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. The exact registered name and numbers are still
+to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_...`, `deploy/country.env`); production
+refuses placeholders.
+
 ## Current state (2026-11-06)
 
 [PM: Claude, 2026-11-06] **Film access decided by the owner (settles the three questions in the notes below).** Staff
