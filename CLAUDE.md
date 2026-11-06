@@ -162,7 +162,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `file-storage`, pull request to come): go-live task 29.** Done:
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `file-storage`, pull request #43): go-live task 29.** Done:
 uploads and signed links, tested against the local store. Left: the Project manager merges once CI is green. Nothing has
 been tried on a real bucket yet (no DigitalOcean account). Remove this note once merged.
 
