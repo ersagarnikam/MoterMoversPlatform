@@ -167,6 +167,11 @@ function SessionCard({ today }: { today: HomeToday }) {
         {today.progressLabel} · about 10 minutes
       </p>
       <h2>{today.doneToday ? 'Done today' : `Today’s session for ${today.name}`}</h2>
+      {!today.inductionDone && (
+        <p>
+          Before your first session, there is a short induction to read. <Link to="/home/induction">Start the induction</Link>
+        </p>
+      )}
       {/* Once today's is done, the exercises shown are the next session's. */}
       <p>
         {today.doneToday ? 'Tomorrow: ' : ''}
@@ -178,9 +183,11 @@ function SessionCard({ today }: { today: HomeToday }) {
         </p>
       )}
       {today.doneToday && <p className="done-note">Done for today. Nice work, see you tomorrow.</p>}
-      <Link to={`/home/child/${today.childId}/session`} className={`btn ${today.doneToday ? '' : 'btn-primary'}`}>
-        {today.doneToday ? 'Do it again' : 'Start'}
-      </Link>
+      {today.inductionDone && (
+        <Link to={`/home/child/${today.childId}/session`} className={`btn ${today.doneToday ? '' : 'btn-primary'}`}>
+          {today.doneToday ? 'Do it again' : 'Start'}
+        </Link>
+      )}
     </section>
   )
 }

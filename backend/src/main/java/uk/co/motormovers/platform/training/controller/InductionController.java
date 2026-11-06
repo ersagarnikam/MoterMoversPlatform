@@ -19,13 +19,14 @@ import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.util.WordingGuard;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
+import uk.co.motormovers.platform.training.model.InductionAudience;
 import uk.co.motormovers.platform.training.model.InductionLesson;
 import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
 import uk.co.motormovers.platform.training.service.InductionService;
 
 /**
- * The one-hour induction for school staff, and its sign-off under /api/admin (ADMIN only) in the same
- * shape as the other content.
+ * The one-hour induction for school staff, and the sign-off under /api/admin (ADMIN only) of both inductions, staff
+ * and parent, in the same shape as the other content. Parents take theirs through /api/home.
  */
 @RestController
 public class InductionController {
@@ -59,17 +60,32 @@ public class InductionController {
 
     @GetMapping("/api/admin/induction")
     public List<ContentView> all() {
-        return lessons.findAllByOrderByPosition().stream().map(this::view).toList();
+        return lessons.findByAudienceOrderByPosition(InductionAudience.STAFF).stream().map(this::view).toList();
+    }
+
+    @GetMapping("/api/admin/parent-induction")
+    public List<ContentView> allForParents() {
+        return lessons.findByAudienceOrderByPosition(InductionAudience.PARENT).stream().map(this::view).toList();
     }
 
     @PostMapping("/api/admin/induction")
     @Transactional
     public ContentView create(@Valid @RequestBody NewLesson r) {
-        return view(lessons.save(new InductionLesson(r.position(), r.title(), r.summary(), r.body(), r.minutes(),
-                r.videoUrl())));
+        return add(InductionAudience.STAFF, r);
     }
 
-    @PostMapping("/api/admin/induction/{id}/approve")
+    @PostMapping("/api/admin/parent-induction")
+    @Transactional
+    public ContentView createForParents(@Valid @RequestBody NewLesson r) {
+        return add(InductionAudience.PARENT, r);
+    }
+
+    private ContentView add(InductionAudience audience, NewLesson r) {
+        return view(lessons.save(new InductionLesson(audience, r.position(), r.title(), r.summary(), r.body(),
+                r.minutes(), r.videoUrl())));
+    }
+
+    @PostMapping({"/api/admin/induction/{id}/approve", "/api/admin/parent-induction/{id}/approve"})
     @Transactional
     public ContentView approve(@PathVariable Long id) {
         InductionLesson l = find(id);
@@ -78,7 +94,7 @@ public class InductionController {
         return view(l);
     }
 
-    @PostMapping("/api/admin/induction/{id}/reject")
+    @PostMapping({"/api/admin/induction/{id}/reject", "/api/admin/parent-induction/{id}/reject"})
     @Transactional
     public ContentView reject(@PathVariable Long id) {
         InductionLesson l = find(id);

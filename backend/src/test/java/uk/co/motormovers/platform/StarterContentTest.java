@@ -13,6 +13,7 @@ import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
 import uk.co.motormovers.platform.seed.StarterContentLoader;
 import uk.co.motormovers.platform.content.util.WordingGuard;
+import uk.co.motormovers.platform.training.model.InductionAudience;
 import uk.co.motormovers.platform.training.repository.CourseQuizRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.QuizQuestionRepository;
@@ -62,7 +63,12 @@ class StarterContentTest {
 
     @Test
     void anEmptyPlatformGetsTheStarterContentAsDrafts() {
-        assertThat(induction.findAll()).hasSize(6).allMatch(l -> l.getStatus() == ContentStatus.DRAFT);
+        assertThat(induction.findByAudienceOrderByPosition(InductionAudience.STAFF)).hasSize(6)
+                .allMatch(l -> l.getStatus() == ContentStatus.DRAFT);
+        // The parent induction is placeholders until Pat's lessons arrive, and says so.
+        assertThat(induction.findByAudienceOrderByPosition(InductionAudience.PARENT)).hasSize(2)
+                .allMatch(l -> l.getStatus() == ContentStatus.DRAFT)
+                .allMatch(l -> l.getTitle().startsWith("Placeholder"));
         assertThat(resources.findAll()).hasSize(9).allMatch(r -> r.getStatus() == ContentStatus.DRAFT);
         assertThat(homeActivities.findAll()).hasSize(35).allMatch(a -> a.getStatus() == ContentStatus.DRAFT);
         assertThat(guidance.findAll()).hasSize(6).allMatch(g -> g.getStatus() == ContentStatus.DRAFT);

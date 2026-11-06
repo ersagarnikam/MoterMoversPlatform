@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.motormovers.platform.family.dto.FamilyViews;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 import uk.co.motormovers.platform.home.service.HomeService;
+import uk.co.motormovers.platform.training.dto.TrainingViews;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.security.service.RateLimiter;
 
@@ -88,6 +89,17 @@ public class HomeController {
     }
 
     /** Works for a home child and for a school child the parent is linked to. */
+    /** The short parent induction, which comes before the first home session. */
+    @GetMapping("/induction")
+    public TrainingViews.InductionView induction() {
+        return home.induction();
+    }
+
+    @PostMapping("/induction/lessons/{lessonId}/complete")
+    public TrainingViews.InductionView completeInductionLesson(@PathVariable Long lessonId) {
+        return home.completeInductionLesson(lessonId);
+    }
+
     @GetMapping("/children/{childId}/today")
     public HomeViews.Today today(@PathVariable Long childId) {
         return home.today(childId);

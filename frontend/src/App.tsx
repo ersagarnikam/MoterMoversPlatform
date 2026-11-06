@@ -42,6 +42,7 @@ import HomeChildPage from './pages/home/HomeChildPage'
 import HomeCheckPage from './pages/home/HomeCheckPage'
 import HomeSessionPage from './pages/home/HomeSessionPage'
 import HomeFamilyPage from './pages/home/HomeFamilyPage'
+import HomeInductionPage from './pages/home/HomeInductionPage'
 import { useCountry } from './country'
 import { setCurrency } from './money'
 
@@ -112,6 +113,7 @@ export default function App() {
         <Route path="/payments" element={<MyPaymentsPage />} />
         <Route path="/home" element={<HomeOverviewPage />} />
         <Route path="/home/family" element={<HomeFamilyPage />} />
+        <Route path="/home/induction" element={<HomeInductionPage />} />
         <Route path="/home/child/:childId" element={<HomeChildPage />} />
         <Route path="/home/child/:childId/check" element={<HomeCheckPage />} />
         <Route path="/home/child/:childId/session" element={<HomeSessionPage />} />

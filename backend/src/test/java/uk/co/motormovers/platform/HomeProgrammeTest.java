@@ -32,6 +32,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -322,6 +323,81 @@ class HomeProgrammeTest {
                 .andExpect(jsonPath("$.canRate").value(false));
         mvc.perform(get("/api/family/children").header("Authorization", bearer(parent)))
                 .andExpect(jsonPath("$[*].childId").value(hasItem(schoolChild)));
+    }
+
+    @Test
+    void aParentFinishesTheInductionBeforeTheirFirstSession() throws Exception {
+        String parent = register();
+        Integer child = JsonPath.read(mvc.perform(post("/api/home/children").header("Authorization", bearer(parent))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Kit\",\"ageMonths\":50}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(), "$.id");
+        mvc.perform(put("/api/home/children/" + child + "/stage").header("Authorization", bearer(parent))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"stage\":\"GREEN\"}"))
+                .andExpect(status().isOk());
+
+        // Today shows the gate, and a session sent straight to the API is refused.
+        mvc.perform(get("/api/home/children/" + child + "/today").header("Authorization", bearer(parent)))
+                .andExpect(jsonPath("$.inductionDone").value(false));
+        session(parent, child).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("parent induction")));
+
+        // The lessons are placeholders until Pat's arrive, and they are the parents', not the staff's.
+        String induction = mvc.perform(get("/api/home/induction").header("Authorization", bearer(parent)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lessons.length()").value(greaterThan(1)))
+                .andExpect(jsonPath("$.lessons[0].title").value(containsString("Placeholder")))
+                .andExpect(jsonPath("$.completedOn").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        List<Integer> lessons = JsonPath.read(induction, "$.lessons[*].id");
+        mvc.perform(post("/api/training/induction/lessons/" + lessons.getFirst() + "/complete")
+                .header("Authorization", bearer(login("teacher@oakfield.test"))))
+                .andExpect(status().isNotFound());
+
+        // One lesson is not enough; after the last, sessions open.
+        mvc.perform(post("/api/home/induction/lessons/" + lessons.getFirst() + "/complete")
+                .header("Authorization", bearer(parent)))
+                .andExpect(jsonPath("$.lessonsDone").value(1))
+                .andExpect(jsonPath("$.completedOn").doesNotExist());
+        session(parent, child).andExpect(status().isBadRequest());
+        for (Integer lesson : lessons.subList(1, lessons.size())) {
+            mvc.perform(post("/api/home/induction/lessons/" + lesson + "/complete")
+                    .header("Authorization", bearer(parent)))
+                    .andExpect(status().isOk());
+        }
+        mvc.perform(get("/api/home/children/" + child + "/today").header("Authorization", bearer(parent)))
+                .andExpect(jsonPath("$.inductionDone").value(true));
+        session(parent, child).andExpect(status().isOk()).andExpect(jsonPath("$.saved").value(1));
+
+        // A second carer does the induction too.
+        String code = JsonPath.read(mvc.perform(post("/api/home/invites").header("Authorization", bearer(parent)))
+                .andReturn().getResponse().getContentAsString(), "$.code");
+        String carer = register();
+        mvc.perform(post("/api/home/join").header("Authorization", bearer(carer))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"code\":\"" + code + "\"}"))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/home/children/" + child + "/today").header("Authorization", bearer(carer)))
+                .andExpect(jsonPath("$.inductionDone").value(false));
+        session(carer, child).andExpect(status().isBadRequest());
+
+        // Finishing is permanent: a lesson approved later locks nobody out.
+        String admin = login("admin@motormovers.test");
+        String added = mvc.perform(post("/api/admin/parent-induction").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"position\":50,\"title\":\"A later lesson\","
+                        + "\"summary\":\"Added later\",\"body\":\"More to read.\",\"minutes\":2}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.label").value("Parent induction · Part 50"))
+                .andReturn().getResponse().getContentAsString();
+        mvc.perform(post("/api/admin/parent-induction/" + JsonPath.read(added, "$.id") + "/approve")
+                .header("Authorization", bearer(admin)))
+                .andExpect(status().isOk());
+        session(parent, child).andExpect(status().isOk());
+    }
+
+    private ResultActions session(String token, Integer child) throws Exception {
+        return mvc.perform(post("/api/home/sessions").header("Authorization", bearer(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("[{\"clientId\":\"" + UUID.randomUUID() + "\",\"childId\":" + child + ",\"doneOn\":\""
+                        + LocalDate.now(clock) + "\"}]"));
     }
 
     @Test

@@ -6,9 +6,49 @@ The parent app and the parent course, for a child whose school is on Motor Mover
 
 ## Flows
 
-1. [Link a child and see progress](#link-child)
-2. [Home activities and guidance (works offline)](#home-activities)
-3. [Phone notifications](#push)
+1. [First launch: where are you?](#first-launch)
+2. [Link a child and see progress](#link-child)
+3. [Home activities and guidance (works offline)](#home-activities)
+4. [Phone notifications](#push)
+
+<a id="first-launch"></a>
+
+## First launch: where are you?
+
+One store app serves three countries, each with its own server. The parent says where they are before signing in, and the choice decides where every request goes.
+
+**Endpoints:** `GET /api/settings`, on the chosen country's server
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor P as Parent
+  participant A as Parent app (Expo)
+  participant API as Chosen country's API
+  A->>A: A saved country? (kept after signing out)
+  alt none saved
+    A->>P: Where are you? (the phone's country first)
+    P->>A: United Kingdom, Ireland or Australia
+    A->>A: Save the choice
+  end
+  A->>API: GET /api/settings
+  API-->>A: currency
+  P->>A: Sign in or create an account
+  Note over P,A: Later, Account, Change country
+  A->>API: Send anything unsent
+  alt something still unsent
+    A-->>P: Waiting to send N items. Connect to the internet first.
+  else all sent
+    A->>API: Remove the push token, as signing out does
+    A->>A: Sign out, clear what is kept on the phone, ask where again
+  end
+```
+
+**Rules in the code**
+
+- The address comes from the build (`EXPO_PUBLIC_API_URL_UK`, `_IE`, `_AU`) and is read on every request.
+- The parent is always asked; the phone's region only puts its country first.
+- Changing country is refused while sessions or ratings are unsent: they belong on the old country's server.
 
 <a id="link-child"></a>
 

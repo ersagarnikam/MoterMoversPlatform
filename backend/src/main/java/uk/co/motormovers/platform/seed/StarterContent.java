@@ -20,6 +20,7 @@ import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.model.CourseQuiz;
+import uk.co.motormovers.platform.training.model.InductionAudience;
 import uk.co.motormovers.platform.training.model.InductionLesson;
 import uk.co.motormovers.platform.training.model.QuizQuestion;
 import uk.co.motormovers.platform.training.repository.CourseQuizRepository;
@@ -68,6 +69,7 @@ public class StarterContent {
     public Loaded load(String approvedBy) {
         Map<ColourStage, List<LibraryResource>> rhymes = resources(approvedBy);
         List<InductionLesson> induction = induction(approvedBy);
+        parentInductionPlaceholders(approvedBy);
         Map<ColourStage, List<HomeActivity>> activities = homeActivities(approvedBy);
         guidance(approvedBy);
         Course professional = courses.save(new Course(CourseTrack.PROFESSIONAL, "Motor Movers practitioner course",
@@ -243,6 +245,24 @@ public class StarterContent {
             lessons.add(inductionLessons.save(l));
         }
         return lessons;
+    }
+
+    /**
+     * Placeholders for the parent induction, marked as such: Pat is writing the real lessons (2026-11-05), and the team
+     * replaces these on the content screens when they arrive.
+     */
+    private void parentInductionPlaceholders(String approvedBy) {
+        for (int part = 1; part <= 2; part++) {
+            InductionLesson l = new InductionLesson(InductionAudience.PARENT, part, "Placeholder lesson " + part,
+                    "Placeholder: the parent induction is still being written.",
+                    "This is a placeholder, not a real lesson. The parent induction is still being written, and its "
+                            + "lessons will replace this one.",
+                    2, null);
+            if (approvedBy != null) {
+                l.review(ContentStatus.APPROVED, approvedBy);
+            }
+            inductionLessons.save(l);
+        }
     }
 
     private Map<ColourStage, List<HomeActivity>> homeActivities(String approvedBy) {

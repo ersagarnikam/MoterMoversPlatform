@@ -1,6 +1,4 @@
 // Client for the Motor Movers API, parent endpoints only.
-import Constants from 'expo-constants'
-import { Platform } from 'react-native'
 
 export type ColourStage = 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'INDIGO' | 'VIOLET'
 export type Role = 'TEACHER' | 'HEAD' | 'TRUST_LEAD' | 'PRACTITIONER' | 'PARENT' | 'ADMIN'
@@ -148,6 +146,22 @@ export interface HomeExercise {
   points: { point: string; label: string }[]
 }
 
+/** The short parent induction: completedOn stays null until every lesson is done. */
+export interface HomeInduction {
+  lessons: {
+    id: number
+    position: number
+    title: string
+    summary: string
+    paragraphs: string[]
+    minutes: number
+    done: boolean
+  }[]
+  totalMinutes: number
+  lessonsDone: number
+  completedOn: string | null
+}
+
 export interface HomeToday {
   childId: number
   name: string
@@ -187,6 +201,8 @@ export interface HomeToday {
   levels: { score: number; label: string }[]
   /** Pat's safety note, shown before the first session. */
   safetyNote: string
+  /** This parent has finished the parent induction; sessions stay locked until they have. */
+  inductionDone: boolean
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
 }
@@ -301,20 +317,16 @@ export interface MyPayments {
   payments: Payment[]
 }
 
-/**
- * Where the API lives. Set EXPO_PUBLIC_API_URL for real environments. In development the app uses
- * the machine running the Expo dev server, so a phone on the same Wi-Fi finds the local API.
- */
-function resolveBaseUrl(): string {
-  const configured = process.env.EXPO_PUBLIC_API_URL
-  if (configured) return configured.replace(/\/$/, '')
-  const devHost = Constants.expoConfig?.hostUri?.split(':')[0]
-  if (Platform.OS !== 'web' && devHost) return `http://${devHost}:8080`
-  if (Platform.OS === 'android') return 'http://10.0.2.2:8080'
-  return 'http://localhost:8080'
+let baseUrl = ''
+
+/** Where the API lives: the chosen country's server (lib/country.tsx), read on every request. */
+export function apiUrl(): string {
+  return baseUrl
 }
 
-export const API_URL = resolveBaseUrl()
+export function setApiUrl(url: string) {
+  baseUrl = url
+}
 
 let token: string | null = null
 let onUnauthorized: (() => void) | null = null
@@ -343,7 +355,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   let res: Response
   try {
-    res = await fetch(API_URL + path, {
+    res = await fetch(apiUrl() + path, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -421,6 +433,9 @@ export const api = {
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
   homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
+  homeInduction: () => request<HomeInduction>('GET', '/api/home/induction'),
+  completeHomeInductionLesson: (lessonId: number) =>
+    request<HomeInduction>('POST', `/api/home/induction/lessons/${lessonId}/complete`),
   recordHomeSessions: (sessions: HomeSessionEntry[]) =>
     request<{ saved: number; duplicates: number }>('POST', '/api/home/sessions', sessions),
   /** Ratings use the assessment endpoint, which checks that the child is the family's. */
