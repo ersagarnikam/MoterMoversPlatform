@@ -70,8 +70,9 @@ npx expo start          # scan the QR code with Expo Go on a phone on the same W
 npx expo start --web    # or open it in a browser at http://localhost:8081
 ```
 
-In development the app finds the API on the machine running Expo, port 8080. Set
-`EXPO_PUBLIC_API_URL` to use another address (for example `EXPO_PUBLIC_API_URL=https://api.example.org`).
+The app asks "Where are you?" at first launch. In development any country finds the API on the machine running Expo,
+port 8080. Set `EXPO_PUBLIC_API_URL_UK`, `_IE` or `_AU` to point a country elsewhere, or `EXPO_PUBLIC_API_URL` to add a
+"Development" choice (for example `EXPO_PUBLIC_API_URL=https://api.example.org`).
 Sign in as `parent@example.test` / `password`, or create a new account and link a child with the demo
 code **HOME-TIME** (works once per database; restart the API to reset it).
 

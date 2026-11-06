@@ -2,6 +2,8 @@
 
 Families whose school is not on Motor Movers. Behind HOME_PROGRAMME, off in production.
 
+The app asks which country the parent is in at first launch: see [First launch](5a-parent-school-child.md#first-launch).
+
 [All roles](README.md) · Traced from the code at commit 93da753 (4 Nov 2026). Errors are problem details: 400 a rule broken, 403 no access, 429 a rate limit. When an endpoint or rule shown here changes, update the diagram in the same pull request.
 
 ## Flows

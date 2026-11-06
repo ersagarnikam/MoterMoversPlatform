@@ -30,7 +30,13 @@
       "expo-status-bar",
       "expo-secure-store",
       "expo-font",
-      ["expo-notifications", { "enableBackgroundRemoteNotifications": false }]
+      [
+        "expo-notifications",
+        {
+          "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

@@ -5,6 +5,7 @@ import { AppState } from 'react-native'
 import { Loading } from '@/components/ui'
 import { api, setCountry } from '@/lib/api'
 import { AuthProvider, useAuth } from '@/lib/auth'
+import { CountryProvider } from '@/lib/country'
 import { flush } from '@/lib/outbox'
 import { openNotificationsOnTap, registerForPush } from '@/lib/push'
 import { usePalette } from '@/lib/theme'
@@ -75,9 +76,11 @@ function RootStack() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <StatusBar style="light" />
-      <RootStack />
-    </AuthProvider>
+    <CountryProvider>
+      <AuthProvider>
+        <StatusBar style="light" />
+        <RootStack />
+      </AuthProvider>
+    </CountryProvider>
   )
 }
