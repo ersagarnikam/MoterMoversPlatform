@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,6 +15,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 
 import uk.co.motormovers.platform.school.model.School;
 import uk.co.motormovers.platform.user.model.AppUser;
@@ -56,6 +60,11 @@ public class Payment {
 
     /** The tax rate included in the amount, in basis points (2000 = 20%); null on payments from before it was kept. */
     private Integer taxRateBp;
+
+    /** Money returned on this payment, oldest first. The payment itself stays paid. */
+    @OneToMany(mappedBy = "payment")
+    @OrderBy("id")
+    private List<PaymentRefund> refunds = new ArrayList<>();
 
     protected Payment() {
     }
@@ -103,8 +112,60 @@ public class Payment {
         if (taxRateBp == null) {
             return null;
         }
-        return BigDecimal.valueOf((long) amountPence * taxRateBp)
+        return taxIn(amountPence);
+    }
+
+    private int taxIn(int amount) {
+        return BigDecimal.valueOf((long) amount * taxRateBp)
                 .divide(BigDecimal.valueOf(10_000L + taxRateBp), 0, RoundingMode.HALF_UP).intValueExact();
+    }
+
+    public List<PaymentRefund> getRefunds() {
+        return refunds;
+    }
+
+    /** What has gone back, not counting refunds Stripe could not complete. */
+    public int refundedPence() {
+        return refunds.stream().filter(PaymentRefund::counts).mapToInt(PaymentRefund::getAmountPence).sum();
+    }
+
+    public int refundablePence() {
+        return amountPence - refundedPence();
+    }
+
+    /** What the platform has kept of a paid payment; totals count this. */
+    public int netPaidPence() {
+        return refundablePence();
+    }
+
+    /** "Refunded" or "Part refunded"; null when nothing has gone back. */
+    public String refundLabel() {
+        int refunded = refundedPence();
+        if (refunded == 0) {
+            return null;
+        }
+        return refunded >= amountPence ? "Refunded" : "Part refunded";
+    }
+
+    /** Stripe holds a payment intent to refund against; paidOnlineRef can also be a session id, which cannot be. */
+    public boolean paidWithPaymentIntent() {
+        return paidOnlineRef != null && paidOnlineRef.startsWith("pi_");
+    }
+
+    /**
+     * The tax in a refund of {@code amount}, by the same sum as the payment. The last refund takes what is left of the
+     * tax, so part refunds always add up to the tax on the payment. Null when the payment has no rate.
+     */
+    public Integer taxInRefund(int amount) {
+        if (taxRateBp == null) {
+            return null;
+        }
+        if (amount == refundablePence()) {
+            int taxRefunded = refunds.stream().filter(PaymentRefund::counts).filter(r -> r.getTaxPence() != null)
+                    .mapToInt(PaymentRefund::getTaxPence).sum();
+            return taxPence() - taxRefunded;
+        }
+        return taxIn(amount);
     }
 
     public void markPaid(LocalDate on) {

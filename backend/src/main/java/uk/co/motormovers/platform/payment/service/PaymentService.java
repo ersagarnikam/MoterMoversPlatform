@@ -24,6 +24,7 @@ import uk.co.motormovers.platform.payment.dto.PaymentViews.PaymentView;
 import uk.co.motormovers.platform.payment.dto.PaymentViews.SchoolTotal;
 import uk.co.motormovers.platform.payment.model.PayerType;
 import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentRefund;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
 import uk.co.motormovers.platform.notification.service.PushService;
@@ -95,9 +96,12 @@ public class PaymentService {
         for (YearMonth m = firstMonth; !m.isAfter(thisMonth); m = m.plusMonths(1)) {
             paidByMonth.put(m, 0L);
         }
-        all.stream().filter(p -> p.getStatus() == PaymentStatus.PAID)
-                .forEach(p -> paidByMonth.computeIfPresent(YearMonth.from(p.getPaidOn()),
-                        (m, total) -> total + p.getAmountPence()));
+        // Money in counts in the month it arrived, money back in the month it went.
+        all.stream().filter(p -> p.getStatus() == PaymentStatus.PAID).forEach(p -> {
+            paidByMonth.computeIfPresent(YearMonth.from(p.getPaidOn()), (m, total) -> total + p.getAmountPence());
+            p.getRefunds().stream().filter(PaymentRefund::counts).forEach(r -> paidByMonth.computeIfPresent(
+                    YearMonth.from(r.getRefundedOn()), (m, total) -> total - r.getAmountPence()));
+        });
         List<PaymentViews.MonthTotal> byMonth = paidByMonth.entrySet().stream()
                 .map(e -> new PaymentViews.MonthTotal(e.getKey().toString(), e.getValue())).toList();
 
@@ -236,15 +240,12 @@ public class PaymentService {
         return new GroupTotal(key, label, paid(matching), outstanding(matching), matching.size());
     }
 
+    /** Money received, net of refunds. */
     private static long paid(List<Payment> list) {
-        return total(list, PaymentStatus.PAID);
+        return list.stream().filter(p -> p.getStatus() == PaymentStatus.PAID).mapToLong(Payment::netPaidPence).sum();
     }
 
     private static long outstanding(List<Payment> list) {
-        return total(list, PaymentStatus.DUE);
-    }
-
-    private static long total(List<Payment> list, PaymentStatus status) {
-        return list.stream().filter(p -> p.getStatus() == status).mapToLong(Payment::getAmountPence).sum();
+        return list.stream().filter(p -> p.getStatus() == PaymentStatus.DUE).mapToLong(Payment::getAmountPence).sum();
     }
 }

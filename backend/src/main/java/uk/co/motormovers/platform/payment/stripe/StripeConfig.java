@@ -20,8 +20,17 @@ public class StripeConfig {
             return new StripeApiClient(RestClient.builder(), properties.secretKey(), money.stripeCurrency());
         }
         log.info("Card payments are off: payments are marked paid by hand until the platform.stripe keys are set");
-        return (paymentId, amountPence, description, payerEmail, successUrl, cancelUrl) -> {
-            throw new IllegalStateException("Card payments are not switched on");
+        return new StripeClient() {
+            @Override
+            public Checkout createCheckout(Long paymentId, int amountPence, String description, String payerEmail,
+                    String successUrl, String cancelUrl) {
+                throw new IllegalStateException("Card payments are not switched on");
+            }
+
+            @Override
+            public Refund createRefund(String paymentIntent, int amountMinor, Long paymentId, String idempotencyKey) {
+                throw new IllegalStateException("Card payments are not switched on, so Stripe cannot make this refund");
+            }
         };
     }
 }

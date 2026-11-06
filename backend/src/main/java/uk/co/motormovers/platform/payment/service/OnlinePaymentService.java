@@ -3,6 +3,7 @@ package uk.co.motormovers.platform.payment.service;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +34,19 @@ public class OnlinePaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(OnlinePaymentService.class);
 
+    /** Checked against Stripe's documentation, 2026-11-06. Each carries the refund itself, with its status. */
+    private static final Set<String> REFUND_EVENTS = Set.of("refund.created", "refund.updated", "refund.failed");
+
     /** The parts of a Stripe event the platform reads. */
     record Event(String type, EventData data) {
     }
 
-    record EventData(CheckoutSession object) {
+    record EventData(EventObject object) {
     }
 
-    record CheckoutSession(String id, String payment_status, String payment_intent, String client_reference_id,
-            Map<String, String> metadata) {
+    /** A Checkout session, or a refund (with its amount and status). */
+    record EventObject(String id, String payment_status, String payment_intent, String client_reference_id,
+            Map<String, String> metadata, Integer amount, String status) {
     }
 
     private final PaymentRepository payments;
@@ -52,10 +57,11 @@ public class OnlinePaymentService {
     private final CurrentUserResolver currentUser;
     private final JsonMapper json;
     private final Clock clock;
+    private final RefundService refunds;
 
     public OnlinePaymentService(PaymentRepository payments, StripeClient stripe, StripeProperties properties,
             PlatformProperties platform, AccessPolicy access, CurrentUserResolver currentUser, JsonMapper json,
-            Clock clock) {
+            Clock clock, RefundService refunds) {
         this.payments = payments;
         this.stripe = stripe;
         this.properties = properties;
@@ -64,6 +70,7 @@ public class OnlinePaymentService {
         this.currentUser = currentUser;
         this.json = json;
         this.clock = clock;
+        this.refunds = refunds;
     }
 
     public boolean enabled() {
@@ -93,8 +100,9 @@ public class OnlinePaymentService {
     }
 
     /**
-     * Stripe says a Checkout page was paid: the payment is marked paid today with Stripe's reference. A call that is
-     * not signed by Stripe is refused. Returns whether a payment was marked paid.
+     * Stripe says a Checkout page was paid, and the payment is marked paid today with Stripe's reference; or it reports
+     * a refund, which RefundService records. A call that is not signed by Stripe is refused. Returns whether anything
+     * changed.
      */
     @Transactional
     public boolean webhook(String payload, String signature) {
@@ -102,12 +110,17 @@ public class OnlinePaymentService {
             throw new IllegalArgumentException("This call is not signed by Stripe");
         }
         Event event = json.readValue(payload, Event.class);
+        if (REFUND_EVENTS.contains(event.type()) && event.data() != null && event.data().object() != null) {
+            EventObject refund = event.data().object();
+            return refunds.fromStripe(refund.id(), refund.payment_intent(), RefundService.paymentIdIn(refund.metadata()),
+                    refund.amount(), refund.status());
+        }
         boolean paidEvent = "checkout.session.completed".equals(event.type())
                 || "checkout.session.async_payment_succeeded".equals(event.type());
         if (!paidEvent || event.data() == null || event.data().object() == null) {
             return false;
         }
-        CheckoutSession session = event.data().object();
+        EventObject session = event.data().object();
         if (!"paid".equals(session.payment_status())) {
             // E.g. a bank debit still on its way: Stripe sends async_payment_succeeded when it arrives.
             return false;

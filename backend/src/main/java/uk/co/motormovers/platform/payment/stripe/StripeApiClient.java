@@ -4,6 +4,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 /** Stripe's API (https://docs.stripe.com/api/checkout/sessions/create), form-encoded with the secret key. */
@@ -50,6 +51,25 @@ public class StripeApiClient implements StripeClient {
         } catch (RestClientResponseException e) {
             // Stripe's message can name the account's settings; the payer only needs to know it did not work.
             throw new IllegalStateException("Card payments are not available just now. Please try again later.", e);
+        }
+    }
+
+    @Override
+    public Refund createRefund(String paymentIntent, int amountMinor, Long paymentId, String idempotencyKey) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("payment_intent", paymentIntent);
+        form.add("amount", String.valueOf(amountMinor));
+        form.add("metadata[paymentId]", String.valueOf(paymentId));
+        try {
+            Refund refund = api.post().uri("/refunds").contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .header("Idempotency-Key", idempotencyKey).body(form).retrieve().body(Refund.class);
+            if (refund == null || refund.id() == null || "failed".equals(refund.status())
+                    || "canceled".equals(refund.status())) {
+                throw new IllegalStateException("Stripe did not make the refund. Nothing has been recorded.");
+            }
+            return refund;
+        } catch (RestClientException e) {
+            throw new IllegalStateException("Stripe did not make the refund. Nothing has been recorded.", e);
         }
     }
 }

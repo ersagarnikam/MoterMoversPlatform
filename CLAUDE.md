@@ -41,7 +41,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V18`, added by Dev 2026-11-06);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V20`, added by Dev 2026-11-06, after V19 in pull request #35);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -51,13 +51,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 176 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 183 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 57 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # 67 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-06) 68 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
@@ -159,6 +159,26 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `refunds`, pull request #37): go-live task 60.** Done:
+refunds and credit notes, with tests. Left: the owner merges, **after #35** (V20 follows V19); try it with a Stripe test
+account. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Refunds and credit notes (go-live task 60, migration V20).** A paid payment stays PAID;
+`payment_refund` rows say what went back (part refunds allowed, never more than was paid). The team refunds on
+`/admin/payments` (`POST /api/admin/payments/{id}/refund`, `RefundService`, `AccessPolicy.requireAdmin`, `RefundForm`): a card
+payment with a payment intent goes through Stripe (`StripeClient.createRefund`, with an idempotency key, saving nothing
+unless Stripe accepts); anything else is recorded for the money to go back by hand. The webhook also takes
+`refund.created`, `refund.updated` and `refund.failed` (checked against Stripe's documentation, 2026-11-06), recording a
+dashboard refund once (unique on `stripe_refund_id`); a failed refund stops counting. Every route locks the payment row, so
+a webhook cannot overtake the team's own request. Views add `refundedPence`, `refundLabel` and `refunds`; all totals are net,
+and in spend by month a refund counts in the month the money went back. Credit notes: gapless numbers from
+`credit_note_counter` ("CN-000012"), `CreditNotePdf` with the legal entity, the original payment and the tax in the refund
+(the last part refund takes what is left of the tax, so they add up), emailed to the payer or the school's heads, and
+downloadable on Payments. The title is `credit-note-title` in the country settings ("Credit note", "Adjustment note" in
+Australia): **the wording is for the accountant to confirm (task 17).** The parent app shows refunds and emails the credit
+note on request, since it cannot save a file. When a refund applies is Kay's policy (task 20), not the platform's. Part C
+missed one creator of payments: `TrainingService` now sets the tax rate on the school's invoice for a staff course place.
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `legal-entity`, pull request #34, built on #33's branch):
 go-live task 25, part E.** Done: the legal entity on screens, emails and the certificate, the production check, and the
@@ -475,7 +495,7 @@ and in the app, heads on the school's Payments page. It opens a Stripe Checkout 
 `OnlinePaymentService.checkout`); the card never touches the platform. Stripe's signed webhook
 (`POST /api/stripe/webhook`, open to Stripe only by its HMAC signature, 5-minute tolerance) marks the payment paid
 with `payment.paid_online_ref`; returning to the platform proves nothing on its own. Not yet tried with a real Stripe
-account (RUNBOOK, Card payments). Refunds are made in Stripe and not recorded on the platform.
+account (RUNBOOK, Card payments). (added by Dev, 2026-11-06) Refunds are on the platform: see Refunds and credit notes in Current state.
 
 **Phone notifications (2026-10-26, migration V13).** The parent app registers the phone after sign-in (`src/lib/push.ts`,
 `expo-notifications`; `POST /api/me/push-tokens`, removed on sign-out) and opens the screen a notification names
@@ -592,7 +612,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -624,8 +644,8 @@ Not started unless noted. Confirm priorities with the owner.
 8. Done 2026-10-21: bookings, attendance and certificates have a screen (per-session register since 2026-10-22).
    Session reminder emails done 2026-10-26. Not built: emailing the learner when their certificate is issued, and
    reminders before it expires.
-9. Online card payment (Stripe Checkout) done 2026-10-26, waiting on the owner's Stripe account. Not built: refunds
-   and credit notes (a paid payment is final), VAT (prices are the amounts charged,
+9. Online card payment (Stripe Checkout) done 2026-10-26, waiting on the owner's Stripe account. (added by Dev,
+   2026-11-06) Refunds and credit notes are built (pull request #37). Not built: VAT (prices are the amounts charged,
    with no net/VAT split; ask the owner whether Motor Movers is VAT-registered), and linking a payment to a
    specific licence or course booking.
 10. **Assessment rebuild: Pat replied 2026-10-27; built for Green and Yellow the same day (see Pat's two

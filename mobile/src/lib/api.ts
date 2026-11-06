@@ -278,6 +278,10 @@ export interface LiveJoin {
 export interface Payment {
   /** The tax included in amountPence; null on payments from before it was kept. */
   taxPence: number | null
+  refundedPence: number
+  /** "Refunded" or "Part refunded"; null with nothing refunded. */
+  refundLabel: string | null
+  refunds: { id: number; amountPence: number; taxPence: number | null; refundedOn: string; creditNote: string; failed: boolean }[]
   id: number
   purposeLabel: string
   description: string
@@ -437,6 +441,9 @@ export const api = {
   /** Open to anyone: the server's country settings (currency, tax, year names). */
   settings: () =>
     request<{ currency: string; taxLabel: string; legalLine: string | null }>('GET', '/api/settings'),
+
+  /** Emails the credit note to the parent: the app cannot save a file. */
+  emailCreditNote: (refundId: number) => request<void>('POST', `/api/payments/refunds/${refundId}/credit-note/email`),
 
   registerPushToken: (token: string, platform: string) =>
     request<void>('POST', '/api/me/push-tokens', { token, platform }),

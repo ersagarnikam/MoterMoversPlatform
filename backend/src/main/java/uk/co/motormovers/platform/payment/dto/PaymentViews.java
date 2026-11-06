@@ -12,12 +12,13 @@ import jakarta.validation.constraints.Size;
 
 import uk.co.motormovers.platform.payment.model.PayerType;
 import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentRefund;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
 
 /**
- * Amounts are in the currency's minor unit (pence or cents; the {@code *Pence} names stay). "Paid" is money received;
- * "outstanding" is invoiced and not yet paid.
+ * Amounts are in the currency's minor unit (pence or cents; the {@code *Pence} names stay). "Paid" is money received,
+ * net of refunds; "outstanding" is invoiced and not yet paid.
  */
 public final class PaymentViews {
 
@@ -27,10 +28,12 @@ public final class PaymentViews {
     /**
      * One payment. payerEmail is null when a school pays; paidOnline when it was paid by card on the platform.
      * taxPence is the tax included in the amount; null on payments from before it was kept, which show no tax line.
+     * refundedPence is what has gone back, and refundLabel "Refunded" or "Part refunded" (null with nothing refunded).
      */
     public record PaymentView(Long id, PayerType payerType, String payerName, String payerEmail, Long schoolId,
             PaymentPurpose purpose, String purposeLabel, String description, int amountPence, PaymentStatus status,
-            LocalDate invoicedOn, LocalDate paidOn, String reference, boolean paidOnline, Integer taxPence) {
+            LocalDate invoicedOn, LocalDate paidOn, String reference, boolean paidOnline, Integer taxPence,
+            int refundedPence, String refundLabel, List<RefundView> refunds) {
 
         public static PaymentView of(Payment p) {
             boolean school = p.getSchool() != null;
@@ -38,8 +41,24 @@ public final class PaymentViews {
                     school ? p.getSchool().getName() : p.getPayer().getDisplayName(),
                     school ? null : p.getPayer().getEmail(), school ? p.getSchool().getId() : null, p.getPurpose(),
                     p.getPurpose().label(), p.getDescription(), p.getAmountPence(), p.getStatus(), p.getInvoicedOn(),
-                    p.getPaidOn(), p.getReference(), p.getPaidOnlineRef() != null, p.taxPence());
+                    p.getPaidOn(), p.getReference(), p.getPaidOnlineRef() != null, p.taxPence(), p.refundedPence(),
+                    p.refundLabel(), p.getRefunds().stream().map(RefundView::of).toList());
         }
+    }
+
+    /** A refund and its credit note. failed: Stripe could not return it, so it no longer counts. */
+    public record RefundView(Long id, int amountPence, Integer taxPence, String reason, LocalDate refundedOn,
+            String creditNote, boolean byHand, boolean failed) {
+
+        public static RefundView of(PaymentRefund r) {
+            return new RefundView(r.getId(), r.getAmountPence(), r.getTaxPence(), r.getReason(), r.getRefundedOn(),
+                    r.creditNoteLabel(), r.byHand(), !r.counts());
+        }
+    }
+
+    /** The team refunds all or part of a paid payment. clientId makes sending it twice safe. */
+    public record RefundIn(@Min(1) @Max(10_000_000) int amountPence, @NotBlank @Size(max = 500) String reason,
+            @NotBlank @Size(max = 64) String clientId) {
     }
 
     public record GroupTotal(String key, String label, long paidPence, long outstandingPence, int payments) {

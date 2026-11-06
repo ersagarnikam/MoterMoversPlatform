@@ -38,6 +38,8 @@ platform:
       # September to August, three terms; assessment points: start Sep-Dec, middle Jan-Apr, end May-Aug.
       school-year: { first-month: 9, last-month: 8, terms: 3, start-month: 9, middle-month: 1, end-month: 5 }
       year-names: Nursery, Reception, Year 1, Year 2, Year 3
+      # To confirm (accountant, go-live task 17), here and for the other countries.
+      credit-note-title: Credit note
       legal-entity: &placeholder-entity
         # To confirm (Kay): suggested Neuroway for the UK and Ireland. A production deployment refuses to start until
         # every value is set (PLATFORM_COUNTRIES_<REGION>_LEGALENTITY_<NAME>); leave one blank if it does not apply.
@@ -59,6 +61,7 @@ platform:
       school-year: { first-month: 9, last-month: 6, terms: 3, start-month: 9, middle-month: 1, end-month: 4 }
       # To confirm (Pat).
       year-names: Preschool, Junior Infants, Senior Infants, First Class, Second Class
+      credit-note-title: Credit note
       legal-entity: *placeholder-entity
     au:
       name: Australia
@@ -72,6 +75,7 @@ platform:
       school-year: { first-month: 1, last-month: 12, terms: 4, start-month: 1, middle-month: 5, end-month: 9 }
       # To confirm (Pat).
       year-names: Kindy, Prep, Year 1, Year 2, Year 3
+      credit-note-title: Adjustment note
       # To confirm (Kay): suggested one of our Australian companies.
       legal-entity:
         <<: *placeholder-entity

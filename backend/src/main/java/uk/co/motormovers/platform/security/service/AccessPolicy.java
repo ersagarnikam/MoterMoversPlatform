@@ -56,6 +56,15 @@ public class AccessPolicy {
     }
 
     /** Head-level view of a school (dashboards, exports). */
+    /** The Motor Movers team only. */
+    public CurrentUser requireAdmin() {
+        CurrentUser me = currentUser.current();
+        if (!me.is(Role.ADMIN)) {
+            throw new AccessDeniedException("This is for the Motor Movers team");
+        }
+        return me;
+    }
+
     public CurrentUser requireSchoolAccess(School school) {
         CurrentUser me = currentUser.current();
         boolean allowed = me.is(Role.ADMIN)
