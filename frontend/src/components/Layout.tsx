@@ -5,7 +5,7 @@ import { useHomeAvailable } from '../homeProgramme'
 import StageStripe from './StageStripe'
 import ThemeSwitch from './ThemeSwitch'
 
-const NAV: Record<Role, { to: string; label: string; end?: boolean }[]> = {
+const NAV: Record<Role, { to: string; label: string; end?: boolean; reload?: boolean }[]> = {
   TEACHER: [
     { to: '/classes', label: 'My class' },
     { to: '/resources', label: 'Resources' },
@@ -34,7 +34,8 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean }[]> = {
   ],
   ADMIN: [
     { to: '/admin', label: 'Home', end: true },
-    { to: '/admin/content', label: 'Content approval' },
+    // A full page load: only this page's CSP lets the browser reach the file store.
+    { to: '/admin/content', label: 'Content approval', reload: true },
     { to: '/admin/schools', label: 'Schools & licences' },
     { to: '/admin/plans', label: 'Plans and prices' },
     { to: '/classes', label: 'All classes' },
@@ -89,8 +90,8 @@ export default function Layout() {
       </header>
       <div className="body">
         <nav className="sidenav" aria-label="Main">
-          {nav.map((item: { to: string; label: string; end?: boolean }) => (
-            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) =>
+          {nav.map((item: { to: string; label: string; end?: boolean; reload?: boolean }) => (
+            <NavLink key={item.to} to={item.to} end={item.end} reloadDocument={item.reload} className={({ isActive }) =>
                 isActive || (item.to === '/classes' && /^\/(class|child)\//.test(pathname)) ? 'active' : ''
               }>
               {item.label}

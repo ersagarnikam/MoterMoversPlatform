@@ -17,18 +17,23 @@ const LIVE_CSP =
   "style-src 'self' 'unsafe-inline' https://source.zoom.us; img-src 'self' data: blob: https:; media-src 'self' blob: https:; " +
   `font-src 'self' data: https://source.zoom.us; connect-src 'self' https://*.zoom.us wss://*.zoom.us ${ZOOM} blob: data:; ` +
   "frame-src 'self' https://*.zoom.us; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+// The content page uploads straight to the file store, so that page alone may reach it. Keep it the same as the
+// /admin/content location in nginx.conf. STORAGE_ORIGIN is the bucket's origin there; here, only what the browser tests set.
+const contentCsp = (storageOrigin = '') => CSP.replace("connect-src 'self'", `connect-src 'self' ${storageOrigin}`.trimEnd())
 const PERMISSIONS = 'camera=(), microphone=(), geolocation=(), payment=()'
 const LIVE_PERMISSIONS = 'camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=()'
 const LIVE_PAGE = /^\/live\/\d+\/?(\?|$)/
+const CONTENT_PAGE = /^\/admin\/content\/?(\?|$)/
 
 /** Sends the production security headers from vite preview, with the live session page's own policy. */
-function securityHeaders(): Plugin {
+function securityHeaders(storageOrigin?: string): Plugin {
   return {
     name: 'security-headers',
     configurePreviewServer(server) {
       server.middlewares.use((req, res, next) => {
-        const live = LIVE_PAGE.test((req as { url?: string }).url ?? '')
-        res.setHeader('Content-Security-Policy', live ? LIVE_CSP : CSP)
+        const url = (req as { url?: string }).url ?? ''
+        const live = LIVE_PAGE.test(url)
+        res.setHeader('Content-Security-Policy', live ? LIVE_CSP : CONTENT_PAGE.test(url) ? contentCsp(storageOrigin) : CSP)
         res.setHeader('Permissions-Policy', live ? LIVE_PERMISSIONS : PERMISSIONS)
         next()
       })
@@ -41,7 +46,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '')
   const proxy = { '/api': env.API_URL || 'http://localhost:8080' }
   return {
-    plugins: [react(), securityHeaders()],
+    plugins: [react(), securityHeaders(env.STORAGE_ORIGIN)],
     server: {
       port: 5173,
       proxy,

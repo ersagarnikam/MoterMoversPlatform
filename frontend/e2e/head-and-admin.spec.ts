@@ -132,6 +132,70 @@ test('the team lands on a home page of what needs attention', async ({ page }) =
   await expectAccessible(page)
 })
 
+/** Three seconds of silence as a WAV file, so the test needs no media file in the repository. */
+function silentWav() {
+  const samples = 8000 * 3
+  const wav = Buffer.alloc(44 + samples * 2)
+  wav.write('RIFF', 0)
+  wav.writeUInt32LE(36 + samples * 2, 4)
+  wav.write('WAVEfmt ', 8)
+  wav.writeUInt32LE(16, 16)
+  wav.writeUInt16LE(1, 20)
+  wav.writeUInt16LE(1, 22)
+  wav.writeUInt32LE(8000, 24)
+  wav.writeUInt32LE(16000, 28)
+  wav.writeUInt16LE(2, 32)
+  wav.writeUInt16LE(16, 34)
+  wav.write('data', 36)
+  wav.writeUInt32LE(samples * 2, 40)
+  return wav
+}
+
+test('the team uploads a recording and a teacher plays it under the CSP', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+
+  // The upload is only allowed by the content page's own policy, so the menu must load that page in full.
+  const [contentPage] = await Promise.all([
+    page.waitForResponse((r) => r.request().isNavigationRequest() && r.url().endsWith('/admin/content')),
+    page.getByRole('link', { name: 'Content approval', exact: true }).click(),
+  ])
+  expect(contentPage.headers()['content-security-policy']).toContain("connect-src 'self' https://bucket.storage.test;")
+  const other = await page.request.get('/admin/schools')
+  expect(other.headers()['content-security-policy']).toContain("connect-src 'self';")
+
+  const title = `Uploaded rhyme ${Date.now()}`
+  await page.getByRole('button', { name: 'Resources', exact: true }).click()
+  await page.getByText('Add a resource').click()
+  await page.getByLabel('Kind').selectOption('RHYME')
+  await page.getByLabel('Title').fill(title)
+  await page.getByLabel('Description').fill('A recording uploaded by a browser test')
+  await page.getByLabel(/Or upload a file/).setInputFiles({ name: 'rhyme.wav', mimeType: 'audio/wav', buffer: silentWav() })
+  await expect(page.getByText('“rhyme.wav” is uploaded')).toBeVisible()
+  await page.getByRole('button', { name: 'Save as draft' }).click()
+
+  const draft = page.locator('.content-item', { hasText: title })
+  await expect(draft.getByRole('link', { name: 'Open the file' })).toBeVisible()
+  await expectAccessible(page)
+  await draft.getByRole('button', { name: 'Approve' }).click()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'teacher@oakfield.test')
+  await page.getByRole('link', { name: 'Resources', exact: true }).click()
+  const audio = page.locator('.card', { hasText: title }).locator('audio')
+  await expect(audio).toHaveAttribute('src', /^\/api\/files\/local\/uploads\//)
+  await expect.poll(() => audio.evaluate((el: HTMLAudioElement) => el.duration)).toBeCloseTo(3, 0)
+
+  // Seeking asks for a range, and a video or recording is not much use without it.
+  await audio.evaluate(
+    (el: HTMLAudioElement) =>
+      new Promise((resolve) => {
+        el.addEventListener('seeked', resolve, { once: true })
+        el.currentTime = 2
+      }),
+  )
+  expect(await audio.evaluate((el: HTMLAudioElement) => el.currentTime)).toBeCloseTo(2, 0)
+})
+
 test('the team sets up a course and opens a cohort for booking', async ({ page }) => {
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Courses', exact: true }).click()

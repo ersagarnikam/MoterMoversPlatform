@@ -47,7 +47,7 @@ export default function ResourcesPage() {
               </span>
               {r.fileUrl ? (
                 r.kind === 'RHYME' ? null : (
-                  <a className="btn" href={r.fileUrl} download>
+                  <a className="btn" href={r.fileUrl} target="_blank" rel="noreferrer" download>
                     Download
                   </a>
                 )

@@ -11,5 +11,7 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /src/dist /usr/share/nginx/html
 # Where the API is reachable from this container.
 ENV API_UPSTREAM=http://api:8080
+# The file store's origin, for the content page's CSP. Blank: nothing is uploaded.
+ENV STORAGE_ORIGIN=
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://localhost/healthz || exit 1
