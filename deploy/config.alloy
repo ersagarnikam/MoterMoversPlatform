@@ -54,6 +54,18 @@ loki.process "safe" {
     replace    = "[removed]"
   }
 
+  // A sign-in token on its own, whatever it is labelled.
+  stage.replace {
+    expression = "(eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)"
+    replace    = "[removed]"
+  }
+
+  // JSON such as "token":"x", also when it sits inside another JSON string.
+  stage.replace {
+    expression = "(?i)\\\\?\"(?:token|password|secret|authorization)\\\\?\"\\s*:\\s*\\\\?\"([^\"\\\\]+)"
+    replace    = "[removed]"
+  }
+
   stage.static_labels {
     values = {
       country = sys.env("LOG_SHIPPER_COUNTRY"),
