@@ -27,6 +27,9 @@ public final class FileTypes {
 
     private static final Pattern KEY = Pattern.compile("uploads/[0-9a-f-]{36}\\.[a-z0-9]{3,4}");
 
+    /** The formats in words, for messages. */
+    public static final String FORMATS = "MP4 or WebM video, MP3, M4A or WAV audio, PDF, PNG or JPEG";
+
     private FileTypes() {
     }
 
@@ -44,6 +47,13 @@ public final class FileTypes {
 
     public static boolean isKey(String key) {
         return key != null && KEY.matcher(key).matches();
+    }
+
+    /** A safe name to save a file under: the title's plain characters and the file's extension. */
+    public static String fileName(String title, String key) {
+        String name = title.replaceAll("[^A-Za-z0-9 _-]", "").strip();
+        name = name.length() > 80 ? name.substring(0, 80).strip() : name;
+        return (name.isEmpty() ? "Motor Movers file" : name) + key.substring(key.lastIndexOf('.'));
     }
 
     public static String servedAs(String key) {

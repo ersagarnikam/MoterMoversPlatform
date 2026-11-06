@@ -14,4 +14,10 @@ public interface FileStorage {
 
     /** A link that reads the file, ranges included, so a film can be seeked. */
     String readLink(String key);
+
+    /** A read link that saves the file under this name: the browser's download attribute cannot name another site's. */
+    String downloadLink(String key, String fileName);
+
+    /** Whether the store holds this file. */
+    boolean exists(String key);
 }

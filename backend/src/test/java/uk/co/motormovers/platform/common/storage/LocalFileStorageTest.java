@@ -36,11 +36,11 @@ class LocalFileStorageTest {
 
         String link = storage.readLink(KEY);
         assertThat(number(link, "expires")).isEqualTo(NOW.plus(Duration.ofHours(8)).getEpochSecond());
-        assertThat(storage.open(KEY, number(link, "expires"), text(link, "sig"))).exists();
+        assertThat(storage.open(KEY, number(link, "expires"), "", text(link, "sig"))).exists();
 
         // The same link, read once its time is up by a store with the same signing key.
         assertThat(number(link, "expires")).isLessThan(NOW.plus(Duration.ofHours(9)).getEpochSecond());
-        assertThatThrownBy(() -> storage.open(KEY, number(link, "expires") + 1, text(link, "sig")))
+        assertThatThrownBy(() -> storage.open(KEY, number(link, "expires") + 1, "", text(link, "sig")))
                 .isInstanceOf(AccessDeniedException.class);
     }
 

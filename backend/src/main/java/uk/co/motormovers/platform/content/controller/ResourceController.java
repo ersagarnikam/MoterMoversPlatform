@@ -78,7 +78,7 @@ public class ResourceController {
                 .sorted(Comparator.comparing(LibraryResource::getStage,
                         Comparator.nullsFirst(Comparator.naturalOrder())))
                 // A resource for all stages is listed for every school, but an uploaded file needs a licence.
-                .map(r -> ResourceView.of(r, files.link(stages.isEmpty() ? null : r.getFileKey(), r.getFileUrl())))
+                .map(r -> ResourceView.of(r, fileLink(r, stages.isEmpty() ? null : r.getFileKey())))
                 .toList();
     }
 
@@ -111,6 +111,12 @@ public class ResourceController {
         LibraryResource r = find(id);
         r.review(ContentStatus.REJECTED, currentUser.current().email());
         return view(r);
+    }
+
+    /** A rhyme plays on the page; everything else is a download. */
+    private String fileLink(LibraryResource r, String key) {
+        return r.getKind() == ResourceKind.RHYME ? files.link(key, r.getFileUrl())
+                : files.download(key, r.getFileUrl(), r.getTitle());
     }
 
     private Set<ColourStage> licensedStages(CurrentUser me) {

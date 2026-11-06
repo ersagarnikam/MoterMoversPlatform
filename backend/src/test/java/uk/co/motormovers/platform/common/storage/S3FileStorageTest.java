@@ -1,7 +1,9 @@
 package uk.co.motormovers.platform.common.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
@@ -47,6 +49,38 @@ class S3FileStorageTest {
         assertThat(one).contains("X-Amz-SignedHeaders=content-length%3Bcontent-type%3Bhost");
         assertThat(signature(one)).isNotEqualTo(signature(spaces().uploadLink("uploads/film.mp4", "video/mp4", 1001)));
         assertThat(signature(one)).isNotEqualTo(signature(spaces().uploadLink("uploads/film.mp4", "video/webm", 1000)));
+    }
+
+    @Test
+    void aDownloadLinkNamesTheFileInItsSignature() {
+        String link = spaces().downloadLink("uploads/book.pdf", "Rhyme book.pdf");
+
+        assertThat(link).contains("response-content-disposition=attachment%3B%20filename%3D%22Rhyme%20book.pdf%22");
+        assertThat(signature(link)).isNotEqualTo(signature(spaces().readLink("uploads/book.pdf")));
+        assertThat(link.indexOf("X-Amz-SignedHeaders")).isLessThan(link.indexOf("response-content-disposition"));
+    }
+
+    @Test
+    void aFileExistsWhenTheStoreSaysSo() {
+        assertThat(probing(url -> {
+            assertThat(url).contains("/uploads/film.mp4?").contains("X-Amz-Expires=60");
+            return 200;
+        }).exists("uploads/film.mp4")).isTrue();
+        assertThat(probing(url -> 404).exists("uploads/film.mp4")).isFalse();
+        assertThat(probing(url -> 403).exists("uploads/film.mp4")).isFalse();
+    }
+
+    @Test
+    void aStoreThatCannotBeReachedIsSaidPlainly() {
+        assertThatThrownBy(() -> probing(url -> {
+            throw new IOException("connect timed out");
+        }).exists("uploads/film.mp4")).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("could not be reached");
+    }
+
+    private static S3FileStorage probing(S3FileStorage.Probe probe) {
+        return new S3FileStorage(new StorageProperties("", "https://lon1.digitaloceanspaces.com", "lon1",
+                "motor-movers-uk", "access", "secret", 8, 2048), AWS_EXAMPLE_TIME, probe);
     }
 
     private static String signature(String link) {

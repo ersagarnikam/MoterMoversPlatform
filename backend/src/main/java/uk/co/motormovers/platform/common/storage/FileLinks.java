@@ -20,12 +20,17 @@ public class FileLinks {
         return key != null && storage.available() ? storage.readLink(key) : pastedUrl;
     }
 
-    /** The key sent with a new item, which must be one the API gave out. */
+    /** As {@link #link}, for a file to save, named after the item with the file's own extension. */
+    public String download(String key, String pastedUrl, String title) {
+        return key != null && storage.available() ? storage.downloadLink(key, FileTypes.fileName(title, key)) : pastedUrl;
+    }
+
+    /** The key sent with a new item, which must be one the API gave out and the store now holds. */
     public String requireKey(String key) {
         if (key == null || key.isBlank()) {
             return null;
         }
-        if (!storage.available() || !FileTypes.isKey(key)) {
+        if (!storage.available() || !FileTypes.isKey(key) || !storage.exists(key)) {
             throw new IllegalArgumentException("That uploaded file could not be found. Please upload it again.");
         }
         return key;

@@ -957,6 +957,7 @@ export interface UploadRules {
   available: boolean
   maxMegabytes: number
   types: string[]
+  formats: string
 }
 
 export interface FileUpload {
