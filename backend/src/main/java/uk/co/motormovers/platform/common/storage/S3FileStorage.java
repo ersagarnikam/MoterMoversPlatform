@@ -76,7 +76,7 @@ class S3FileStorage implements FileStorage {
     @Override
     public String downloadLink(String key, String fileName) {
         return presign("GET", key, Duration.ofHours(properties.readHours()), Map.of(),
-                Map.of("response-content-disposition", "attachment; filename=\"" + fileName + "\""));
+                Map.of("response-content-disposition", FileTypes.contentDisposition(fileName)));
     }
 
     @Override

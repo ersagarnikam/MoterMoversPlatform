@@ -56,6 +56,7 @@ class S3FileStorageTest {
         String link = spaces().downloadLink("uploads/book.pdf", "Rhyme book.pdf");
 
         assertThat(link).contains("response-content-disposition=attachment%3B%20filename%3D%22Rhyme%20book.pdf%22");
+        assertThat(link).contains("filename%2A%3DUTF-8%27%27Rhyme%2520book.pdf");
         assertThat(signature(link)).isNotEqualTo(signature(spaces().readLink("uploads/book.pdf")));
         assertThat(link.indexOf("X-Amz-SignedHeaders")).isLessThan(link.indexOf("response-content-disposition"));
     }
