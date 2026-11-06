@@ -24,7 +24,7 @@ public final class CourseInputs {
     }
 
     /**
-     * {@code startTime} is when each weekly live session starts, in UK time for a UK deployment.
+     * {@code startTime} is when each weekly live session starts, in the deployment's time zone.
      * {@code trainerUserId}, when set, is the trainer's account (a trainer or the team): their name replaces
      * {@code trainerName}, and they run this cohort's live sessions.
      */

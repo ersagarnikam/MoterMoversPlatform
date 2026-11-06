@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.model.Region;
 import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
+import uk.co.motormovers.platform.payment.model.PaymentRefund;
 import uk.co.motormovers.platform.school.model.School;
 
 /** The tax included in a tax-inclusive amount: amount x rate / (1 + rate), to the minor unit (go-live task 25, part C). */
@@ -37,6 +39,21 @@ class PaymentTaxTest {
         // A part percent: 10000 x 0.135 / 1.135 = 1189.43.
         assertThat(tax(10_000, 1_350)).isEqualTo(1_189);
         assertThat(tax(1, 2_000)).isEqualTo(0);
+    }
+
+    @Test
+    void taxOnPartRefundsNeverGoesNegativeAndAddsUpToTheTaxOnThePayment() {
+        Payment payment = payment(11);
+        payment.includesTaxAt(2_000);
+        List<Integer> taxes = new ArrayList<>();
+        for (int part : List.of(3, 3, 3, 2)) {
+            Integer tax = payment.taxInRefund(part);
+            taxes.add(tax);
+            payment.getRefunds().add(new PaymentRefund(payment, part, tax, "Test", LocalDate.of(2026, 11, 6), "test",
+                    Instant.parse("2026-11-06T09:00:00Z"), null, null, taxes.size()));
+        }
+        assertThat(taxes).allMatch(t -> t >= 0);
+        assertThat(taxes.stream().mapToInt(Integer::intValue).sum()).isEqualTo(payment.taxPence());
     }
 
     @Test
@@ -69,6 +86,6 @@ class PaymentTaxTest {
 
     private static CountrySettings country(String percent) {
         return new CountrySettings("Test", "GBP", "en-GB", "VAT", new BigDecimal(percent), "Europe/London",
-                new CountrySettings.SchoolYear(9, 8, 3, 9, 1, 5), List.of("Year 1"), null, "Credit note");
+                new CountrySettings.SchoolYear(9, 8, 3, 9, 1, 5), List.of("Year 1"), null, "Credit note", "UK time", "the UK");
     }
 }

@@ -87,7 +87,11 @@ public class RefundService {
         CurrentUser me = access.requireAdmin();
         Payment payment = payments.findLockedById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Payment", paymentId));
-        if (refunds.findByClientId(in.clientId()).isPresent()) {
+        Optional<PaymentRefund> repeat = refunds.findByClientId(in.clientId());
+        if (repeat.isPresent()) {
+            if (!repeat.get().getPayment().getId().equals(paymentId)) {
+                throw new IllegalArgumentException("This refund request was already used on another payment");
+            }
             return PaymentView.of(payment);
         }
         if (payment.getStatus() != PaymentStatus.PAID) {

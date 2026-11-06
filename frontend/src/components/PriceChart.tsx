@@ -37,7 +37,7 @@ export default function PriceChart({ chosen, onChoose }: { chosen: string; onCho
           </button>
         ))}
       </div>
-      <p className="fine">Prices for UK settings, as charged. We confirm the right plan and stages with you.</p>
+      <p className="fine">Prices as charged. We confirm the right plan and stages with you.</p>
     </section>
   )
 }

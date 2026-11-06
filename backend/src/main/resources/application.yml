@@ -35,6 +35,11 @@ platform:
       tax-label: VAT
       tax-percent: 20
       time-zone: Europe/London
+      # How times are labelled in reminders and on forms.
+      time-label: UK time
+      # Where this deployment's data is held, for the website; confirm it against the server chosen. Blank leaves the
+      # line off rather than claiming a place.
+      data-held-in: the UK
       # September to August, three terms; assessment points: start Sep-Dec, middle Jan-Apr, end May-Aug.
       school-year: { first-month: 9, last-month: 8, terms: 3, start-month: 9, middle-month: 1, end-month: 5 }
       year-names: Nursery, Reception, Year 1, Year 2, Year 3
@@ -57,6 +62,8 @@ platform:
       tax-label: VAT
       tax-percent: 23
       time-zone: Europe/Dublin
+      time-label: Irish time
+      data-held-in: the EU
       # September to June, three terms. To confirm (Pat): start Sep-Dec, middle Jan-Mar, end Apr-Aug.
       school-year: { first-month: 9, last-month: 6, terms: 3, start-month: 9, middle-month: 1, end-month: 4 }
       # To confirm (Pat).
@@ -71,6 +78,8 @@ platform:
       tax-percent: 10
       # Queensland: no daylight saving.
       time-zone: Australia/Brisbane
+      time-label: Queensland time
+      data-held-in: Australia
       # January to December, four terms. To confirm (Pat): start Jan-Apr, middle May-Aug, end Sep-Dec.
       school-year: { first-month: 1, last-month: 12, terms: 4, start-month: 1, middle-month: 5, end-month: 9 }
       # To confirm (Pat).

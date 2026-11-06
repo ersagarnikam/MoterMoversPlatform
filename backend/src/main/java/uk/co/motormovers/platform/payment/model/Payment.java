@@ -153,19 +153,18 @@ public class Payment {
     }
 
     /**
-     * The tax in a refund of {@code amount}, by the same sum as the payment. The last refund takes what is left of the
-     * tax, so part refunds always add up to the tax on the payment. Null when the payment has no rate.
+     * The tax in a refund of {@code amount}: the tax on everything refunded so far, this one included, less the tax
+     * already refunded. Rounding each part alone could overshoot, leaving the last one negative (11p at 20% refunded
+     * in parts of 3, 3, 3 and 2); this way the running total only rises, and ends on the tax on the payment exactly.
+     * Null when the payment has no rate.
      */
     public Integer taxInRefund(int amount) {
         if (taxRateBp == null) {
             return null;
         }
-        if (amount == refundablePence()) {
-            int taxRefunded = refunds.stream().filter(PaymentRefund::counts).filter(r -> r.getTaxPence() != null)
-                    .mapToInt(PaymentRefund::getTaxPence).sum();
-            return taxPence() - taxRefunded;
-        }
-        return taxIn(amount);
+        int taxRefunded = refunds.stream().filter(PaymentRefund::counts).filter(r -> r.getTaxPence() != null)
+                .mapToInt(PaymentRefund::getTaxPence).sum();
+        return Math.max(0, taxIn(refundedPence() + amount) - taxRefunded);
     }
 
     public void markPaid(LocalDate on) {

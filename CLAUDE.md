@@ -51,8 +51,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 185 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-06) 57 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 189 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-06) 59 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -162,9 +162,19 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `refunds`, pull request #37): go-live task 60.** Done:
-refunds and credit notes, with tests. Left: the owner merges; try it with a Stripe test
-account. Remove this note once merged.
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings`, pull request #39): go-live task 72.** Done:
+the Tester's findings 1 to 6 and 8 to 11, with tests. Left: the Project manager merges once CI is green. Findings 7
+("This half-term", for Pat) and 12 (what the payer is told about a failed refund) are held. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **The Tester's findings on country and refunds (go-live task 72).** Two more country settings,
+both in `GET /api/settings`: `time-label` ("UK time", "Irish time", "Queensland time"; required), used by session reminders,
+phone notices and the cohort form, and `data-held-in` ("the UK", "the EU", "Australia"), which the programme page states.
+**Check `data-held-in` against the server chosen** (RUNBOOK); left blank, the line is left off. `creditNoteTitle` is in the
+settings too, so the refund form and the parent app call it an adjustment note in Australia. The head's assessment card
+names a calendar school year as one year (`schoolYearLabel`, `src/country.ts`). The price chart's note no longer says UK;
+task 28 decides any VAT wording. Certificate emails write dates in words. Today in the parent app counts what is waiting by
+name ("1 session and 2 ratings are saved…"), both queues from the first load. A refund's `clientId` already used on
+another payment is refused with a 400; on the same payment it stays a harmless repeat.
 
 (added by Dev, 2026-11-06) **Refunds and credit notes (go-live task 60, migration V20).** A paid payment stays PAID;
 `payment_refund` rows say what went back (part refunds allowed, never more than was paid). The team refunds on
@@ -176,7 +186,7 @@ dashboard refund once (unique on `stripe_refund_id`); a failed refund stops coun
 a webhook cannot overtake the team's own request. Views add `refundedPence`, `refundLabel` and `refunds`; all totals are net,
 and in spend by month a refund counts in the month the money went back. Credit notes: gapless numbers from
 `credit_note_counter` ("CN-000012"), `CreditNotePdf` with the legal entity, the original payment and the tax in the refund
-(the last part refund takes what is left of the tax, so they add up), emailed to the payer or the school's heads, and
+(added by Dev, 2026-11-06: tax follows the running total of what has been refunded, so parts add up and none is negative), emailed to the payer or the school's heads, and
 downloadable on Payments. The title is `credit-note-title` in the country settings ("Credit note", "Adjustment note" in
 Australia): **the wording is for the accountant to confirm (task 17).** The parent app shows refunds and emails the credit
 note on request, since it cannot save a file. When a refund applies is Kay's policy (task 20), not the platform's. Part C
@@ -639,7 +649,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

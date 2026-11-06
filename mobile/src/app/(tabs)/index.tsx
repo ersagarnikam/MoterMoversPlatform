@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native'
 import { Banner, Body, Button, Card, Chip, CounterGrid, ErrorState, H1, H2, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
 import { api, money, type ColourStage, type Home, type HomeChild, type HomeToday, type LinkedChild } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
-import { flushHome } from '@/lib/homeOutbox'
+import { flushHome, homeRatings, homeSessions, unsentWords } from '@/lib/homeOutbox'
 import { useNicknames } from '@/lib/nicknames'
 import { flush, pending } from '@/lib/outbox'
 import { getLocal, setLocal } from '@/lib/storage'
@@ -19,12 +19,18 @@ const STAGE_KEY = 'mm.home.stage'
  */
 type Choice = { childId: number } | { homeId: number } | { stage: ColourStage } | null
 
+/** What is still on this phone: home activities and home sessions are both sessions. */
+async function countUnsent() {
+  const [activities, sessions, ratings] = await Promise.all([pending(), homeSessions.pending(), homeRatings.pending()])
+  return { sessions: activities.length + sessions.length, ratings: ratings.length }
+}
+
 export default function TodayScreen() {
   const { user } = useAuth()
   const p = usePalette()
   const { nameFor } = useNicknames()
   const [choice, setChoice] = useState<Choice | undefined>(undefined)
-  const [unsent, setUnsent] = useState(0)
+  const [unsent, setUnsent] = useState({ sessions: 0, ratings: 0 })
 
   useEffect(() => {
     getLocal<Choice>(STAGE_KEY, null).then(setChoice)
@@ -32,7 +38,9 @@ export default function TodayScreen() {
 
   const { data, error, refreshing, reload } = useLoad(async () => {
     if (choice === undefined) return null
-    setUnsent((await flush()) + (await flushHome()))
+    await flush()
+    await flushHome()
+    setUnsent(await countUnsent())
     const children = await api.children()
     // Motor Movers at Home may be switched off, or the call may fail: then the app is as before.
     const overview = await api.homeOverview().catch(() => null)
@@ -71,7 +79,7 @@ export default function TodayScreen() {
   }, [choice])
 
   useEffect(() => {
-    pending().then((q) => setUnsent(q.length))
+    void countUnsent().then(setUnsent)
   }, [data])
 
   function choose(next: Choice) {
@@ -91,11 +99,8 @@ export default function TodayScreen() {
         <Muted>{greeting()}</Muted>
         <H1>{user?.displayName ? `Hello, ${user.displayName.split(' ')[0]}` : 'Hello'}</H1>
       </View>
-      {unsent > 0 && (
-        <Banner>
-          {unsent === 1 ? '1 session is' : `${unsent} sessions are`} saved on this phone and will be sent when you
-          are back online.
-        </Banner>
+      {unsent.sessions + unsent.ratings > 0 && (
+        <Banner>{unsentWords(unsent.sessions, unsent.ratings)} saved on this phone and will be sent when you are back online.</Banner>
       )}
       {liveNow && (
         <Pressable accessibilityRole="button" onPress={() => router.push('/course')}>

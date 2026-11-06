@@ -455,7 +455,10 @@ export const api = {
 
   /** Open to anyone: the server's country settings (currency, tax, year names). */
   settings: () =>
-    request<{ currency: string; taxLabel: string; legalLine: string | null }>('GET', '/api/settings'),
+    request<{ currency: string; taxLabel: string; legalLine: string | null; creditNoteTitle: string }>(
+      'GET',
+      '/api/settings',
+    ),
 
   /** Emails the credit note to the parent: the app cannot save a file. */
   emailCreditNote: (refundId: number) => request<void>('POST', `/api/payments/refunds/${refundId}/credit-note/email`),
@@ -471,12 +474,24 @@ const CURRENCY_SYMBOLS: Record<string, string> = { GBP: '£', EUR: '€', AUD: '
 let currencySymbol = '£'
 let taxLabel = 'VAT'
 let legal: string | null = null
+let creditNoteTitle = 'Credit note'
 
 /** The server's currency, tax label and legal entity from GET /api/settings; until known, amounts show in pounds. */
-export function setCountry(settings: { currency: string; taxLabel: string; legalLine: string | null }): void {
+export function setCountry(settings: {
+  currency: string
+  taxLabel: string
+  legalLine: string | null
+  creditNoteTitle?: string
+}): void {
   currencySymbol = CURRENCY_SYMBOLS[settings.currency] ?? `${settings.currency} `
   taxLabel = settings.taxLabel
   legal = settings.legalLine
+  if (settings.creditNoteTitle) creditNoteTitle = settings.creditNoteTitle
+}
+
+/** "credit note", or "adjustment note" in Australia. */
+export function creditNoteName(): string {
+  return creditNoteTitle.toLowerCase()
 }
 
 /** Who the invoices come from, in one line; null while the legal entity is a placeholder. */

@@ -35,6 +35,13 @@ export const homeSessions = queue<HomeSessionEntry>('mm.home.sessions', (q) => a
 
 export const homeRatings = queue<ExerciseRating>('mm.home.ratings', (q) => api.rateExercises(q))
 
+/** "1 session and 2 ratings are": what the banner counts, sessions and ratings each by name. */
+export function unsentWords(sessions: number, ratings: number): string {
+  const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+  const parts = [sessions > 0 && count(sessions, 'session'), ratings > 0 && count(ratings, 'rating')].filter(Boolean)
+  return `${parts.join(' and ')} ${sessions + ratings === 1 ? 'is' : 'are'}`
+}
+
 /** Sends both queues; sessions first, so the module count is up to date. Returns how many remain. */
 export async function flushHome(): Promise<number> {
   return (await homeSessions.flush()) + (await homeRatings.flush())

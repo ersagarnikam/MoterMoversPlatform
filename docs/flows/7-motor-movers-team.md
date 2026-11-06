@@ -196,5 +196,6 @@ sequenceDiagram
 - A payment stays PAID when refunded; several part refunds are allowed, never more than was paid. Totals are net, and in
   spend by month a refund counts in the month the money went back.
 - Credit note numbers have no gaps per deployment: a refund Stripe refuses takes no number.
+- A repeated request (same `clientId`, same payment) changes nothing; the same `clientId` on another payment is refused.
 - Prices include tax. A payment keeps the tax rate in force when it was created (`tax_rate_bp`); payment views show
   "includes VAT £x" (amount x rate / (1 + rate), rounded to the minor unit). Older payments have no rate and no tax line.

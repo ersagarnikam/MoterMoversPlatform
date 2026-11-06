@@ -2,7 +2,9 @@ package uk.co.motormovers.platform.training.service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,8 @@ public class CertificateService {
 
     private static final Logger log = LoggerFactory.getLogger(CertificateService.class);
 
+    private static final DateTimeFormatter EMAIL_DATE = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+
     private final EnrolmentRepository enrolments;
     private final CourseQuizRepository quizzes;
     private final QuizAttemptRepository attempts;
@@ -70,7 +74,7 @@ public class CertificateService {
                 "Congratulations, " + e.getUser().getDisplayName() + ".\n\nYou have completed the " + course.getTitle()
                         + ". Your certificate is attached, and on your Training page: "
                         + mailer.link("/training/certificate/" + e.getId()) + "\n\nIt is valid until "
-                        + e.getCertificateExpiresOn() + ".\n",
+                        + EMAIL_DATE.format(e.getCertificateExpiresOn()) + ".\n",
                 "motor-movers-certificate.pdf", pdf(e), "application/pdf");
         return true;
     }
@@ -118,8 +122,8 @@ public class CertificateService {
                     : " Renewing costs " + money.format(course.getRenewalPence()) + ".";
             mailer.send(e.getUser().getEmail(), "Your Motor Movers certificate expires soon",
                     "Hello " + e.getUser().getDisplayName() + ",\n\nYour " + course.getTitle() + " certificate is valid "
-                            + "until " + e.getCertificateExpiresOn() + "." + renewal + " To renew it, reply to this "
-                            + "email or contact the Motor Movers team.\n\nYour certificate: "
+                            + "until " + EMAIL_DATE.format(e.getCertificateExpiresOn()) + "." + renewal
+                            + " To renew it, reply to this email or contact the Motor Movers team.\n\nYour certificate: "
                             + mailer.link("/training/certificate/" + e.getId()) + "\n");
             e.expiryReminderSent(today);
         }

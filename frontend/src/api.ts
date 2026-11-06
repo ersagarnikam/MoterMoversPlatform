@@ -761,6 +761,12 @@ export interface CountrySettings {
   }
   /** The legal entity in one line, or null while it is a placeholder. */
   legalLine: string | null
+  /** How times are labelled: "UK time", "Irish time", "Queensland time". */
+  timeLabel: string
+  /** Where this deployment's data is held, e.g. "the UK"; empty when it is not stated. */
+  dataHeldIn: string | null
+  /** "Credit note", or "Adjustment note" in Australia. */
+  creditNoteTitle: string
 }
 
 export interface HomeToday {

@@ -2,6 +2,13 @@ package uk.co.motormovers.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,7 +20,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +31,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.jayway.jsonpath.JsonPath;
 
+import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.training.service.CertificateService;
 
 /**
@@ -53,6 +65,9 @@ class QuizAndCertificateTest {
 
     @Autowired
     JdbcTemplate jdbc;
+
+    @MockitoSpyBean
+    Mailer mailer;
 
     @Test
     void theTeamWritesQuizzesThatPassTheWordingCheck() throws Exception {
@@ -155,6 +170,12 @@ class QuizAndCertificateTest {
                 place);
         assertThat(certificates.remindExpiring()).isGreaterThanOrEqualTo(1);
         assertThat(certificates.remindExpiring()).isZero();
+
+        // Both emails write the date in words.
+        verify(mailer).send(anyString(), eq("Your Motor Movers certificate"),
+                matches(Pattern.compile("valid until \\d{1,2} [A-Z][a-z]+ \\d{4}\\.")), anyString(), any(), anyString());
+        verify(mailer, atLeastOnce()).send(anyString(), eq("Your Motor Movers certificate expires soon"),
+                contains(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK).format(LocalDate.now(clock).plusDays(20))));
     }
 
     private Integer course(String admin, String title, int sessions) throws Exception {
