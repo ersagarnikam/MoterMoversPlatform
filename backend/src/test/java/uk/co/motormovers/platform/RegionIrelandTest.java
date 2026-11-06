@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneId;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
+import uk.co.motormovers.platform.assessment.model.YearPoint;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.common.model.Region;
 import uk.co.motormovers.platform.school.model.School;
 import uk.co.motormovers.platform.school.repository.SchoolRepository;
@@ -28,6 +31,9 @@ class RegionIrelandTest {
 
     @Autowired
     Clock clock;
+
+    @Autowired
+    SchoolYear schoolYear;
 
     @Autowired
     SchoolRepository schools;
@@ -46,6 +52,7 @@ class RegionIrelandTest {
                 .andExpect(jsonPath("$.yearNames[1]").value("Junior Infants"))
                 .andExpect(jsonPath("$.legalEntity.name").value("To be confirmed"));
         assertThat(clock.getZone()).isEqualTo(ZoneId.of("Europe/Dublin"));
+        assertThat(schoolYear.pointOn(LocalDate.of(2027, 4, 1))).isEqualTo(YearPoint.END);
     }
 
     @Test

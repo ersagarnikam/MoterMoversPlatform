@@ -18,6 +18,7 @@ import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepo
 import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
 import uk.co.motormovers.platform.assessment.service.AssessmentContent;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.school.model.SchoolClass;
@@ -35,6 +36,7 @@ class DemoAssessments {
     static final int LOW_SCORERS = 2;
 
     private final AssessmentContent content;
+    private final SchoolYear schoolYear;
     private final ExerciseRepository exercises;
     private final ExerciseScoreRepository scores;
     private final MilestoneRepository milestones;
@@ -43,8 +45,10 @@ class DemoAssessments {
     private final Random random = new Random(7);
 
     DemoAssessments(AssessmentContent content, ExerciseRepository exercises, ExerciseScoreRepository scores,
-            MilestoneRepository milestones, MilestoneAchievementRepository achievements, ChildRepository children) {
+            MilestoneRepository milestones, MilestoneAchievementRepository achievements, ChildRepository children,
+            SchoolYear schoolYear) {
         this.content = content;
+        this.schoolYear = schoolYear;
         this.exercises = exercises;
         this.scores = scores;
         this.milestones = milestones;
@@ -103,14 +107,14 @@ class DemoAssessments {
     /** Movements up to the child's age band are secure, with a few of those just above it. */
     private void developmental(List<Child> pupils, int ageMonths, LocalDate on) {
         List<Milestone> all = milestones.findAllByOrderByChartAscPositionAsc();
-        YearPoint point = YearPoint.on(on);
+        YearPoint point = schoolYear.pointOn(on);
         for (Child child : pupils) {
             int age = ageMonths + random.nextInt(8);
             for (Milestone m : all) {
                 boolean secure = m.getAgeToMonths() <= 60 || (m.getAgeFromMonths() <= age && random.nextInt(3) > 0);
                 if (secure) {
                     achievements.save(new MilestoneAchievement(UUID.randomUUID().toString(), child, m, age, point,
-                            on, "demo"));
+                            schoolYear.yearOf(on), on, "demo"));
                 }
             }
         }

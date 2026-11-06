@@ -51,7 +51,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 167 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 171 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 57 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -109,7 +109,7 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
   `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices. (added by Dev,
   2026-11-06) Money is done in part B (pull request #30), the tax amount in part C (pull request #32); neither is merged yet.
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
-  year, so year-on-year figures must not split it).
+  year, so year-on-year figures must not split it). (added by Dev, 2026-11-06) Done in part D (pull request #33, not merged yet).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
 - Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26).
 - Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
@@ -159,6 +159,19 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `school-year-by-country`, pull request #33, built on
+#32's branch): go-live task 25, part D.** Done: the school year and year names by country, with tests. Left: the owner
+merges #30, #32 and then this; then the tester tests them. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **School year by country (go-live task 25, part D).** `assessment/util/SchoolYear` (a bean from
+the country settings) replaces `YearPoint.on` and `YearPoint.schoolYear`: `pointOn(date)` and `yearOf(date)`. The UK is as
+before; Ireland's end point starts in April; Australia's school year is the calendar year, so the head's and trust
+lead's "this school year" figures are never split. `YearPoint` keeps only its labels. `MilestoneAchievement` is given
+its school year, and `AssessmentService`, `HomeService`, `HomeRules.checkDue` and the demo seeds use the bean (the
+home check's start, middle and end follow the same rule). The school setup class form offers the country's year names
+as suggestions (a datalist; free text is still allowed). `SchoolDays` stays weekdays only; term dates are not modelled.
+Tests: `SchoolYearTest`, Australian cases in `HomeRulesTest`, and the bean in `RegionIrelandTest` and `RegionAustraliaTest`.
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tax-on-payments`, pull request #32, built on #30's
 branch): go-live task 25, part C (tax).** Done: V18, the included tax on payments, web and app, with tests. Left: the
@@ -563,7 +576,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
