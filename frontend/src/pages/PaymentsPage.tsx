@@ -11,7 +11,7 @@ import {
 } from '../api'
 import MonthBars from '../components/MonthBars'
 import PaymentTable from '../components/PaymentTable'
-import { gbp } from '../money'
+import { currencySymbol, money } from '../money'
 import { useConfirm, useToast } from '../components/Feedback'
 import ListFilter, { matches } from '../components/ListFilter'
 import Skeleton from '../components/Skeleton'
@@ -82,15 +82,15 @@ export default function PaymentsPage() {
       <div className="kpis">
         <div className="card kpi">
           <span className="muted">Received, all time</span>
-          <strong>{gbp(summary.paidPence)}</strong>
+          <strong>{money(summary.paidPence)}</strong>
         </div>
         <div className="card kpi">
           <span className="muted">Received, last 12 months</span>
-          <strong>{gbp(summary.paidLast12MonthsPence)}</strong>
+          <strong>{money(summary.paidLast12MonthsPence)}</strong>
         </div>
         <div className="card kpi">
           <span className="muted">Outstanding (invoiced, not paid)</span>
-          <strong>{gbp(summary.outstandingPence)}</strong>
+          <strong>{money(summary.outstandingPence)}</strong>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default function PaymentsPage() {
         <NewPaymentForm
           courses={courses}
           schools={schools}
-          onSave={(p) => run(() => api.recordPayment(p), `${gbp(p.amountPence)} from ${p.payerEmail ?? 'the school'} recorded`)}
+          onSave={(p) => run(() => api.recordPayment(p), `${money(p.amountPence)} from ${p.payerEmail ?? 'the school'} recorded`)}
         />
       </section>
 
@@ -169,7 +169,7 @@ export default function PaymentsPage() {
                   className="btn"
                   onClick={async () => {
                     const ok = await confirm({
-                      title: `Cancel the ${gbp(p.amountPence)} invoice to ${p.payerName}?`,
+                      title: `Cancel the ${money(p.amountPence)} invoice to ${p.payerName}?`,
                       body: `${p.description}. A cancelled invoice cannot be paid.`,
                       confirmLabel: 'Cancel invoice',
                       cancelLabel: 'Keep it',
@@ -224,8 +224,8 @@ function TotalsTable({ title, rows, empty }: { title: string; rows: TotalsRow[];
                 <td>
                   {r.name} <span className="muted">· {r.detail}</span>
                 </td>
-                <td className="num">{gbp(r.paidPence)}</td>
-                <td className="num">{r.outstandingPence ? gbp(r.outstandingPence) : '-'}</td>
+                <td className="num">{money(r.paidPence)}</td>
+                <td className="num">{r.outstandingPence ? money(r.outstandingPence) : '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -359,12 +359,12 @@ function NewPaymentForm({
             <option value="">Choose a course to fill in its price</option>
             {courses.flatMap((c) => [
               <option key={`${c.id}:fee`} value={`${c.id}:fee`}>
-                {c.title} ({gbp(c.pricePence)})
+                {c.title} ({money(c.pricePence)})
               </option>,
               ...(c.renewalPence
                 ? [
                     <option key={`${c.id}:renewal`} value={`${c.id}:renewal`}>
-                      {c.title}, yearly renewal ({gbp(c.renewalPence)})
+                      {c.title}, yearly renewal ({money(c.renewalPence)})
                     </option>,
                   ]
                 : []),
@@ -383,7 +383,7 @@ function NewPaymentForm({
         />
       </label>
       <label>
-        Amount (£)
+        Amount ({currencySymbol()})
         <input type="number" min={0.01} step={0.01} value={amount} onChange={(e) => setAmount(e.target.value)} required />
       </label>
       <label>

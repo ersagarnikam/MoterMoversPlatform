@@ -1,24 +1,41 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { sessionTime, startsIn, ZOOM_SDK } from './live'
-import { gbp } from './money'
+import { currencySymbol, money, setCurrency } from './money'
 import { CONTACT_EMAIL, mailto, signInRole, SIGN_IN_ROLES } from './site'
 import { pct, stageInfo, STAGES } from './stages'
 
-describe('gbp', () => {
+describe('money', () => {
+  afterEach(() => setCurrency('GBP', 'en-GB'))
+
   it('shows whole pounds without pence', () => {
-    expect(gbp(18_000)).toBe('£180')
-    expect(gbp(4_500)).toBe('£45')
-    expect(gbp(0)).toBe('£0')
+    expect(money(18_000)).toBe('£180')
+    expect(money(4_500)).toBe('£45')
+    expect(money(0)).toBe('£0')
   })
 
   it('shows pence only when there are some', () => {
-    expect(gbp(148_750)).toBe('£1,487.50')
-    expect(gbp(1_505)).toBe('£15.05')
-    expect(gbp(99)).toBe('£0.99')
+    expect(money(148_750)).toBe('£1,487.50')
+    expect(money(1_505)).toBe('£15.05')
+    expect(money(99)).toBe('£0.99')
   })
 
   it('groups thousands', () => {
-    expect(gbp(1_000_000)).toBe('£10,000')
+    expect(money(1_000_000)).toBe('£10,000')
+  })
+
+  it('shows euros in Ireland and dollars in Australia', () => {
+    setCurrency('EUR', 'en-IE')
+    expect(money(4_500)).toBe('€45')
+    expect(money(148_750)).toBe('€1,487.50')
+    expect(currencySymbol()).toBe('€')
+    setCurrency('AUD', 'en-AU')
+    expect(money(3_505)).toBe('$35.05')
+    expect(money(175_000)).toBe('$1,750')
+    expect(currencySymbol()).toBe('$')
+  })
+
+  it('labels forms with the currency symbol', () => {
+    expect(currencySymbol()).toBe('£')
   })
 })
 

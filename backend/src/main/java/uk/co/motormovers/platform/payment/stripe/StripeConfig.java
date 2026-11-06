@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+import uk.co.motormovers.platform.common.util.Money;
+
 @Configuration
 public class StripeConfig {
 
@@ -13,9 +15,9 @@ public class StripeConfig {
 
     /** The real client with both Stripe keys set; otherwise one that refuses, since Pay by card is hidden. */
     @Bean
-    StripeClient stripeClient(StripeProperties properties) {
+    StripeClient stripeClient(StripeProperties properties, Money money) {
         if (properties.enabled()) {
-            return new StripeApiClient(RestClient.builder(), properties.secretKey());
+            return new StripeApiClient(RestClient.builder(), properties.secretKey(), money.stripeCurrency());
         }
         log.info("Card payments are off: payments are marked paid by hand until the platform.stripe keys are set");
         return (paymentId, amountPence, description, payerEmail, successUrl, cancelUrl) -> {

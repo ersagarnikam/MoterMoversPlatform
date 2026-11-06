@@ -42,6 +42,8 @@ import HomeChildPage from './pages/home/HomeChildPage'
 import HomeCheckPage from './pages/home/HomeCheckPage'
 import HomeSessionPage from './pages/home/HomeSessionPage'
 import HomeFamilyPage from './pages/home/HomeFamilyPage'
+import { useCountry } from './country'
+import { setCurrency } from './money'
 
 /** Where each kind of user lands after signing in. */
 export function homeFor(role: Role): string {
@@ -63,6 +65,9 @@ export function homeFor(role: Role): string {
 
 export default function App() {
   const { user, loading } = useAuth()
+  // Amounts everywhere follow the deployment's currency (go-live task 25); when it arrives the whole app re-renders.
+  const country = useCountry()
+  if (country) setCurrency(country.currency, country.locale)
   if (loading) return <div className="page-loading">Loading…</div>
   // The public website, the same whether or not someone is signed in.
   const site = (

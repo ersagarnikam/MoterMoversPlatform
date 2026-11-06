@@ -1,7 +1,7 @@
 import Constants from 'expo-constants'
 import { router } from 'expo-router'
 import { Body, Button, Card, H2, Muted, Screen, StageStripe } from '@/components/ui'
-import { API_URL, api, gbp } from '@/lib/api'
+import { API_URL, api, money } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useLoad } from '@/lib/useLoad'
 
@@ -20,8 +20,8 @@ export default function AccountScreen() {
         <H2>Payments</H2>
         {payments ? (
           <Body>
-            {gbp(payments.paidPence)} paid
-            {payments.outstandingPence > 0 ? ` · ${gbp(payments.outstandingPence)} to pay` : ''}
+            {money(payments.paidPence)} paid
+            {payments.outstandingPence > 0 ? ` · ${money(payments.outstandingPence)} to pay` : ''}
           </Body>
         ) : (
           <Muted>Your payments for courses and resources.</Muted>

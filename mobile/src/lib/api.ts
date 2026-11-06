@@ -432,14 +432,28 @@ export const api = {
   joinSchool: (id: number, code: string) =>
     request<LinkedChild>('POST', `/api/home/children/${id}/join-school`, { code }),
 
+  /** Open to anyone: the server's country settings (currency, tax, year names). */
+  settings: () => request<{ currency: string; locale: string; taxLabel: string; taxPercent: number }>('GET', '/api/settings'),
+
   registerPushToken: (token: string, platform: string) =>
     request<void>('POST', '/api/me/push-tokens', { token, platform }),
   removePushToken: (token: string) => request<void>('POST', '/api/me/push-tokens/remove', { token }),
 }
 
-/** 4500 -> "£45", 1550 -> "£15.50" */
-export function gbp(pence: number): string {
-  return `£${pence % 100 === 0 ? pence / 100 : (pence / 100).toFixed(2)}`
+/** The symbols of the deployments' currencies (go-live task 25); another currency shows its code. */
+const CURRENCY_SYMBOLS: Record<string, string> = { GBP: '£', EUR: '€', AUD: '$' }
+
+let currencySymbol = '£'
+
+/** The server's currency from GET /api/settings, e.g. 'EUR'; until it is known, amounts show in pounds. */
+export function setCurrency(code: string): void {
+  currencySymbol = CURRENCY_SYMBOLS[code] ?? `${code} `
+}
+
+/** Amounts in the minor unit (pence or cents): 4500 -> "£45", 1550 -> "£15.50", 175000 -> "£1,750". */
+export function money(minor: number): string {
+  const units = minor % 100 === 0 ? String(minor / 100) : (minor / 100).toFixed(2)
+  return currencySymbol + units.replace(/B(?=(d{3})+(?!d))/g, ',')
 }
 
 /** Today's date on this phone, as the API expects it (YYYY-MM-DD). */

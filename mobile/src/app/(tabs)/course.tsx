@@ -2,7 +2,7 @@ import * as Linking from 'expo-linking'
 import { useState } from 'react'
 import { View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
-import { api, formatDate, sessionTime, type LiveSession } from '@/lib/api'
+import { api, formatDate, money, sessionTime, type LiveSession } from '@/lib/api'
 import { space } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
@@ -99,7 +99,7 @@ export default function CourseScreen() {
           <H2>{c.title}</H2>
           <Body>{c.description}</Body>
           <Muted>
-            {c.liveSessions} live sessions of {c.sessionMinutes} minutes · £{(c.pricePence / 100).toFixed(2)} per family
+            {c.liveSessions} live sessions of {c.sessionMinutes} minutes · {money(c.pricePence)} per family
           </Muted>
           {c.cohorts.length === 0 && <Muted>New dates coming soon.</Muted>}
           {c.cohorts.map((h) => (

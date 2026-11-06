@@ -51,8 +51,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 159 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-06) 54 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 162 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-06) 56 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -106,7 +106,8 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
   the settings, Ireland (`Region.IE`), the clock's zone from them (Australia/Brisbane, not Sydney) and the open
   `GET /api/settings`; parts B (money), C (tax), D (school year and year names) and E (legal entity) follow.
 - Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
-  `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices.
+  `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices. (added by Dev,
+  2026-11-06) Money is done in part B (pull request #30, not merged); the tax amount is part C.
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
   year, so year-on-year figures must not split it).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
@@ -158,6 +159,22 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `money-by-country`, pull request #30): go-live task 25,
+part B (money).** Done: amounts in the deployment's currency on the web, in the parent app, in emails and phone
+notifications, and in Stripe Checkout, with tests. Left: the owner reviews and merges (not to be merged by the Developer
+unless the owner asks), then the tester tests it; then parts C to E. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Money by country (go-live task 25, part B).** Amounts are held in the currency's minor
+unit (pence or cents; every `*Pence` field and column keeps its name) and shown in the deployment's currency from its
+country settings. Web: `money(minor)` and `currencySymbol()` in `src/money.ts` replace `gbp()`; `App` calls
+`setCurrency` once `useCountry` has the settings (pounds until then), and the money fields on Plans & prices, Schools
+& licences, Payments and Courses are labelled with the symbol ("Price (€)"). Parent app: `money()` and `setCurrency` in
+`lib/api.ts` (a symbol per currency, no `Intl`), set from `GET /api/settings` in the root layout. Backend:
+`common/util/Money` (one formatter from the settings) for the payment-due notification and the certificate renewal
+email, in place of `PaymentViews.pounds`; `StripeApiClient` sends the settings' currency (`gbp`, `eur` or `aud`).
+Tests: `MoneyTest`, the Stripe request in GBP, EUR and AUD (`OnlinePaymentTest`), and web `money()` in the three
+currencies.
 
 (added by Dev, 2026-11-06) **Country settings (go-live task 25, part A; pull request #29).** `PLATFORM_REGION` (`UK`, `IE` new, or `AU`)
 picks a block of `platform.countries` in application.yml: country name, currency and locale, tax label and percent,
@@ -535,7 +552,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

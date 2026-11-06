@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { Banner, Body, Button, Card, Chip, CounterGrid, ErrorState, H1, H2, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
-import { api, gbp, type ColourStage, type Home, type HomeChild, type HomeToday, type LinkedChild } from '@/lib/api'
+import { api, money, type ColourStage, type Home, type HomeChild, type HomeToday, type LinkedChild } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { flushHome } from '@/lib/homeOutbox'
 import { useNicknames } from '@/lib/nicknames'
@@ -104,7 +104,7 @@ export default function TodayScreen() {
       )}
       {due > 0 && (
         <Pressable accessibilityRole="button" onPress={() => router.push('/payments')}>
-          <Banner>You have {gbp(due)} to pay. Tap to see what it is for and how to pay.</Banner>
+          <Banner>You have {money(due)} to pay. Tap to see what it is for and how to pay.</Banner>
         </Pressable>
       )}
       <WhoFor

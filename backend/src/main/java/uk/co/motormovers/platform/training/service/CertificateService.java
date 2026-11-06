@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
-import uk.co.motormovers.platform.payment.dto.PaymentViews;
+import uk.co.motormovers.platform.common.util.Money;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
@@ -42,15 +42,18 @@ public class CertificateService {
     private final CurrentUserResolver currentUser;
     private final Mailer mailer;
     private final Clock clock;
+    private final Money money;
 
     public CertificateService(EnrolmentRepository enrolments, CourseQuizRepository quizzes,
-            QuizAttemptRepository attempts, CurrentUserResolver currentUser, Mailer mailer, Clock clock) {
+            QuizAttemptRepository attempts, CurrentUserResolver currentUser, Mailer mailer, Clock clock,
+            Money money) {
         this.enrolments = enrolments;
         this.quizzes = quizzes;
         this.attempts = attempts;
         this.currentUser = currentUser;
         this.mailer = mailer;
         this.clock = clock;
+        this.money = money;
     }
 
     /** Issues the certificate if everything is now complete, and emails it. Returns whether it was issued now. */
@@ -109,7 +112,7 @@ public class CertificateService {
         for (Enrolment e : due) {
             Course course = e.getCohort().getCourse();
             String renewal = course.getRenewalPence() == null ? ""
-                    : " Renewing costs " + PaymentViews.pounds(course.getRenewalPence()) + ".";
+                    : " Renewing costs " + money.format(course.getRenewalPence()) + ".";
             mailer.send(e.getUser().getEmail(), "Your Motor Movers certificate expires soon",
                     "Hello " + e.getUser().getDisplayName() + ",\n\nYour " + course.getTitle() + " certificate is valid "
                             + "until " + e.getCertificateExpiresOn() + "." + renewal + " To renew it, reply to this "
