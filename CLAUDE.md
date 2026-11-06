@@ -82,7 +82,8 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
   set, not their values). Tests do not read it.
 - Docker Desktop is installed but may need starting (`C:\Program Files\Docker\Docker\Docker Desktop.exe`).
 - To try the production stack locally: write a throwaway env file with `APP_DOMAIN=localhost` (Caddy then
-  issues a local certificate) and any `SPRING_MAIL_HOST`, then
+  issues a local certificate) and any `SPRING_MAIL_HOST`, plus a throwaway `deploy/country.env` with the legal entity
+  (`ProductionChecks` refuses the placeholder; updated by tester, 2026-11-06), then
   `docker compose -p mm-localtest -f deploy/docker-compose.prod.yml --env-file <file> up -d --build`;
   tear down with `down -v`.
 
@@ -304,6 +305,39 @@ latest licence and `statusOn`, which ignores the start date (a licence starting 
 is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
+
+**File hosting and logs tested (updated by tester, 2026-11-06, `main` at fc4e4b7, the Project manager's brief): two high
+bugs, not ready for go-live.** Suites pass: backend 214/214, web 59, build, mobile typecheck, browser tests 69/69.
+- **High, both from one line in `frontend/nginx.conf`:** `try_files $uri /index.html` in the `/admin/content` and
+  `/live/<id>` locations redirects inside nginx to `location /`, whose strict headers replace the page's own. So on the
+  production stack (1) `/admin/content` never sends `STORAGE_ORIGIN`, and a browser upload to a real bucket is blocked
+  by the CSP, and (2) `/live/<id>` never sends Zoom's policy or camera and microphone permission, so a session shown
+  inside the page (the Meeting SDK keys set) cannot load; that has been so since 2026-10-22. Browser tests miss both because
+  `vite preview` sets its headers another way. Tried in a throwaway container only, not in the code:
+  `try_files /index.html =404;` in those two locations sends the right policy on both pages, and the other pages stay strict.
+- **Medium:** Tomcat writes a refused request's address, query string included, to the API's log (`Http11Processor`,
+  once per start, full stack trace): a token and an email reached the log that way, which only a crafted or broken request
+  does; the shipper redacts both. The parent app never shows a parent induction film (the website does). An enquiry whose
+  email fails is lost: the visitor is told it was sent, nothing is stored, and the log no longer says whose it was.
+- **Low:** `.mov` is refused as "Only video, audio, PDF and image files", and an empty file shows "size: must be greater than
+  0"; a made-up key of the right shape is accepted and fails only when opened; a resource's Download is named `f.txt` on
+  the local store, and with a bucket its `download` name will not apply (a browser rule, not tried); a 500 raised in a filter is
+  not a problem detail; the shipper does not catch a bare JWT or JSON like `"token":"x"`.
+- **To decide (the spec does not say):** staff induction films are signed for trust leads, trainers, practitioners and
+  teachers of a school with no licence; parent induction films for a parent with no child; a session film for a new teacher
+  before the induction is done.
+- **Passes.** Upload: team only, for all ten types, on every form; wrong types, oversize and every altered link refused;
+  progress, toast and retry; a key beats a pasted link; pasted links unchanged; no store works as before. Access: no signed link
+  without a licence or a child, as each role, expired licence included; drafts hidden; guessed links refused; read links
+  expire. Playback under the strict CSP with a real film (ranges, seeking) and no CSP errors; the parent app's web preview opens
+  a signed link. Logs on the real `prod` profile: limits on every service; no token, Referer, password, initials or
+  real address in any container after a reset, sign-ins, duplicates, failed email (refused address and no server) and outages,
+  apart from the Tomcat line and addresses put in a request's path by hand; PostgreSQL shows no values. Shipper against a local
+  Loki only: off without the profile; api and caddy arrive, labelled by country, no health checks, redaction works.
+- **How debuggable an error is now:** the team can still tell what failed and where (error types, route, our line), which
+  was enough for the database outage. It can no longer tell why an outside service refused: a refused email logs only
+  `MailSendException`, not the 550, and not who missed it. Suggested: log safe codes such as SMTP's return code.
+- **Not tested:** a real bucket, a real Zoom call, a phone, an upload link's one-hour expiry; Ireland and Australia (the same code).
 
 **Fixes verified (updated by tester, 2026-11-06, `main` at 9d25640): pull request #39 (task 72) passes, nothing new
 found.** Bugs 1 to 6 and 8 to 11 below are fixed, checked live in the UK, Ireland and Australia. Backend 189/189, web
