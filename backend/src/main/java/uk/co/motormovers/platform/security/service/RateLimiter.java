@@ -43,6 +43,12 @@ public class RateLimiter {
         }
     }
 
+    /** Gives back one attempt, for one that failed through no fault of the person making it. */
+    public void release(String action, String key) {
+        windows.computeIfPresent(action + ":" + (key == null ? "" : key.toLowerCase(Locale.ROOT)),
+                (k, w) -> new Window(w.start(), Math.max(0, w.count() - 1)));
+    }
+
     /** Forgets a key, e.g. after a successful sign-in. */
     public void reset(String action, String key) {
         windows.remove(action + ":" + (key == null ? "" : key.toLowerCase(Locale.ROOT)));

@@ -75,6 +75,22 @@ class EnquiryTest {
     }
 
     @Test
+    void aFailedSendDoesNotCountAgainstTheLimit() throws Exception {
+        when(mailer.send(anyString(), anyString(), anyString())).thenReturn(false);
+        String enquiry = """
+                {"kind":"APPLY","name":"Sam Lee","email":"sam@school.test","setting":"Oak Primary"}
+                """;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            send(enquiry, "10.0.0.10").andExpect(status().isServiceUnavailable());
+        }
+        when(mailer.send(anyString(), anyString(), anyString())).thenReturn(true);
+        for (int attempt = 0; attempt < 5; attempt++) {
+            send(enquiry, "10.0.0.10").andExpect(status().isAccepted());
+        }
+        send(enquiry, "10.0.0.10").andExpect(status().isTooManyRequests());
+    }
+
+    @Test
     void aPriceGuideRequestIsEmailedToTheTeam() throws Exception {
         send("""
                 {"kind":"PRICE_GUIDE","name":"Sam Lee","email":"sam@school.test","setting":"Oak Primary",
