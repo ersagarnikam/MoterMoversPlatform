@@ -24,6 +24,8 @@ logging:
     # This logs the database's own errors, which quote the rejected values (an email, say). ApiExceptionHandler logs the
     # name of the rule instead.
     org.hibernate.orm.jdbc.error: "off"
+    # At INFO it logs a refused request's raw address, query string included, so a token or email in it.
+    org.apache.coyote.http11.Http11Processor: warn
 
 platform:
   # A deployment serves one data region (UK, IE or AU): UK data stays in UK hosting, Irish data in the EU, Australian
