@@ -30,6 +30,12 @@ public class LicenceService {
         return licences.findBySchoolId(schoolId).stream().anyMatch(l -> l.isValidOn(day) && l.covers(stage));
     }
 
+    /** Whether any licence of the school runs on the day, whatever colours it covers. */
+    @Transactional(readOnly = true)
+    public boolean hasLicence(Long schoolId, LocalDate day) {
+        return licences.findBySchoolId(schoolId).stream().anyMatch(l -> l.isValidOn(day));
+    }
+
     /** Every stage open in the school on the day, across all its licences. */
     @Transactional(readOnly = true)
     public Set<ColourStage> licensedStages(Long schoolId, LocalDate day) {

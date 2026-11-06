@@ -56,6 +56,8 @@ sequenceDiagram
 - Only approved lessons count.
 - Finishing is permanent: lessons added later do not lock anyone out.
 - The induction is for school staff only.
+- A lesson's film goes only to teachers and heads whose school has a licence running today, and the team. Anyone else
+  keeps the lesson and can finish it, with `filmHeld` true in place of the link.
 
 <a id="daily-session"></a>
 

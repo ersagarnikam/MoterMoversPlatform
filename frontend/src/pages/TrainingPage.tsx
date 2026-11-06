@@ -85,6 +85,7 @@ export function Lessons({ lessons, onComplete }: { lessons: Induction['lessons']
               {l.done && <span className="badge badge-ok">Done</span>}
             </summary>
             {l.videoUrl && <video src={l.videoUrl} controls />}
+            {l.filmHeld && <p className="hint">This lesson's film is for staff at schools with a Motor Movers licence.</p>}
             {l.paragraphs.map((p) => (
               <p key={p}>{p}</p>
             ))}
