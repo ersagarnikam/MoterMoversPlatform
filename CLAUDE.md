@@ -171,8 +171,8 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 [PM: Claude, 2026-11-06] **Film access decided by the owner (settles the three questions in the notes below).** Staff
 induction films go only to staff at a school with a licence running today, plus the team; everyone else keeps the lesson
-text and can complete the induction, but gets no film. This is go-live task 77, assigned to the Developer and **not built
-yet**. Until it merges, staff induction films still work as the notes below describe. Parent induction films (a parent with
+text and can complete the induction, but gets no film. Built as go-live task 77 (pull request #51, the Dev note below).
+Parent induction films (a parent with
 no child can open them) and session films (a new teacher can watch before the induction, but cannot record a session) stay
 as built. Limiting home films to paying families is part of task 26.
 
