@@ -336,6 +336,20 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fix verified (updated by tester, 2026-11-06, `main` at be2dd08, the Project manager's brief, a focused check): pull request #56
+(task 78) passes, no bugs.** Backend 241, web build, CI green on `main`; web unit, browser and mobile suites not rerun (no web or app code changed).
+- **Download names (41 checks in Chrome):** "O'Brien's sheet" saves as `O'Brien's sheet.pdf`; a curly apostrophe stays curly, with a
+  straight one in the plain `filename`; Irish letters stay ("Ciarán Ó Súilleabháin's rhymes"). The file arrives intact, and the name
+  stays signed: dropping the apostrophes, swapping straight and curly, another name and a header injection are all refused.
+- **Log shipper, real Alloy v1.21.3 with a local Loki 3.7.9:** 68 lines with secrets came out clean: every value of a cookie array,
+  also nested or cut off; a JSON value holding a quote; lower-case basic; unquoted `access_token` and its kin; `X-Api-Key`; and everything
+  from task 76. On 6 lines, what follows the secret survived. 25 ordinary lines came through unchanged, including `token: expired`.
+- **New, low (not claimed by the fix):** `access_token: "x"` with the value in quotes is left, as are `"access_token": x`, `access_token = x`,
+  `accessToken: x`, `apikey: x`, a Basic value under 16 characters and upper-case `BASIC`. A cookie value holding an escaped quote before a
+  bracket ends the array early. Too much removed, which is safe: "Basic responsibilities of a teacher" and "basic training/programme/materials"
+  lose the words after Basic. Nothing is known to log any of these.
+- **Not tested:** a download name from Spaces (no bucket).
+
 **Fixes verified (updated by tester, 2026-11-06, `main` at 074ae18, the Project manager's brief): pull requests #51 (task 77)
 and #49 (task 76) pass, no bugs.** Backend 237, web 62, build, mobile typecheck, browser tests 69/69, CI green on `main`.
 - **Task 77, staff induction films (242 API checks, on-screen checks in Chrome).** With approved staff lessons holding an uploaded
