@@ -131,7 +131,7 @@ This supersedes Next steps item 13 (Australia "later").
 "Decide and build: 9 Nov - 11 Dec", "Test, prod-ready and launch: 11 Dec - 26 Feb" and "Release 2 and later". When a task here is done, set it
 to Done there. Plan doc: https://claude.ai/artifact/6dYqws3w9cdpzhaARayV3d; requirements review (45 requirements against
 the platform, conflicts between the business documents): https://claude.ai/artifact/1WPp7mq67e8dqkCiBCN5Wq; designed PDF:
-`F:\IHA\Pat\Motor Movers go-live plan - January 2027.pdf`. A scheduled check (weekdays 7:38 and 17:38 Brisbane) reads the
+`F:\IHA\Pat\Motor Movers go-live plan - January 2027.pdf`. A scheduled check (daily at 9:00 Brisbane) reads the
 board and the owner's inbox and emails him a digest; it never emails anyone else.
 
 [PM: Claude, 2026-11-06] **Developer tasks and their specs.** Work for the Developer is a go-live board item named
