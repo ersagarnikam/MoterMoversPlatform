@@ -51,7 +51,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 171 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 176 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 57 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -159,6 +159,22 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `legal-entity`, pull request #34, built on #33's branch):
+go-live task 25, part E.** Done: the legal entity on screens, emails and the certificate, the production check, and the
+clean start-up message for a bad country setting, with tests. Left: the owner merges #30, #32, #33 and then this; then
+the tester tests them. Remove this note once merged. **After this, a production start needs the legal entity set**
+(RUNBOOK, Country settings; Kay's decision 1).
+
+(added by Dev, 2026-11-06) **Legal entity (go-live task 25, part E).** `CountrySettings.LegalEntity` gains
+`taxNumberLabel` ("VAT number", "ABN" in Australia), `isPlaceholder()` and `line()`, one line such as "Neuroway Ltd, 1 High
+Street. Company number 123. VAT number GB456.", null while any value says "To be confirmed", so nothing untrue is
+shown. `GET /api/settings` adds `legalLine`. It shows in the website footer (`SiteLayout`), on the My payments and school
+Payments pages (`components/LegalLine`), on the parent app's Payments screen, at the foot of the certificate PDF, and at
+the foot of every email (`Mailer`). `ProductionChecks` refuses to start with a placeholder; a value that does not apply
+can be left blank. A bad country setting now stops start-up with one clear "APPLICATION FAILED TO START" message
+(`CountrySettingsException`, `CountrySettingsFailureAnalyzer`, the tester's suggestion). The website's contact details and
+credit wording stay with task 28.
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `school-year-by-country`, pull request #33, built on
 #32's branch): go-live task 25, part D.** Done: the school year and year names by country, with tests. Left: the owner
@@ -576,7 +592,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

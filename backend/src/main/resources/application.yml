@@ -39,10 +39,12 @@ platform:
       school-year: { first-month: 9, last-month: 8, terms: 3, start-month: 9, middle-month: 1, end-month: 5 }
       year-names: Nursery, Reception, Year 1, Year 2, Year 3
       legal-entity: &placeholder-entity
-        # To confirm (Kay): suggested Neuroway for the UK and Ireland.
+        # To confirm (Kay): suggested Neuroway for the UK and Ireland. A production deployment refuses to start until
+        # every value is set (PLATFORM_COUNTRIES_<REGION>_LEGALENTITY_<NAME>); leave one blank if it does not apply.
         name: To be confirmed
         address: To be confirmed
         company-number: To be confirmed
+        tax-number-label: VAT number
         tax-number: To be confirmed
         email: To be confirmed
         phone: To be confirmed
@@ -71,7 +73,9 @@ platform:
       # To confirm (Pat).
       year-names: Kindy, Prep, Year 1, Year 2, Year 3
       # To confirm (Kay): suggested one of our Australian companies.
-      legal-entity: *placeholder-entity
+      legal-entity:
+        <<: *placeholder-entity
+        tax-number-label: ABN
   # Records of children who have left are deleted this many days after their leaving date.
   retention-days: 365
   # A class below this daily participation rate is flagged on the head teacher dashboard.

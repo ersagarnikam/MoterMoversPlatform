@@ -7,6 +7,7 @@ import java.util.Currency;
 import java.util.IllformedLocaleException;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * What differs between the countries a deployment can serve: money, tax, the time zone, the school year and its year
@@ -35,9 +36,46 @@ public record CountrySettings(
             int endMonth) {
     }
 
-    /** Who contracts with schools and families in this country. Placeholders until Kay decides (go-live decision 1). */
-    public record LegalEntity(String name, String address, String companyNumber, String taxNumber, String email,
-            String phone) {
+    /**
+     * Who contracts with schools and families in this country. Placeholders until Kay decides (go-live decision 1).
+     * {@code taxNumberLabel} is "VAT number" or "ABN". A value may be left blank if it does not apply, but a production
+     * deployment refuses to start with a placeholder (ProductionChecks).
+     */
+    public record LegalEntity(String name, String address, String companyNumber, String taxNumberLabel,
+            String taxNumber, String email, String phone) {
+
+        public static final String PLACEHOLDER = "To be confirmed";
+
+        public boolean isPlaceholder() {
+            return name == null || name.isBlank()
+                    || Stream.of(name, address, companyNumber, taxNumber, email, phone).anyMatch(PLACEHOLDER::equals);
+        }
+
+        /**
+         * One line for footers, invoices and the certificate: "Neuroway Ltd, 1 High Street. Company number 123. VAT
+         * number GB456." Null while the entity is a placeholder, so nothing untrue is shown.
+         */
+        public String line() {
+            if (isPlaceholder()) {
+                return null;
+            }
+            StringBuilder line = new StringBuilder(name);
+            if (present(address)) {
+                line.append(", ").append(address);
+            }
+            line.append('.');
+            if (present(companyNumber)) {
+                line.append(" Company number ").append(companyNumber).append('.');
+            }
+            if (present(taxNumber)) {
+                line.append(' ').append(taxNumberLabel).append(' ').append(taxNumber).append('.');
+            }
+            return line.toString();
+        }
+
+        private static boolean present(String value) {
+            return value != null && !value.isBlank();
+        }
     }
 
     /** Fails start-up with a clear message when a value cannot work, rather than later on a payment or a date. */
@@ -47,12 +85,12 @@ public record CountrySettings(
         try {
             Currency.getInstance(currency);
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalStateException(where + "currency is not an ISO 4217 code: " + currency);
+            throw new CountrySettingsException(where + "currency is not an ISO 4217 code: " + currency);
         }
         try {
             new Locale.Builder().setLanguageTag(locale).build();
         } catch (IllformedLocaleException | NullPointerException e) {
-            throw new IllegalStateException(where + "locale is not a language tag: " + locale);
+            throw new CountrySettingsException(where + "locale is not a language tag: " + locale);
         }
         require(taxLabel != null && !taxLabel.isBlank(), where + "tax-label is missing");
         require(taxPercent != null && taxPercent.signum() >= 0 && taxPercent.compareTo(BigDecimal.valueOf(100)) < 0,
@@ -60,7 +98,7 @@ public record CountrySettings(
         try {
             ZoneId.of(timeZone);
         } catch (RuntimeException e) {
-            throw new IllegalStateException(where + "time-zone is not a time zone: " + timeZone);
+            throw new CountrySettingsException(where + "time-zone is not a time zone: " + timeZone);
         }
         require(schoolYear != null, where + "school-year is missing");
         for (int month : List.of(schoolYear.firstMonth(), schoolYear.lastMonth(), schoolYear.startMonth(),
@@ -86,7 +124,7 @@ public record CountrySettings(
 
     private static void require(boolean ok, String message) {
         if (!ok) {
-            throw new IllegalStateException(message);
+            throw new CountrySettingsException(message);
         }
     }
 }

@@ -738,10 +738,13 @@ export interface CountrySettings {
     name: string
     address: string
     companyNumber: string
+    taxNumberLabel: string
     taxNumber: string
     email: string
     phone: string
   }
+  /** The legal entity in one line, or null while it is a placeholder. */
+  legalLine: string | null
 }
 
 export interface HomeToday {

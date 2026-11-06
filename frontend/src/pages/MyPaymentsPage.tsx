@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import LegalLine from '../components/LegalLine'
 import { api, type Payment, type Totals } from '../api'
 import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
 import PaymentTable from '../components/PaymentTable'
@@ -81,6 +82,7 @@ export default function MyPaymentsPage() {
           <PaymentTable payments={data.payments} />
         )}
       </section>
+      <LegalLine />
     </>
   )
 }

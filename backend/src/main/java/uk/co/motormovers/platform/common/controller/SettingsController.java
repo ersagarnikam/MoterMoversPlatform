@@ -20,10 +20,13 @@ import uk.co.motormovers.platform.common.model.Region;
 @RequestMapping("/api/settings")
 public class SettingsController {
 
-    /** What {@code GET /api/settings} returns. {@code taxPercent} is, for example, 20 for VAT at 20%. */
+    /**
+     * What {@code GET /api/settings} returns. {@code taxPercent} is, for example, 20 for VAT at 20%. {@code legalLine}
+     * is the legal entity in one line, or null while it is a placeholder.
+     */
     public record Settings(Region region, String country, String currency, String locale, String taxLabel,
             BigDecimal taxPercent, String timeZone, CountrySettings.SchoolYear schoolYear, List<String> yearNames,
-            CountrySettings.LegalEntity legalEntity) {
+            CountrySettings.LegalEntity legalEntity, String legalLine) {
     }
 
     private final Settings settings;
@@ -31,7 +34,7 @@ public class SettingsController {
     public SettingsController(PlatformProperties properties, CountrySettings country) {
         this.settings = new Settings(properties.region(), country.name(), country.currency(), country.locale(),
                 country.taxLabel(), country.taxPercent(), country.timeZone(), country.schoolYear(),
-                List.copyOf(country.yearNames()), country.legalEntity());
+                List.copyOf(country.yearNames()), country.legalEntity(), country.legalEntity().line());
     }
 
     @GetMapping
