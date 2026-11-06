@@ -189,7 +189,7 @@ sequenceDiagram
   end
   V->>W: open a page
   W->>API: GET /api/settings
-  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity and legalLine
+  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity and legalLine, time label, where data is held, credit note title
 ```
 
 **Rules in the code**

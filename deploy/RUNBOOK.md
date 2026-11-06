@@ -50,6 +50,8 @@ picks the country's settings from `platform.countries` in `backend/src/main/reso
 | School year | September to August, 3 terms | September to June, 3 terms | January to December, 4 terms |
 | Assessment points start | Sep / Jan / May | Sep / Jan / Apr | Jan / May / Sep |
 | Year names | Nursery, Reception, Year 1-3 | Preschool, Junior Infants, Senior Infants, First Class, Second Class | Kindy, Prep, Year 1-3 |
+| Times labelled | UK time | Irish time | Queensland time |
+| Data held in | the UK | the EU | Australia |
 | Legal entity | To be confirmed | To be confirmed | To be confirmed |
 
 `data-held-in` is what the website says about where data is held (the UK, the EU, Australia): check it against the
