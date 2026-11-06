@@ -166,10 +166,6 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `log-safety`, pull request #44): go-live task 73.** Done:
-log limits, safe logs and the optional shipper, tried on a local production stack with a local Loki. Left: the Project
-manager merges once CI is green. No log service has been chosen. Remove this note once merged.
-
 (added by Dev, 2026-11-06) **Logs (go-live task 73).** Every service keeps at most 50 MB (`x-logging` in the compose file). Caddy
 drops query strings and request headers (a page at a password link sends the link as its Referer) and cuts addresses to
 their network, in the access log and the error log, which logs the request too. nginx logs no requests, and only serious
