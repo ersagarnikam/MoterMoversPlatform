@@ -331,6 +331,29 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fixes verified (updated by tester, 2026-11-06, `main` at 074ae18, the Project manager's brief): pull requests #51 (task 77)
+and #49 (task 76) pass, no bugs.** Backend 237, web 62, build, mobile typecheck, browser tests 69/69, CI green on `main`.
+- **Task 77, staff induction films (242 API checks, on-screen checks in Chrome).** With approved staff lessons holding an uploaded
+  and a pasted film: the team, and a teacher and head at a licensed school, get both films and the upload plays, also on a
+  licence's first and last days, with one licence of two running, and with a licence for another colour only. A teacher or head
+  with no licence, or one that ended yesterday, starts tomorrow or starts next month, a trust lead, trainer and practitioner, also
+  those three attached to a licensed school, get `videoUrl` null and `filmHeld` true, with no link anywhere in the answer, the
+  lesson text kept and `filmHeld` false on a lesson with no film. A change to the licence applies at once on the same sign-in. An
+  unlicensed teacher finishes the induction, and progress stays when a licence lapses. Parents are refused; a staff lesson cannot be
+  reached through the parent route, nor a parent lesson through the staff route; the admin routes refuse everyone but the team,
+  whose list keeps its links. Parent induction films, session films and resources are unchanged.
+- **On screen:** the message shows for a teacher, head and practitioner. Trust leads and trainers have no induction section on the
+  web (so they see no message), as before; the API rule covers them.
+- **Task 76:** (a) Chrome saves "Rím Ghaeilge" as `Rím Ghaeilge.pdf`, and other accented titles the same way; a changed name is
+  still refused. (b) In real Alloy v1.21.3 with a local Loki 3.7.9, 33 lines with tokens, Basic credentials and cookies all came out
+  clean, and 7 ordinary lines came through unchanged. (c) 19 failed enquiries (mail server down, address refused, message refused)
+  all gave 503 with no 429; then 5 went and the sixth got 429. A full scan with a real reset token is also clean (development profile, not the production stack).
+- **New, low:** a download name drops apostrophes, so "O'Brien's sheet" saves as `OBriens sheet.pdf`. The shipper leaves the second
+  value of `{"Cookie":["a=1","b=x"]}` and the rest of a JSON password holding a quote; it also leaves lower-case `basic` with no
+  Authorization, `access_token: x` unquoted, and `X-Api-Key`, which it never claimed to catch. Nothing is known to log these.
+- **Not tested:** a real bucket, so the file link and download name on Spaces are unproven; the parent app was not reopened (it does
+  not call the staff induction, and its film was checked for task 75); Ireland and Australia.
+
 **Fixes verified (updated by tester, 2026-11-06, `main` at be09a66, the Project manager's brief): pull request #47 (task 75)
 passes; the two high bugs are fixed on nginx itself.** Backend 223/223, web 59, build, mobile typecheck, browser tests 69/69,
 CI green on `main`.
