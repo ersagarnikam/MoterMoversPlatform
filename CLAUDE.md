@@ -162,7 +162,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings`, pull request to come): go-live task 72.** Done:
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings`, pull request #39): go-live task 72.** Done:
 the Tester's findings 1 to 6 and 8 to 11, with tests. Left: the Project manager merges once CI is green. Findings 7
 ("This half-term", for Pat) and 12 (what the payer is told about a failed refund) are held. Remove this note once merged.
 
