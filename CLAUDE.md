@@ -127,8 +127,8 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
 This supersedes Next steps item 13 (Australia "later").
 
 **Tracking.** monday.com board "Motor Movers Go-Live (Dec 2026)", id 5032300138
-(https://ihau-company.monday.com/boards/5032300138): 53 tasks with Status, Due, Owner, Area and Task #, in groups
-"Decide and build: 9 Nov - 11 Dec" and "Test, prod-ready and launch: 11 Dec - 26 Feb". When a task here is done, set it
+(https://ihau-company.monday.com/boards/5032300138): tasks numbered 1 to 77 with Status, Due, Owner, Area and Task #, in groups
+"Decide and build: 9 Nov - 11 Dec", "Test, prod-ready and launch: 11 Dec - 26 Feb" and "Release 2 and later". When a task here is done, set it
 to Done there. Plan doc: https://claude.ai/artifact/6dYqws3w9cdpzhaARayV3d; requirements review (45 requirements against
 the platform, conflicts between the business documents): https://claude.ai/artifact/1WPp7mq67e8dqkCiBCN5Wq; designed PDF:
 `F:\IHA\Pat\Motor Movers go-live plan - January 2027.pdf`. A scheduled check (weekdays 7:38 and 17:38 Brisbane) reads the
@@ -168,6 +168,13 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+[PM: Claude, 2026-11-06] **Film access decided by the owner (settles the three questions in the notes below).** Staff
+induction films go only to staff at a school with a licence running today, plus the team; everyone else keeps the lesson
+text and can complete the induction, but gets no film. This is go-live task 77, assigned to the Developer and **not built
+yet**. Until it merges, staff induction films still work as the notes below describe. Parent induction films (a parent with
+no child can open them) and session films (a new teacher can watch before the induction, but cannot record a session) stay
+as built. Limiting home films to paying families is part of task 26.
 
 (added by Dev, 2026-11-06) **The Tester's file hosting and log findings (go-live task 75).** `/admin/content` and `/live/<id>` now really
 send their own headers: both had the strict policy in production, so uploads to a bucket and Zoom in the page could not have
