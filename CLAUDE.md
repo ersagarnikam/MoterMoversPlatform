@@ -57,7 +57,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 237 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 238 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 62 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -66,6 +66,8 @@ cd mobile   && npx tsc --noEmit     # parent app typecheck
 cd frontend && npm run e2e          # (added by Dev, 2026-11-06) 69 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
+(added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
+context a scheduler that does nothing, as a reminder at ten past the hour once landed inside `PushTest`. Tests call a job directly.
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
 The mobile lock file is written with npm 11 (Node 24); npm 10 rejects it, so CI's mobile job uses Node 24.
 CI (`.github/workflows/ci.yml`) runs backend, frontend (unit tests and build), web-headers (added by Dev, 2026-11-06: the real nginx image, `frontend/check-headers.sh`), e2e, loadtest and mobile jobs on every
@@ -760,7 +762,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
