@@ -31,6 +31,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.model.Region;
+import uk.co.motormovers.platform.common.storage.FileTypes;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.HomeActivity;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
@@ -198,6 +199,30 @@ class FileStorageTest {
         mvc.perform(get(URI.create(link))).andExpect(status().isOk())
                 .andExpect(header().string("Content-Disposition",
                         "attachment; filename=\"Rim Ghaeilge.mp3\"; filename*=UTF-8''R%C3%ADm%20Ghaeilge.mp3"));
+    }
+
+    @Test
+    void aDownloadKeepsApostrophes() throws Exception {
+        assertThat(FileTypes.fileName("O'Brien's sheet: week/1", "uploads/a.pdf")).isEqualTo("O'Brien's sheet week1.pdf");
+        assertThat(FileTypes.contentDisposition("O\u2019Brien.pdf"))
+                .isEqualTo("attachment; filename=\"O'Brien.pdf\"; filename*=UTF-8''O%E2%80%99Brien.pdf");
+
+        String admin = admin();
+        String body = "{\"kind\":\"PRINTABLE\",\"title\":\"O'Brien's sheet\",\"description\":\"A printable\","
+                + "\"fileKey\":\"" + uploadedKey() + "\"}";
+        Integer id = JsonPath.read(mvc.perform(post("/api/admin/resources").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(), "$.id");
+        mvc.perform(post("/api/admin/resources/" + id + "/approve").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk());
+
+        String link = JsonPath.<List<String>>read(library(admin), "$[?(@.id == " + id + ")].fileUrl").getFirst();
+        assertThat(link).contains("name=O%27Brien%27s%20sheet.mp3");
+        mvc.perform(get(URI.create(link))).andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition",
+                        "attachment; filename=\"O'Brien's sheet.mp3\"; filename*=UTF-8''O%27Brien%27s%20sheet.mp3"));
+        // The name is part of what is signed, so it cannot be changed.
+        mvc.perform(get(URI.create(link.replace("O%27Brien", "OBrien")))).andExpect(status().isForbidden());
     }
 
     @Test

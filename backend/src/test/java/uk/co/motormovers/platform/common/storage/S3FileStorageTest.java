@@ -43,6 +43,14 @@ class S3FileStorageTest {
     }
 
     @Test
+    void aDownloadLinkEncodesAnApostropheForTheSignature() {
+        String link = spaces().downloadLink("uploads/book.pdf", "O'Brien.pdf");
+
+        assertThat(link).contains("filename%3D%22O%27Brien.pdf%22").contains("UTF-8%27%27O%2527Brien.pdf")
+                .doesNotContain("O'Brien");
+    }
+
+    @Test
     void anUploadLinkIsBoundToTheTypeAndSize() {
         String one = spaces().uploadLink("uploads/film.mp4", "video/mp4", 1000);
 
