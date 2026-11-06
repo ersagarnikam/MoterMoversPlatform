@@ -130,6 +130,18 @@ class RefundTest {
     }
 
     @Test
+    void aRequestIdAlreadyUsedOnAnotherPaymentIsRefused() throws Exception {
+        String admin = login("admin@motormovers.test");
+        Integer first = paidByHand("parent@example.test", 2_000);
+        Integer second = paidByHand("parent@example.test", 2_100);
+        String clientId = UUID.randomUUID().toString();
+        refund(admin, first, 500, clientId).andExpect(status().isOk());
+        refund(admin, second, 500, clientId).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("another payment")));
+        assertThat(paymentField(admin, second, "refundedPence")).isEqualTo(List.of(0));
+    }
+
+    @Test
     void aRefundInStripesDashboardIsRecordedOnceAndARepeatedWebhookChangesNothing() throws Exception {
         String admin = login("admin@motormovers.test");
         String intent = "pi_" + UUID.randomUUID();
