@@ -572,9 +572,9 @@ invoice still due is cancelled, a paid one is left for the team to refund by han
 (`cohort_session.reminder_sent_at`; moving a session sends a new one).
 
 [PM: Claude, 2026-11-06] **Hosting: DigitalOcean (the owner's decision, 2026-11-06).** One server per country in London,
-an EU region (Frankfurt or Amsterdam, still to choose; DigitalOcean has no Dublin) and Sydney, with DigitalOcean Spaces
+Amsterdam for Ireland (DigitalOcean has no Dublin) and Sydney, with DigitalOcean Spaces
 for files (task 29) and off-site backups. About $80 a month for production as built (4 GB servers, database on the
-server), before staging; prices to confirm. Still to settle on go-live task 9: the EU region, managed databases, and
+server), before staging; prices to confirm. Still to settle on go-live task 9: managed databases, and
 whether 4 GB is enough (test on staging). Nothing has been created yet.
 
 Built so far:
