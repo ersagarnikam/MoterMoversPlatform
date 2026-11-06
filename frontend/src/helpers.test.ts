@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { sessionTime, startsIn, ZOOM_SDK } from './live'
-import { currencySymbol, money, setCurrency } from './money'
+import { currencySymbol, money, setCurrency, taxLine } from './money'
 import { CONTACT_EMAIL, mailto, signInRole, SIGN_IN_ROLES } from './site'
 import { pct, stageInfo, STAGES } from './stages'
 
 describe('money', () => {
-  afterEach(() => setCurrency('GBP', 'en-GB'))
+  afterEach(() => setCurrency('GBP', 'en-GB', 'VAT'))
 
   it('shows whole pounds without pence', () => {
     expect(money(18_000)).toBe('£180')
@@ -32,6 +32,14 @@ describe('money', () => {
     expect(money(3_505)).toBe('$35.05')
     expect(money(175_000)).toBe('$1,750')
     expect(currencySymbol()).toBe('$')
+  })
+
+  it('says how much tax an amount includes, and nothing without a figure', () => {
+    expect(taxLine(7_500)).toBe('includes VAT £75')
+    setCurrency('AUD', 'en-AU', 'GST')
+    expect(taxLine(409)).toBe('includes GST $4.09')
+    expect(taxLine(null)).toBe('')
+    expect(taxLine(0)).toBe('')
   })
 
   it('labels forms with the currency symbol', () => {

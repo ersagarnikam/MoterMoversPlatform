@@ -41,7 +41,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V17`);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V18`, added by Dev 2026-11-06);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
@@ -51,8 +51,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 162 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-06) 56 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 167 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-06) 57 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -107,7 +107,7 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
   `GET /api/settings`; parts B (money), C (tax), D (school year and year names) and E (legal entity) follow.
 - Money: replace hard-wired pounds (`frontend/src/money.ts` `gbp()`, `PaymentViews`, "£" labels, mobile screens, and
   `currency=gbp` in `StripeApiClient`). Prices shown tax-inclusive with the tax amount on invoices. (added by Dev,
-  2026-11-06) Money is done in part B (pull request #30, not merged); the tax amount is part C.
+  2026-11-06) Money is done in part B (pull request #30), the tax amount in part C (pull request #32); neither is merged yet.
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
   year, so year-on-year figures must not split it).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
@@ -159,6 +159,17 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tax-on-payments`, pull request #32, built on #30's
+branch): go-live task 25, part C (tax).** Done: V18, the included tax on payments, web and app, with tests. Left: the
+owner merges #30 and then this, then the tester tests both. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Tax on payments (go-live task 25, part C, migration V18).** Prices stay tax-inclusive (the
+amount charged). `payment.tax_rate_bp` (basis points, nullable) is set from the country settings when a payment is
+created (`PaymentService`, `CountrySettings.taxRateBp`) and stays with the payment; older rows stay null and show no
+tax line. `Payment.taxPence` is amount x rate / (1 + rate), rounded half up to the minor unit, and `taxPence` is on the
+payment views. Web (`taxLine` in `src/money.ts`, on `PaymentTable` and My payments) and parent app (`taxLine` in
+`lib/api.ts`, on Payments) show "includes VAT £75" or "includes GST $4.09". No Stripe Tax. Tests: `PaymentTaxTest`.
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `money-by-country`, pull request #30): go-live task 25,
 part B (money).** Done: amounts in the deployment's currency on the web, in the parent app, in emails and phone
@@ -552,7 +563,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
