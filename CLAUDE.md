@@ -281,6 +281,14 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fixes verified (updated by tester, 2026-11-06, `main` at 9d25640): pull request #39 (task 72) passes, nothing new
+found.** Bugs 1 to 6 and 8 to 11 below are fixed, checked live in the UK, Ireland and Australia. Backend 189/189, web
+59 unit tests and build, parent app typecheck, 68/68 browser tests. Real reminders read "(UK time)", "(Irish time)" and
+"(Queensland time)"; the session-open phone notification only through `RegionAustraliaTest` and `RegionIrelandTest`
+(push is off locally). A blank `data-held-in` leaves the website's line off. Tax on part refunds was tried on about 60
+splits, random ones included: never negative, always adding up to the payment's tax. The app's button and banner
+were tried in the web preview, including changing country back and forth. Bugs 7 and 12 stay held for decisions.
+
 **Three-country test pass (updated by tester, 2026-11-06, `main` at 8497412, the Project manager's brief).** Backend
 185/185, web 57 unit tests and build, parent app typecheck, 68/68 browser tests. On screen in UK, IE and AU, as eight
 roles: the right currency everywhere (no pound sign left on web, app or emails), tax lines, year names on the class
