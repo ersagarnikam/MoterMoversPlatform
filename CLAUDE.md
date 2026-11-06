@@ -323,6 +323,23 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fixes verified (updated by tester, 2026-11-06, `main` at be09a66, the Project manager's brief): pull request #47 (task 75)
+passes; the two high bugs are fixed on nginx itself.** Backend 223/223, web 59, build, mobile typecheck, browser tests 69/69,
+CI green on `main`.
+- **Headers, on the production stack:** with `STORAGE_ORIGIN` set, `/admin/content` allows the storage host and no other, and
+  `/live/<id>` has Zoom's policy, camera and microphone. The 21 other paths tried stay strict, including near misses such as
+  `/admin/contents`, `/live/abc` and `/ADMIN/CONTENT`. Checked in Chrome too, not only in the headers. No real bucket or Zoom call.
+- **Findings 3 to 10, all fixed:** no refused request reaches the log, by Caddy or directly to Tomcat; the app opens a parent
+  induction film; a failed enquiry says so (503) and gives the contact details, and the form keeps what was typed; upload
+  messages are clear and MOV points to MP4; a made-up key is refused on save on all five forms; downloads are named after
+  the item, and a changed name is refused; a 500 in the filter is a problem detail; the shipper removes a bare JWT and JSON tokens,
+  nested ones too, against a local Loki only. A refused email logs its code (550, 554, 451, or none with no server), no address.
+- **New, low:** a download name loses letters outside plain English: "Rím Ghaeilge" saves as `Rm Ghaeilge.pdf`, which matters
+  for Ireland; the file itself is fine. The shipper does not catch `"access_token"`, `"client_secret"`, a Basic header or a
+  cookie value; nothing is known to log them. A failed enquiry uses up the limit of 5 an hour.
+- **Not tested:** a real bucket (so the store's check that a file exists and the download name on Spaces are unproven), a real
+  Zoom call, a phone, Ireland and Australia. The full log scan with a real reset token was not repeated this round.
+
 **File hosting and logs tested (updated by tester, 2026-11-06, `main` at fc4e4b7, the Project manager's brief): two high
 bugs, not ready for go-live.** Suites pass: backend 214/214, web 59, build, mobile typecheck, browser tests 69/69.
 - **High, both from one line in `frontend/nginx.conf`:** `try_files $uri /index.html` in the `/admin/content` and
