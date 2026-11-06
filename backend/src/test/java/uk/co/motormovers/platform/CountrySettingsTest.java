@@ -64,6 +64,8 @@ class CountrySettingsTest {
     @Test
     void australiaLabelsItsTaxNumberAnAbnAndTheOthersAVatNumber() {
         assertThat(countries(Map.of()).get(Region.AU).legalEntity().taxNumberLabel()).isEqualTo("ABN");
+        assertThat(countries(Map.of()).get(Region.AU).creditNoteTitle()).isEqualTo("Adjustment note");
+        assertThat(countries(Map.of()).get(Region.UK).creditNoteTitle()).isEqualTo("Credit note");
         assertThat(countries(Map.of()).get(Region.IE).legalEntity().taxNumberLabel()).isEqualTo("VAT number");
     }
 
@@ -124,19 +126,19 @@ class CountrySettingsTest {
     void aValueThatCannotWorkStopsStartUp() {
         CountrySettings uk = countries(Map.of()).get(Region.UK);
         assertThatThrownBy(() -> new CountrySettings(uk.name(), "POUNDS", uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity()).validated("uk"))
+                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note").validated("uk"))
                 .hasMessageContaining("platform.countries.uk.currency");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity())
+                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note")
                 .validated("uk"))
                 .hasMessageContaining("tax-percent");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity())
+                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note")
                 .validated("uk"))
                 .hasMessageContaining("time-zone");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), new CountrySettings.SchoolYear(9, 8, 3, 13, 1, 5), uk.yearNames(),
-                uk.legalEntity()).validated("uk"))
+                uk.legalEntity(), "Credit note").validated("uk"))
                 .hasMessageContaining("school-year");
     }
 

@@ -25,7 +25,8 @@ public record CountrySettings(
         String timeZone,
         SchoolYear schoolYear,
         List<String> yearNames,
-        LegalEntity legalEntity) {
+        LegalEntity legalEntity,
+        String creditNoteTitle) {
 
     /**
      * The school year runs from {@code firstMonth} to {@code lastMonth} (1 = January). Its three assessment points start
@@ -110,6 +111,7 @@ public record CountrySettings(
         require(schoolYear.terms() > 0, where + "school-year.terms must be at least 1");
         require(yearNames != null && !yearNames.isEmpty(), where + "year-names is missing");
         require(legalEntity != null, where + "legal-entity is missing");
+        require(creditNoteTitle != null && !creditNoteTitle.isBlank(), where + "credit-note-title is missing");
         return this;
     }
 

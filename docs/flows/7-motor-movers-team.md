@@ -144,7 +144,7 @@ sequenceDiagram
 
 The team records invoices for schools or people and marks bank transfers paid. Home lists today's sessions, drafts, overdue invoices and renewals.
 
-**Endpoints:** `POST /api/admin/payments` · `POST /api/admin/payments/{id}/paid` · `POST /api/admin/payments/{id}/cancel` · `GET /api/admin/payments/summary` · `GET /api/admin/overview`
+**Endpoints:** `POST /api/admin/payments` · `POST /api/admin/payments/{id}/paid` · `POST /api/admin/payments/{id}/cancel` · `POST /api/admin/payments/{id}/refund` · `GET /api/payments/refunds/{id}/credit-note.pdf` · `GET /api/admin/payments/summary` · `GET /api/admin/overview`
 
 ```mermaid
 sequenceDiagram
@@ -153,6 +153,8 @@ sequenceDiagram
   participant W as Web app
   participant API as PaymentService
   participant PU as PushService
+  participant S as Stripe
+  participant M as Mailer
   participant DB as PostgreSQL
   A->>W: Home (/admin)
   W->>API: GET /api/admin/overview
@@ -170,13 +172,29 @@ sequenceDiagram
   opt cancel
     W->>API: POST /api/admin/payments/{id}/cancel
   end
+  opt refund a paid payment (all or part)
+    A->>W: Amount and reason, confirm
+    W->>API: POST /api/admin/payments/{id}/refund
+    API->>API: lock the payment, not more than is left
+    alt paid by card
+      API->>S: POST /v1/refunds (idempotency key)
+      S-->>API: refund, or refused: nothing is saved
+    else paid another way
+      Note over A,API: the money goes back by hand
+    end
+    API->>DB: save the refund with the next credit note number
+    API->>M: credit note PDF to the payer or the school's heads
+  end
   W->>API: GET /api/admin/payments/summary
-  API-->>W: spending summaries
+  API-->>W: spending summaries, net of refunds
 ```
 
 **Rules in the code**
 
 - The payer is a school or a person, not both. Team accounts never pay.
 - A DUE payment for a person also goes to their phone.
+- A payment stays PAID when refunded; several part refunds are allowed, never more than was paid. Totals are net, and in
+  spend by month a refund counts in the month the money went back.
+- Credit note numbers have no gaps per deployment: a refund Stripe refuses takes no number.
 - Prices include tax. A payment keeps the tax rate in force when it was created (`tax_rate_bp`); payment views show
   "includes VAT £x" (amount x rate / (1 + rate), rounded to the minor unit). Older payments have no rate and no tax line.

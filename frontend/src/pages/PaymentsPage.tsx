@@ -11,6 +11,7 @@ import {
 } from '../api'
 import MonthBars from '../components/MonthBars'
 import PaymentTable from '../components/PaymentTable'
+import RefundForm from '../components/RefundForm'
 import { currencySymbol, money } from '../money'
 import { useConfirm, useToast } from '../components/Feedback'
 import ListFilter, { matches } from '../components/ListFilter'
@@ -35,6 +36,7 @@ export default function PaymentsPage() {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<'ALL' | Payment['status']>('ALL')
+  const [refunding, setRefunding] = useState<Payment | null>(null)
   const filtered = payments.filter(
     (p) =>
       (status === 'ALL' || p.status === status) &&
@@ -156,11 +158,28 @@ export default function PaymentsPage() {
           shown={filtered.length}
           total={payments.length}
         />
+        {refunding && (
+          <RefundForm
+            key={refunding.id}
+            payment={refunding}
+            onCancel={() => setRefunding(null)}
+            onDone={(message) => {
+              setRefunding(null)
+              setNotice(message)
+              load()
+            }}
+          />
+        )}
         <PaymentTable
           payments={filtered}
           showPayer
           actions={(p) =>
-            p.status === 'DUE' && (
+            p.status === 'PAID' && p.refundedPence < p.amountPence ? (
+              <button className="btn" onClick={() => setRefunding(p)}>
+                Refund
+              </button>
+            ) : (
+              p.status === 'DUE' && (
               <>
                 <button className="btn" onClick={() => run(() => api.markPaid(p.id, today()), `${p.description} marked paid`)}>
                   Mark paid today
@@ -181,6 +200,7 @@ export default function PaymentsPage() {
                   Cancel
                 </button>
               </>
+              )
             )
           }
         />

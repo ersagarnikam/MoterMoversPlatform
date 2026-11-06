@@ -109,6 +109,43 @@ function PaymentRow({ payment, showStatus = false }: { payment: Payment; showSta
         {taxLine(payment.taxPence) ? ` · ${taxLine(payment.taxPence)}` : ''}
       </Muted>
       {showStatus && <Muted style={payment.status === 'DUE' ? { color: p.warnInk } : undefined}>{status}</Muted>}
+      {payment.refundLabel && <Muted>{payment.refundLabel}</Muted>}
+      {payment.refunds
+        .filter((r) => !r.failed)
+        .map((r) => (
+          <RefundRow key={r.id} refund={r} />
+        ))}
     </View>
+  )
+}
+
+/** A refund, and its credit note by email: the app cannot save a file. */
+function RefundRow({ refund }: { refund: Payment['refunds'][number] }) {
+  const [state, setState] = useState<'idle' | 'busy' | 'sent' | 'failed'>('idle')
+  async function send() {
+    setState('busy')
+    try {
+      await api.emailCreditNote(refund.id)
+      setState('sent')
+    } catch {
+      setState('failed')
+    }
+  }
+  return (
+    <>
+      <Muted>
+        Refunded {money(refund.amountPence)} on {formatDate(refund.refundedOn)} · {refund.creditNote}
+      </Muted>
+      {state === 'sent' ? (
+        <Muted>Sent to your email.</Muted>
+      ) : (
+        <Button
+          label={state === 'failed' ? 'Could not send. Try again' : 'Email me the credit note'}
+          variant="secondary"
+          busy={state === 'busy'}
+          onPress={() => void send()}
+        />
+      )}
+    </>
   )
 }

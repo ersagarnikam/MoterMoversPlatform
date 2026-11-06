@@ -204,13 +204,23 @@ Pay by card is hidden and the team marks payments paid by hand, as before.
 
 1. In the Stripe dashboard (start in test mode): Developers > API keys, copy the secret key (`sk_test_...`).
 2. Developers > Webhooks > Add endpoint: `https://<APP_DOMAIN>/api/stripe/webhook`, events
-   `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy its signing secret (`whsec_...`).
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `refund.created`, `refund.updated` and
+   `refund.failed`. Copy its signing secret (`whsec_...`). An endpoint made before refunds were built needs the three
+   `refund.*` events adding.
 3. Put both in `deploy/.env` as `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (the API refuses to start with only
    one), then restart the API. Pay a due payment with Stripe's test card 4242 4242 4242 4242 and check it shows paid.
 4. To go live, repeat with the live keys and a live-mode webhook.
 
-Refunds are made in the Stripe dashboard (find the payment by the payer's email). The platform does not record
-refunds yet, so the payment still shows as paid there. Prices are charged as they are, with no VAT split.
+**Refunds.** The team refunds on Payments (Refund, on a paid payment), in whole or in part, with a reason. A payment
+taken by card goes back through Stripe; nothing is saved unless Stripe accepts it. Anything else is recorded, and the
+team returns the money by hand. A refund made directly in the Stripe dashboard arrives by the webhook and is recorded
+the same way, once. Each refund has a credit note, numbered with no gaps per deployment, emailed to the payer (a school's
+heads). When a refund applies is the team's decision, under Motor Movers' refund policy; the platform does not decide it.
+
+Two cases to watch for in the API log: "Stripe could not return refund ..." (`refund.failed`: the refund stops counting,
+and the money has to go back another way), and "more than is left to refund" (a dashboard refund on a payment already
+refunded here by hand, so the money went back twice, and it is not recorded). Both are for the team to sort out in
+Stripe. Refunds of tax are not reported anywhere: prices include tax, and each credit note shows the tax in it.
 
 ## Everyday operations
 

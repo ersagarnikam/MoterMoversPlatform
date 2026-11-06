@@ -158,6 +158,9 @@ sequenceDiagram
 - Only the payer can start checkout, and only for a payment that is DUE.
 - The webhook is refused unless Stripe's signature is valid.
 - A bank debit still on its way waits for async_payment_succeeded.
+- The webhook also takes `refund.created`, `refund.updated` and `refund.failed`, so a refund made in Stripe is recorded
+  here once (see the team's flows). Payers see refunds and download the credit note on their Payments page; in the parent
+  app it is emailed to them (`POST /api/payments/refunds/{id}/credit-note/email`).
 
 <a id="country"></a>
 

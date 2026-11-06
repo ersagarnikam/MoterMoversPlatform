@@ -424,6 +424,37 @@ test('the team records an invoice, marks it paid and sees spending', async ({ pa
   await expect(row.getByRole('button', { name: 'Mark paid today' })).toHaveCount(0)
 })
 
+test('the team refunds part of a paid payment, and the credit note can be downloaded', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Payments', exact: true }).click()
+  const description = `Browser refund ${Date.now()}`
+  const form = page.locator('section', { has: page.getByRole('heading', { name: 'Record a payment' }) })
+  await form.getByRole('combobox', { name: /^School/ }).selectOption({ label: 'Ferrers Park' })
+  await form.getByLabel('Description').fill(description)
+  await form.getByLabel('Amount (£)').fill('120')
+  await form.getByRole('button', { name: 'Record payment' }).click()
+  const row = page.getByRole('row', { name: new RegExp(description) })
+  await row.getByRole('button', { name: 'Mark paid today' }).click()
+
+  await row.getByRole('button', { name: 'Refund' }).click()
+  const refund = page.getByRole('form', { name: 'Refund' })
+  await expect(refund.getByText('£120 left to refund of £120.')).toBeVisible()
+  await expectAccessible(page)
+  await refund.getByLabel('Amount (£)').fill('30')
+  await refund.getByLabel('Reason').fill('Place cancelled')
+  await refund.getByRole('button', { name: 'Refund', exact: true }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Refund', exact: true }).click()
+
+  // Paid by bank transfer, so it is recorded and the money goes back by hand. Part of it, so it stays paid.
+  await expect(page.getByText('£30 recorded as refunded. Please return the money by hand.')).toBeVisible()
+  await expect(row.getByText('Part refunded')).toBeVisible()
+  await expect(row.getByText('Paid', { exact: true })).toBeVisible()
+  await expect(row.getByText(/Refunded £30 .* by hand · includes VAT £5/)).toBeVisible()
+  const download = page.waitForEvent('download')
+  await row.getByRole('button', { name: /^CN-[0-9]{6}$/ }).click()
+  expect((await download).suggestedFilename()).toMatch(/^CN-[0-9]{6}[.]pdf$/)
+})
+
 test('a head sees their school’s payments and a trust or group lead sees spending by school', async ({ page }) => {
   await signIn(page, 'head@oakfield.test')
   await page.getByRole('link', { name: 'Payments', exact: true }).click()

@@ -89,6 +89,7 @@ code { background: var(--chip-bg); padding: 0 4px; border-radius: 4px; }
 .muted-on-dark { color: #b8c4d0; }
 .strong { font-weight: 600; }
 .fine { color: var(--muted); font-size: 0.8rem; margin-top: 1rem; }
+.btn-link { background: none; border: none; padding: 0; color: var(--teal); font: inherit; text-decoration: underline; cursor: pointer; }
 .site-footer-legal { font-size: 0.8rem; text-align: center; margin: 1rem 1rem 0; }
 .error { color: var(--error); }
 .eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.72rem; font-weight: 600; color: var(--teal); margin: 0; }

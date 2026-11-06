@@ -573,6 +573,18 @@ export interface LiveRegister {
 export type PayerType = 'SCHOOL' | 'PARENT' | 'INDIVIDUAL'
 export type PaymentPurpose = 'LICENCE' | 'COURSE' | 'OTHER'
 
+/** Money returned on a paid payment, with its credit note. failed: Stripe could not return it, so it no longer counts. */
+export interface PaymentRefund {
+  id: number
+  amountPence: number
+  taxPence: number | null
+  reason: string
+  refundedOn: string
+  creditNote: string
+  byHand: boolean
+  failed: boolean
+}
+
 /** One recorded payment. Amounts are in pence; payerEmail is null when a school pays. */
 export interface Payment {
   /** The tax included in amountPence; null on payments from before it was kept. */
@@ -592,9 +604,13 @@ export interface Payment {
   reference: string | null
   /** Paid by card on the platform (Stripe), not marked paid by hand. */
   paidOnline: boolean
+  refundedPence: number
+  /** "Refunded" or "Part refunded"; null with nothing refunded. */
+  refundLabel: string | null
+  refunds: PaymentRefund[]
 }
 
-/** "Paid" is money received; "outstanding" is invoiced and not yet paid. */
+/** "Paid" is money received, net of refunds; "outstanding" is invoiced and not yet paid. */
 export interface Totals {
   paidPence: number
   outstandingPence: number
@@ -1086,6 +1102,10 @@ export const api = {
   recordPayment: (p: NewPayment) => request<Payment>('POST', '/api/admin/payments', p),
   markPaid: (id: number, paidOn: string) => request<Payment>('POST', `/api/admin/payments/${id}/paid`, { paidOn }),
   cancelPayment: (id: number) => request<Payment>('POST', `/api/admin/payments/${id}/cancel`),
+  refundPayment: (id: number, refund: { amountPence: number; reason: string; clientId: string }) =>
+    request<Payment>('POST', `/api/admin/payments/${id}/refund`, refund),
+  creditNotePdf: (refund: PaymentRefund) =>
+    downloadFile(`/api/payments/refunds/${refund.id}/credit-note.pdf`, `${refund.creditNote}.pdf`),
   schoolPayments: (schoolId: number) =>
     request<Totals & { schoolId: number; schoolName: string; payments: Payment[] }>(
       'GET',

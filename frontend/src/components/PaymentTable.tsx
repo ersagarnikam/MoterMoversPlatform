@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Payment } from '../api'
+import { api, type Payment } from '../api'
 import { money, taxLine } from '../money'
 import { day } from '../dates'
 
@@ -52,6 +52,22 @@ export default function PaymentTable({
                 <span className={`status status-payment-${p.status.toLowerCase()}`}>{STATUS[p.status]}</span>
                 {p.paidOn && <span className="muted"> {day(p.paidOn)}</span>}
                 {p.paidOnline && <span className="muted"> · by card</span>}
+                {p.refundLabel && <div><strong>{p.refundLabel}</strong></div>}
+                {p.refunds.map((r) => (
+                  <div key={r.id} className="muted">
+                    {r.failed ? 'Refund failed' : 'Refunded'} {money(r.amountPence)} {day(r.refundedOn)}
+                    {r.byHand && ' · by hand'}
+                    {taxLine(r.taxPence) && ` · ${taxLine(r.taxPence)}`}
+                    {!r.failed && (
+                      <>
+                        {' · '}
+                        <button className="btn-link" onClick={() => void api.creditNotePdf(r)}>
+                          {r.creditNote}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))}
               </td>
               {actions && <td className="row-actions">{actions(p)}</td>}
             </tr>
