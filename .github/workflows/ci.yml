@@ -36,6 +36,19 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  # The headers nginx itself sends. The browser tests cannot see these: vite preview sets them another way.
+  web-headers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t motor-movers-web frontend
+      - run: >
+          docker run -d --name web -p 8088:80 -e API_UPSTREAM=http://127.0.0.1:8080
+          -e STORAGE_ORIGIN=https://bucket.storage.test motor-movers-web
+      - name: Wait for nginx
+        run: timeout 30 sh -c 'until curl -sf http://localhost:8088/healthz; do sleep 1; done'
+      - run: sh frontend/check-headers.sh http://localhost:8088 https://bucket.storage.test
+
   # Browser tests: the production web build (with the production CSP) against the API with demo data.
   e2e:
     runs-on: ubuntu-latest

@@ -1,7 +1,11 @@
 package uk.co.motormovers.platform.common.storage;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -24,6 +28,11 @@ import javax.crypto.spec.SecretKeySpec;
  */
 class S3FileStorage implements FileStorage {
 
+    /** Asks the store about a signed link, and gives the HTTP status. */
+    interface Probe {
+        int head(String url) throws IOException, InterruptedException;
+    }
+
     private static final Duration UPLOAD_LINK = Duration.ofHours(1);
     private static final DateTimeFormatter TIMESTAMP =
             DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
@@ -32,10 +41,16 @@ class S3FileStorage implements FileStorage {
     private final Clock clock;
     private final String scheme;
     private final String host;
+    private final Probe probe;
 
     S3FileStorage(StorageProperties properties, Clock clock) {
+        this(properties, clock, S3FileStorage::head);
+    }
+
+    S3FileStorage(StorageProperties properties, Clock clock, Probe probe) {
         this.properties = properties;
         this.clock = clock;
+        this.probe = probe;
         URI endpoint = URI.create(properties.endpoint().strip());
         this.scheme = endpoint.getScheme();
         this.host = properties.bucket().strip() + "." + endpoint.getHost();
@@ -58,7 +73,38 @@ class S3FileStorage implements FileStorage {
         return presign("GET", key, Duration.ofHours(properties.readHours()), Map.of());
     }
 
+    @Override
+    public String downloadLink(String key, String fileName) {
+        return presign("GET", key, Duration.ofHours(properties.readHours()), Map.of(),
+                Map.of("response-content-disposition", "attachment; filename=\"" + fileName + "\""));
+    }
+
+    @Override
+    public boolean exists(String key) {
+        try {
+            return probe.head(presign("HEAD", key, Duration.ofMinutes(1), Map.of())) == 200;
+        } catch (IOException e) {
+            throw new IllegalStateException("The file store could not be reached. Please try saving again.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("The file store could not be reached. Please try saving again.");
+        }
+    }
+
+    private static int head(String url) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(10))
+                .method("HEAD", HttpRequest.BodyPublishers.noBody()).build();
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            return client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+        }
+    }
+
     String presign(String method, String key, Duration lifetime, Map<String, String> headers) {
+        return presign(method, key, lifetime, headers, Map.of());
+    }
+
+    String presign(String method, String key, Duration lifetime, Map<String, String> headers,
+            Map<String, String> extraQuery) {
         String timestamp = TIMESTAMP.format(clock.instant());
         String date = timestamp.substring(0, 8);
         String region = properties.region().strip();
@@ -68,7 +114,7 @@ class S3FileStorage implements FileStorage {
         signed.put("host", host);
         String signedHeaders = String.join(";", signed.keySet());
 
-        TreeMap<String, String> query = new TreeMap<>();
+        TreeMap<String, String> query = new TreeMap<>(extraQuery);
         query.put("X-Amz-Algorithm", "AWS4-HMAC-SHA256");
         query.put("X-Amz-Credential", properties.accessKey().strip() + "/" + scope);
         query.put("X-Amz-Date", timestamp);

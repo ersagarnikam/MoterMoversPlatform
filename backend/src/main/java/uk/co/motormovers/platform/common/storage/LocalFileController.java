@@ -1,9 +1,11 @@
 package uk.co.motormovers.platform.common.storage;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,13 +42,17 @@ public class LocalFileController {
     }
 
     @GetMapping("/api/files/local/uploads/{name}")
-    public ResponseEntity<Resource> read(@PathVariable String name, @RequestParam long expires,
-            @RequestParam String sig) {
-        String key = key(name);
-        return ResponseEntity.ok()
+    public ResponseEntity<Resource> read(@PathVariable("name") String file, @RequestParam long expires,
+            @RequestParam(required = false, defaultValue = "") String name, @RequestParam String sig) {
+        String key = key(file);
+        ResponseEntity.BodyBuilder response = ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(FileTypes.servedAs(key)))
-                .header("X-Content-Type-Options", "nosniff")
-                .body(new FileSystemResource(local().open(key, expires, sig)));
+                .header("X-Content-Type-Options", "nosniff");
+        if (!name.isEmpty()) {
+            response.headers(h -> h.setContentDisposition(
+                    ContentDisposition.attachment().filename(name, StandardCharsets.UTF_8).build()));
+        }
+        return response.body(new FileSystemResource(local().open(key, expires, name, sig)));
     }
 
     private LocalFileStorage local() {

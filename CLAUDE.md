@@ -49,13 +49,15 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   counts, ids and `SafeErrors.describe(e)` (type and place only). Mailer's whole-email logging is development only:
   `ProductionChecks` refuses to start without a mail server. `LogSafetyTest` checks this.
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
-  same policy as nginx, so the browser tests catch violations. Fonts are self-hosted (`@fontsource`).
+  same policy as nginx, so the browser tests catch violations. (added by Dev, 2026-11-06) It sets headers another way from
+  nginx, so a page with its own headers needs `try_files /index.html =404`, never `$uri /index.html`, whose internal redirect
+  swaps in `location /`'s headers; the `web-headers` CI job checks nginx itself. Fonts are self-hosted (`@fontsource`).
 - Commit style: short imperative subject, explanatory body, one logical change per commit.
 
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 214 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 223 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 59 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -66,7 +68,7 @@ cd frontend && npm run e2e          # (added by Dev, 2026-11-06) 69 Playwright t
 
 The browser tests change demo data: **restart the API between e2e runs**, or tests fail on duplicates.
 The mobile lock file is written with npm 11 (Node 24); npm 10 rejects it, so CI's mobile job uses Node 24.
-CI (`.github/workflows/ci.yml`) runs backend, frontend (unit tests and build), e2e, loadtest and mobile jobs on every
+CI (`.github/workflows/ci.yml`) runs backend, frontend (unit tests and build), web-headers (added by Dev, 2026-11-06: the real nginx image, `frontend/check-headers.sh`), e2e, loadtest and mobile jobs on every
 push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `deploy/loadtest/live-session.js` with
 50 learners joining within 10 s (k6 v2.3.0); any failed, slow or unrecorded join fails the build.
 
@@ -166,6 +168,21 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings-2`, pull request #47): go-live task 75.** Done:
+the Tester's file hosting and log findings, with tests. Left: the Project manager merges once CI is green, then the Tester
+verifies on nginx. Three access decisions are with the owner: who gets staff induction films, parent induction films, and a
+session film before the induction; kept as built. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **The Tester's file hosting and log findings (go-live task 75).** `/admin/content` and `/live/<id>` now really
+send their own headers: both had the strict policy in production, so uploads to a bucket and Zoom in the page could not have
+worked, since 2026-10-22 for Zoom. Tomcat's `Http11Processor` is at WARN, as at INFO it logs a refused request's raw
+address. An enquiry whose email fails answers 503 and the form gives the other ways to reach us; enquiries are still not
+stored. `Mailer.send` returns whether it sent, and a failure logs the SMTP code (`SafeErrors.smtpCode`; `angus-mail` is now a
+direct dependency). A key is checked with the store on save (`FileStorage.exists`, a signed HEAD), resources other than rhymes
+download under their title (`downloadLink`, a signed `response-content-disposition`), upload messages name the formats and
+MOV is not accepted (`FileTypes.FORMATS`). `ActiveUserFilter` answers a failure as a problem detail. The parent app's induction
+shows Watch the video. The shipper also catches a bare JWT and JSON like `"token":"x"`.
 
 (added by Dev, 2026-11-06) **Logs (go-live task 73).** Every service keeps at most 50 MB (`x-logging` in the compose file). Caddy
 drops query strings and request headers (a page at a password link sends the link as its Referer) and cuts addresses to
@@ -718,7 +735,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

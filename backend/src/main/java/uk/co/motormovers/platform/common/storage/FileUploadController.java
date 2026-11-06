@@ -8,10 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-
 import uk.co.motormovers.platform.security.service.AccessPolicy;
 
 /**
@@ -32,10 +28,10 @@ public class FileUploadController {
         this.access = access;
     }
 
-    public record UploadRules(boolean available, int maxMegabytes, List<String> types) {
+    public record UploadRules(boolean available, int maxMegabytes, List<String> types, String formats) {
     }
 
-    public record NewUpload(@NotBlank String contentType, @Positive long size) {
+    public record NewUpload(String contentType, long size) {
     }
 
     public record Upload(String key, String url, String contentType) {
@@ -44,17 +40,26 @@ public class FileUploadController {
     @GetMapping
     public UploadRules rules() {
         access.requireAdmin();
-        return new UploadRules(storage.available(), properties.maxUploadMb(), FileTypes.allowed());
+        return new UploadRules(storage.available(), properties.maxUploadMb(), FileTypes.allowed(),
+                FileTypes.FORMATS);
     }
 
     @PostMapping
-    public Upload start(@Valid @RequestBody NewUpload request) {
+    public Upload start(@RequestBody NewUpload request) {
         access.requireAdmin();
         if (!storage.available()) {
             throw new IllegalArgumentException("File uploads are not set up here. Paste a link instead.");
         }
+        if (request.contentType() == null || request.contentType().isBlank()) {
+            throw new IllegalArgumentException("We could not tell what kind of file that is. Please use "
+                    + FileTypes.FORMATS + ".");
+        }
         if (!FileTypes.isAllowed(request.contentType())) {
-            throw new IllegalArgumentException("Only video, audio, PDF and image files can be uploaded.");
+            throw new IllegalArgumentException("That kind of file cannot be uploaded. Please use " + FileTypes.FORMATS
+                    + ". A MOV film needs saving as MP4 first.");
+        }
+        if (request.size() <= 0) {
+            throw new IllegalArgumentException("That file is empty. Please choose another.");
         }
         if (request.size() > properties.maxUploadMb() * 1024L * 1024L) {
             throw new IllegalArgumentException("That file is too large: the most is " + properties.maxUploadMb() + " MB.");

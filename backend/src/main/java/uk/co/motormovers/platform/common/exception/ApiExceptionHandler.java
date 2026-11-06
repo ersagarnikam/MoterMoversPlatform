@@ -44,6 +44,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
+    @ExceptionHandler(EnquiryNotSentException.class)
+    ProblemDetail enquiryNotSent(EnquiryNotSentException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     ResponseEntity<ProblemDetail> tooManyRequests(TooManyRequestsException e) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)

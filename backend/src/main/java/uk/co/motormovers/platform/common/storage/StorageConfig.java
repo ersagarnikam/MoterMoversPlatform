@@ -36,5 +36,15 @@ class StorageConfig {
         public String readLink(String key) {
             throw new IllegalStateException("No file store is configured");
         }
+
+        @Override
+        public String downloadLink(String key, String fileName) {
+            throw new IllegalStateException("No file store is configured");
+        }
+
+        @Override
+        public boolean exists(String key) {
+            return false;
+        }
     }
 }

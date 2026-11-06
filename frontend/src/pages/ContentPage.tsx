@@ -190,7 +190,9 @@ function FileChoice({
       ) : (
         <label>
           Or upload a file
-          <span className="hint">Up to {rules.maxMegabytes} MB</span>
+          <span className="hint">
+            {rules.formats}, up to {rules.maxMegabytes} MB
+          </span>
           <input
             type="file"
             accept={rules.types.filter(accept).join(',')}

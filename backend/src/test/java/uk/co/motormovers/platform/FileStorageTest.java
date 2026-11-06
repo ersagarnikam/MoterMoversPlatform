@@ -106,8 +106,14 @@ class FileStorageTest {
         String admin = admin();
         for (String type : List.of("text/html", "image/svg+xml", "application/zip")) {
             start(admin, type, 100).result().andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detail").value(containsString("video, audio, PDF and image")));
+                    .andExpect(jsonPath("$.detail").value(containsString("MP4 or WebM video")));
         }
+        start(admin, "video/quicktime", 100).result().andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("A MOV film needs saving as MP4")));
+        start(admin, "", 100).result().andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(startsWith("We could not tell what kind of file")));
+        start(admin, "audio/mpeg", 0).result().andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("That file is empty. Please choose another."));
         start(admin, "video/mp4", 2049L * 1024 * 1024).result().andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value(containsString("too large")));
     }
@@ -147,6 +153,34 @@ class FileStorageTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(resource("../../secrets.txt", null)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void aKeyOfTheRightShapeMustBeAFileThatExists() throws Exception {
+        String madeUp = "uploads/" + UUID.randomUUID() + ".mp3";
+        mvc.perform(post("/api/admin/resources").header("Authorization", bearer(admin()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(resource(madeUp, null)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("Please upload it again")));
+    }
+
+    @Test
+    void aDownloadSavesUnderTheResourcesTitle() throws Exception {
+        String admin = admin();
+        String body = "{\"kind\":\"PRINTABLE\",\"title\":\"Rhyme book: Green\",\"description\":\"A printable\","
+                + "\"fileKey\":\"" + uploadedKey() + "\"}";
+        Integer id = JsonPath.read(mvc.perform(post("/api/admin/resources").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(), "$.id");
+        mvc.perform(post("/api/admin/resources/" + id + "/approve").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk());
+
+        String link = JsonPath.<List<String>>read(library(admin), "$[?(@.id == " + id + ")].fileUrl").getFirst();
+        mvc.perform(get(URI.create(link))).andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", containsString("Rhyme book Green.mp3")));
+        // The name is signed with the link.
+        mvc.perform(get(URI.create(link.replace("Rhyme%20book", "Other")))).andExpect(status().isForbidden());
     }
 
     @Test

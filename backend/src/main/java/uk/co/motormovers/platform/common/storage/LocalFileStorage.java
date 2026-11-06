@@ -62,6 +62,18 @@ public class LocalFileStorage implements FileStorage {
         return PATH + key + "?expires=" + expires + "&sig=" + sign("GET", key, expires, "", 0);
     }
 
+    @Override
+    public String downloadLink(String key, String fileName) {
+        long expires = clock.instant().plus(readLink).getEpochSecond();
+        return PATH + key + "?expires=" + expires + "&name=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                .replace("+", "%20") + "&sig=" + sign("GET", key, expires, fileName, 0);
+    }
+
+    @Override
+    public boolean exists(String key) {
+        return Files.isRegularFile(pathOf(key));
+    }
+
     /** Takes one upload. The type and size came with the link and must be what the browser actually sends. */
     void save(String key, long expires, String type, long size, String sig, String sentType, InputStream body) {
         require(sig, sign("PUT", key, expires, type, size), expires);
@@ -85,9 +97,9 @@ public class LocalFileStorage implements FileStorage {
         }
     }
 
-    /** The file behind a signed read link. */
-    Path open(String key, long expires, String sig) {
-        require(sig, sign("GET", key, expires, "", 0), expires);
+    /** The file behind a signed read link; a download link's name is signed too. */
+    Path open(String key, long expires, String name, String sig) {
+        require(sig, sign("GET", key, expires, name, 0), expires);
         Path file = pathOf(key);
         if (!Files.isRegularFile(file)) {
             throw new AccessDeniedException(REFUSED);

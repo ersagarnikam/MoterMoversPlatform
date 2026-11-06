@@ -154,6 +154,7 @@ export interface HomeInduction {
     title: string
     summary: string
     paragraphs: string[]
+    videoUrl: string | null
     minutes: number
     done: boolean
   }[]

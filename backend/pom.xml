@@ -54,6 +54,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <!-- The mail server reply codes, for logs (SafeErrors). -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+        </dependency>
         <!-- Certificates as PDF files. -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>

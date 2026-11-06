@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.angus.mail.smtp.SMTPAddressFailedException;
+import org.eclipse.angus.mail.smtp.SMTPSendFailedException;
+import org.eclipse.angus.mail.smtp.SMTPSenderFailedException;
+import org.springframework.mail.MailSendException;
+
+import jakarta.mail.MessagingException;
+
 /**
  * Describes an error for the log without its message. Messages hold what the error was about: a mail server's quotes
  * the address, a database's the rejected values, an outside service's its token. Stack traces repeat them, so these
@@ -26,6 +33,43 @@ public final class SafeErrors {
             chain.add(e.getClass().getName() + (frames.isEmpty() ? "" : " at " + frames));
         }
         return String.join(" <- ", chain);
+    }
+
+    /** The mail server's reply code, the one part of its refusal safe to log: its text quotes the address. */
+    public static String smtpCode(Throwable error) {
+        List<Throwable> found = new ArrayList<>();
+        collect(error, found, 0);
+        return found.stream()
+                .map(SafeErrors::returnCode)
+                .filter(code -> code > 0)
+                .findFirst()
+                .map(String::valueOf)
+                .orElse("none");
+    }
+
+    private static void collect(Throwable e, List<Throwable> found, int depth) {
+        if (e == null || depth > MOST_CAUSES) {
+            return;
+        }
+        found.add(e);
+        collect(e.getCause(), found, depth + 1);
+        if (e instanceof MessagingException m) {
+            collect(m.getNextException(), found, depth + 1);
+        }
+        if (e instanceof MailSendException m) {
+            for (Exception each : m.getMessageExceptions()) {
+                collect(each, found, depth + 1);
+            }
+        }
+    }
+
+    private static int returnCode(Throwable e) {
+        return switch (e) {
+            case SMTPAddressFailedException f -> f.getReturnCode();
+            case SMTPSendFailedException f -> f.getReturnCode();
+            case SMTPSenderFailedException f -> f.getReturnCode();
+            default -> 0;
+        };
     }
 
     /** The first frames in our own code, or failing that the very first. */

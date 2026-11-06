@@ -110,7 +110,7 @@ export default function EnquiryForm({ kind, onClose }: { kind: EnquiryKind; onCl
       </label>
       {error && (
         <p className="error" role="alert">
-          {error}
+          {error} You can email us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ring {CONTACT_PHONE}.
         </p>
       )}
       <div className="row-end">

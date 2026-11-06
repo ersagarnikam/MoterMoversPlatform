@@ -1,7 +1,8 @@
 import { router, Stack } from 'expo-router'
 import { useState } from 'react'
+import { Linking } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Screen } from '@/components/ui'
-import { api } from '@/lib/api'
+import { api, fullUrl } from '@/lib/api'
 import { useLoad } from '@/lib/useLoad'
 
 /**
@@ -56,6 +57,9 @@ export default function HomeInductionScreen() {
           {l.paragraphs.map((p) => (
             <Body key={p}>{p}</Body>
           ))}
+          {l.videoUrl ? (
+            <Button label="Watch the video" variant="secondary" onPress={() => Linking.openURL(fullUrl(l.videoUrl!))} />
+          ) : null}
           {l.done ? (
             <Muted>Done</Muted>
           ) : (
