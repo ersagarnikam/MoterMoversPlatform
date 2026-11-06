@@ -168,7 +168,7 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings-2`, pull request to come): go-live task 75.** Done:
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `tester-findings-2`, pull request #47): go-live task 75.** Done:
 the Tester's file hosting and log findings, with tests. Left: the Project manager merges once CI is green, then the Tester
 verifies on nginx. Three access decisions are with the owner: who gets staff induction films, parent induction films, and a
 session film before the induction; kept as built. Remove this note once merged.
