@@ -1,0 +1,75 @@
+// The optional log shipper (the logs profile; RUNBOOK, Logs). Sends the API's and Caddy's logs to a Loki-compatible
+// endpoint, with a label for the country. Nothing here runs, and nothing leaves the server, without the profile.
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "app" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    regex         = sys.env("LOG_SHIPPER_PROJECT")
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    regex         = "api|caddy"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+loki.source.docker "app" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.app.output
+  forward_to = [loki.process.safe.receiver]
+}
+
+loki.process "safe" {
+  // Health checks are noise.
+  stage.drop {
+    expression = "/actuator/health|/healthz"
+  }
+
+  // A second safety net: the logs should hold none of these already.
+  stage.replace {
+    expression = "([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,})"
+    replace    = "[email]"
+  }
+
+  stage.replace {
+    expression = "(?i)(?:token|zak|sig|X-Amz-Signature)=([^&\\s\"]+)"
+    replace    = "[removed]"
+  }
+
+  stage.replace {
+    expression = "(?i)Bearer\\s+([A-Za-z0-9._~+/=-]+)"
+    replace    = "[removed]"
+  }
+
+  stage.static_labels {
+    values = {
+      country = sys.env("LOG_SHIPPER_COUNTRY"),
+    }
+  }
+
+  forward_to = [loki.write.out.receiver]
+}
+
+loki.write "out" {
+  endpoint {
+    url = sys.env("LOG_SHIPPER_URL")
+
+    basic_auth {
+      username = sys.env("LOG_SHIPPER_USERNAME")
+      password = sys.env("LOG_SHIPPER_PASSWORD")
+    }
+  }
+}

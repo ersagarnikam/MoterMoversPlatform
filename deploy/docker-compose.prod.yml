@@ -172,6 +172,24 @@ services:
           sleep 30
         done
 
+  # Sends the API's and Caddy's logs to a Loki-compatible service. Off unless started with the logs profile: without
+  # it, nothing leaves the server. The endpoint is set in .env (see RUNBOOK, Logs).
+  logs:
+    image: grafana/alloy:v1.21.3
+    restart: unless-stopped
+    profiles: [logs]
+    logging: *logging
+    command: ["run", "--disable-reporting", "--storage.path=/var/lib/alloy/data", "/etc/alloy/config.alloy"]
+    environment:
+      LOG_SHIPPER_URL: ${LOG_SHIPPER_URL:-}
+      LOG_SHIPPER_USERNAME: ${LOG_SHIPPER_USERNAME:-}
+      LOG_SHIPPER_PASSWORD: ${LOG_SHIPPER_PASSWORD:-}
+      LOG_SHIPPER_COUNTRY: ${PLATFORM_REGION:-UK}
+      LOG_SHIPPER_PROJECT: ${COMPOSE_PROJECT_NAME:-motor-movers}
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
 volumes:
   pgdata:
   caddy_data:
