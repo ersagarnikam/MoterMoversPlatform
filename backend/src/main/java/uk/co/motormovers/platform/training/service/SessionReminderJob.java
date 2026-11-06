@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.notification.service.PushService;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
@@ -39,14 +40,16 @@ public class SessionReminderJob {
     private final EnrolmentRepository enrolments;
     private final Mailer mailer;
     private final PushService push;
+    private final CountrySettings country;
     private final Clock clock;
 
     public SessionReminderJob(CohortSessionRepository sessions, EnrolmentRepository enrolments, Mailer mailer,
-            PushService push, Clock clock) {
+            PushService push, CountrySettings country, Clock clock) {
         this.sessions = sessions;
         this.enrolments = enrolments;
         this.mailer = mailer;
         this.push = push;
+        this.country = country;
         this.clock = clock;
     }
 
@@ -63,7 +66,7 @@ public class SessionReminderJob {
             String what = cohort.getCourse().getTitle() + " · " + cohort.getName() + ", live session " + s.getNumber()
                     + " of " + cohort.getCourse().getLiveSessions();
             String when = DateTimeFormatter.ofPattern("EEEE d MMMM 'at' HH:mm", Locale.UK).withZone(clock.getZone())
-                    .format(s.getStartsAt()) + " (UK time), for " + s.getDurationMinutes() + " minutes";
+                    .format(s.getStartsAt()) + " (" + country.timeLabel() + "), for " + s.getDurationMinutes() + " minutes";
             for (Enrolment e : enrolments.findByCohortIdOrderByEnrolledAt(cohort.getId())) {
                 mailer.send(e.getUser().getEmail(), "Reminder: your live session " + s.getNumber() + " is coming up",
                         "Hello " + e.getUser().getDisplayName() + ",\n\n" + what + " is on " + when + ".\n\n"
@@ -101,7 +104,7 @@ public class SessionReminderJob {
             String at = DateTimeFormatter.ofPattern("HH:mm", Locale.UK).withZone(clock.getZone()).format(s.getStartsAt());
             phones += push.notify(learners(cohort), "Your live session is open",
                     cohort.getCourse().getTitle() + ", session " + s.getNumber() + ", starts at " + at
-                            + " (UK time). Tap to join.", "/course");
+                            + " (" + country.timeLabel() + "). Tap to join.", "/course");
             s.openingPushSent(now);
         }
         return phones;

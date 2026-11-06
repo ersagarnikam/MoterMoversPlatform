@@ -1,6 +1,10 @@
 package uk.co.motormovers.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,13 +14,18 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import uk.co.motormovers.platform.assessment.model.YearPoint;
 import uk.co.motormovers.platform.assessment.util.SchoolYear;
+import uk.co.motormovers.platform.notification.service.PushService;
+import uk.co.motormovers.platform.training.service.SessionReminderJob;
 
 /** A deployment started with PLATFORM_REGION=AU: Australia's settings, on Queensland time. */
 @SpringBootTest(properties = "PLATFORM_REGION=AU")
@@ -31,6 +40,24 @@ class RegionAustraliaTest {
 
     @Autowired
     SchoolYear schoolYear;
+
+    @Autowired
+    SessionReminderJob job;
+
+    @Autowired
+    JdbcTemplate jdbc;
+
+    @MockitoBean
+    PushService push;
+
+    @Test
+    void aSessionNoticeSaysQueenslandTimeNotUkTime() {
+        jdbc.update("UPDATE cohort_session SET opening_push_sent_at = NULL");
+        job.announceOpening();
+        ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
+        verify(push, atLeastOnce()).notify(any(), anyString(), body.capture(), anyString());
+        assertThat(body.getAllValues()).anyMatch(b -> b.contains("(Queensland time)")).noneMatch(b -> b.contains("UK"));
+    }
 
     @Test
     void theSettingsAreAustraliasOnQueenslandTime() throws Exception {

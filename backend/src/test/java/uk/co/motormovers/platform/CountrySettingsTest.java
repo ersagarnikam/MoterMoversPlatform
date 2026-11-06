@@ -126,19 +126,19 @@ class CountrySettingsTest {
     void aValueThatCannotWorkStopsStartUp() {
         CountrySettings uk = countries(Map.of()).get(Region.UK);
         assertThatThrownBy(() -> new CountrySettings(uk.name(), "POUNDS", uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note").validated("uk"))
+                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time").validated("uk"))
                 .hasMessageContaining("platform.countries.uk.currency");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note")
+                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time")
                 .validated("uk"))
                 .hasMessageContaining("tax-percent");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note")
+                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time")
                 .validated("uk"))
                 .hasMessageContaining("time-zone");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), new CountrySettings.SchoolYear(9, 8, 3, 13, 1, 5), uk.yearNames(),
-                uk.legalEntity(), "Credit note").validated("uk"))
+                uk.legalEntity(), "Credit note", "UK time").validated("uk"))
                 .hasMessageContaining("school-year");
     }
 

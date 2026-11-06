@@ -761,6 +761,8 @@ export interface CountrySettings {
   }
   /** The legal entity in one line, or null while it is a placeholder. */
   legalLine: string | null
+  /** How times are labelled: "UK time", "Irish time", "Queensland time". */
+  timeLabel: string
 }
 
 export interface HomeToday {

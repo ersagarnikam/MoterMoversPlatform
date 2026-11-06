@@ -53,14 +53,14 @@ sequenceDiagram
 
 ## Scheduled jobs
 
-Four jobs run on the API's clock (UK time): session reminders, session opening, certificate expiry and deleting leavers.
+Four jobs run on the API's clock (the deployment's time zone): session reminders, session opening, certificate expiry and deleting leavers.
 
 **Endpoints:** `SessionReminderJob.remind` · `SessionReminderJob.announceOpening` · `CertificateService.remindExpiring` · `RetentionJob.purgeLeavers`
 
 ```mermaid
 sequenceDiagram
   autonumber
-  participant CL as Scheduler (Clock bean, UK time)
+  participant CL as Scheduler (Clock bean, the deployment's time zone)
   participant SR as SessionReminderJob
   participant CS as CertificateService
   participant RJ as RetentionJob

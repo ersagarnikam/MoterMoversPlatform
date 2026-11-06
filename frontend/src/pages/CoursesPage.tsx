@@ -12,6 +12,7 @@ import {
 } from '../api'
 import CourseQuizzes from '../components/CourseQuizzes'
 import { sessionTime } from '../live'
+import { useCountry } from '../country'
 import { currencySymbol, money } from '../money'
 import { day } from '../dates'
 import { useConfirm, useToast } from '../components/Feedback'
@@ -604,6 +605,7 @@ function CohortForm({
   const [name, setName] = useState(initial?.name ?? '')
   const [startsOn, setStartsOn] = useState(initial?.startsOn ?? '')
   const [startTime, setStartTime] = useState(initial?.startTime?.slice(0, 5) ?? '19:00')
+  const timeLabel = useCountry()?.timeLabel
   const [timeSlot, setTimeSlot] = useState(initial?.timeSlot ?? '')
   const [capacity, setCapacity] = useState(String(initial?.capacity ?? 30))
   const [trainerId, setTrainerId] = useState(initial?.trainerUserId ? String(initial.trainerUserId) : '')
@@ -650,7 +652,7 @@ function CohortForm({
         />
       </label>
       <label>
-        Start time (UK)
+        Start time{timeLabel ? ` (${timeLabel})` : ''}
         <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
       </label>
       <label>
@@ -659,7 +661,7 @@ function CohortForm({
           value={timeSlot}
           onChange={(e) => setTimeSlot(e.target.value)}
           maxLength={100}
-          placeholder="Tuesdays 7:00 pm UK"
+          placeholder="Tuesdays 7:00 pm"
           required
         />
       </label>
