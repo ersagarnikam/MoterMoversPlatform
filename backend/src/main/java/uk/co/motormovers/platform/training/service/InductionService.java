@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
@@ -38,14 +39,16 @@ public class InductionService {
     private final AppUserRepository users;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final FileLinks files;
 
     public InductionService(InductionLessonRepository lessons, InductionProgressRepository progress,
-            AppUserRepository users, CurrentUserResolver currentUser, Clock clock) {
+            AppUserRepository users, CurrentUserResolver currentUser, Clock clock, FileLinks files) {
         this.lessons = lessons;
         this.progress = progress;
         this.users = users;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.files = files;
     }
 
     @Transactional(readOnly = true)
@@ -74,7 +77,8 @@ public class InductionService {
                 .map(InductionProgress::getLessonId).collect(Collectors.toSet());
         List<TrainingViews.LessonView> list = lessons
                 .findByAudienceAndStatusOrderByPosition(audience, ContentStatus.APPROVED).stream()
-                .map(l -> TrainingViews.LessonView.of(l, done.contains(l.getId())))
+                .map(l -> TrainingViews.LessonView.of(l, files.link(l.getVideoKey(), l.getVideoUrl()),
+                        done.contains(l.getId())))
                 .toList();
         return new TrainingViews.InductionView(list, list.stream().mapToInt(TrainingViews.LessonView::minutes).sum(),
                 (int) list.stream().filter(TrainingViews.LessonView::done).count(),

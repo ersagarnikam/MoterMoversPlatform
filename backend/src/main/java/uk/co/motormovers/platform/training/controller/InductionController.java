@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.controller.ContentController.ContentView;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.util.WordingGuard;
@@ -35,17 +36,19 @@ public class InductionController {
     private final InductionLessonRepository lessons;
     private final WordingGuard wordingGuard;
     private final CurrentUserResolver currentUser;
+    private final FileLinks files;
 
     public InductionController(InductionService induction, InductionLessonRepository lessons,
-            WordingGuard wordingGuard, CurrentUserResolver currentUser) {
+            WordingGuard wordingGuard, CurrentUserResolver currentUser, FileLinks files) {
         this.induction = induction;
         this.lessons = lessons;
         this.wordingGuard = wordingGuard;
         this.currentUser = currentUser;
+        this.files = files;
     }
 
     public record NewLesson(@Min(1) int position, @NotBlank String title, @NotBlank String summary,
-            @NotBlank String body, @Min(1) int minutes, String videoUrl) {
+            @NotBlank String body, @Min(1) int minutes, String videoUrl, String videoKey) {
     }
 
     @GetMapping("/api/training/induction")
@@ -81,8 +84,10 @@ public class InductionController {
     }
 
     private ContentView add(InductionAudience audience, NewLesson r) {
-        return view(lessons.save(new InductionLesson(audience, r.position(), r.title(), r.summary(), r.body(),
-                r.minutes(), r.videoUrl())));
+        InductionLesson lesson = new InductionLesson(audience, r.position(), r.title(), r.summary(), r.body(),
+                r.minutes(), r.videoUrl());
+        lesson.setVideoKey(files.requireKey(r.videoKey()));
+        return view(lessons.save(lesson));
     }
 
     @PostMapping({"/api/admin/induction/{id}/approve", "/api/admin/parent-induction/{id}/approve"})
@@ -108,6 +113,7 @@ public class InductionController {
 
     private ContentView view(InductionLesson l) {
         return new ContentView(l.getId(), null, l.label(), l.getTitle(), l.getSummary(), l.getMinutes(),
-                l.paragraphs(), l.getStatus(), l.getReviewedBy(), l.getReviewedAt(), wordingGuard.check(l.wording()));
+                l.paragraphs(), l.getStatus(), l.getReviewedBy(), l.getReviewedAt(), wordingGuard.check(l.wording()),
+                files.link(l.getVideoKey(), l.getVideoUrl()));
     }
 }

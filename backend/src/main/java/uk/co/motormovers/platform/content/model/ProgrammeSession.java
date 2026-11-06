@@ -46,6 +46,8 @@ public class ProgrammeSession {
 
     private String videoUrl;
 
+    private String videoKey;
+
     /** The nursery rhyme sung in this session (Red, Orange and Yellow stages). */
     @ManyToOne(fetch = FetchType.LAZY)
     private LibraryResource rhyme;
@@ -128,6 +130,14 @@ public class ProgrammeSession {
 
     public String getVideoUrl() {
         return videoUrl;
+    }
+
+    public String getVideoKey() {
+        return videoKey;
+    }
+
+    public void setVideoKey(String videoKey) {
+        this.videoKey = videoKey;
     }
 
     public LibraryResource getRhyme() {

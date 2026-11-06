@@ -100,6 +100,7 @@ sequenceDiagram
 ## Home activities and guidance (works offline)
 
 The app shows the approved activities for the child's colour. Done activities queue on the phone and are sent when online.
+An uploaded film comes as a signed link only for a parent with a linked child or a family; the app opens the link.
 
 **Endpoints:** `GET /api/family/home` · `GET /api/family/activities/{id}` · `POST /api/family/home/sessions` · `GET /api/family/guidance`
 

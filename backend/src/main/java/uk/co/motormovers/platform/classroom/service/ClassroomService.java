@@ -16,6 +16,7 @@ import uk.co.motormovers.platform.classroom.dto.ClassroomViews;
 import uk.co.motormovers.platform.classroom.model.DailySessionRecord;
 import uk.co.motormovers.platform.classroom.repository.DailySessionRecordRepository;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
@@ -44,10 +45,12 @@ public class ClassroomService {
     private final CurrentUserResolver currentUser;
     private final InductionService induction;
     private final Clock clock;
+    private final FileLinks files;
 
     public ClassroomService(SchoolClassRepository classes, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceService licences,
-            AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock) {
+            AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock,
+            FileLinks files) {
         this.classes = classes;
         this.children = children;
         this.content = content;
@@ -57,6 +60,7 @@ public class ClassroomService {
         this.currentUser = currentUser;
         this.induction = induction;
         this.clock = clock;
+        this.files = files;
     }
 
     @Transactional(readOnly = true)
@@ -83,7 +87,7 @@ public class ClassroomService {
         Optional<ProgrammeSession> todays = records.findBySchoolClassIdAndSessionDate(classId, today)
                 .map(DailySessionRecord::getSession);
         ClassroomViews.SessionCard next = licensed
-                ? todays.or(() -> nextSession(schoolClass)).map(ClassroomViews.SessionCard::of).orElse(null)
+                ? todays.or(() -> nextSession(schoolClass)).map(s -> ClassroomViews.SessionCard.of(s, files)).orElse(null)
                 : null;
 
         List<LocalDate> window = SchoolDays.lastSchoolDays(today, COUNTER_DAYS);

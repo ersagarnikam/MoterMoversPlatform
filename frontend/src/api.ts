@@ -344,6 +344,7 @@ export interface ContentItem {
   reviewedBy: string | null
   reviewedAt: string | null
   wordingIssues: { text: string; term: string }[]
+  fileLink: string | null
 }
 
 export interface SchoolRow {
@@ -951,6 +952,19 @@ export interface PublicPlan {
   annualPricePence: number
 }
 
+/** What the team can upload, and the link for one file. */
+export interface UploadRules {
+  available: boolean
+  maxMegabytes: number
+  types: string[]
+}
+
+export interface FileUpload {
+  key: string
+  url: string
+  contentType: string
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {}
   const token = getToken()
@@ -979,6 +993,9 @@ export const api = {
   login: (email: string, password: string) =>
     request<{ token: string; user: CurrentUser }>('POST', '/api/auth/login', { email, password }),
   me: () => request<CurrentUser>('GET', '/api/auth/me'),
+  uploadRules: () => request<UploadRules>('GET', '/api/admin/files'),
+  startUpload: (contentType: string, size: number) =>
+    request<FileUpload>('POST', '/api/admin/files', { contentType, size }),
   requestPasswordReset: (email: string) => request<void>('POST', '/api/auth/password-reset', { email }),
   setPassword: (token: string, password: string) =>
     request<{ email: string }>('POST', '/api/auth/password', { token, password }),

@@ -23,6 +23,7 @@ import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.classroom.repository.DailySessionRecordRepository;
 import uk.co.motormovers.platform.classroom.service.ClassroomService;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
@@ -37,6 +38,7 @@ import uk.co.motormovers.platform.family.model.ParentLink;
 import uk.co.motormovers.platform.family.repository.HomeSessionRecordRepository;
 import uk.co.motormovers.platform.family.repository.ParentInviteRepository;
 import uk.co.motormovers.platform.family.repository.ParentLinkRepository;
+import uk.co.motormovers.platform.home.repository.FamilyMemberRepository;
 import uk.co.motormovers.platform.family.util.InviteCodes;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
@@ -70,13 +72,15 @@ public class FamilyService {
     private final Clock clock;
     private final ParentProgress parentProgress;
     private final ExerciseScoreRepository scores;
+    private final FamilyMemberRepository members;
+    private final FileLinks files;
 
     public FamilyService(ParentLinkRepository links, ParentInviteRepository invites, ChildRepository children,
             ChildAccessLogRepository accessLog, HomeActivityRepository activities,
             HomeSessionRecordRepository homeRecords, GuidanceArticleRepository guidance,
             DailySessionRecordRepository classRecords, AppUserRepository users,
             AccessPolicy access, CurrentUserResolver currentUser, Clock clock, ParentProgress parentProgress,
-            ExerciseScoreRepository scores) {
+            ExerciseScoreRepository scores, FamilyMemberRepository members, FileLinks files) {
         this.links = links;
         this.invites = invites;
         this.children = children;
@@ -91,6 +95,8 @@ public class FamilyService {
         this.clock = clock;
         this.parentProgress = parentProgress;
         this.scores = scores;
+        this.members = members;
+        this.files = files;
     }
 
     /** Children this parent may currently see. Links stay dormant while the school has parent links off. */
@@ -204,8 +210,9 @@ public class FamilyService {
                         : Optional.of(sequence.get((int) (homeRecords.countByParentIdAndStage(me.id(), s)
                                 % sequence.size()))));
 
-        return new FamilyViews.Home(stage, stage.displayName(), next.map(FamilyViews.ActivityCard::of).orElse(null),
-                sequence.stream().map(FamilyViews.ActivityCard::of).toList(), done.contains(today),
+        boolean mayHaveFiles = hasChild(me);
+        return new FamilyViews.Home(stage, stage.displayName(), next.map(a -> card(a, mayHaveFiles)).orElse(null),
+                sequence.stream().map(a -> card(a, mayHaveFiles)).toList(), done.contains(today),
                 (int) grid.stream().filter(Boolean::booleanValue).count(), HOME_COUNTER_DAYS, grid,
                 homeRecords.countByParentId(me.id()));
     }
@@ -214,7 +221,7 @@ public class FamilyService {
     public FamilyViews.ActivityCard activity(Long id) {
         return activities.findById(id)
                 .filter(a -> a.getStatus() == ContentStatus.APPROVED)
-                .map(FamilyViews.ActivityCard::of)
+                .map(a -> card(a, hasChild(currentUser.current())))
                 .orElseThrow(() -> new NotFoundException("Home activity", id));
     }
 
@@ -266,6 +273,15 @@ public class FamilyService {
                 .filter(a -> a.getStatus() == ContentStatus.APPROVED)
                 .orElseThrow(() -> new NotFoundException("Article", id));
         return FamilyViews.Article.of(article);
+    }
+
+    /** Any parent can read the activities; an uploaded film needs a linked child or a family at home. */
+    private boolean hasChild(CurrentUser me) {
+        return !visibleLinks(me.id()).isEmpty() || members.findByUserId(me.id()).isPresent();
+    }
+
+    private FamilyViews.ActivityCard card(HomeActivity a, boolean mayHaveFiles) {
+        return FamilyViews.ActivityCard.of(a, files.link(mayHaveFiles ? a.getVideoKey() : null, a.getVideoUrl()));
     }
 
     private List<ParentLink> visibleLinks(Long parentId) {

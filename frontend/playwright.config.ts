@@ -31,6 +31,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run build && npx vite preview --strictPort',
+    // So the tests can see the content page's own policy.
+    env: { STORAGE_ORIGIN: 'https://bucket.storage.test' },
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

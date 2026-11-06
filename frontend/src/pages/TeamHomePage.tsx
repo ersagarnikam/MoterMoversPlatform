@@ -55,7 +55,7 @@ export default function TeamHomePage() {
     {
       busy: data.draftsAwaiting > 0,
       node: (
-        <HomeCard key="drafts" title="Waiting for sign-off" link="/admin/content" linkLabel="Content approval" count={data.draftsAwaiting}>
+        <HomeCard key="drafts" title="Waiting for sign-off" link="/admin/content" reload linkLabel="Content approval" count={data.draftsAwaiting}>
           <p className={data.draftsAwaiting ? undefined : 'muted'}>
             {data.draftsAwaiting === 0
               ? 'Nothing waiting: every draft is signed off.'
@@ -175,12 +175,15 @@ function HomeCard({
   count,
   link,
   linkLabel,
+  reload,
   children,
 }: {
   title: string
   count: number
   link?: string
   linkLabel?: string
+  /** A full page load, for a page with its own CSP. */
+  reload?: boolean
   children: ReactNode
 }) {
   return (
@@ -191,7 +194,7 @@ function HomeCard({
       </div>
       {children}
       {link && (
-        <Link className="fine-link" to={link}>
+        <Link className="fine-link" to={link} reloadDocument={reload}>
           {linkLabel} →
         </Link>
       )}

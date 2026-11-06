@@ -46,6 +46,8 @@ public class InductionLesson {
 
     private String videoUrl;
 
+    private String videoKey;
+
     @Enumerated(EnumType.STRING)
     private ContentStatus status = ContentStatus.DRAFT;
 
@@ -125,6 +127,14 @@ public class InductionLesson {
 
     public String getVideoUrl() {
         return videoUrl;
+    }
+
+    public String getVideoKey() {
+        return videoKey;
+    }
+
+    public void setVideoKey(String videoKey) {
+        this.videoKey = videoKey;
     }
 
     public ContentStatus getStatus() {
