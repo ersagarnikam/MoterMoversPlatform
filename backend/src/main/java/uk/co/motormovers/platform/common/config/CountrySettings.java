@@ -27,7 +27,8 @@ public record CountrySettings(
         List<String> yearNames,
         LegalEntity legalEntity,
         String creditNoteTitle,
-        String timeLabel) {
+        String timeLabel,
+        String dataHeldIn) {
 
     /**
      * The school year runs from {@code firstMonth} to {@code lastMonth} (1 = January). Its three assessment points start

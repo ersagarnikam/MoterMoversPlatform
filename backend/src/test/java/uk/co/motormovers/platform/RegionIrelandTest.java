@@ -64,6 +64,7 @@ class RegionIrelandTest {
                 .andExpect(jsonPath("$.country").value("Ireland"))
                 .andExpect(jsonPath("$.currency").value("EUR"))
                 .andExpect(jsonPath("$.locale").value("en-IE"))
+                .andExpect(jsonPath("$.dataHeldIn").value("the EU"))
                 .andExpect(jsonPath("$.taxLabel").value("VAT"))
                 .andExpect(jsonPath("$.taxPercent").value(23))
                 .andExpect(jsonPath("$.schoolYear.lastMonth").value(6))

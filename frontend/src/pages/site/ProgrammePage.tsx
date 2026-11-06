@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import NotADiagnosis from '../../components/NotADiagnosis'
+import { useCountry } from '../../country'
 import { STAGES } from '../../stages'
 
 const SESSION = [
@@ -20,6 +21,7 @@ const PLATFORM = [
 ]
 
 export default function ProgrammePage() {
+  const dataHeldIn = useCountry()?.dataHeldIn
   return (
     <>
       <section className="site-page-head">
@@ -107,7 +109,7 @@ export default function ProgrammePage() {
       <section className="site-section">
         <h2>Looking after children’s data</h2>
         <ul className="site-list site-narrow">
-          <li>Data is held in the UK.</li>
+          {dataHeldIn && <li>Data is held in {dataHeldIn}.</li>}
           <li>Teachers see their own class, heads their school, and trusts or school groups see summaries unless a school grants more.</li>
           <li>Parents see only the children linked to them.</li>
           <li>Records of children who have left are deleted a year after they leave.</li>

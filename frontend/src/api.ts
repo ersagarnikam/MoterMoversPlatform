@@ -763,6 +763,8 @@ export interface CountrySettings {
   legalLine: string | null
   /** How times are labelled: "UK time", "Irish time", "Queensland time". */
   timeLabel: string
+  /** Where this deployment's data is held, e.g. "the UK"; empty when it is not stated. */
+  dataHeldIn: string | null
 }
 
 export interface HomeToday {

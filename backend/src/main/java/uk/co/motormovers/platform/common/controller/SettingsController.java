@@ -26,7 +26,7 @@ public class SettingsController {
      */
     public record Settings(Region region, String country, String currency, String locale, String taxLabel,
             BigDecimal taxPercent, String timeZone, CountrySettings.SchoolYear schoolYear, List<String> yearNames,
-            CountrySettings.LegalEntity legalEntity, String legalLine, String timeLabel) {
+            CountrySettings.LegalEntity legalEntity, String legalLine, String timeLabel, String dataHeldIn) {
     }
 
     private final Settings settings;
@@ -35,7 +35,7 @@ public class SettingsController {
         this.settings = new Settings(properties.region(), country.name(), country.currency(), country.locale(),
                 country.taxLabel(), country.taxPercent(), country.timeZone(), country.schoolYear(),
                 List.copyOf(country.yearNames()), country.legalEntity(), country.legalEntity().line(),
-                country.timeLabel());
+                country.timeLabel(), country.dataHeldIn());
     }
 
     @GetMapping

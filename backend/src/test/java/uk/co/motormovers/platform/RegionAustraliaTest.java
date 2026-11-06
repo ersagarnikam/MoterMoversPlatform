@@ -65,6 +65,7 @@ class RegionAustraliaTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.region").value("AU"))
                 .andExpect(jsonPath("$.currency").value("AUD"))
+                .andExpect(jsonPath("$.dataHeldIn").value("Australia"))
                 .andExpect(jsonPath("$.taxLabel").value("GST"))
                 .andExpect(jsonPath("$.taxPercent").value(10))
                 .andExpect(jsonPath("$.timeZone").value("Australia/Brisbane"))
