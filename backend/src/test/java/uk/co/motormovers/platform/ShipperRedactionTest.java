@@ -35,7 +35,21 @@ class ShipperRedactionTest {
                 "Cookie: session=SECRETVALUE; other=SECRETVALUE",
                 "Set-Cookie: session=SECRETVALUE; Path=/",
                 "{\"Cookie\":[\"session=SECRETVALUE\"]}",
-                "{\"cookie\":\"session=SECRETVALUE\"}")) {
+                "{\"cookie\":\"session=SECRETVALUE\"}",
+                "{\"Cookie\":[\"a=1\",\"b=SECRETVALUE\",\"c=SECRETVALUE\"]}",
+                "{\"Cookie\": [ \"a=SECRETVALUE]\", \"b=SECRETVALUE\" ]}",
+                "{\"message\":\"body {\\\"Cookie\\\":[\\\"a=1\\\",\\\"b=SECRETVALUE\\\"]}\"}",
+                "{\"Cookie\":[\"a=1\",\"b=SECRETVALUE",
+                "{\"password\":\"ab\\\"SECRETVALUE\"}",
+                "{\"password\":\"SECRET\\\\\\\"VALUE\\\"SECRETVALUE\",\"ok\":1}",
+                "{\"message\":\"body {\\\"password\\\":\\\"ab\\\\\\\"SECRETVALUE\\\",\\\"ok\\\":1}\"}",
+                "sent basic U0VDUkVUVkFMVUVTRUNSRVRWQUxVRQ== to the proxy",
+                "access_token: SECRETVALUE",
+                "client_secret: SECRETVALUE, other",
+                "X-Api-Key: SECRETVALUE",
+                "{\"X-Api-Key\":[\"SECRETVALUE\"]}",
+                "{\"api_key\":\"SECRETVALUE\"}",
+                "?api_key=SECRETVALUE&x=1")) {
             assertThat(redact(line)).as(line).doesNotContain("SECRETVALUE", "U0VDUkVU").contains("[removed]");
         }
     }
@@ -51,9 +65,21 @@ class ShipperRedactionTest {
     @Test
     void leavesOrdinaryWordsAlone() throws IOException {
         for (String line : List.of("Basic programme for the Basic plan", "No cookies were used", "tokens: 3",
-                "{\"status\":\"ok\",\"name\":\"keep me\"}")) {
+                "{\"status\":\"ok\",\"name\":\"keep me\"}", "the basic responsibilities of the team",
+                "token: expired", "password: must be 10 characters", "api keys: none", "basic plan",
+                "{\"cookies\":[\"a\"],\"list\":[\"keep me\"]}")) {
             assertThat(redact(line)).isEqualTo(line);
         }
+    }
+
+    @Test
+    void keepsWhatFollowsARemovedValue() throws IOException {
+        assertThat(redact("{\"Cookie\":[\"a=1\",\"b=2\"],\"name\":\"keep me\"}"))
+                .isEqualTo("{\"Cookie\":[\"[removed]\"],\"name\":\"keep me\"}");
+        assertThat(redact("{\"password\":\"ab\\\"cd\",\"name\":\"keep me\"}"))
+                .isEqualTo("{\"password\":\"[removed]\",\"name\":\"keep me\"}");
+        assertThat(redact("{\"message\":\"{\\\"password\\\":\\\"ab\\\",\\\"name\\\":\\\"keep me\\\"}\"}"))
+                .isEqualTo("{\"message\":\"{\\\"password\\\":\\\"[removed]\\\",\\\"name\\\":\\\"keep me\\\"}\"}");
     }
 
     private static String redact(String line) throws IOException {

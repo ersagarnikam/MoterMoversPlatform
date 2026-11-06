@@ -45,7 +45,7 @@ loki.process "safe" {
   }
 
   stage.replace {
-    expression = "(?i)(?:token|zak|sig|secret|password|X-Amz-Signature)=([^&\\s\"]+)"
+    expression = "(?i)(?:token|zak|sig|secret|password|api[_-]?key|X-Amz-Signature)=([^&\\s\"]+)"
     replace    = "[removed]"
   }
 
@@ -60,13 +60,33 @@ loki.process "safe" {
     replace    = "[removed]"
   }
 
-  // JSON such as "token":"x", also when it sits inside another JSON string.
+  // JSON arrays such as "Cookie":["a=1","b=2"]: every value, to the closing bracket or the end of a cut-off line.
   stage.replace {
-    expression = "(?i)\\\\?\"[a-z_-]*(?:token|password|secret|authorization|cookie)\\\\?\"\\s*:\\s*\\[?\\\\?\"([^\"\\\\]+)"
+    expression = "(?i)\\\\?\"[a-z_-]*(?:token|password|secret|authorization|cookie|api[_-]?key)\\\\?\"\\s*:\\s*\\[\\s*\\\\?\"(.*?)(?:\\\\?\"\\s*\\]|$)"
+    replace    = "[removed]"
+  }
+
+  // JSON such as "token":"x" inside another JSON string, so its quotes are escaped. A quote in the value is escaped
+  // again, so the value ends at an escaped quote followed by what can come after a value.
+  stage.replace {
+    expression = "(?i)\\\\\"[a-z_-]*(?:token|password|secret|authorization|cookie|api[_-]?key)\\\\\"\\s*:\\s*\\\\\"(.*?)(?:\\\\\"\\s*[,}\\]]|$)"
+    replace    = "[removed]"
+  }
+
+  // JSON such as "token":"x". A value can hold escaped quotes.
+  stage.replace {
+    expression = "(?i)\"[a-z_-]*(?:token|password|secret|authorization|cookie|api[_-]?key)\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)+)"
+    replace    = "[removed]"
+  }
+
+  // Unquoted, as in access_token: x or a header line. Only names that are secrets, so "token: expired" stays.
+  stage.replace {
+    expression = "(?i)\\b(?:(?:access|refresh|id|auth|api)[_-]token|client[_-]secret|(?:x-)?api[_-]key)\\s*:\\s*([^\\s,;\"&}]+)"
     replace    = "[removed]"
   }
 
   // Basic credentials: any value after Authorization, and a long one anywhere, so the word Basic in a sentence stays.
+  // In lower case the value must also hold more than small letters, so "basic responsibilities" stays.
   stage.replace {
     expression = "(?i)Authorization:\\s*Basic\\s+([A-Za-z0-9+/=]+)"
     replace    = "[removed]"
@@ -74,6 +94,11 @@ loki.process "safe" {
 
   stage.replace {
     expression = "\\bBasic\\s+([A-Za-z0-9+/]{16,}={0,2})"
+    replace    = "[removed]"
+  }
+
+  stage.replace {
+    expression = "\\bbasic\\s+([a-z]*[A-Z0-9+/][A-Za-z0-9+/]{15,}={0,2})"
     replace    = "[removed]"
   }
 
