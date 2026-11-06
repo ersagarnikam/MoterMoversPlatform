@@ -7,11 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,21 @@ class EnquiryTest {
                 .andExpect(jsonPath("$[2].label").value("Primary core"))
                 .andExpect(jsonPath("$[2].annualPricePence").value(90000))
                 .andExpect(jsonPath("$[0].freeTrial").value(true));
+    }
+
+    @BeforeEach
+    void emailsGoThrough() {
+        when(mailer.send(anyString(), anyString(), anyString())).thenReturn(true);
+    }
+
+    @Test
+    void anEnquiryThatCannotBeEmailedTellsTheVisitor() throws Exception {
+        when(mailer.send(anyString(), anyString(), anyString())).thenReturn(false);
+        send("""
+                {"kind":"APPLY","name":"Sam Lee","email":"sam@school.test","setting":"Oak Primary"}
+                """, "10.0.0.9")
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.detail").value("Sorry, your enquiry could not be sent."));
     }
 
     @Test

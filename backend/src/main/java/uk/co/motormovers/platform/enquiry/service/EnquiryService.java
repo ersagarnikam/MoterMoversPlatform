@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import uk.co.motormovers.platform.common.config.Mailer;
+import uk.co.motormovers.platform.common.exception.EnquiryNotSentException;
 import uk.co.motormovers.platform.enquiry.dto.EnquiryRequest;
 
 /**
@@ -47,7 +48,10 @@ public class EnquiryService {
                 Reply to %s.
                 """.formatted(line(in.name()), line(in.email()), line(in.setting()), line(in.phone()),
                 line(in.classes()), line(in.stages()), line(in.plan()), text(in.message()), line(in.email()));
-        mailer.send(to, in.kind().subject() + ": " + line(in.setting()), body);
+        if (!mailer.send(to, in.kind().subject() + ": " + line(in.setting()), body)) {
+            // Enquiries are not stored, so this email was the only copy: the visitor must know it did not go.
+            throw new EnquiryNotSentException();
+        }
     }
 
     /** One line of what was typed, or a dash; line breaks are taken out so a value cannot add header-like lines. */
