@@ -571,8 +571,11 @@ invoice still due is cancelled, a paid one is left for the team to refund by han
 (`SessionReminderJob`, every 10 minutes) go to everyone booked, and the trainer, once per session a day ahead
 (`cohort_session.reminder_sent_at`; moving a session sends a new one).
 
-DigitalOcean deployment was discussed (2026-10-21) but not started: the owner stopped before choosing how to
-connect, the server size, the web address and email. Nothing was created.
+[PM: Claude, 2026-11-06] **Hosting: DigitalOcean (the owner's decision, 2026-11-06).** One server per country in London,
+an EU region (Frankfurt or Amsterdam, still to choose; DigitalOcean has no Dublin) and Sydney, with DigitalOcean Spaces
+for files (task 29) and off-site backups. About $80 a month for production as built (4 GB servers, database on the
+server), before staging; prices to confirm. Still to settle on go-live task 9: the EU region, managed databases, and
+whether 4 GB is enough (test on staging). Nothing has been created yet.
 
 Built so far:
 - Public website (`frontend/src/pages/site`, `SiteLayout`, shared facts in `src/site.ts`): home, about and
