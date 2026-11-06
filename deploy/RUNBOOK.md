@@ -149,6 +149,22 @@ team can open it at any time. The live page alone allows Zoom's scripts and the 
 (`frontend/nginx.conf`); if the browser console reports a blocked Zoom address there, add it to that policy and
 to `LIVE_CSP` in `frontend/vite.config.ts`.
 
+## Parent app builds
+
+There is one parent app in the stores for all three countries. At first launch it asks "Where are you?", and that
+choice picks the server. Set each country's address as a build variable, in `mobile/eas.json` or as EAS environment
+variables, all three on every store build:
+
+```bash
+EXPO_PUBLIC_API_URL_UK=https://<UK address>
+EXPO_PUBLIC_API_URL_IE=https://<Ireland address>
+EXPO_PUBLIC_API_URL_AU=https://<Australia address>
+```
+
+These are read when the app is built, so changing one needs a new build. A country with no address is left off the
+list. `EXPO_PUBLIC_API_URL` adds one "Development" choice: **leave it out of store builds.** The API on each server must
+serve that address over https.
+
 ## Phone notifications
 
 The parent app tells parents on their phone when a live session is open to join (15 minutes before), the day

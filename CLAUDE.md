@@ -111,6 +111,7 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
 - `YearPoint` assumes a September school year; make it follow the deployment (in Australia a school year is one calendar
   year, so year-on-year figures must not split it).
 - Parent app: one store app; replace the single `EXPO_PUBLIC_API_URL` with a country chooser at first launch (task 27).
+  (added by Dev, 2026-11-06) Built in pull request #36.
 - Home programme pass: buy, renewal reminder, access ends, gate before the first session (task 26).
 - Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
   (`site.ts`) and leads with "From the Movement for Learning Project"; Pat said Movement for Learning will not be
@@ -159,6 +160,21 @@ emails went from sagarnikam@ihau.au. The go-live email copied Rahul as rahulshir
 forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards when they arrive.
 
 ## Current state (2026-11-06)
+
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `country-chooser`, pull request #36): go-live task 27.**
+Done: the country chooser, tried in the app's web preview. Left: the owner merges; try it on a real phone. Remove this note
+once merged.
+
+(added by Dev, 2026-11-06) **The parent app asks for the country (go-live task 27).** One store app, three servers.
+`mobile/src/lib/country.tsx` holds the built-in list (United Kingdom, Ireland, Australia; addresses from
+`EXPO_PUBLIC_API_URL_UK`, `_IE`, `_AU`, a country with none left off) and the saved choice. In development a missing
+address falls back to the local API as before, and `EXPO_PUBLIC_API_URL` adds a "Development" choice. `CountryProvider`
+wraps `AuthProvider` and shows `CountryChooser` ("Where are you?") until a country is chosen; the phone's country comes
+first (`expo-localization`, new) but the parent is always asked. `API_URL` is now `apiUrl()`, read on every request. The
+choice's storage key deliberately does not start with `mm.`, because signing out clears those. Account shows the country
+and **Change country**: it sends anything unsent, refuses with "Waiting to send N items. Connect to the internet first."
+if some remains, then signs out (which removes the push token from the old server and clears what is on the phone) and
+asks again. Each country's currency shows until `GET /api/settings` answers.
 
 (added by Dev, 2026-11-06) **In progress (Developer Agent, branch `money-by-country`, pull request #30): go-live task 25,
 part B (money).** Done: amounts in the deployment's currency on the web, in the parent app, in emails and phone
@@ -552,7 +568,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -567,7 +583,7 @@ Not started unless noted. Confirm priorities with the owner.
 
 1. Real go-live inputs from the owner: UK server, domain and DNS, SMTP account with SPF/DKIM for the
    sending domain, then follow `deploy/RUNBOOK.md`.
-2. Parent app store builds via EAS with `EXPO_PUBLIC_API_URL` set to the production `https://` address. `eas init`
+2. Parent app store builds via EAS with (added by Dev, 2026-11-06) `EXPO_PUBLIC_API_URL_UK`, `_IE` and `_AU` set to the production `https://` addresses (RUNBOOK, Parent app builds). `eas init`
    gives the project id phone notifications need; then set `PUSH_ENABLED=true` (RUNBOOK, Phone notifications).
 3. Session videos are timed placeholders until filmed sessions are uploaded (`programme_session.video_url`);
    content upload and hosting for videos/audio is still to be designed.
