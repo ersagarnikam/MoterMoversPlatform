@@ -1,5 +1,8 @@
 package uk.co.motormovers.platform.common.storage;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,11 +52,21 @@ public final class FileTypes {
         return key != null && KEY.matcher(key).matches();
     }
 
-    /** A safe name to save a file under: the title's plain characters and the file's extension. */
+    /** A safe name to save a file under: the title's letters and digits, in any language, and the file's extension. */
     public static String fileName(String title, String key) {
-        String name = title.replaceAll("[^A-Za-z0-9 _-]", "").strip();
+        String name = Normalizer.normalize(title, Normalizer.Form.NFC).replaceAll("[^\\p{L}\\p{N} _-]", "").strip();
         name = name.length() > 80 ? name.substring(0, 80).strip() : name;
         return (name.isEmpty() ? "Motor Movers file" : name) + key.substring(key.lastIndexOf('.'));
+    }
+
+    /**
+     * The header that saves a file under this name: filename* carries the real name, and filename a plain version for
+     * anything that cannot read it ("Rím" becomes "Rim").
+     */
+    public static String contentDisposition(String fileName) {
+        String plain = Normalizer.normalize(fileName, Normalizer.Form.NFD).replaceAll("[^\\x20-\\x7E]", "");
+        String encoded = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
+        return "attachment; filename=\"" + plain + "\"; filename*=UTF-8''" + encoded;
     }
 
     public static String servedAs(String key) {

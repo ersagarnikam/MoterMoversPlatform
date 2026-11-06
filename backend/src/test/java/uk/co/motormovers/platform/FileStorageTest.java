@@ -184,6 +184,23 @@ class FileStorageTest {
     }
 
     @Test
+    void aDownloadKeepsIrishLetters() throws Exception {
+        String admin = admin();
+        String body = "{\"kind\":\"PRINTABLE\",\"title\":\"Rím Ghaeilge\",\"description\":\"A printable\","
+                + "\"fileKey\":\"" + uploadedKey() + "\"}";
+        Integer id = JsonPath.read(mvc.perform(post("/api/admin/resources").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(body))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(), "$.id");
+        mvc.perform(post("/api/admin/resources/" + id + "/approve").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk());
+
+        String link = JsonPath.<List<String>>read(library(admin), "$[?(@.id == " + id + ")].fileUrl").getFirst();
+        mvc.perform(get(URI.create(link))).andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition",
+                        "attachment; filename=\"Rim Ghaeilge.mp3\"; filename*=UTF-8''R%C3%ADm%20Ghaeilge.mp3"));
+    }
+
+    @Test
     void aPastedLinkStaysAsItWas() throws Exception {
         String admin = admin();
         String link = "https://example.org/rhyme-" + UUID.randomUUID() + ".mp3";

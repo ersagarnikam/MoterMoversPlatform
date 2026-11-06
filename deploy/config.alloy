@@ -45,7 +45,7 @@ loki.process "safe" {
   }
 
   stage.replace {
-    expression = "(?i)(?:token|zak|sig|X-Amz-Signature)=([^&\\s\"]+)"
+    expression = "(?i)(?:token|zak|sig|secret|password|X-Amz-Signature)=([^&\\s\"]+)"
     replace    = "[removed]"
   }
 
@@ -62,7 +62,24 @@ loki.process "safe" {
 
   // JSON such as "token":"x", also when it sits inside another JSON string.
   stage.replace {
-    expression = "(?i)\\\\?\"(?:token|password|secret|authorization)\\\\?\"\\s*:\\s*\\\\?\"([^\"\\\\]+)"
+    expression = "(?i)\\\\?\"[a-z_-]*(?:token|password|secret|authorization|cookie)\\\\?\"\\s*:\\s*\\[?\\\\?\"([^\"\\\\]+)"
+    replace    = "[removed]"
+  }
+
+  // Basic credentials: any value after Authorization, and a long one anywhere, so the word Basic in a sentence stays.
+  stage.replace {
+    expression = "(?i)Authorization:\\s*Basic\\s+([A-Za-z0-9+/=]+)"
+    replace    = "[removed]"
+  }
+
+  stage.replace {
+    expression = "\\bBasic\\s+([A-Za-z0-9+/]{16,}={0,2})"
+    replace    = "[removed]"
+  }
+
+  // Cookie headers, to the end of the line.
+  stage.replace {
+    expression = "(?i)\\b(?:set-)?cookie:\\s*(.+)"
     replace    = "[removed]"
   }
 

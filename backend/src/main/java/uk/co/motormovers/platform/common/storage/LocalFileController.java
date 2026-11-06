@@ -1,11 +1,9 @@
 package uk.co.motormovers.platform.common.storage;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +47,7 @@ public class LocalFileController {
                 .contentType(MediaType.parseMediaType(FileTypes.servedAs(key)))
                 .header("X-Content-Type-Options", "nosniff");
         if (!name.isEmpty()) {
-            response.headers(h -> h.setContentDisposition(
-                    ContentDisposition.attachment().filename(name, StandardCharsets.UTF_8).build()));
+            response.header(HttpHeaders.CONTENT_DISPOSITION, FileTypes.contentDisposition(name));
         }
         return response.body(new FileSystemResource(local().open(key, expires, name, sig)));
     }

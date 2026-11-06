@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import uk.co.motormovers.platform.common.exception.EnquiryNotSentException;
 import uk.co.motormovers.platform.enquiry.dto.EnquiryRequest;
 import uk.co.motormovers.platform.enquiry.service.EnquiryService;
 import uk.co.motormovers.platform.security.service.RateLimiter;
@@ -34,6 +35,12 @@ public class EnquiryController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void send(@Valid @RequestBody EnquiryRequest request, HttpServletRequest http) {
         rateLimiter.check("enquiry-ip", http.getRemoteAddr(), 5, Duration.ofHours(1));
-        enquiries.send(request);
+        try {
+            enquiries.send(request);
+        } catch (EnquiryNotSentException e) {
+            // A mail outage must not lock out a visitor who tries again.
+            rateLimiter.release("enquiry-ip", http.getRemoteAddr());
+            throw e;
+        }
     }
 }
