@@ -19,6 +19,12 @@ management:
       exposure:
         include: health,info
 
+logging:
+  level:
+    # This logs the database's own errors, which quote the rejected values (an email, say). ApiExceptionHandler logs the
+    # name of the rule instead.
+    org.hibernate.orm.jdbc.error: "off"
+
 platform:
   # A deployment serves one data region (UK, IE or AU): UK data stays in UK hosting, Irish data in the EU, Australian
   # data in Australia. It also picks the country settings below.

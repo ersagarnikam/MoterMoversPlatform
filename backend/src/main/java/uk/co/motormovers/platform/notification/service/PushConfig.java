@@ -20,7 +20,8 @@ public class PushConfig {
             return new ExpoPushSender(RestClient.builder(), properties.accessToken());
         }
         return messages -> {
-            messages.forEach(m -> log.info("Push not sent (PUSH_ENABLED is off): \"{}\" - {}", m.title(), m.body()));
+            // This runs in production until push is on, and a message can describe a payment.
+            log.info("Push not sent (PUSH_ENABLED is off): {} messages", messages.size());
             return List.of();
         };
     }

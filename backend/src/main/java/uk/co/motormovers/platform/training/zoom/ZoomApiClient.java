@@ -107,7 +107,8 @@ public class ZoomApiClient implements ZoomClient {
             // Zoom quotes the token in some messages; keep it out of logs and screens.
             reason = reason == null ? "HTTP " + e.getStatusCode().value()
                     : reason.replaceAll("(?i)(access token)[=:]\\S+", "$1");
-            log.warn("Zoom refused to {}: {}", what, reason);
+            // By status alone: Zoom's messages can quote a person's email. The host sees the reason on screen.
+            log.warn("Zoom refused to {}: HTTP {}", what, e.getStatusCode().value());
             throw new ZoomException("Zoom refused to " + what + ": " + reason);
         }
     }

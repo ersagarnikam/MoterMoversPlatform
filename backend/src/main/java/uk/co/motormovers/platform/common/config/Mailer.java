@@ -13,6 +13,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.stereotype.Component;
 
+import uk.co.motormovers.platform.common.exception.SafeErrors;
+
 /**
  * Sends plain-text email through the SMTP server in {@code spring.mail.*}. With no server configured
  * (local development) the message is written to the log instead, so links can be copied from there.
@@ -62,7 +64,8 @@ public class Mailer {
             mail.send(message);
         } catch (MailException | MessagingException e) {
             // The caller's change stands; the file can be downloaded from the platform instead.
-            log.error("Could not send \"{}\" to {}", subject, to, e);
+            // Not the address, nor the subject, which can name a person; a mail error can quote the address too.
+            log.error("Could not send an email: {}", SafeErrors.describe(e));
         }
     }
 
@@ -82,7 +85,8 @@ public class Mailer {
             mail.send(message);
         } catch (MailException e) {
             // The caller's change stands; the person can ask for the email again.
-            log.error("Could not send \"{}\" to {}", subject, to, e);
+            // Not the address, nor the subject, which can name a person; a mail error can quote the address too.
+            log.error("Could not send an email: {}", SafeErrors.describe(e));
         }
     }
 }

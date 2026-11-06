@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import uk.co.motormovers.platform.common.exception.SafeErrors;
+
 /**
  * Expo's push service (https://docs.expo.dev/push-notifications/sending-notifications/): up to 100 messages a
  * request; each gets a ticket, in order, and a "DeviceNotRegistered" error means the app was removed from the phone.
@@ -55,11 +57,12 @@ public class ExpoPushSender implements PushSender {
                     if (t.details() != null && "DeviceNotRegistered".equals(t.details().get("error"))) {
                         gone.add(batch.get(i).token());
                     } else {
-                        log.warn("Push not delivered: {}", t.message());
+                        // Expo's error code, not its message, which quotes the phone's token.
+                        log.warn("Push not delivered: {}", t.details() == null ? "no reason given" : t.details().get("error"));
                     }
                 }
             } catch (RestClientException e) {
-                log.warn("Could not reach Expo's push service: {}", e.getMessage());
+                log.warn("Could not reach Expo's push service: {}", SafeErrors.describe(e));
             }
         }
         return gone;

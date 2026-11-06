@@ -47,13 +47,13 @@ public class AdminBootstrap implements ApplicationRunner {
         }
         String email = adminEmail.strip().toLowerCase(Locale.ROOT);
         if (users.findByEmailIgnoreCase(email).isPresent()) {
-            log.warn("PLATFORM_ADMIN_EMAIL {} already has a non-admin account; no admin created", email);
+            log.warn("PLATFORM_ADMIN_EMAIL already has a non-admin account; no admin created");
             return;
         }
         // No usable password until they follow the invite link.
         AppUser admin = users.save(new AppUser(email, "Motor Movers team",
                 passwordEncoder.encode(UUID.randomUUID().toString()), Role.ADMIN, null, null));
         passwords.sendInvite(admin, "Motor Movers");
-        log.info("Created the first admin account for {} and emailed a sign-in link", email);
+        log.info("Created the first admin account and emailed a sign-in link");
     }
 }
