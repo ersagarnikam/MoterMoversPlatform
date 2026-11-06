@@ -24,7 +24,6 @@ import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.model.ExerciseScore;
 import uk.co.motormovers.platform.assessment.model.Milestone;
 import uk.co.motormovers.platform.assessment.model.MilestoneAchievement;
-import uk.co.motormovers.platform.assessment.model.YearPoint;
 import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.assessment.repository.ExerciseScoreRepository;
 import uk.co.motormovers.platform.assessment.repository.MilestoneAchievementRepository;
@@ -32,6 +31,7 @@ import uk.co.motormovers.platform.assessment.repository.MilestoneRepository;
 import uk.co.motormovers.platform.assessment.service.ParentProgress;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
 import uk.co.motormovers.platform.assessment.util.ExtraSupportRule;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.common.config.Mailer;
@@ -102,6 +102,7 @@ public class HomeService {
     private final AccessPolicy access;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final SchoolYear schoolYear;
     private final Mailer mailer;
     private final ParentProgress parentProgress;
     private final CoolDowns coolDowns;
@@ -111,7 +112,7 @@ public class HomeService {
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
-            Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns) {
+            Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns, SchoolYear schoolYear) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -127,6 +128,7 @@ public class HomeService {
         this.access = access;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.schoolYear = schoolYear;
         this.mailer = mailer;
         this.parentProgress = parentProgress;
         this.coolDowns = coolDowns;
@@ -339,7 +341,7 @@ public class HomeService {
                     yes++;
                     if (secure.add(m.getId())) {
                         achievements.save(new MilestoneAchievement(UUID.randomUUID().toString(), child, m,
-                                age, YearPoint.on(today), today, me.email()));
+                                age, schoolYear.pointOn(today), schoolYear.yearOf(today), today, me.email()));
                     }
                 }
                 case "NOT_YET" -> notYet++;
@@ -515,8 +517,8 @@ public class HomeService {
                 stage == null ? null : stage.displayName(), c.getHomeCheckOn(), checkDue(c, today));
     }
 
-    private static boolean checkDue(Child c, LocalDate today) {
-        return c.isAtHome() && HomeRules.checkDue(c.getHomeCheckOn(), today);
+    private boolean checkDue(Child c, LocalDate today) {
+        return c.isAtHome() && HomeRules.checkDue(c.getHomeCheckOn(), today, schoolYear);
     }
 
     /** A home child of the signed-in parent's family. */

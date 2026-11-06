@@ -8,8 +8,8 @@ import java.util.Set;
 
 import uk.co.motormovers.platform.assessment.model.Exercise;
 import uk.co.motormovers.platform.assessment.model.Milestone;
-import uk.co.motormovers.platform.assessment.model.YearPoint;
 import uk.co.motormovers.platform.assessment.util.ExercisePoints;
+import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.common.model.ColourStage;
 
 /**
@@ -59,9 +59,9 @@ public final class HomeRules {
      * The check (Pat's developmental charts) is done at the start, middle and end of each school year, as in school:
      * it is due when it has not been done yet in the current part of the year.
      */
-    public static boolean checkDue(LocalDate checkedOn, LocalDate today) {
-        return checkedOn == null || YearPoint.schoolYear(checkedOn) != YearPoint.schoolYear(today)
-                || YearPoint.on(checkedOn) != YearPoint.on(today);
+    public static boolean checkDue(LocalDate checkedOn, LocalDate today, SchoolYear year) {
+        return checkedOn == null || year.yearOf(checkedOn) != year.yearOf(today)
+                || year.pointOn(checkedOn) != year.pointOn(today);
     }
 
     /** A colour with module points in Pat's grid (Green to Violet); the rhyme colours have only a start and an end. */
