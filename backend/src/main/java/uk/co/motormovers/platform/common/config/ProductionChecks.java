@@ -11,7 +11,8 @@ import jakarta.annotation.PostConstruct;
 
 /**
  * Refuses to start a production deployment with development settings: the sample signing secret, demo
- * data, no mail server (password links would only reach the log), or plain-http addresses.
+ * data, no mail server (password links would only reach the log), plain-http addresses, or a placeholder legal
+ * entity.
  */
 @Component
 @Profile("prod")
@@ -19,10 +20,12 @@ public class ProductionChecks {
 
     private final PlatformProperties properties;
     private final Environment env;
+    private final CountrySettings country;
 
-    public ProductionChecks(PlatformProperties properties, Environment env) {
+    public ProductionChecks(PlatformProperties properties, Environment env, CountrySettings country) {
         this.properties = properties;
         this.env = env;
+        this.country = country;
     }
 
     @PostConstruct
@@ -52,6 +55,10 @@ public class ProductionChecks {
         }
         if (env.getProperty("platform.login-limit-per-ip", Integer.class, 50) > 50) {
             problems.add("LOGIN_LIMIT_PER_IP is for load tests only: leave it unset");
+        }
+        if (country.legalEntity().isPlaceholder()) {
+            problems.add("The legal entity is still a placeholder: set PLATFORM_COUNTRIES_" + properties.region()
+                    + "_LEGALENTITY_NAME, _ADDRESS, _COMPANYNUMBER, _TAXNUMBER, _EMAIL and _PHONE in deploy/country.env");
         }
         properties.cors().allowedOrigins().stream()
                 .filter(o -> !o.startsWith("https://"))

@@ -61,6 +61,8 @@ class PaymentTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("DUE"))
                 .andExpect(jsonPath("$.payerName").value("Ferrers Park"))
+                // Prices include the tax: VAT at 20% in £450 is £75.
+                .andExpect(jsonPath("$.taxPence").value(7_500))
                 .andReturn().getResponse().getContentAsString();
         Integer id = JsonPath.read(payment, "$.id");
         assertThat(outstanding(admin)).isEqualTo(outstandingBefore + 45_000);

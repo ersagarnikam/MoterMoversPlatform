@@ -4,6 +4,7 @@
 
 let currency = 'GBP'
 let locale = 'en-GB'
+let taxLabel = 'VAT'
 let whole = formatter(0)
 let exact = formatter()
 let digits = exact.resolvedOptions().maximumFractionDigits ?? 2
@@ -16,8 +17,9 @@ function formatter(fractionDigits?: number): Intl.NumberFormat {
   })
 }
 
-/** Use this currency and locale from now on, e.g. ('EUR', 'en-IE'). */
-export function setCurrency(code: string, languageTag: string): void {
+/** Use this currency and locale from now on, e.g. ('EUR', 'en-IE', 'VAT'). */
+export function setCurrency(code: string, languageTag: string, tax = taxLabel): void {
+  taxLabel = tax
   if (code === currency && languageTag === locale) return
   currency = code
   locale = languageTag
@@ -30,6 +32,11 @@ export function setCurrency(code: string, languageTag: string): void {
 export function money(minor: number): string {
   const unit = 10 ** digits
   return (minor % unit === 0 ? whole : exact).format(minor / unit)
+}
+
+/** "includes VAT £75"; empty for a payment with no tax kept (from before tax was recorded) or none in it. */
+export function taxLine(taxPence: number | null | undefined): string {
+  return taxPence ? `includes ${taxLabel} ${money(taxPence)}` : ''
 }
 
 /** The currency's symbol for form labels: "£", "€" or "$". */

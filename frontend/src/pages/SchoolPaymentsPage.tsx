@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import LegalLine from '../components/LegalLine'
 import { api, type CourseRequest, type Payment, type Totals } from '../api'
 import { useAuth } from '../auth'
 import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
@@ -128,6 +129,7 @@ export default function SchoolPaymentsPage() {
           to the Motor Movers team.
         </p>
       </section>
+      <LegalLine />
     </>
   )
 }

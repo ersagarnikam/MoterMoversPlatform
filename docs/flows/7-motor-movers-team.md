@@ -160,7 +160,7 @@ sequenceDiagram
   A->>W: Record payment (school or person, purpose, amount)
   W->>API: POST /api/admin/payments
   API->>API: exactly one payer, date not in future
-  API->>DB: save Payment (DUE, or PAID if paidOn given)
+  API->>DB: save Payment (DUE, or PAID if paidOn given) with the country's tax rate
   opt person payer and DUE
     API->>PU: notify(payer, A payment is due, /payments)
   end
@@ -178,3 +178,5 @@ sequenceDiagram
 
 - The payer is a school or a person, not both. Team accounts never pay.
 - A DUE payment for a person also goes to their phone.
+- Prices include tax. A payment keeps the tax rate in force when it was created (`tax_rate_bp`); payment views show
+  "includes VAT £x" (amount x rate / (1 + rate), rounded to the minor unit). Older payments have no rate and no tax line.

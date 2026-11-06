@@ -33,7 +33,8 @@ final class CertificatePdf {
     private CertificatePdf() {
     }
 
-    static byte[] render(Enrolment e, boolean withQuizzes) {
+    /** {@code legalLine}: the legal entity at the foot of the page; null while it is a placeholder. */
+    static byte[] render(Enrolment e, boolean withQuizzes, String legalLine) {
         PDType1Font regular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
         PDType1Font bold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
         Cohort cohort = e.getCohort();
@@ -66,6 +67,9 @@ final class CertificatePdf {
                 centred(c, regular, 13, INK, "Issued " + date(e.getCertificateIssuedOn()) + "    ·    Valid until "
                         + date(e.getCertificateExpiresOn()), width, y -= 52);
                 centred(c, regular, 10, MUTED, "Certificate MM-" + e.getId(), width, 48);
+                if (legalLine != null) {
+                    centred(c, regular, 8, MUTED, legalLine, width, 32);
+                }
             }
             doc.save(out);
             return out.toByteArray();

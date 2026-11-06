@@ -50,13 +50,13 @@ public class MilestoneAchievement {
     }
 
     public MilestoneAchievement(String clientId, Child child, Milestone milestone, int ageMonths,
-            YearPoint yearPoint, LocalDate achievedOn, String recordedBy) {
+            YearPoint yearPoint, int schoolYear, LocalDate achievedOn, String recordedBy) {
         this.clientId = clientId;
         this.child = child;
         this.milestone = milestone;
         this.ageMonths = ageMonths;
         this.yearPoint = yearPoint;
-        this.schoolYear = YearPoint.schoolYear(achievedOn);
+        this.schoolYear = schoolYear;
         this.achievedOn = achievedOn;
         this.recordedBy = recordedBy;
     }

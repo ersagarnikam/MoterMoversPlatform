@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Platform } from 'react-native'
 import { CountryChooser } from '@/components/CountryChooser'
 import { Loading } from '@/components/ui'
-import { setApiUrl, setCurrency } from './api'
+import { setApiUrl, setCountry as setServerCountry } from './api'
 import { getLocal, setLocal } from './storage'
 
 /** Not "mm.": those keys are the signed-in parent's, cleared on signing out; the country outlasts that. */
@@ -18,6 +18,7 @@ export interface Country {
   url: string
   /** Shown until GET /api/settings answers. */
   currency: string
+  taxLabel: string
 }
 
 /** Without a configured address: the machine running the Expo dev server, so a phone on the same Wi-Fi finds the API. */
@@ -36,10 +37,10 @@ function developmentUrl(): string {
 export function availableCountries(): Country[] {
   const fallback = __DEV__ ? developmentUrl() : undefined
   const countries = [
-    { code: 'UK', name: 'United Kingdom', url: process.env.EXPO_PUBLIC_API_URL_UK ?? fallback, currency: 'GBP' },
-    { code: 'IE', name: 'Ireland', url: process.env.EXPO_PUBLIC_API_URL_IE ?? fallback, currency: 'EUR' },
-    { code: 'AU', name: 'Australia', url: process.env.EXPO_PUBLIC_API_URL_AU ?? fallback, currency: 'AUD' },
-    { code: 'DEV', name: 'Development', url: process.env.EXPO_PUBLIC_API_URL, currency: 'GBP' },
+    { code: 'UK', name: 'United Kingdom', url: process.env.EXPO_PUBLIC_API_URL_UK ?? fallback, currency: 'GBP', taxLabel: 'VAT' },
+    { code: 'IE', name: 'Ireland', url: process.env.EXPO_PUBLIC_API_URL_IE ?? fallback, currency: 'EUR', taxLabel: 'VAT' },
+    { code: 'AU', name: 'Australia', url: process.env.EXPO_PUBLIC_API_URL_AU ?? fallback, currency: 'AUD', taxLabel: 'GST' },
+    { code: 'DEV', name: 'Development', url: process.env.EXPO_PUBLIC_API_URL, currency: 'GBP', taxLabel: 'VAT' },
   ] as const
   return countries.flatMap((c) => (c.url ? [{ ...c, url: c.url.replace(/\/$/, '') }] : []))
 }
@@ -66,7 +67,7 @@ export function CountryProvider({ children }: { children: ReactNode }) {
 
   const use = useCallback((chosen: Country) => {
     setApiUrl(chosen.url)
-    setCurrency(chosen.currency)
+    setServerCountry({ currency: chosen.currency, taxLabel: chosen.taxLabel, legalLine: null })
     setCountry(chosen)
   }, [])
 

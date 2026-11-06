@@ -1,5 +1,7 @@
 package uk.co.motormovers.platform.payment.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -52,6 +54,9 @@ public class Payment {
     /** Stripe's id for a payment made by card online; null when marked paid by hand. */
     private String paidOnlineRef;
 
+    /** The tax rate included in the amount, in basis points (2000 = 20%); null on payments from before it was kept. */
+    private Integer taxRateBp;
+
     protected Payment() {
     }
 
@@ -79,6 +84,27 @@ public class Payment {
             LocalDate invoicedOn, String reference, String recordedBy, Instant recordedAt) {
         return new Payment(null, payer, purpose, description, amountPence, invoicedOn, reference, recordedBy,
                 recordedAt);
+    }
+
+    /** The tax rate in force when this payment was created, which stays with it. */
+    public void includesTaxAt(int rateBp) {
+        this.taxRateBp = rateBp;
+    }
+
+    public Integer getTaxRateBp() {
+        return taxRateBp;
+    }
+
+    /**
+     * The tax included in the amount, rounded to the minor unit: amount x rate / (1 + rate), since prices are
+     * tax-inclusive. Null when the payment has no rate.
+     */
+    public Integer taxPence() {
+        if (taxRateBp == null) {
+            return null;
+        }
+        return BigDecimal.valueOf((long) amountPence * taxRateBp)
+                .divide(BigDecimal.valueOf(10_000L + taxRateBp), 0, RoundingMode.HALF_UP).intValueExact();
     }
 
     public void markPaid(LocalDate on) {

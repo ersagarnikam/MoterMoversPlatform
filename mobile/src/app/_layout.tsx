@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { AppState } from 'react-native'
 import { Loading } from '@/components/ui'
-import { api, setCurrency } from '@/lib/api'
+import { api, setCountry } from '@/lib/api'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { CountryProvider } from '@/lib/country'
 import { flush } from '@/lib/outbox'
@@ -16,7 +16,7 @@ function RootStack() {
 
   // Amounts follow the server's currency (go-live task 25); the call is open, so it needs no sign-in.
   useEffect(() => {
-    api.settings().then((s) => setCurrency(s.currency), () => {})
+    api.settings().then(setCountry, () => {})
   }, [])
 
   // Notifications for live sessions and payments, once signed in; a tap opens the screen it is about.

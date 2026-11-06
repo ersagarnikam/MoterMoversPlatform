@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.util.Money;
@@ -43,10 +44,11 @@ public class CertificateService {
     private final Mailer mailer;
     private final Clock clock;
     private final Money money;
+    private final CountrySettings country;
 
     public CertificateService(EnrolmentRepository enrolments, CourseQuizRepository quizzes,
             QuizAttemptRepository attempts, CurrentUserResolver currentUser, Mailer mailer, Clock clock,
-            Money money) {
+            Money money, CountrySettings country) {
         this.enrolments = enrolments;
         this.quizzes = quizzes;
         this.attempts = attempts;
@@ -54,6 +56,7 @@ public class CertificateService {
         this.mailer = mailer;
         this.clock = clock;
         this.money = money;
+        this.country = country;
     }
 
     /** Issues the certificate if everything is now complete, and emails it. Returns whether it was issued now. */
@@ -128,6 +131,6 @@ public class CertificateService {
 
     private byte[] pdf(Enrolment e) {
         return CertificatePdf.render(e, !quizzes.findByCourseIdOrderByAfterSessionAscIdAsc(
-                e.getCohort().getCourse().getId()).isEmpty());
+                e.getCohort().getCourse().getId()).isEmpty(), country.legalEntity().line());
     }
 }

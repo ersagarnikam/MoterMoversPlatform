@@ -236,8 +236,11 @@ one line, since the profile's table shows every score.
 year per child assessed, and the number of children at each exercise level, each child counted once at the middle of
 their latest scores (the lower middle when even), rather than raw counts of scores.
 
-**School year.** September to August. The point in the year is suggested from the date (September to December
-start, January to April middle, May to August end); the teacher can change it.
+**School year.** It follows the deployment's country (`assessment/util/SchoolYear`, since 2026-11-06). The UK: September to
+August, with the point in the year suggested from the date (September to December start, January to April middle, May
+to August end). Ireland: the end point starts in April. Australia: the calendar year (January to April start, May to
+August middle, September to December end). Ireland's and Australia's points are for Pat to confirm. The teacher can
+change the suggested point.
 
 ## Retiring the 0 to 3 check (2026-11-04)
 

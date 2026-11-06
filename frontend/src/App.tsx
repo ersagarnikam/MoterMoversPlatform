@@ -67,7 +67,7 @@ export default function App() {
   const { user, loading } = useAuth()
   // Amounts everywhere follow the deployment's currency (go-live task 25); when it arrives the whole app re-renders.
   const country = useCountry()
-  if (country) setCurrency(country.currency, country.locale)
+  if (country) setCurrency(country.currency, country.locale, country.taxLabel)
   if (loading) return <div className="page-loading">Loading…</div>
   // The public website, the same whether or not someone is signed in.
   const site = (
