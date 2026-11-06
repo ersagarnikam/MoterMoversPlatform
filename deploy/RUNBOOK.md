@@ -270,12 +270,46 @@ hours. Uploaded files are never deleted by the platform: one uploaded for a draf
 
 | Task | How |
 |---|---|
-| Logs | `docker compose -f deploy/docker-compose.prod.yml logs -f api` (JSON, one line per event) |
+| Logs | `docker compose -f deploy/docker-compose.prod.yml logs -f api` (JSON, one line per event; see Logs) |
 | Health | `https://<APP_DOMAIN>/healthz` (web) and `docker compose ... ps` (all services) |
 | Someone locked out | They use "Forgot password". Repeated failed sign-ins lock that email for 15 minutes |
 | A member of staff leaves | Their head switches the account off in School setup. It stops working within a minute |
 | Sign everyone out | Change `PLATFORM_JWT_SECRET` and restart the api |
 | Certificates | Caddy renews automatically. Expiry warnings go to `ACME_EMAIL` |
+
+## Logs
+
+Read them with `docker compose -f deploy/docker-compose.prod.yml logs -f <service>`. The API writes JSON, one line per event,
+and Caddy writes one JSON line per request. Each service keeps at most 50 MB (five files of 10 MB): the oldest goes first,
+so copy out what you need soon after a problem.
+
+**What is kept out, and how.** No personal data or tokens belong in a log.
+
+| Where | What it does |
+|---|---|
+| Caddy (`deploy/Caddyfile`) | Drops query strings and all request and response headers, and cuts addresses to their network (/24 for IPv4, /32 for IPv6), in the access and error logs |
+| nginx (`frontend/nginx.conf`) | Logs no requests (Caddy does) and only serious errors. A failed call to the API shows as a 502 in Caddy's log |
+| PostgreSQL | Terse errors, with no values and no statement |
+| API | Logs errors by type and place, never their messages (`SafeErrors`) |
+
+To trace a person's problem, go by time and path: the logs will not find an email address. A stack trace from outside the
+API's error handler (a scheduled job, say) can still hold an error's message, which is one reason for the shipper's own
+redaction below.
+
+**Sending logs to a service (optional, off by default).** The `logs` profile runs Grafana Alloy, which sends the API's and
+Caddy's logs to any Loki-compatible endpoint, labelled with the country and service. It drops health checks, and removes
+email addresses, tokens and bearer values on the way out as a second safety net. **No service has been chosen, so this has
+only been tried against a local Loki.** Without the profile the service is not started and nothing leaves the server.
+
+1. Set `LOG_SHIPPER_URL` in `deploy/.env` (the push address, ending `/loki/api/v1/push`), and `LOG_SHIPPER_USERNAME` and
+   `LOG_SHIPPER_PASSWORD` if it needs a sign-in. Keep logs in the deployment's own data region, or check the service's
+   terms and the privacy notice first.
+2. Start it with `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env --profile logs up -d`, and add
+   `--profile logs` to later updates, or it stops being updated.
+3. Check `docker compose ... logs logs` for send errors, then find the lines at the service.
+
+The `logs` service can read Docker's socket, which is how it finds the containers. Read-only mounts do not stop a process
+using that socket from controlling Docker, so run only this pinned image with it.
 
 ## Limits to know
 

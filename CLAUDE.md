@@ -44,6 +44,10 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 - **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V21`, added by Dev 2026-11-06);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
+- (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
+  token, a link that carries one, a subject line or an exception's message: messages quote what they are about. Log
+  counts, ids and `SafeErrors.describe(e)` (type and place only). Mailer's whole-email logging is development only:
+  `ProductionChecks` refuses to start without a mail server. `LogSafetyTest` checks this.
 - **Web CSP is strict** (no inline scripts or styles, no third-party hosts). `vite preview` sends the
   same policy as nginx, so the browser tests catch violations. Fonts are self-hosted (`@fontsource`).
 - Commit style: short imperative subject, explanatory body, one logical change per commit.
@@ -51,7 +55,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 206 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 214 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 59 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -162,9 +166,19 @@ forwarded to rahul.shirode@ihau.au. Pat's and Kay's answers go on the boards whe
 
 ## Current state (2026-11-06)
 
-(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `file-storage`, pull request #43): go-live task 29.** Done:
-uploads and signed links, tested against the local store. Left: the Project manager merges once CI is green. Nothing has
-been tried on a real bucket yet (no DigitalOcean account). Remove this note once merged.
+(added by Dev, 2026-11-06) **In progress (Developer Agent, branch `log-safety`, pull request to come): go-live task 73.** Done:
+log limits, safe logs and the optional shipper, tried on a local production stack with a local Loki. Left: the Project
+manager merges once CI is green. No log service has been chosen. Remove this note once merged.
+
+(added by Dev, 2026-11-06) **Logs (go-live task 73).** Every service keeps at most 50 MB (`x-logging` in the compose file). Caddy
+drops query strings and request headers (a page at a password link sends the link as its Referer) and cuts addresses to
+their network, in the access log and the error log, which logs the request too. nginx logs no requests, and only serious
+errors, because its error lines repeat the Referer. PostgreSQL runs with terse errors, without values or statements. In the
+API, errors are logged by type and place (`common/exception/SafeErrors`), and `org.hibernate.orm.jdbc.error` is off because it
+logs the database's own message (the logger's name changed in Hibernate 7: `LogSafetyTest` caught it). Still possible:
+a stack trace from outside `ApiExceptionHandler` (a scheduled job, a servlet filter) keeps its messages. The optional
+shipper is the `logs` compose profile (Grafana Alloy, `deploy/config.alloy`), which redacts as a second safety net; with no
+profile nothing leaves the server. RUNBOOK, Logs.
 
 (added by Dev, 2026-11-06) **File storage (go-live task 29, the owner chose DigitalOcean Spaces; migration V21).** `common/storage`:
 `FileStorage` with `S3FileStorage` (any S3-compatible bucket; Signature Version 4 written by hand, no AWS SDK, pinned to AWS's
@@ -674,7 +688,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
