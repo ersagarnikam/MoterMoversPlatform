@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,7 +16,10 @@ import jakarta.persistence.Table;
 
 import uk.co.motormovers.platform.content.model.ContentStatus;
 
-/** One part of the one-hour induction that school staff complete before running sessions. */
+/**
+ * One part of an induction: the one-hour one that school staff complete before running sessions, or the short one
+ * parents complete before their first home session.
+ */
 @Entity
 @Table(name = "induction_lesson")
 public class InductionLesson {
@@ -24,6 +28,11 @@ public class InductionLesson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private InductionAudience audience = InductionAudience.STAFF;
+
+    /** The part number, counted within the audience. */
+    @Column(name = "part")
     private int position;
 
     private String title;
@@ -48,6 +57,12 @@ public class InductionLesson {
     }
 
     public InductionLesson(int position, String title, String summary, String body, int minutes, String videoUrl) {
+        this(InductionAudience.STAFF, position, title, summary, body, minutes, videoUrl);
+    }
+
+    public InductionLesson(InductionAudience audience, int position, String title, String summary, String body,
+            int minutes, String videoUrl) {
+        this.audience = audience;
         this.position = position;
         this.title = title;
         this.summary = summary;
@@ -75,9 +90,13 @@ public class InductionLesson {
         this.reviewedAt = Instant.now();
     }
 
-    /** e.g. "Induction · Part 2". */
+    /** e.g. "Induction · Part 2", "Parent induction · Part 1". */
     public String label() {
-        return "Induction · Part " + position;
+        return (audience == InductionAudience.PARENT ? "Parent induction" : "Induction") + " · Part " + position;
+    }
+
+    public InductionAudience getAudience() {
+        return audience;
     }
 
     public Long getId() {

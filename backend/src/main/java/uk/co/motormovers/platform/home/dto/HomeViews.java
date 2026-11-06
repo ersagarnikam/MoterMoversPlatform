@@ -115,7 +115,8 @@ public final class HomeViews {
      * where the child is ("Module 2 of 6 · week 3 of 5"). {@code firstTime}: the exercises to rate after doing them for
      * the first time. {@code canRate} is false for a child linked to a school, whose teacher does the assessing.
      * {@code coolDown} ends a session from Green to Indigo (a rhyme ends with its own, in its instructions); null
-     * when there is none.
+     * when there is none. {@code inductionDone}: this parent has finished the parent induction; sessions stay locked
+     * until they have.
      */
     public record Today(Long childId, String name, ColourStage stage, String stageName, boolean hasExercises,
             boolean rhymes, int module, int modules, int week, int weeks, int sessionInModule, int sessionsPerModule,
@@ -123,7 +124,7 @@ public final class HomeViews {
             List<AssessmentViews.ExerciseView> exercises, List<Long> newThisWeek, List<Long> firstTime,
             boolean canRate, boolean doneToday, List<Boolean> counterGrid, int daysDone, int counterDays,
             long sessionsDone, Review review, boolean checkDue, Support support, List<Level> levels,
-            String safetyNote, CoolDown coolDown) {
+            String safetyNote, CoolDown coolDown, boolean inductionDone) {
     }
 
     public record CoolDown(String title, String text) {

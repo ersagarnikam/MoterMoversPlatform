@@ -35,6 +35,20 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByRole('heading', { name: 'Mo', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Today’s session for Mo' })).toBeVisible()
   await expectAccessible(page)
+  // The parent induction comes first: no Start until it is done. Its lessons are placeholders until Pat's arrive.
+  await expect(page.getByRole('link', { name: 'Start', exact: true })).toHaveCount(0)
+  await page.getByRole('link', { name: 'Start the induction' }).click()
+  await expect(page.getByRole('heading', { name: 'Before your first session' })).toBeVisible()
+  await expect(page.getByText('Placeholder lesson 1')).toBeVisible()
+  await expectAccessible(page)
+  for (const title of ['Placeholder lesson 1', 'Placeholder lesson 2']) {
+    await page.getByText(title).click()
+    await page.getByRole('button', { name: 'Mark as done' }).click()
+  }
+  await expect(page.getByText('You have finished the induction.')).toBeVisible()
+  await page.getByRole('link', { name: 'Back to At home' }).click()
+  await page.getByRole('link', { name: /^Mo 4 years/ }).click()
+  await expect(page.getByRole('heading', { name: 'Today’s session for Mo' })).toBeVisible()
   await page.getByRole('link', { name: 'Start', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Module 1 · week 1' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Before you start' })).toContainText('an adult is present')

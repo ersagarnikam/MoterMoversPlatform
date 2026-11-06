@@ -146,6 +146,22 @@ export interface HomeExercise {
   points: { point: string; label: string }[]
 }
 
+/** The short parent induction: completedOn stays null until every lesson is done. */
+export interface HomeInduction {
+  lessons: {
+    id: number
+    position: number
+    title: string
+    summary: string
+    paragraphs: string[]
+    minutes: number
+    done: boolean
+  }[]
+  totalMinutes: number
+  lessonsDone: number
+  completedOn: string | null
+}
+
 export interface HomeToday {
   childId: number
   name: string
@@ -185,6 +201,8 @@ export interface HomeToday {
   levels: { score: number; label: string }[]
   /** Pat's safety note, shown before the first session. */
   safetyNote: string
+  /** This parent has finished the parent induction; sessions stay locked until they have. */
+  inductionDone: boolean
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
 }
@@ -411,6 +429,9 @@ export const api = {
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
   homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
+  homeInduction: () => request<HomeInduction>('GET', '/api/home/induction'),
+  completeHomeInductionLesson: (lessonId: number) =>
+    request<HomeInduction>('POST', `/api/home/induction/lessons/${lessonId}/complete`),
   recordHomeSessions: (sessions: HomeSessionEntry[]) =>
     request<{ saved: number; duplicates: number }>('POST', '/api/home/sessions', sessions),
   /** Ratings use the assessment endpoint, which checks that the child is the family's. */

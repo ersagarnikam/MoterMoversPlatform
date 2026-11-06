@@ -259,6 +259,15 @@ function CheckCard({ kid }: { kid: HomeChild }) {
 /** Today's session with Pat's exercises, and the ratings due at the end of a module. */
 function HomeSessionCard({ today }: { today: HomeToday }) {
   const open = () => router.push({ pathname: '/home-session/[id]', params: { id: today.childId } })
+  if (!today.inductionDone) {
+    return (
+      <Card>
+        <H2>Before your first session</H2>
+        <Body>There is a short induction to read first. Sessions open once you have finished it.</Body>
+        <Button label="Start the induction" onPress={() => router.push('/home-induction')} />
+      </Card>
+    )
+  }
   return (
     <>
       {today.review && (

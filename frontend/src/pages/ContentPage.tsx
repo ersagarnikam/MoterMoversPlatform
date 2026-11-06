@@ -11,6 +11,7 @@ const KINDS: { kind: ContentKind; label: string }[] = [
   { kind: 'guidance', label: 'Parent guidance' },
   { kind: 'resources', label: 'Resources' },
   { kind: 'induction', label: 'Staff induction' },
+  { kind: 'parent-induction', label: 'Parent induction' },
 ]
 
 /**
@@ -31,6 +32,15 @@ interface Field {
 const TITLE: Field = { name: 'title', label: 'Title', type: 'text', required: true, max: 200 }
 const VIDEO: Field = { name: 'videoUrl', label: 'Video link (optional)', type: 'url', max: 500, hint: 'An https:// address' }
 const PARAGRAPHS = 'Leave a blank line between paragraphs.'
+
+const INDUCTION_FIELDS: Field[] = [
+  { name: 'position', label: 'Part number', type: 'number', required: true, initial: '1' },
+  { name: 'minutes', label: 'Minutes', type: 'number', required: true, initial: '10' },
+  TITLE,
+  { name: 'summary', label: 'Summary', type: 'textarea', required: true, max: 500 },
+  { name: 'body', label: 'Lesson', type: 'textarea', required: true, max: 8000, hint: PARAGRAPHS },
+  VIDEO,
+]
 
 const FORMS: Record<ContentKind, { heading: string; fields: Field[] }> = {
   content: {
@@ -79,17 +89,8 @@ const FORMS: Record<ContentKind, { heading: string; fields: Field[] }> = {
       { name: 'words', label: 'Words of a rhyme, one line per line (optional)', type: 'textarea', max: 4000 },
     ],
   },
-  induction: {
-    heading: 'Add an induction part',
-    fields: [
-      { name: 'position', label: 'Part number', type: 'number', required: true, initial: '1' },
-      { name: 'minutes', label: 'Minutes', type: 'number', required: true, initial: '10' },
-      TITLE,
-      { name: 'summary', label: 'Summary', type: 'textarea', required: true, max: 500 },
-      { name: 'body', label: 'Lesson', type: 'textarea', required: true, max: 8000, hint: PARAGRAPHS },
-      VIDEO,
-    ],
-  },
+  induction: { heading: 'Add an induction part', fields: INDUCTION_FIELDS },
+  'parent-induction': { heading: 'Add a parent induction part', fields: INDUCTION_FIELDS },
 }
 
 const RESOURCE_KINDS = [

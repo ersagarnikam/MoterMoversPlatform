@@ -197,6 +197,7 @@ public class DemoDataLoader implements ApplicationRunner {
         // A newly qualified teacher who has not done the induction yet, so their sessions are still locked.
         AppUser lewis = users.save(new AppUser("newteacher@oakfield.test", "Mr Lewis", hash, Role.TEACHER,
                 oakfield.getId(), trust.getId()));
+        jo.completeInduction(today.minusMonths(4));
         for (AppUser trained : List.of(hardy, patel)) {
             induction.forEach(l -> inductionProgress.save(new InductionProgress(trained.getId(), l.getId())));
             trained.completeInduction(today.minusMonths(4));
