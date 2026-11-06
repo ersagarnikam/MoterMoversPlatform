@@ -314,6 +314,7 @@ export interface Induction {
     paragraphs: string[]
     minutes: number
     videoUrl: string | null
+    filmHeld: boolean
     done: boolean
   }[]
   totalMinutes: number

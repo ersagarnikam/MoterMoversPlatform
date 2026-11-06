@@ -57,8 +57,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 228 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-06) 59 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 237 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-06) 62 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -185,8 +185,10 @@ direct dependency). A key is checked with the store on save (`FileStorage.exists
 download under their title (`downloadLink`, a signed `response-content-disposition`), upload messages name the formats and
 MOV is not accepted (`FileTypes.FORMATS`). `ActiveUserFilter` answers a failure as a problem detail. The parent app's induction
 shows Watch the video. The shipper also catches a bare JWT and JSON like `"token":"x"`.
-Three access decisions are with the owner: who gets staff induction films, parent induction films, and a session film
-before the induction; kept as built. (added by Dev, 2026-11-06, task 76) Download names keep Irish letters (`filename*` in
+(added by Dev, 2026-11-06, task 77) Staff induction films go only to the team and to teachers and heads whose school has a licence
+running today, any colour (`LicenceService.hasLicence`, `InductionService`; the owner's decision). Everyone else keeps the lesson,
+its progress and completion, with `videoUrl` null and `filmHeld` true, and the web says who the film is for. Parent induction
+films and a session film before the induction stay as built. (added by Dev, 2026-11-06, task 76) Download names keep Irish letters (`filename*` in
 `FileTypes.contentDisposition`), a failed enquiry does not count against its limit (`RateLimiter.release`), and the shipper also
 catches `access_token`, `client_secret`, Basic credentials and cookies; `ShipperRedactionTest` tests `deploy/config.alloy` itself.
 
@@ -758,7 +760,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

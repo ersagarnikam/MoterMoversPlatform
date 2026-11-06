@@ -92,12 +92,13 @@ public final class TrainingViews {
             List<AdminCohortView> cohorts) {
     }
 
+    /** filmHeld: the lesson has a film this person may not watch, so videoUrl is null. */
     public record LessonView(Long id, int position, String title, String summary, List<String> paragraphs,
-            int minutes, String videoUrl, boolean done) {
+            int minutes, String videoUrl, boolean filmHeld, boolean done) {
 
-        public static LessonView of(InductionLesson l, String videoUrl, boolean done) {
+        public static LessonView of(InductionLesson l, String film, boolean mayWatch, boolean done) {
             return new LessonView(l.getId(), l.getPosition(), l.getTitle(), l.getSummary(), l.paragraphs(),
-                    l.getMinutes(), videoUrl, done);
+                    l.getMinutes(), mayWatch ? film : null, film != null && !mayWatch, done);
         }
     }
 
