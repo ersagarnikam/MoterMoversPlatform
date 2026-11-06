@@ -134,6 +134,18 @@ platform:
   stripe:
     secret-key: ${STRIPE_SECRET_KEY:}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  # Uploaded films, recordings and printables (common/storage/StorageProperties). A bucket when all five are set; with
+  # none, the team pastes links as before. Development uses a local folder (below). RUNBOOK, File storage.
+  storage:
+    local-dir: ${STORAGE_LOCAL_DIR:}
+    endpoint: ${STORAGE_ENDPOINT:}
+    region: ${STORAGE_REGION:}
+    bucket: ${STORAGE_BUCKET:}
+    access-key: ${STORAGE_ACCESS_KEY:}
+    secret-key: ${STORAGE_SECRET_KEY:}
+    # How long a signed read link lasts. A film stops being seekable once its link expires, so this covers a school day.
+    read-hours: ${STORAGE_READ_HOURS:8}
+    max-upload-mb: ${STORAGE_MAX_UPLOAD_MB:2048}
 
 ---
 spring:
@@ -151,6 +163,8 @@ spring:
 
 platform:
   seed-demo-data: true
+  storage:
+    local-dir: ${STORAGE_LOCAL_DIR:${java.io.tmpdir}/motor-movers-files}
 
 ---
 spring:

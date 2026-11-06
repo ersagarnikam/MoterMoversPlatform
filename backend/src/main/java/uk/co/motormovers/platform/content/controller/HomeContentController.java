@@ -18,6 +18,7 @@ import jakarta.validation.constraints.NotNull;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.controller.ContentController.ContentView;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.GuidanceArticle;
@@ -40,17 +41,20 @@ public class HomeContentController {
     private final GuidanceArticleRepository articles;
     private final WordingGuard wordingGuard;
     private final CurrentUserResolver currentUser;
+    private final FileLinks files;
 
     public HomeContentController(HomeActivityRepository activities, GuidanceArticleRepository articles,
-            WordingGuard wordingGuard, CurrentUserResolver currentUser) {
+            WordingGuard wordingGuard, CurrentUserResolver currentUser, FileLinks files) {
         this.activities = activities;
         this.articles = articles;
         this.wordingGuard = wordingGuard;
         this.currentUser = currentUser;
+        this.files = files;
     }
 
     public record NewActivity(@NotNull ColourStage stage, @Min(1) int position, @NotBlank String title,
-            @NotBlank String focus, @Min(1) int durationMinutes, String videoUrl, List<String> steps) {
+            @NotBlank String focus, @Min(1) int durationMinutes, String videoUrl, String videoKey,
+            List<String> steps) {
     }
 
     public record NewArticle(@NotBlank String title, @NotBlank String summary, @NotBlank String body,
@@ -68,8 +72,10 @@ public class HomeContentController {
     @PostMapping("/home-activities")
     @Transactional
     public ContentView createActivity(@Valid @RequestBody NewActivity r) {
-        return view(activities.save(new HomeActivity(r.stage(), r.position(), r.title(), r.focus(),
-                r.durationMinutes(), r.videoUrl(), r.steps() == null ? List.of() : r.steps())));
+        HomeActivity activity = new HomeActivity(r.stage(), r.position(), r.title(), r.focus(),
+                r.durationMinutes(), r.videoUrl(), r.steps() == null ? List.of() : r.steps());
+        activity.setVideoKey(files.requireKey(r.videoKey()));
+        return view(activities.save(activity));
     }
 
     @PostMapping("/home-activities/{id}/approve")
@@ -129,12 +135,12 @@ public class HomeContentController {
     private ContentView view(HomeActivity a) {
         return new ContentView(a.getId(), a.getStage(), a.label(), a.getTitle(), a.getFocus(), a.getDurationMinutes(),
                 List.copyOf(a.getSteps()), a.getStatus(), a.getReviewedBy(), a.getReviewedAt(),
-                wordingGuard.check(a.wording()));
+                wordingGuard.check(a.wording()), files.link(a.getVideoKey(), a.getVideoUrl()));
     }
 
     private ContentView view(GuidanceArticle a) {
         return new ContentView(a.getId(), a.getStage(), a.label(), a.getTitle(), a.getSummary(),
                 a.getMinutesToRead(), a.paragraphs(), a.getStatus(), a.getReviewedBy(), a.getReviewedAt(),
-                wordingGuard.check(a.wording()));
+                wordingGuard.check(a.wording()), null);
     }
 }

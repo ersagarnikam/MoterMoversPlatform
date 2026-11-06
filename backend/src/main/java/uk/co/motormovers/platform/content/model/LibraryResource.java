@@ -39,6 +39,8 @@ public class LibraryResource {
 
     private String fileUrl;
 
+    private String fileKey;
+
     /** A rhyme's words, one line per line. */
     private String words;
 
@@ -118,6 +120,14 @@ public class LibraryResource {
 
     public String getFileUrl() {
         return fileUrl;
+    }
+
+    public String getFileKey() {
+        return fileKey;
+    }
+
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 
     public String getWords() {

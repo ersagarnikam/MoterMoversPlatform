@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
+import uk.co.motormovers.platform.common.storage.StorageProperties;
+
 /**
  * Refuses to start a production deployment with development settings: the sample signing secret, demo
  * data, no mail server (password links would only reach the log), plain-http addresses, or a placeholder legal
@@ -21,11 +23,14 @@ public class ProductionChecks {
     private final PlatformProperties properties;
     private final Environment env;
     private final CountrySettings country;
+    private final StorageProperties storage;
 
-    public ProductionChecks(PlatformProperties properties, Environment env, CountrySettings country) {
+    public ProductionChecks(PlatformProperties properties, Environment env, CountrySettings country,
+            StorageProperties storage) {
         this.properties = properties;
         this.env = env;
         this.country = country;
+        this.storage = storage;
     }
 
     @PostConstruct
@@ -55,6 +60,26 @@ public class ProductionChecks {
         }
         if (env.getProperty("platform.login-limit-per-ip", Integer.class, 50) > 50) {
             problems.add("LOGIN_LIMIT_PER_IP is for load tests only: leave it unset");
+        }
+        if (storage.localConfigured()) {
+            problems.add("STORAGE_LOCAL_DIR is for development only: use a bucket, or leave it unset");
+        }
+        if (storage.s3PartlyConfigured()) {
+            problems.add("STORAGE_ENDPOINT, STORAGE_REGION, STORAGE_BUCKET, STORAGE_ACCESS_KEY and STORAGE_SECRET_KEY"
+                    + " must be set together (or all left blank)");
+        }
+        if (storage.s3Configured() && !storage.endpoint().startsWith("https://")) {
+            problems.add("STORAGE_ENDPOINT must be an https:// address");
+        }
+        if (storage.s3Configured() && storage.endpoint().contains(".cdn.")) {
+            // Signed requests through the Spaces CDN are not cached, may be charged twice and stop at 8100 KiB.
+            problems.add("STORAGE_ENDPOINT must be the bucket's region endpoint, not its CDN");
+        }
+        if (storage.maxUploadMb() > StorageProperties.MOST_UPLOAD_MB) {
+            problems.add("STORAGE_MAX_UPLOAD_MB can be at most " + StorageProperties.MOST_UPLOAD_MB);
+        }
+        if (storage.readHours() < 1 || storage.readHours() > StorageProperties.MOST_READ_HOURS) {
+            problems.add("STORAGE_READ_HOURS must be between 1 and " + StorageProperties.MOST_READ_HOURS);
         }
         if (country.legalEntity().isPlaceholder()) {
             problems.add("The legal entity is still a placeholder: set PLATFORM_COUNTRIES_" + properties.region()

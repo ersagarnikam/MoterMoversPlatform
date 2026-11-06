@@ -55,6 +55,13 @@ services:
       EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-}
+      STORAGE_REGION: ${STORAGE_REGION:-}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:-}
+      STORAGE_READ_HOURS: ${STORAGE_READ_HOURS:-8}
+      STORAGE_MAX_UPLOAD_MB: ${STORAGE_MAX_UPLOAD_MB:-2048}
       PLATFORM_MAIL_FROM: ${PLATFORM_MAIL_FROM}
       SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
       SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
@@ -69,6 +76,8 @@ services:
       - api
     environment:
       API_UPSTREAM: http://api:8080
+      # The bucket's origin, which the content page's upload may reach (RUNBOOK, File storage).
+      STORAGE_ORIGIN: ${STORAGE_ORIGIN:-}
 
   caddy:
     image: caddy:2.10-alpine

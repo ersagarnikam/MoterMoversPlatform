@@ -14,6 +14,7 @@ import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.config.PlatformProperties;
 import uk.co.motormovers.platform.common.config.ProductionChecks;
 import uk.co.motormovers.platform.common.model.Region;
+import uk.co.motormovers.platform.common.storage.StorageProperties;
 
 class ProductionChecksTest {
 
@@ -59,6 +60,36 @@ class ProductionChecksTest {
                 .hasMessageContaining("STRIPE_WEBHOOK_SECRET");
     }
 
+    @Test
+    void acceptsABucketAndRefusesAnythingLessThanARealOne() {
+        assertThatCode(() -> verifyStorage(bucket("https://lon1.digitaloceanspaces.com", 8, 2048)))
+                .doesNotThrowAnyException();
+
+        assertThatThrownBy(() -> verifyStorage(new StorageProperties("/tmp/files", "", "", "", "", "", 8, 2048)))
+                .hasMessageContaining("STORAGE_LOCAL_DIR");
+        assertThatThrownBy(() -> verifyStorage(new StorageProperties("", "https://lon1.digitaloceanspaces.com", "lon1",
+                "", "", "", 8, 2048))).hasMessageContaining("must be set together");
+        assertThatThrownBy(() -> verifyStorage(bucket("http://lon1.digitaloceanspaces.com", 8, 2048)))
+                .hasMessageContaining("https://");
+        assertThatThrownBy(() -> verifyStorage(bucket("https://lon1.cdn.digitaloceanspaces.com", 8, 2048)))
+                .hasMessageContaining("not its CDN");
+        assertThatThrownBy(() -> verifyStorage(bucket("https://lon1.digitaloceanspaces.com", 8, 5121)))
+                .hasMessageContaining("STORAGE_MAX_UPLOAD_MB");
+        assertThatThrownBy(() -> verifyStorage(bucket("https://lon1.digitaloceanspaces.com", 169, 2048)))
+                .hasMessageContaining("STORAGE_READ_HOURS");
+    }
+
+    private static final StorageProperties NO_STORE = new StorageProperties("", "", "", "", "", "", 8, 2048);
+
+    private static StorageProperties bucket(String endpoint, int readHours, int maxUploadMb) {
+        return new StorageProperties("", endpoint, "lon1", "motor-movers-uk", "access", "secret", readHours, maxUploadMb);
+    }
+
+    private static void verifyStorage(StorageProperties storage) throws Throwable {
+        verify(properties("f3a9c1e07b5d4a2e9c8b7a6f5e4d3c2b1a0f9e8d7c6b", false, "https://app.example.org"),
+                new MockEnvironment().withProperty("spring.mail.host", "smtp.example.org"), storage);
+    }
+
     private static final CountrySettings.LegalEntity REAL_ENTITY = new CountrySettings.LegalEntity("Neuroway Ltd",
             "1 High Street, Wokingham", "01234567", "VAT number", "GB123456789", "hello@example.org", "0118 000 0000");
 
@@ -75,7 +106,7 @@ class ProductionChecksTest {
             Method verify = ProductionChecks.class.getDeclaredMethod("verify");
             verify.setAccessible(true);
             try {
-                verify.invoke(new ProductionChecks(properties, env, country(entity)));
+                verify.invoke(new ProductionChecks(properties, env, country(entity), NO_STORE));
             } catch (java.lang.reflect.InvocationTargetException e) {
                 throw e.getCause();
             }
@@ -90,10 +121,15 @@ class ProductionChecksTest {
     }
 
     private static void verify(PlatformProperties properties, MockEnvironment env) throws Throwable {
+        verify(properties, env, NO_STORE);
+    }
+
+    private static void verify(PlatformProperties properties, MockEnvironment env, StorageProperties storage)
+            throws Throwable {
         Method verify = ProductionChecks.class.getDeclaredMethod("verify");
         verify.setAccessible(true);
         try {
-            verify.invoke(new ProductionChecks(properties, env, country(REAL_ENTITY)));
+            verify.invoke(new ProductionChecks(properties, env, country(REAL_ENTITY), storage));
         } catch (java.lang.reflect.InvocationTargetException e) {
             throw e.getCause();
         }

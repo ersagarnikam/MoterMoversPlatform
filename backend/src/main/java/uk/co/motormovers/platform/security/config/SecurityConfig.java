@@ -76,6 +76,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
                         // The licence plans and today's prices, for the website's price chart.
                         .requestMatchers(HttpMethod.GET, "/api/plans").permitAll()
+                        // Local files in development: a video element cannot send a token, so the link is signed.
+                        .requestMatchers("/api/files/local/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/h2-console/**", "/error")
                         .permitAll()
                         // Trainers keep the register for their own sessions (checked in LiveSessionService).

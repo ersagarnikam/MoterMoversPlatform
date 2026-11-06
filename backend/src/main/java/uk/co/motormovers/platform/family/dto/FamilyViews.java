@@ -43,9 +43,9 @@ public final class FamilyViews {
     public record ActivityCard(Long id, ColourStage stage, String stageName, int position, String title, String focus,
             int durationMinutes, String videoUrl, List<String> steps) {
 
-        public static ActivityCard of(HomeActivity a) {
+        public static ActivityCard of(HomeActivity a, String videoUrl) {
             return new ActivityCard(a.getId(), a.getStage(), a.getStage().displayName(), a.getPosition(), a.getTitle(),
-                    a.getFocus(), a.getDurationMinutes(), a.getVideoUrl(), List.copyOf(a.getSteps()));
+                    a.getFocus(), a.getDurationMinutes(), videoUrl, List.copyOf(a.getSteps()));
         }
     }
 

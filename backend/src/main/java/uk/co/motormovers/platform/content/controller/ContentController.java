@@ -18,6 +18,7 @@ import jakarta.validation.constraints.NotNull;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
@@ -32,21 +33,24 @@ public class ContentController {
     private final ProgrammeSessionRepository sessions;
     private final WordingGuard wordingGuard;
     private final CurrentUserResolver currentUser;
+    private final FileLinks files;
 
     public ContentController(ProgrammeSessionRepository sessions, WordingGuard wordingGuard,
-            CurrentUserResolver currentUser) {
+            CurrentUserResolver currentUser, FileLinks files) {
         this.sessions = sessions;
         this.wordingGuard = wordingGuard;
         this.currentUser = currentUser;
+        this.files = files;
     }
 
     public record ContentView(Long id, ColourStage stage, String label, String title, String focus,
             int durationMinutes, List<String> activities, ContentStatus status, String reviewedBy,
-            Instant reviewedAt, List<WordingGuard.Violation> wordingIssues) {
+            Instant reviewedAt, List<WordingGuard.Violation> wordingIssues, String fileLink) {
     }
 
     public record NewSession(@NotNull ColourStage stage, @Min(1) int unit, @Min(1) int day, @NotBlank String title,
-            @NotBlank String focus, @Min(1) int durationMinutes, String videoUrl, List<String> activities) {
+            @NotBlank String focus, @Min(1) int durationMinutes, String videoUrl, String videoKey,
+            List<String> activities) {
     }
 
     @GetMapping
@@ -60,6 +64,7 @@ public class ContentController {
         ProgrammeSession session = new ProgrammeSession(request.stage(), request.unit(), request.day(),
                 request.title(), request.focus(), request.durationMinutes(), request.videoUrl(),
                 request.activities() == null ? List.of() : request.activities());
+        session.setVideoKey(files.requireKey(request.videoKey()));
         return view(sessions.save(session));
     }
 
@@ -87,6 +92,6 @@ public class ContentController {
     private ContentView view(ProgrammeSession s) {
         return new ContentView(s.getId(), s.getStage(), s.label(), s.getTitle(), s.getFocus(),
                 s.getDurationMinutes(), List.copyOf(s.getActivities()), s.getStatus(), s.getReviewedBy(),
-                s.getReviewedAt(), wordingGuard.check(s.wording()));
+                s.getReviewedAt(), wordingGuard.check(s.wording()), files.link(s.getVideoKey(), s.getVideoUrl()));
     }
 }

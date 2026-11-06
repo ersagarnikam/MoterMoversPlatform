@@ -95,9 +95,9 @@ public final class TrainingViews {
     public record LessonView(Long id, int position, String title, String summary, List<String> paragraphs,
             int minutes, String videoUrl, boolean done) {
 
-        public static LessonView of(InductionLesson l, boolean done) {
+        public static LessonView of(InductionLesson l, String videoUrl, boolean done) {
             return new LessonView(l.getId(), l.getPosition(), l.getTitle(), l.getSummary(), l.paragraphs(),
-                    l.getMinutes(), l.getVideoUrl(), done);
+                    l.getMinutes(), videoUrl, done);
         }
     }
 

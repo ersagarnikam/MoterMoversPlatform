@@ -42,6 +42,8 @@ public class HomeActivity {
 
     private String videoUrl;
 
+    private String videoKey;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "home_activity_step", joinColumns = @JoinColumn(name = "activity_id"))
     @OrderColumn(name = "position")
@@ -115,6 +117,14 @@ public class HomeActivity {
 
     public String getVideoUrl() {
         return videoUrl;
+    }
+
+    public String getVideoKey() {
+        return videoKey;
+    }
+
+    public void setVideoKey(String videoKey) {
+        this.videoKey = videoKey;
     }
 
     public List<String> getSteps() {

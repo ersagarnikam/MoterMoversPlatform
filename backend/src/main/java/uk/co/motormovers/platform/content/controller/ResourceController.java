@@ -20,6 +20,7 @@ import jakarta.validation.constraints.NotNull;
 
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.controller.ContentController.ContentView;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.LibraryResource;
@@ -43,27 +44,29 @@ public class ResourceController {
     private final WordingGuard wordingGuard;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final FileLinks files;
 
     public ResourceController(LibraryResourceRepository resources, LicenceService licences,
-            WordingGuard wordingGuard, CurrentUserResolver currentUser, Clock clock) {
+            WordingGuard wordingGuard, CurrentUserResolver currentUser, Clock clock, FileLinks files) {
         this.resources = resources;
         this.licences = licences;
         this.wordingGuard = wordingGuard;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.files = files;
     }
 
     public record ResourceView(Long id, ResourceKind kind, String title, String description, ColourStage stage,
             String label, String fileUrl, List<String> lines) {
 
-        public static ResourceView of(LibraryResource r) {
+        public static ResourceView of(LibraryResource r, String fileUrl) {
             return new ResourceView(r.getId(), r.getKind(), r.getTitle(), r.getDescription(), r.getStage(),
-                    r.label(), r.getFileUrl(), r.lines());
+                    r.label(), fileUrl, r.lines());
         }
     }
 
     public record NewResource(@NotNull ResourceKind kind, @NotBlank String title, @NotBlank String description,
-            ColourStage stage, String fileUrl, String words) {
+            ColourStage stage, String fileUrl, String fileKey, String words) {
     }
 
     @GetMapping("/api/resources")
@@ -74,7 +77,9 @@ public class ResourceController {
                 .filter(r -> r.getStage() == null || stages.contains(r.getStage()))
                 .sorted(Comparator.comparing(LibraryResource::getStage,
                         Comparator.nullsFirst(Comparator.naturalOrder())))
-                .map(ResourceView::of).toList();
+                // A resource for all stages is listed for every school, but an uploaded file needs a licence.
+                .map(r -> ResourceView.of(r, files.link(stages.isEmpty() ? null : r.getFileKey(), r.getFileUrl())))
+                .toList();
     }
 
     @GetMapping("/api/admin/resources")
@@ -85,8 +90,10 @@ public class ResourceController {
     @PostMapping("/api/admin/resources")
     @Transactional
     public ContentView create(@Valid @RequestBody NewResource r) {
-        return view(resources.save(new LibraryResource(r.kind(), r.title(), r.description(), r.stage(),
-                r.fileUrl(), r.words())));
+        LibraryResource resource = new LibraryResource(r.kind(), r.title(), r.description(), r.stage(),
+                r.fileUrl(), r.words());
+        resource.setFileKey(files.requireKey(r.fileKey()));
+        return view(resources.save(resource));
     }
 
     @PostMapping("/api/admin/resources/{id}/approve")
@@ -120,6 +127,7 @@ public class ResourceController {
 
     private ContentView view(LibraryResource r) {
         return new ContentView(r.getId(), r.getStage(), r.label(), r.getTitle(), r.getDescription(), 0, r.lines(),
-                r.getStatus(), r.getReviewedBy(), r.getReviewedAt(), wordingGuard.check(r.wording()));
+                r.getStatus(), r.getReviewedBy(), r.getReviewedAt(), wordingGuard.check(r.wording()),
+                files.link(r.getFileKey(), r.getFileUrl()));
     }
 }
