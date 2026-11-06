@@ -56,9 +56,6 @@ class PushTest {
     @Autowired
     SessionReminderJob reminders;
 
-    @Autowired
-    org.springframework.jdbc.core.JdbcTemplate jdbc;
-
     @Test
     void aPhoneHearsWhenItsSessionOpensAndWhenAPaymentIsDue() throws Exception {
         when(sender.send(anyList())).thenReturn(List.of());
@@ -68,9 +65,7 @@ class PushTest {
         send(jo, "/api/me/push-tokens", "{\"token\":\"" + JO_PHONE + "\",\"platform\":\"ios\"}")
                 .andExpect(status().isNoContent());
 
-        // Jo's demo session starts ten minutes after start-up: it is open, so her phone hears, once. (The job also
-        // runs on its own schedule, which may have announced it before her phone was registered.)
-        jdbc.update("UPDATE cohort_session SET opening_push_sent_at = NULL");
+        // Jo's demo session starts ten minutes after start-up: it is open, so her phone hears, once.
         assertThat(reminders.announceOpening()).isPositive();
         assertThat(sent()).filteredOn(m -> m.token().equals(JO_PHONE)).singleElement().satisfies(m -> {
             assertThat(m.title()).isEqualTo("Your live session is open");
