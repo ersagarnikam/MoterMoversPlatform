@@ -73,6 +73,8 @@ class DemoHome {
         members.save(new FamilyMember(family.getId(), parent.getId(), FamilyMember.Role.OWNER));
 
         LocalDate checked = today.minusDays(42);
+        // Priya is past the parent induction; a family signing up in the demo sees it first.
+        parent.completeInduction(checked);
         Child ava = Child.atHome(family.getId(), "Ava", AVA_AGE, checked);
         ava.placeAt(ColourStage.GREEN);
         ava.checkedOn(checked);

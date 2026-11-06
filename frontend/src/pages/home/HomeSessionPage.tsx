@@ -36,6 +36,21 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
   )
   const firstTime = today.exercises.filter((e) => today.firstTime.includes(e.id))
 
+  if (!today.inductionDone) {
+    return (
+      <>
+        {back}
+        <section className="card home-today">
+          <h1>Before your first session</h1>
+          <p>There is a short induction to read first.</p>
+          <Link to="/home/induction" className="btn btn-primary">
+            Start the induction
+          </Link>
+        </section>
+      </>
+    )
+  }
+
   if (phase === 'done' || (review && !today.review)) {
     return (
       <>

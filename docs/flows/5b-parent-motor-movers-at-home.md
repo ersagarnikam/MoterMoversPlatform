@@ -62,7 +62,7 @@ sequenceDiagram
 
 HomeRules builds today's plan: one rhyme a week for the rhyme colours, modules built up over five weeks from Green on.
 
-**Endpoints:** `GET /api/home/children/{id}/today` · `POST /api/home/sessions` · `POST /api/assessment/exercise-scores` · `GET /api/home/children/{id}`
+**Endpoints:** `GET /api/home/children/{id}/today` · `GET /api/home/induction` · `POST /api/home/induction/lessons/{id}/complete` · `POST /api/home/sessions` · `POST /api/assessment/exercise-scores` · `GET /api/home/children/{id}`
 
 ```mermaid
 sequenceDiagram
@@ -80,9 +80,18 @@ sequenceDiagram
   API->>HR: plan(list, done) and reviewDue
   API->>API: CoolDowns.forModule (Green to Indigo)
   API-->>A: week, sessionTitle, exercises, newThisWeek, safetyNote, coolDown
+  opt inductionDone is false
+    P->>A: Read the parent induction
+    A->>API: GET /api/home/induction
+    loop each lesson
+      A->>API: POST /api/home/induction/lessons/{id}/complete
+    end
+    API->>DB: inductionCompletedOn set after the last lesson
+  end
   P->>A: Do the session, then the cool-down
   A->>Q: enqueue session (clientId)
   Q->>API: POST /api/home/sessions
+  API->>API: requireReadyForSessions (400 until the induction is done)
   API->>DB: save HomeProgrammeSession
   opt first time or end of module
     P->>A: Rate each exercise 1 to 4
@@ -97,6 +106,8 @@ sequenceDiagram
 
 **Rules in the code**
 
+- A parent finishes the parent induction before their first session; each carer does their own. The API refuses a
+  session until then, and finishing is permanent: lessons added later lock nobody out.
 - The safety note shows before the first session.
 - From Green to Indigo the session ends with the module's cool-down (the latest one sent for that colour); a rhyme
   ends with its own, in its words (Pat, 2026-11-05).
