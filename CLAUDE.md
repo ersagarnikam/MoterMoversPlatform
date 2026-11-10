@@ -350,6 +350,25 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fix verified (updated by tester, 2026-11-10, `main` at 34b9716, the Project manager's brief): pull request #59 (task 74) passes, no
+bugs.** Backend 254, web build. Web unit, browser and mobile suites not rerun (no web or app code changed).
+- **The real job, as scheduled, on PostgreSQL 17 and the local store** (the API's time zone set so that 02:45 came within minutes): an upload past
+  `STORAGE_UNSAVED_DAYS` goes, file and row, at 8 days and at 7 days 5 minutes; one at 6 days 23 hours and a fresh one stay. A file never
+  sent clears its row. A key on each of the four columns keeps its file and column and loses its row. A file in the store that was never
+  handed out stays, and a row with a path in it removed nothing outside the store. A failed delete (a directory in the file's place) keeps its
+  row, logs the key with no stack trace, and the rest of the run goes on; the next run deletes it. `STORAGE_UNSAVED_DAYS=2` is honoured. With no
+  store the job does nothing and uploads are refused.
+- **Saves:** a form left open past the clean-up is told to upload again, and no item is saved; a form saved inside the grace period clears its row.
+- **In Chrome:** all five forms (class session, home activity, resource, staff and parent induction) upload and save onto the right column, and the
+  row clears. With a file removed and another chosen, the first stays for the clean-up; an abandoned form's file and row stay until then. No
+  page or content policy errors.
+- **Production** refuses `STORAGE_UNSAVED_DAYS` of 0 and -1 at start-up, and does not object to 1.
+- **A save and the clean-up at once, on PostgreSQL** (a throwaway test, not committed): with the job in the middle of a delete, a save waits on the row
+  lock, then gets 400 and no item. If that delete fails, the waiting save succeeds and the file stays. With a save in progress, the job waits and then
+  leaves the file; if the save rolls back, the job deletes it. 300 saves against three jobs at once: 291 saved, each with its file, 9 told to upload
+  again, each with no file and no item, no other answers and no rows left. `UnsavedUploadTest` also passes on PostgreSQL.
+- **Not tested:** a signed delete on a real Spaces bucket (no buckets yet; only `S3FileStorageTest` covers it).
+
 **Fix verified (updated by tester, 2026-11-06, `main` at be2dd08, the Project manager's brief, a focused check): pull request #56
 (task 78) passes, no bugs.** Backend 241, web build, CI green on `main`; web unit, browser and mobile suites not rerun (no web or app code changed).
 - **Download names (41 checks in Chrome):** "O'Brien's sheet" saves as `O'Brien's sheet.pdf`; a curly apostrophe stays curly, with a
