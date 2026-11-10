@@ -374,6 +374,26 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-10, `task-80` at ecc03a8, before merge, the Project manager's brief): pull request #62 (task 80,
+Pat's daily session plans) passes, no bugs.** Backend 267, web 62 unit tests and the build run here. The 70 browser tests and the mobile job were not rerun: CI passed them on
+ecc03a8. Run on PostgreSQL 17 with installed Chrome.
+- **Against Pat's Word file, compared by script:** all 990 sessions, every exercise in order, and all 24 cool-downs word for word. The only differences are the spelling matches listed in
+  `docs/assessment-design.md` and her three corrections: Blue cool-downs 1 to 6, Hot Air Balloon in Blue Module 3 from week 5 (not before), and Indigo Module 1 Cool Down 1 ending "5, 4, 3, 2, 1"
+  with the repeated step gone.
+- **Through the API, 10,727 checks:** title, order, 10 minutes and a clean wording check on every session; each of the 24 modules' first session with its steps, the grid's instructions and its cool-down;
+  a class moving across modules and wrapping round after the last session; no cool-down on a rhyme colour. A colour off the licence shows no session and recording is refused with a 400.
+- **Session player by eye in Chrome (Blue, Green, Indigo, Violet, Yellow; phone width too):** the step list, each step's own instructions when clicked, the cool-down last, the timer, Skip to end and Complete session. No page or
+  content policy errors. **Rhyme card:** shown with the words and "The recording is on its way" on a rhyme with a library match; left out, with the instructions still shown, on one without.
+- **A fresh deployment, all 990 drafts:** content approval opens in about 0.3 s with 100 cards and "Showing the first 100 of 990", and All lists drafts first. A module of 30 takes about 0.3 s and a colour of 180 about 0.4 s,
+  button to message. A failing draft stays and is named on the page, a rejected one stays rejected, Keep it changes nothing, and approving again approves none.
+- **Refused:** teacher, head, trust or group lead, trainer, practitioner and parents get 403 and change nothing; signed out 401; a bad colour or module 400.
+- **Starting up again adds nothing:** three starts of the fresh deployment and restarts after approving, every row identical (ids, status, reviewer, rhyme).
+- **Motor Movers at Home:** `HomeRules` is untouched. Ava is at week 1 of 5 and now ends with Cool Down 2.
+- **Low, not blocking, for task 22:** the rhyme "Hickory Tickory Tock" (Pat's spelling, Red 10 and Yellow 14) does not link to the starter library's "Hickory dickory dock", so those weeks have no rhyme card. On Jack and Jill the
+  starter library's traditional words sit directly under Pat's own different words. A rhyme added in the library links only at the next API start. **Cosmetic:** the button reads "Approve all 1 drafts shown", and "Approve all 180 drafts
+  shown" while 100 are on the page (the confirmation gives the right scope).
+- **Not tested:** a real phone; Ireland and Australia; the Violet home session on screen (`CoolDownsTest` covers its cool-down).
+
 **Fix verified (updated by tester, 2026-11-10, `main` at 34b9716, the Project manager's brief): pull request #59 (task 74) passes, no
 bugs.** Backend 254, web build. Web unit, browser and mobile suites not rerun (no web or app code changed).
 - **The real job, as scheduled, on PostgreSQL 17 and the local store** (the API's time zone set so that 02:45 came within minutes): an upload past
