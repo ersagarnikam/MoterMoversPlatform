@@ -31,6 +31,10 @@ export interface SessionCard {
   durationMinutes: number
   videoUrl: string | null
   activities: string[]
+  /** Each exercise with the grid's instructions; a step the team wrote has none. */
+  steps: { title: string; instructions: string | null }[]
+  /** The module's cool-down, the last step. Rhyme colours end in the rhyme, so have none. */
+  coolDown: { title: string; text: string } | null
   rhyme: { id: number; title: string; audioUrl: string | null; lines: string[] } | null
 }
 
@@ -336,6 +340,8 @@ export interface LibraryResource {
 export interface ContentItem {
   id: number
   stage: ColourStage | null
+  /** The module, on class sessions only. */
+  unit?: number
   label: string
   title: string
   focus: string
@@ -346,6 +352,12 @@ export interface ContentItem {
   reviewedAt: string | null
   wordingIssues: { text: string; term: string }[]
   fileLink: string | null
+}
+
+/** What approving a colour or module did: drafts that failed the wording check stay drafts and are named. */
+export interface ApprovedAll {
+  approved: number
+  left: { id: number; label: string; title: string; wordingIssues: { text: string; term: string }[] }[]
 }
 
 export interface SchoolRow {
@@ -1120,6 +1132,8 @@ export const api = {
     request<Enrolment>('POST', `/api/admin/enrolments/${id}/assessment`, { passed }),
   approve: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
+  approveAllSessions: (stage: ColourStage, unit: number | null) =>
+    request<ApprovedAll>('POST', '/api/admin/content/approve-all', { stage, unit }),
   reject: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/reject`),
   payments: () => request<Payment[]>('GET', '/api/admin/payments'),

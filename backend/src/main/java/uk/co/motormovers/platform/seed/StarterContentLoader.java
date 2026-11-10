@@ -7,6 +7,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import uk.co.motormovers.platform.assessment.service.SessionPlans;
 import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
@@ -26,13 +27,15 @@ public class StarterContentLoader implements ApplicationRunner {
     private final LibraryResourceRepository resources;
     private final InductionLessonRepository inductionLessons;
     private final CourseRepository courses;
+    private final SessionPlans sessionPlans;
 
     public StarterContentLoader(StarterContent starterContent, LibraryResourceRepository resources,
-            InductionLessonRepository inductionLessons, CourseRepository courses) {
+            InductionLessonRepository inductionLessons, CourseRepository courses, SessionPlans sessionPlans) {
         this.starterContent = starterContent;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.courses = courses;
+        this.sessionPlans = sessionPlans;
     }
 
     @Override
@@ -42,6 +45,7 @@ public class StarterContentLoader implements ApplicationRunner {
             return;
         }
         starterContent.load(null);
+        sessionPlans.linkRhymes();
         log.info("Starter content loaded as drafts. Approve it in Content approval before schools start.");
     }
 }

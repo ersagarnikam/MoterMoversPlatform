@@ -1,13 +1,14 @@
 import { expect, expectAccessible, isWeekend, signIn, test } from './fixtures'
 
-test('a trained teacher runs today’s session with its rhyme', async ({ page }) => {
+test('a trained teacher runs today’s session from Pat’s plan', async ({ page }) => {
   await signIn(page, 'teacher@oakfield.test')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Year 2 R · Today’s session')
   await expectAccessible(page)
 
   await page.getByRole('button', { name: 'Start session' }).click()
-  await expect(page.getByRole('heading', { name: /^Rhyme · / })).toBeVisible()
-  await expect(page.getByText('The recording is on its way')).toBeVisible()
+  // Pat's plan: this week's rhyme, with the grid's words and actions.
+  await expect(page.getByRole('heading', { name: /Yellow Rhyme \d+, Day \d+/ })).toBeVisible()
+  await expect(page.locator('.session-how')).toBeVisible()
   await expectAccessible(page)
 
   await page.getByRole('button', { name: 'Skip to end' }).click()

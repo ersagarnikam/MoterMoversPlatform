@@ -45,8 +45,9 @@ export default function TodayPage() {
               <p className="eyebrow">{nextSession.label}</p>
               <h2>{nextSession.title}</h2>
               <p className="muted">
-                {nextSession.durationMinutes} minutes · warm up, {Math.max(0, nextSession.activities.length - 2)}{' '}
-                activities, cool down
+                {nextSession.durationMinutes} minutes · {nextSession.steps.length}{' '}
+                {nextSession.steps.length === 1 ? 'exercise' : 'exercises'}
+                {nextSession.coolDown ? ', cool down' : ''}
               </p>
               <div className="session-actions">
                 <div className="video-thumb" aria-hidden="true">
@@ -71,6 +72,7 @@ export default function TodayPage() {
                       {nextSession.activities.map((a) => (
                         <li key={a}>{a}</li>
                       ))}
+                      {nextSession.coolDown && <li>{nextSession.coolDown.title}</li>}
                     </ol>
                   </details>
                 </div>

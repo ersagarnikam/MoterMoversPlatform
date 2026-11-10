@@ -40,6 +40,7 @@ import uk.co.motormovers.platform.content.repository.GuidanceArticleRepository;
 import uk.co.motormovers.platform.content.repository.HomeActivityRepository;
 import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
+import uk.co.motormovers.platform.assessment.service.SessionPlans;
 import uk.co.motormovers.platform.family.model.HomeSessionRecord;
 import uk.co.motormovers.platform.family.model.ParentInvite;
 import uk.co.motormovers.platform.family.model.ParentLink;
@@ -91,6 +92,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final AppUserRepository users;
     private final ChildRepository children;
     private final ProgrammeSessionRepository content;
+    private final SessionPlans sessionPlans;
     private final DailySessionRecordRepository records;
     private final CohortRepository cohorts;
     private final EnrolmentRepository enrolments;
@@ -116,7 +118,8 @@ public class DemoDataLoader implements ApplicationRunner {
 
     public DemoDataLoader(TrustRepository trusts, SchoolRepository schools, LicenceRepository licences,
             SchoolClassRepository classes, AppUserRepository users, ChildRepository children,
-            ProgrammeSessionRepository content, DailySessionRecordRepository records, CohortRepository cohorts,
+            ProgrammeSessionRepository content, SessionPlans sessionPlans, DailySessionRecordRepository records,
+            CohortRepository cohorts,
             EnrolmentRepository enrolments,
             LiveSessionService live,
             HomeActivityRepository homeActivities, GuidanceArticleRepository guidance,
@@ -146,6 +149,7 @@ public class DemoDataLoader implements ApplicationRunner {
         this.users = users;
         this.children = children;
         this.content = content;
+        this.sessionPlans = sessionPlans;
         this.records = records;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
@@ -166,7 +170,8 @@ public class DemoDataLoader implements ApplicationRunner {
 
         StarterContent.Loaded starter = starterContent.load("laura@neuroway.test");
         seedDrafts();
-        Map<ColourStage, List<ProgrammeSession>> sessions = seedContent(starter.rhymes());
+        sessionPlans.linkRhymes();
+        Map<ColourStage, List<ProgrammeSession>> sessions = seedContent();
         List<InductionLesson> induction = starter.induction();
 
         Trust trust = trusts.save(new Trust("Northbridge Academy Trust"));
@@ -272,40 +277,19 @@ public class DemoDataLoader implements ApplicationRunner {
                 + ".";
     }
 
-    private Map<ColourStage, List<ProgrammeSession>> seedContent(Map<ColourStage, List<LibraryResource>> rhymes) {
-        String[][] themes = {
-            {"Balance and cross-lateral movement", "Balance, crossing the midline"},
-            {"Rolling and rocking", "Body awareness and movement through space"},
-            {"Creeping and crawling", "Cross-pattern movement"},
-            {"Animal walks", "Strength and coordination"},
-            {"Rhythm and rhyme", "Movement to a beat"},
-        };
+    /** Pat's session plans, loaded as drafts by SessionPlans before this runs, approved so the demo shows them. */
+    private Map<ColourStage, List<ProgrammeSession>> seedContent() {
         Map<ColourStage, List<ProgrammeSession>> byStage = new EnumMap<>(ColourStage.class);
         for (ColourStage stage : ColourStage.values()) {
-            List<ProgrammeSession> list = new ArrayList<>();
-            for (int unit = 1; unit <= 2; unit++) {
-                for (int day = 1; day <= 10; day++) {
-                    String[] theme = themes[(unit * 10 + day + stage.ordinal()) % themes.length];
-                    ProgrammeSession s = new ProgrammeSession(stage, unit, day, theme[0],
-                            theme[1] + ". 10 minutes: warm up, 4 activities, cool down.", 10, null,
-                            List.of("Warm up: march and swing", "Activity 1: " + theme[0].toLowerCase(),
-                                    "Activity 2: starfish stretch", "Activity 3: log roll",
-                                    "Activity 4: nursery rhyme actions", "Cool down: slow breathing"));
-                    List<LibraryResource> stageRhymes = rhymes.getOrDefault(stage, List.of());
-                    if (!stageRhymes.isEmpty()) {
-                        s.setRhyme(stageRhymes.get(day % stageRhymes.size()));
-                    }
-                    s.review(ContentStatus.APPROVED, "laura@neuroway.test");
-                    list.add(content.save(s));
-                }
-            }
-            byStage.put(stage, list);
+            List<ProgrammeSession> list = content.findByStageAndStatusOrderByUnitAscDayAsc(stage, ContentStatus.DRAFT);
+            list.forEach(s -> s.review(ContentStatus.APPROVED, "laura@neuroway.test"));
+            byStage.put(stage, content.saveAll(list));
         }
-        // Two drafts awaiting sign-off; the second fails the wording check on purpose.
-        content.save(new ProgrammeSession(ColourStage.YELLOW, 3, 1, "Spinning and stopping",
+        // Two drafts awaiting sign-off, after the plan's 18 rhymes; the second fails the wording check on purpose.
+        content.save(new ProgrammeSession(ColourStage.YELLOW, 19, 1, "Spinning and stopping",
                 "Controlled spinning, then stillness.", 10, null,
                 List.of("Warm up", "Slow spins", "Statue stop", "Cool down")));
-        content.save(new ProgrammeSession(ColourStage.YELLOW, 3, 2, "Helping children with ADHD focus",
+        content.save(new ProgrammeSession(ColourStage.YELLOW, 19, 2, "Helping children with ADHD focus",
                 "Movement for children with a diagnosis of ADHD.", 10, null,
                 List.of("Warm up", "Wall push", "Cool down")));
         return byStage;

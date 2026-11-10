@@ -104,7 +104,7 @@ test('the team writes a class session, which waits as a draft until approved', a
   const title = `Browser session ${stamp}`
   await page.getByText('Add a class session').click()
   // Sessions are unique by stage, module and day, so each run uses its own module.
-  await page.getByLabel('Module').fill(String(100 + (stamp % 100_000)))
+  await page.getByLabel('Module', { exact: true }).fill(String(100 + (stamp % 100_000)))
   await page.getByLabel('Title').fill(title)
   await page.getByLabel('Focus').fill('Balance and control')
   await page.getByLabel('Activities, one per line').fill('Stand on one leg\nHop to the line')
@@ -117,6 +117,19 @@ test('the team writes a class session, which waits as a draft until approved', a
   await expect(item.getByText('Stand on one leg · Hop to the line')).toBeVisible()
   await item.getByRole('button', { name: 'Approve' }).click()
   await expect(item).toHaveCount(0)
+})
+
+test('the team approves a whole module; a draft failing the wording check stays and is named', async ({ page }) => {
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Content approval', exact: true }).click()
+  await page.getByLabel('Show colour').selectOption('YELLOW')
+  await page.getByLabel('Show module').selectOption('19')
+  await page.getByRole('button', { name: /^Approve all 2 drafts/ }).click()
+  await page.getByRole('button', { name: 'Approve them' }).click()
+  await expect(page.locator('.banner-warn', { hasText: 'Still drafts' })).toContainText('Helping children with ADHD focus')
+  await expect(page.locator('.content-item', { hasText: 'Spinning and stopping' })).toHaveCount(0)
+  await expect(page.locator('.content-item', { hasText: 'Helping children with ADHD focus' })).toHaveCount(1)
+  await expectAccessible(page)
 })
 
 test('the team lands on a home page of what needs attention', async ({ page }) => {

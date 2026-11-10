@@ -16,16 +16,16 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 
 /**
- * The cool-down that ends a home session (src/main/resources/assessment/cool-downs.json). Pat (2026-11-05): from Green
- * to Indigo each block of exercises has its cool-down; Red, Orange and Yellow end each rhyme with their own, already in
- * the rhyme's instructions. A module without its own cool-down yet uses the colour's latest one before it.
+ * The cool-down that ends a session, at school and at home (src/main/resources/assessment/cool-downs.json). From Green
+ * to Violet each module has its own (Pat's session plans); Red, Orange and Yellow end each rhyme with their own, already
+ * in the rhyme's instructions. A module past the last one in the file uses the colour's latest.
  */
 @Component
 public class CoolDowns {
 
     /** The colours whose sessions end with a separate cool-down. */
     static final Set<ColourStage> WITH_COOL_DOWNS = EnumSet.of(ColourStage.GREEN, ColourStage.BLUE,
-            ColourStage.INDIGO);
+            ColourStage.INDIGO, ColourStage.VIOLET);
 
     record CoolDownFile(String source, List<Entry> coolDowns) {
     }
@@ -43,7 +43,7 @@ public class CoolDowns {
         }
     }
 
-    /** The cool-down for a module of a colour, or null when there is none (a rhyme colour, or none sent yet). */
+    /** The cool-down for a module of a colour, or null for a rhyme colour. */
     public HomeViews.CoolDown forModule(ColourStage stage, int module) {
         if (!WITH_COOL_DOWNS.contains(stage)) {
             return null;

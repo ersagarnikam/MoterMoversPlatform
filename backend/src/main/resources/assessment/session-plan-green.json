@@ -1,0 +1,73 @@
+{
+  "source": "Pat's Daily Session Plans (email of 2026-11-07), with her answers of 2026-11-10",
+  "stage": "GREEN",
+  "unitName": "Module",
+  "units": [
+    {
+      "number": 1,
+      "weeks": [
+        ["Yes and No", "Flying Machines"],
+        ["Yes and No", "Flying Machines", "Starfish", "Motor Spin"],
+        ["Yes and No", "Flying Machines", "Starfish", "Motor Spin", "Walking the Plank"],
+        ["Yes and No", "Flying Machines", "Starfish", "Motor Spin", "Walking the Plank", "Tip Toe Swing"],
+        ["Yes and No", "Flying Machines", "Starfish", "Motor Spin", "Walking the Plank", "Tip Toe Swing", "Roundabout March"],
+        ["Yes and No", "Flying Machines", "Starfish", "Motor Spin", "Walking the Plank", "Tip Toe Swing", "Roundabout March"]
+      ]
+    },
+    {
+      "number": 2,
+      "weeks": [
+        ["Yes and No", "Starfish", "Walking the Plank", "Pulling Faces"],
+        ["Yes and No", "Starfish", "Walking the Plank", "Pulling Faces", "Thumbs Up"],
+        ["Yes and No", "Starfish", "Walking the Plank", "Pulling Faces", "Thumbs Up", "Hello Fingers"],
+        ["Yes and No", "Starfish", "Walking the Plank", "Pulling Faces", "Thumbs Up", "Hello Fingers", "Quick March"],
+        ["Yes and No", "Starfish", "Walking the Plank", "Pulling Faces", "Thumbs Up", "Hello Fingers", "Quick March"],
+        ["Yes and No", "Starfish", "Walking the Plank", "Pulling Faces", "Thumbs Up", "Hello Fingers", "Quick March"]
+      ]
+    },
+    {
+      "number": 3,
+      "weeks": [
+        ["Cross Pattern March", "Starfish", "Thumbs Up"],
+        ["Cross Pattern March", "Starfish", "Thumbs Up", "Swop Overs"],
+        ["Cross Pattern March", "Starfish", "Thumbs Up", "Swop Overs", "Fingers and Thumbs"],
+        ["Cross Pattern March", "Starfish", "Thumbs Up", "Swop Overs", "Fingers and Thumbs", "Bend and Stretch"],
+        ["Cross Pattern March", "Starfish", "Thumbs Up", "Swop Overs", "Fingers and Thumbs", "Bend and Stretch", "Stepping Out"],
+        ["Cross Pattern March", "Starfish", "Thumbs Up", "Swop Overs", "Fingers and Thumbs", "Bend and Stretch", "Stepping Out"]
+      ]
+    },
+    {
+      "number": 4,
+      "weeks": [
+        ["Clapping Fun", "Fingers and Thumbs", "Bend and Stretch", "Rocking Horse"],
+        ["Clapping Fun", "Fingers and Thumbs", "Bend and Stretch", "Rocking Horse", "Hop, Skip and Jump"],
+        ["Clapping Fun", "Fingers and Thumbs", "Bend and Stretch", "Rocking Horse", "Hop, Skip and Jump", "Quick March"],
+        ["Clapping Fun", "Fingers and Thumbs", "Bend and Stretch", "Rocking Horse", "Hop, Skip and Jump", "Quick March", "Roundabout"],
+        ["Clapping Fun", "Fingers and Thumbs", "Bend and Stretch", "Rocking Horse", "Hop, Skip and Jump", "Quick March", "Roundabout", "Flamingo"],
+        ["Clapping Fun", "Fingers and Thumbs", "Bend and Stretch", "Rocking Horse", "Hop, Skip and Jump", "Quick March", "Roundabout", "Flamingo"]
+      ]
+    },
+    {
+      "number": 5,
+      "weeks": [
+        ["Quick March", "Roundabout", "Big Jump", "Wobble Toy"],
+        ["Quick March", "Roundabout", "Big Jump", "Wobble Toy", "Pirouette"],
+        ["Quick March", "Roundabout", "Big Jump", "Wobble Toy", "Pirouette", "Where is my Nose?"],
+        ["Quick March", "Roundabout", "Big Jump", "Wobble Toy", "Pirouette", "Where is my Nose?", "Cross Overs"],
+        ["Quick March", "Roundabout", "Big Jump", "Wobble Toy", "Pirouette", "Where is my Nose?", "Cross Overs", "Tortoise"],
+        ["Quick March", "Roundabout", "Big Jump", "Wobble Toy", "Pirouette", "Where is my Nose?", "Cross Overs", "Tortoise"]
+      ]
+    },
+    {
+      "number": 6,
+      "weeks": [
+        ["Roundabout", "Cross Overs", "Walking the Plank", "Thumbs Up", "Tip Toe Swing", "Fingers and Thumbs", "Wobble Toy", "Tortoise"],
+        ["Roundabout", "Cross Overs", "Walking the Plank", "Thumbs Up", "Tip Toe Swing", "Fingers and Thumbs", "Wobble Toy", "Tortoise"],
+        ["Roundabout", "Cross Overs", "Walking the Plank", "Thumbs Up", "Tip Toe Swing", "Fingers and Thumbs", "Wobble Toy", "Tortoise"],
+        ["Roundabout", "Cross Overs", "Walking the Plank", "Thumbs Up", "Tip Toe Swing", "Fingers and Thumbs", "Wobble Toy", "Tortoise"],
+        ["Roundabout", "Cross Overs", "Walking the Plank", "Thumbs Up", "Tip Toe Swing", "Fingers and Thumbs", "Wobble Toy", "Tortoise"],
+        ["Roundabout", "Cross Overs", "Walking the Plank", "Thumbs Up", "Tip Toe Swing", "Fingers and Thumbs", "Wobble Toy", "Tortoise"]
+      ]
+    }
+  ]
+}

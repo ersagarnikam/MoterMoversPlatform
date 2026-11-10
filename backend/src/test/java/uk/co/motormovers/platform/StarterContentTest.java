@@ -79,8 +79,8 @@ class StarterContentTest {
         assertThat(wordingGuard.check(quizQuestions.findAll().stream()
                 .flatMap(q -> java.util.stream.Stream.concat(java.util.stream.Stream.of(q.getText()), q.options().stream()))
                 .toList())).isEmpty();
-        // The team writes the daily sessions, and no demo people or schools come with it.
-        assertThat(sessions.count()).isZero();
+        // Pat's daily session plans load as drafts in every deployment, and no demo people or schools come with them.
+        assertThat(sessions.findAll()).hasSize(990).allMatch(s -> s.getStatus() == ContentStatus.DRAFT);
         assertThat(users.count()).isZero();
     }
 

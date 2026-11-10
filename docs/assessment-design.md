@@ -242,6 +242,27 @@ to August end). Ireland: the end point starts in April. Australia: the calendar 
 August middle, September to December end). Ireland's and Australia's points are for Pat to confirm. The teacher can
 change the suggested point.
 
+## Daily session plans (2026-11-10)
+
+Pat's "Daily Session Plans" (email of 2026-11-07) with her answers of 2026-11-10 are `assessment/session-plan-<colour>.json`: Red, Orange and Yellow have 18 rhymes, each every day for a
+week; Green to Violet have six modules of six weeks, five sessions a week, and week six repeats week five. Her answers applied: Blue's cool-downs are numbered 1 to 6; Blue Module 3 has
+Hot Air Balloon in week 5 as well as week 6; Indigo Module 1's cool-down has its missing 1 and loses the repeated thumb nail step. Green Module 6 says "Repeat" for weeks two to six,
+read as week one's list.
+
+**Names mapped to the grid's wording** (beyond capitals and punctuation): See Saw Margery Daw to See Saw Marjory Daw; Ring of Roses to Ring a Ring of Roses; Polly Pu to Polly Put the
+Kettle On; Little Bo Beep to Little Bo Peep; Grand Old Duke Of York to The Grand Old Duke of York; Half A Pund to Half A Pound of Pudding Rice; Swap Overs to Swop Overs; The Flamingo to
+Flamingo; Starfish 2 to Starfish (Blue); Butterfly to The Butterfly; Pals Up to Palms Up; Side Leg Raises to Side Leg Raisers; The Pigeon to Catch The Pigeon; Motor Star 5 to Motor Star
+Five; Motor Lift 5 to 8 to Motor Lift Five to Eight.
+
+**To put to Pat:**
+
+- **Side Leg Raises.** Her plan notes "Raises not Raisers", but the Indigo grid's title is Side Leg Raisers. The grid's wording is used for now.
+- **The Pigeon** (Indigo modules 5 and 6) is read as the grid's Catch The Pigeon, the only exercise left unmatched.
+- **Assessed in a module that does not teach the exercise.** The grid has an end-of-module point where the plan does not have the exercise in that module: Green Pulling Faces (1) and Cross
+  Pattern March (2); Blue Roundabout (4, 5, 6), Starfish (2, 3), Walking the Plank (2, 6), Thumbs Up (2, 3, 6), Swop Overs (3), Stepping Out (3), Hop, Skip and Jump (4), Rocking Horse (4),
+  Roundabout March (1), Kick Back (1) and Swimming Fun (3); Indigo Bottom Balance (2) and Reach for Your Toes (3). Both are kept as she sent them.
+- **Small differences kept as written:** several Indigo cool-downs end "5, 4, 3, 2,1" without the space.
+
 ## Retiring the 0 to 3 check (2026-11-04)
 
 Pat asked on 2026-11-03 what "the old 0 to 3 readiness check" was. The owner decided to retire it without asking her

@@ -1,0 +1,73 @@
+{
+  "source": "Pat's Daily Session Plans (email of 2026-11-07), with her answers of 2026-11-10",
+  "stage": "INDIGO",
+  "unitName": "Module",
+  "units": [
+    {
+      "number": 1,
+      "weeks": [
+        ["Penguin Rock", "Bottom Balance", "Reach for Your Toes", "Kneel and Stretch"],
+        ["Penguin Rock", "Bottom Balance", "Reach for Your Toes", "Kneel and Stretch", "Stretch and Balance"],
+        ["Penguin Rock", "Bottom Balance", "Reach for Your Toes", "Kneel and Stretch", "Stretch and Balance", "Touch Your Feet", "Tip Toe Line"],
+        ["Penguin Rock", "Bottom Balance", "Reach for Your Toes", "Kneel and Stretch", "Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll"],
+        ["Penguin Rock", "Bottom Balance", "Reach for Your Toes", "Kneel and Stretch", "Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles"],
+        ["Penguin Rock", "Bottom Balance", "Reach for Your Toes", "Kneel and Stretch", "Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles"]
+      ]
+    },
+    {
+      "number": 2,
+      "weeks": [
+        ["Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles", "The Eagle"],
+        ["Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles", "The Eagle", "Rock and Roll"],
+        ["Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles", "The Eagle", "Rock and Roll", "Cat Stretch"],
+        ["Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles", "The Eagle", "Rock and Roll", "Cat Stretch", "Curl and Stretch"],
+        ["Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles", "The Eagle", "Rock and Roll", "Cat Stretch", "Curl and Stretch", "Puppy Fun"],
+        ["Stretch and Balance", "Touch Your Feet", "Tip Toe Line", "Side Roll", "Back Circles", "The Eagle", "Rock and Roll", "Cat Stretch", "Curl and Stretch", "Puppy Fun"]
+      ]
+    },
+    {
+      "number": 3,
+      "weeks": [
+        ["The Eagle", "Rock and Roll", "Curl and Stretch", "Puppy Fun", "Mountain Stretch"],
+        ["The Eagle", "Rock and Roll", "Curl and Stretch", "Puppy Fun", "Mountain Stretch", "Shooting Stars"],
+        ["The Eagle", "Rock and Roll", "Curl and Stretch", "Puppy Fun", "Mountain Stretch", "Shooting Stars", "The Snake"],
+        ["The Eagle", "Rock and Roll", "Curl and Stretch", "Puppy Fun", "Mountain Stretch", "Shooting Stars", "The Snake", "The Butterfly"],
+        ["The Eagle", "Rock and Roll", "Curl and Stretch", "Puppy Fun", "Mountain Stretch", "Shooting Stars", "The Snake", "The Butterfly", "The Lion"],
+        ["The Eagle", "Rock and Roll", "Curl and Stretch", "Puppy Fun", "Mountain Stretch", "Shooting Stars", "The Snake", "The Butterfly", "The Lion"]
+      ]
+    },
+    {
+      "number": 4,
+      "weeks": [
+        ["Shooting Stars", "The Snake", "The Butterfly", "The Lion", "Leg Cross", "Palms Up"],
+        ["Shooting Stars", "The Snake", "The Butterfly", "The Lion", "Leg Cross", "Palms Up", "Strong Arms and Toes"],
+        ["Shooting Stars", "The Snake", "The Butterfly", "The Lion", "Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers"],
+        ["Shooting Stars", "The Snake", "The Butterfly", "The Lion", "Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle"],
+        ["Shooting Stars", "The Snake", "The Butterfly", "The Lion", "Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats"],
+        ["Shooting Stars", "The Snake", "The Butterfly", "The Lion", "Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats"]
+      ]
+    },
+    {
+      "number": 5,
+      "weeks": [
+        ["Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats", "Side Lunge"],
+        ["Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats", "Side Lunge", "Triangles"],
+        ["Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats", "Side Lunge", "Triangles", "Catch The Pigeon"],
+        ["Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats", "Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick"],
+        ["Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats", "Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick"],
+        ["Leg Cross", "Palms Up", "Strong Arms and Toes", "Side Leg Raisers", "Back Leg Paddle", "Squats", "Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick"]
+      ]
+    },
+    {
+      "number": 6,
+      "weeks": [
+        ["Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick", "Leap Frog"],
+        ["Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick", "Leap Frog", "Stretch Your Toes"],
+        ["Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick", "Leap Frog", "Stretch Your Toes", "Elbow to Knee"],
+        ["Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick", "Leap Frog", "Stretch Your Toes", "Elbow to Knee", "Up and Over"],
+        ["Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick", "Leap Frog", "Stretch Your Toes", "Elbow to Knee", "Up and Over", "Reach for the Sky"],
+        ["Side Lunge", "Triangles", "Catch The Pigeon", "Rocking Kick", "Leap Frog", "Stretch Your Toes", "Elbow to Knee", "Up and Over", "Reach for the Sky"]
+      ]
+    }
+  ]
+}

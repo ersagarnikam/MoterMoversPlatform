@@ -58,7 +58,7 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByRole('heading', { name: 'Flying Machines' })).toBeVisible()
   await page.getByRole('button', { name: 'Cool down' }).click()
   await expect(page.getByRole('heading', { name: 'Cool Down 1' })).toBeVisible()
-  await expect(page.getByText('Stand straight, feet together. Count to 10.')).toBeVisible()
+  await expect(page.getByText('Stand straight, feet together. Count to 10')).toBeVisible()
   await page.getByRole('button', { name: 'We did it' }).click()
 
   await expect(page.getByRole('heading', { name: 'How did it go?' })).toBeVisible()

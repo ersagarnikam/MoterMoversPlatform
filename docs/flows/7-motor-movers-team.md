@@ -21,7 +21,7 @@ checked) gives an upload link, the browser sends the file straight to the store,
 API checks the store holds. The draft
 shows Open the file. The content page alone may reach the store, so it opens with a full page load.
 
-**Endpoints:** `POST /api/admin/content` · `GET /api/admin/content` · `POST /api/admin/content/{id}/approve` · `POST /api/admin/content/{id}/reject`
+**Endpoints:** `POST /api/admin/content` · `GET /api/admin/content` · `POST /api/admin/content/{id}/approve` · `POST /api/admin/content/approve-all` · `POST /api/admin/content/{id}/reject`
 
 ```mermaid
 sequenceDiagram
@@ -46,6 +46,12 @@ sequenceDiagram
     API->>DB: status APPROVED, reviewed by, at
     API-->>W: ContentView
   end
+  opt approve a whole colour or module (class sessions)
+    W->>API: POST /api/admin/content/approve-all (stage, optional unit)
+    API->>G: check each draft
+    API->>DB: status APPROVED for each clean draft
+    API-->>W: how many approved, and each draft left with its wording issues
+  end
   opt reject
     W->>API: POST /api/admin/content/{id}/reject
   end
@@ -55,6 +61,7 @@ sequenceDiagram
 **Rules in the code**
 
 - Diagnostic terms block approval (WordingGuard).
+- Pat's daily session plans load as drafts on every start (`SessionPlans`), adding only what is missing. Approving many at once is for the team only, and a draft failing the wording check stays a draft and is named.
 - Only approved content reaches teachers and parents.
 - The same pattern covers /home-activities, /guidance, /resources and /induction.
 - An upload link takes one file of the agreed type and size; video, audio, PDF and image types only.

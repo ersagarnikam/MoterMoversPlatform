@@ -51,8 +51,14 @@ export default function PlayerPage() {
   }
   const session = today.nextSession
   const total = session.durationMinutes * 60
-  const perStep = total / session.activities.length
-  const step = Math.min(session.activities.length - 1, Math.floor(elapsed / perStep))
+  // The module's cool-down is the last step. A rhyme colour ends in the rhyme's own words.
+  const steps = [
+    ...session.steps.map((s) => ({ title: s.title, how: s.instructions })),
+    ...(session.coolDown ? [{ title: session.coolDown.title, how: session.coolDown.text }] : []),
+  ]
+  const perStep = total / steps.length
+  const step = Math.min(steps.length - 1, Math.floor(elapsed / perStep))
+  const how = steps[step]?.how
   const finished = elapsed >= total
 
   function toggleAbsent(id: number) {
@@ -89,7 +95,7 @@ export default function PlayerPage() {
           ) : (
             <button className="player-placeholder" onClick={() => setPlaying((p) => !p)}>
               <span className="play">{playing ? '❚❚' : '▶'}</span>
-              <span>{session.activities[step]}</span>
+              <span>{steps[step]?.title}</span>
               <span className="muted-on-dark">
                 {mmss(Math.min(elapsed, total))} / {mmss(total)}
               </span>
@@ -102,9 +108,16 @@ export default function PlayerPage() {
         <aside className="card player-plan">
           <h3>Session plan</h3>
           <ol className="plan">
-            {session.activities.map((a, i) => (
-              <li key={a} className={i < step || finished ? 'ticked' : i === step ? 'current' : ''}>
-                {a}
+            {steps.map((s, i) => (
+              <li key={s.title} className={i < step || finished ? 'ticked' : i === step ? 'current' : ''}>
+                <button
+                  type="button"
+                  className="plan-step"
+                  aria-current={i === step ? 'step' : undefined}
+                  onClick={() => setElapsed(perStep * i)}
+                >
+                  {s.title}
+                </button>
               </li>
             ))}
           </ol>
@@ -113,6 +126,15 @@ export default function PlayerPage() {
           </button>
         </aside>
       </div>
+
+      {how && (
+        <section className="card session-how">
+          <h3>{steps[step].title}</h3>
+          {how.split('\n').map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </section>
+      )}
 
       {session.rhyme && (
         <section className="card rhyme">

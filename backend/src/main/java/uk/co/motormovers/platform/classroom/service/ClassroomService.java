@@ -4,12 +4,18 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.assessment.model.Exercise;
+import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.classroom.dto.ClassroomViews;
@@ -21,6 +27,7 @@ import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
+import uk.co.motormovers.platform.home.service.CoolDowns;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
 import uk.co.motormovers.platform.school.service.LicenceService;
@@ -46,11 +53,13 @@ public class ClassroomService {
     private final InductionService induction;
     private final Clock clock;
     private final FileLinks files;
+    private final ExerciseRepository exercises;
+    private final CoolDowns coolDowns;
 
     public ClassroomService(SchoolClassRepository classes, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceService licences,
             AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock,
-            FileLinks files) {
+            FileLinks files, ExerciseRepository exercises, CoolDowns coolDowns) {
         this.classes = classes;
         this.children = children;
         this.content = content;
@@ -61,6 +70,8 @@ public class ClassroomService {
         this.induction = induction;
         this.clock = clock;
         this.files = files;
+        this.exercises = exercises;
+        this.coolDowns = coolDowns;
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +98,7 @@ public class ClassroomService {
         Optional<ProgrammeSession> todays = records.findBySchoolClassIdAndSessionDate(classId, today)
                 .map(DailySessionRecord::getSession);
         ClassroomViews.SessionCard next = licensed
-                ? todays.or(() -> nextSession(schoolClass)).map(s -> ClassroomViews.SessionCard.of(s, files)).orElse(null)
+                ? todays.or(() -> nextSession(schoolClass)).map(this::card).orElse(null)
                 : null;
 
         List<LocalDate> window = SchoolDays.lastSchoolDays(today, COUNTER_DAYS);
@@ -145,13 +156,26 @@ public class ClassroomService {
     }
 
     private Optional<ProgrammeSession> nextSession(SchoolClass schoolClass) {
-        List<ProgrammeSession> sequence = content.findByStageAndStatusOrderByUnitAscDayAsc(schoolClass.getStage(),
-                ContentStatus.APPROVED);
-        if (sequence.isEmpty()) {
+        long approved = content.countByStageAndStatus(schoolClass.getStage(), ContentStatus.APPROVED);
+        if (approved == 0) {
             return Optional.empty();
         }
         long completed = records.countBySchoolClassIdAndSessionStage(schoolClass.getId(), schoolClass.getStage());
-        return Optional.of(sequence.get((int) (completed % sequence.size())));
+        PageRequest place = PageRequest.of((int) (completed % approved), 1, Sort.by("unit", "day"));
+        return content.findByStageAndStatus(schoolClass.getStage(), ContentStatus.APPROVED, place).stream().findFirst();
+    }
+
+    /** The session as the teacher sees it: each exercise with the grid's instructions, then the module's cool-down. */
+    private ClassroomViews.SessionCard card(ProgrammeSession session) {
+        List<String> names = List.copyOf(session.getActivities());
+        Map<String, String> instructions = names.isEmpty() ? Map.of()
+                : exercises.findByStageAndTitleIn(session.getStage(), names).stream()
+                        .collect(Collectors.toMap(Exercise::getTitle, Exercise::getInstructions, (a, b) -> a));
+        List<ClassroomViews.SessionStep> steps = names.stream()
+                .map(name -> new ClassroomViews.SessionStep(name, instructions.get(name)))
+                .toList();
+        return ClassroomViews.SessionCard.of(session, files, steps,
+                coolDowns.forModule(session.getStage(), session.getUnit()));
     }
 
     private boolean licensedToday(SchoolClass schoolClass, LocalDate today) {

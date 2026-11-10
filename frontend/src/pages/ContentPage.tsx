@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { api, type ContentItem, type ContentKind, type UploadRules } from '../api'
+import { api, type ApprovedAll, type ColourStage, type ContentItem, type ContentKind, type UploadRules } from '../api'
 import StageBadge from '../components/StageBadge'
 import { STAGES } from '../stages'
 import { day } from '../dates'
-import { useToast } from '../components/Feedback'
+import { useConfirm, useToast } from '../components/Feedback'
 import { uploadFile } from '../upload'
 
 const KINDS: { kind: ContentKind; label: string }[] = [
@@ -115,6 +115,9 @@ const RESOURCE_KINDS = [
   ['RHYME', 'Rhyme recording'],
   ['BOOK', 'Book'],
 ] as const
+
+/** Pat's plans are about 990 sessions, so the page shows this many cards until the list is narrowed. */
+const SHOWN_AT_ONCE = 100
 
 const initialValues = (fields: Field[]): Record<string, string> =>
   Object.fromEntries(
@@ -316,7 +319,12 @@ export default function ContentPage() {
   const [filter, setFilter] = useState<'DRAFT' | 'ALL'>('DRAFT')
   const [error, setError] = useState<string | null>(null)
   const [rules, setRules] = useState<UploadRules | null>(null)
+  const [stage, setStage] = useState<ColourStage | ''>('')
+  const [unit, setUnit] = useState('')
+  const [approving, setApproving] = useState(false)
+  const [left, setLeft] = useState<ApprovedAll['left']>([])
   const setNotice = useToast()
+  const confirm = useConfirm()
 
   useEffect(() => {
     // Without the rules the form still works: the team pastes a link.
@@ -329,6 +337,9 @@ export default function ContentPage() {
     setItems([])
     setError(null)
     setNotice(null)
+    setStage('')
+    setUnit('')
+    setLeft([])
     api
       .content(kind)
       .then((list) => current && setItems(list))
@@ -338,7 +349,17 @@ export default function ContentPage() {
     }
   }, [kind])
 
-  const shown = useMemo(() => (filter === 'ALL' ? items : items.filter((i) => i.status === 'DRAFT')), [items, filter])
+  const narrowed = useMemo(
+    () => items.filter((i) => (!stage || i.stage === stage) && (!unit || i.unit === Number(unit))),
+    [items, stage, unit],
+  )
+  const drafts = useMemo(() => narrowed.filter((i) => i.status === 'DRAFT'), [narrowed])
+  // Drafts first, so what needs signing off is never hidden behind the first page of approved sessions.
+  const shown = filter === 'ALL' ? [...drafts, ...narrowed.filter((i) => i.status !== 'DRAFT')] : drafts
+  const modules = useMemo(
+    () => [...new Set(items.filter((i) => i.stage === stage).flatMap((i) => i.unit ?? []))].sort((a, b) => a - b),
+    [items, stage],
+  )
 
   async function create(item: Record<string, unknown>) {
     setError(null)
@@ -366,6 +387,31 @@ export default function ContentPage() {
     }
   }
 
+  async function approveAll() {
+    if (!stage) return
+    const name = STAGES.find((s) => s.key === stage)?.label
+    const what = unit ? `${name} module ${unit}` : `all of ${name}`
+    const sure = await confirm({
+      title: `Approve ${drafts.length} drafts in ${what}?`,
+      body: 'Teachers can run them as soon as they are approved. Any that fail the wording check stay as drafts.',
+      confirmLabel: 'Approve them',
+    })
+    if (!sure) return
+    setApproving(true)
+    setError(null)
+    setLeft([])
+    try {
+      const result = await api.approveAllSessions(stage, unit ? Number(unit) : null)
+      setItems(await api.content('content'))
+      setLeft(result.left)
+      setNotice(`${result.approved} approved in ${what}.`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not approve them')
+    } finally {
+      setApproving(false)
+    }
+  }
+
   return (
     <>
       <div className="page-head">
@@ -380,18 +426,67 @@ export default function ContentPage() {
       </div>
       <div className="chips">
         <button className={`chip ${filter === 'DRAFT' ? 'chip-on' : ''}`} onClick={() => setFilter('DRAFT')}>
-          Awaiting sign-off ({items.filter((i) => i.status === 'DRAFT').length})
+          Awaiting sign-off ({drafts.length})
         </button>
         <button className={`chip ${filter === 'ALL' ? 'chip-on' : ''}`} onClick={() => setFilter('ALL')}>
-          All ({items.length})
+          All ({narrowed.length})
         </button>
       </div>
       {/* Keyed by kind so switching tabs starts a fresh form. */}
       <NewItemForm key={kind} kind={kind} rules={rules} onSave={create} />
+      {kind === 'content' && (
+        <div className="card inline-form">
+          <label>
+            Show colour
+            <select
+              value={stage}
+              onChange={(e) => {
+                setStage(e.target.value as ColourStage | '')
+                setUnit('')
+              }}
+            >
+              <option value="">All colours</option>
+              {STAGES.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Show module
+            <select value={unit} onChange={(e) => setUnit(e.target.value)} disabled={!stage}>
+              <option value="">All modules</option>
+              {modules.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </label>
+          {stage && (
+            <div className="actions form-wide">
+              <button className="btn btn-primary" disabled={approving || drafts.length === 0} onClick={approveAll}>
+                {approving ? 'Approving…' : `Approve all ${drafts.length} drafts shown`}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {error && <p className="error">{error}</p>}
+      {left.length > 0 && (
+        <div className="banner-warn">
+          <strong>Still drafts, because of the wording check:</strong> {left.map((l) => `${l.title} (${l.label})`).join('; ')}
+        </div>
+      )}
       {shown.length === 0 && <p className="muted">Nothing waiting for sign-off.</p>}
+      {shown.length > SHOWN_AT_ONCE && (
+        <p className="muted">
+          Showing the first {SHOWN_AT_ONCE} of {shown.length}. Choose a colour or module to see the rest.
+        </p>
+      )}
       <div className="list">
-        {shown.map((i) => (
+        {shown.slice(0, SHOWN_AT_ONCE).map((i) => (
           <div key={i.id} className="card content-item">
             <div className="section-head">
               <span>
