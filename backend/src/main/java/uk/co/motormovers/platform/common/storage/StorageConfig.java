@@ -46,5 +46,10 @@ class StorageConfig {
         public boolean exists(String key) {
             return false;
         }
+
+        @Override
+        public void delete(String key) {
+            throw new IllegalStateException("No file store is configured");
+        }
     }
 }

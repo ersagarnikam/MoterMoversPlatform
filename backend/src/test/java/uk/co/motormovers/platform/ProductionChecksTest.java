@@ -65,10 +65,10 @@ class ProductionChecksTest {
         assertThatCode(() -> verifyStorage(bucket("https://lon1.digitaloceanspaces.com", 8, 2048)))
                 .doesNotThrowAnyException();
 
-        assertThatThrownBy(() -> verifyStorage(new StorageProperties("/tmp/files", "", "", "", "", "", 8, 2048)))
+        assertThatThrownBy(() -> verifyStorage(new StorageProperties("/tmp/files", "", "", "", "", "", 8, 2048, 7)))
                 .hasMessageContaining("STORAGE_LOCAL_DIR");
         assertThatThrownBy(() -> verifyStorage(new StorageProperties("", "https://lon1.digitaloceanspaces.com", "lon1",
-                "", "", "", 8, 2048))).hasMessageContaining("must be set together");
+                "", "", "", 8, 2048, 7))).hasMessageContaining("must be set together");
         assertThatThrownBy(() -> verifyStorage(bucket("http://lon1.digitaloceanspaces.com", 8, 2048)))
                 .hasMessageContaining("https://");
         assertThatThrownBy(() -> verifyStorage(bucket("https://lon1.cdn.digitaloceanspaces.com", 8, 2048)))
@@ -77,12 +77,15 @@ class ProductionChecksTest {
                 .hasMessageContaining("STORAGE_MAX_UPLOAD_MB");
         assertThatThrownBy(() -> verifyStorage(bucket("https://lon1.digitaloceanspaces.com", 169, 2048)))
                 .hasMessageContaining("STORAGE_READ_HOURS");
+        assertThatThrownBy(() -> verifyStorage(new StorageProperties("", "https://lon1.digitaloceanspaces.com", "lon1",
+                "motor-movers-uk", "access", "secret", 8, 2048, 0))).hasMessageContaining("STORAGE_UNSAVED_DAYS");
     }
 
-    private static final StorageProperties NO_STORE = new StorageProperties("", "", "", "", "", "", 8, 2048);
+    private static final StorageProperties NO_STORE = new StorageProperties("", "", "", "", "", "", 8, 2048, 7);
 
     private static StorageProperties bucket(String endpoint, int readHours, int maxUploadMb) {
-        return new StorageProperties("", endpoint, "lon1", "motor-movers-uk", "access", "secret", readHours, maxUploadMb);
+        return new StorageProperties("", endpoint, "lon1", "motor-movers-uk", "access", "secret", readHours, maxUploadMb,
+                7);
     }
 
     private static void verifyStorage(StorageProperties storage) throws Throwable {

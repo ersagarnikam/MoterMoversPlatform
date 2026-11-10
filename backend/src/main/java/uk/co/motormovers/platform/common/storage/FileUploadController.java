@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.common.storage;
 
+import java.time.Clock;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +22,16 @@ public class FileUploadController {
     private final FileStorage storage;
     private final StorageProperties properties;
     private final AccessPolicy access;
+    private final UnsavedUploadRepository unsaved;
+    private final Clock clock;
 
-    public FileUploadController(FileStorage storage, StorageProperties properties, AccessPolicy access) {
+    public FileUploadController(FileStorage storage, StorageProperties properties, AccessPolicy access,
+            UnsavedUploadRepository unsaved, Clock clock) {
         this.storage = storage;
         this.properties = properties;
         this.access = access;
+        this.unsaved = unsaved;
+        this.clock = clock;
     }
 
     public record UploadRules(boolean available, int maxMegabytes, List<String> types, String formats) {
@@ -65,6 +71,7 @@ public class FileUploadController {
             throw new IllegalArgumentException("That file is too large: the most is " + properties.maxUploadMb() + " MB.");
         }
         String key = FileTypes.newKey(request.contentType());
+        unsaved.save(new UnsavedUpload(key, clock.instant()));
         return new Upload(key, storage.uploadLink(key, request.contentType(), request.size()), request.contentType());
     }
 }

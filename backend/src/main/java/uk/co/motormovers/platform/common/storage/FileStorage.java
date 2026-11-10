@@ -20,4 +20,7 @@ public interface FileStorage {
 
     /** Whether the store holds this file. */
     boolean exists(String key);
+
+    /** Deletes this file; one already gone counts as deleted. Throws if the store does not delete it. */
+    void delete(String key);
 }

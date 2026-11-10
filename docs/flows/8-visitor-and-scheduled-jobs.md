@@ -54,9 +54,9 @@ sequenceDiagram
 
 ## Scheduled jobs
 
-Four jobs run on the API's clock (the deployment's time zone): session reminders, session opening, certificate expiry and deleting leavers.
+Five jobs run on the API's clock (the deployment's time zone): session reminders, session opening, certificate expiry, deleting leavers and cleaning up unsaved uploads.
 
-**Endpoints:** `SessionReminderJob.remind` · `SessionReminderJob.announceOpening` · `CertificateService.remindExpiring` · `RetentionJob.purgeLeavers`
+**Endpoints:** `SessionReminderJob.remind` · `SessionReminderJob.announceOpening` · `CertificateService.remindExpiring` · `RetentionJob.purgeLeavers` · `UnsavedUploadJob.cleanUp`
 
 ```mermaid
 sequenceDiagram
@@ -65,9 +65,11 @@ sequenceDiagram
   participant SR as SessionReminderJob
   participant CS as CertificateService
   participant RJ as RetentionJob
+  participant UJ as UnsavedUploadJob
   participant DB as PostgreSQL
   participant M as Mailer
   participant PU as Expo push
+  participant FS as File store
   loop every 10 minutes
     CL->>SR: remind()
     SR->>DB: sessions starting within 24 h, not yet reminded
@@ -84,9 +86,21 @@ sequenceDiagram
   CS->>M: Your certificate expires soon
   CL->>RJ: 02:30 daily purgeLeavers()
   RJ->>DB: delete children who left more than 365 days ago
+  CL->>UJ: 02:45 daily cleanUp()
+  UJ->>DB: unsaved_upload rows older than STORAGE_UNSAVED_DAYS
+  loop each key, row locked
+    UJ->>DB: is the key on any of the four key columns?
+    alt not used
+      UJ->>FS: signed DELETE
+      UJ->>DB: delete the row (kept if the delete failed)
+    else used
+      UJ->>DB: delete the row only
+    end
+  end
 ```
 
 **Rules in the code**
 
 - Time always comes from the Clock bean.
+- The upload clean-up only takes keys the API handed out and never lists the bucket.
 - Rate limits and job state are per API instance today.

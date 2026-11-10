@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "platform.storage")
 public record StorageProperties(String localDir, String endpoint, String region, String bucket, String accessKey,
-        String secretKey, int readHours, int maxUploadMb) {
+        String secretKey, int readHours, int maxUploadMb, int unsavedDays) {
 
     /** A single PUT to the bucket can be up to 5 GB (DigitalOcean's Spaces limits). */
     public static final int MOST_UPLOAD_MB = 5 * 1024;

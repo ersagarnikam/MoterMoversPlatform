@@ -81,6 +81,9 @@ public class ProductionChecks {
         if (storage.readHours() < 1 || storage.readHours() > StorageProperties.MOST_READ_HOURS) {
             problems.add("STORAGE_READ_HOURS must be between 1 and " + StorageProperties.MOST_READ_HOURS);
         }
+        if (storage.unsavedDays() < 1) {
+            problems.add("STORAGE_UNSAVED_DAYS must be at least 1");
+        }
         if (country.legalEntity().isPlaceholder()) {
             problems.add("The legal entity is still a placeholder: set PLATFORM_COUNTRIES_" + properties.region()
                     + "_LEGALENTITY_NAME, _ADDRESS, _COMPANYNUMBER, _TAXNUMBER, _EMAIL and _PHONE in deploy/country.env");

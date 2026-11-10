@@ -59,6 +59,7 @@ sequenceDiagram
 - The same pattern covers /home-activities, /guidance, /resources and /induction.
 - An upload link takes one file of the agreed type and size; video, audio, PDF and image types only.
 - An uploaded file gets a signed link only after the reader's access checks; pasted links are sent as they are.
+- A file never saved on an item is deleted after `STORAGE_UNSAVED_DAYS` (flow 8, Scheduled jobs).
 
 <a id="sign-up-school"></a>
 
