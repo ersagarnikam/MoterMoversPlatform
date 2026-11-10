@@ -186,9 +186,6 @@ refuses placeholders.
 
 ## Current state (2026-11-10)
 
-(added by Dev, 2026-11-10) **In progress: go-live task 80 (Dev, branch `task-80`, pull request #62).** Built and passing locally; CI, then the Tester, then the PM
-merges. Remove this note once merged.
-
 (added by Dev, 2026-11-10) **Pat's daily session plans (go-live task 80; no migration).** `assessment/session-plan-<colour>.json`, made from her "Daily Session Plans"
 (email of 2026-11-07) and her answers of 2026-11-10, load on every start through `SessionPlans` as drafts, adding only sessions that are missing: 990 in all (18 rhymes of 5 days
 for Red, Orange and Yellow; 6 modules of 6 weeks of 5 days for Green to Violet). The weeks come from the file. `unit` is the module or the rhyme number and `day` runs through it;
