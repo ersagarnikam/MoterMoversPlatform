@@ -354,7 +354,8 @@ export default function ContentPage() {
     [items, stage, unit],
   )
   const drafts = useMemo(() => narrowed.filter((i) => i.status === 'DRAFT'), [narrowed])
-  const shown = filter === 'ALL' ? narrowed : drafts
+  // Drafts first, so what needs signing off is never hidden behind the first page of approved sessions.
+  const shown = filter === 'ALL' ? [...drafts, ...narrowed.filter((i) => i.status !== 'DRAFT')] : drafts
   const modules = useMemo(
     () => [...new Set(items.filter((i) => i.stage === stage).flatMap((i) => i.unit ?? []))].sort((a, b) => a - b),
     [items, stage],
