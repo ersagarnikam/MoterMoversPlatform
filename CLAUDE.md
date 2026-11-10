@@ -66,13 +66,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-10) 254 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-10) 267 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 62 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # (added by Dev, 2026-11-06) 69 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-10) 70 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 (added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
@@ -185,6 +185,21 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-10)
+
+(added by Dev, 2026-11-10) **In progress: go-live task 80 (Dev, branch `task-80`, pull request to follow).** Built and passing locally; CI, then the Tester, then the PM
+merges. Remove this note once merged.
+
+(added by Dev, 2026-11-10) **Pat's daily session plans (go-live task 80; no migration).** `assessment/session-plan-<colour>.json`, made from her "Daily Session Plans"
+(email of 2026-11-07) and her answers of 2026-11-10, load on every start through `SessionPlans` as drafts, adding only sessions that are missing: 990 in all (18 rhymes of 5 days
+for Red, Orange and Yellow; 6 modules of 6 weeks of 5 days for Green to Violet). The weeks come from the file. `unit` is the module or the rhyme number and `day` runs through it;
+titles read "Green Module 1, Week 2, Day 3" and "Red Rhyme 1, Day 3". A session stores the grid's exercise names; the teacher's card (`SessionCard.steps`) takes the instructions from
+the grid when it is shown, so a revised grid reaches sessions at once, and adds the module's cool-down (`coolDown`, the last step; `cool-downs.json` now has all 24, Violet included,
+so home sessions show them too). A name not in that colour's grid stops the start-up. A rhyme session links to the library rhyme of that name on every start. `POST
+/api/admin/content/approve-all` (`stage`, optional `unit`; `AccessPolicy.requireAdmin`) approves a colour or module; a draft failing the wording check stays a draft and is named. Content
+approval has colour and module filters and shows 100 cards at a time. The demo approves these in place of the filler; its two drafts are Yellow unit 19. **Motor Movers at Home stays
+at five weeks** (`HomeRules.buildUp`, `WEEKS_PER_MODULE`) until Pat confirms. **Known limit:** a session already loaded keeps its list of exercises if a plan file is later changed (only
+missing sessions are added, as the spec asks). **The guides need rebuilding** (`docs/guide-builder`): the player and Content approval changed. Names mapped and points for Pat:
+`docs/assessment-design.md`, Daily session plans.
 
 (added by Dev, 2026-11-10) **Unsaved uploads are cleaned up (go-live task 74; migration V22).** `POST /api/admin/files` records each key it hands
 out in `unsaved_upload`, and `FileLinks.requireKey` removes the row in the item's own transaction. `UnsavedUploadJob` (daily at 02:45) takes rows
@@ -844,7 +859,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-10): [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-10): (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -871,9 +886,9 @@ Not started unless noted. Confirm priorities with the owner.
    fill in `BACKUP_OFFSITE_*`, and run the restore test after the first night.
 6. Done 2026-10-21: Maven wrapper (`backend/mvnw`); CI uses it.
 7. Done 2026-10-21: `SEED_STARTER_CONTENT=true` gives an empty deployment the starter content
-   (`seed/StarterContent`, shared with the demo) as drafts for the team to approve. Still to do: the daily
-   session plans (the demo ones are generated filler and are not in the starter set), and replacing the
-   placeholder assessment items once Pat sends the real ones (step 10). Approving drafts is one at a time.
+   (`seed/StarterContent`, shared with the demo) as drafts for the team to approve. (added by Dev, 2026-11-10) Pat's daily
+   session plans now load as drafts in every deployment (task 80, Current state), and the team can approve a whole colour or module at once.
+   Other kinds of content are still approved one at a time.
 8. Done 2026-10-21: bookings, attendance and certificates have a screen (per-session register since 2026-10-22).
    Session reminder emails done 2026-10-26. Not built: emailing the learner when their certificate is issued, and
    reminders before it expires.

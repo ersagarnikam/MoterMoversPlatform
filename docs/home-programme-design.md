@@ -90,9 +90,8 @@ and **Leo**, 1 year 8 months, who has not done the starting check yet (he will s
 
 ## Still to settle
 
-1. **The other cool-downs.** The text of the cool-down for Green modules 2 to 6, and for Blue and Indigo.
-2. **Violet.** Five weeks a module, and a cool-down, as for Green to Indigo? *Assumed for now: five weeks, no separate
-   cool-down.*
+1. **Module length at home.** Pat's plans have six weeks a module in school. Home stays at five until she confirms whether six applies there too.
+2. **Violet.** Five weeks a module at home, as for Green to Indigo? *Assumed for now: five weeks.* Its cool-down came with her session plans.
 3. **The parent induction's lessons**: what the short induction says, as for the staff one. The way it works is
    considered in the design, with placeholder lessons for now.
 4. **The film files**, from you or Laura.

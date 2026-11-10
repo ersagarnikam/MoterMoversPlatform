@@ -10,6 +10,8 @@ test('a trained teacher runs today’s session with its rhyme', async ({ page })
   await expect(page.getByText('The recording is on its way')).toBeVisible()
   await expectAccessible(page)
 
+  // Pat's plan: the rhyme, with the grid's words and actions.
+  await expect(page.locator('.session-how')).toBeVisible()
   await page.getByRole('button', { name: 'Skip to end' }).click()
   await page.getByRole('button', { name: /^Complete session/ }).click()
   if (isWeekend()) {

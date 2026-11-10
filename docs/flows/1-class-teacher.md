@@ -63,7 +63,7 @@ sequenceDiagram
 
 ## Run the daily 10-minute session
 
-Today picks the next session for the class's colour stage. The player runs the plan, the teacher marks absences, then completes it.
+Today picks the next session for the class's colour stage, in Pat's order. The card has each exercise with the grid's instructions, then the module's cool-down (a rhyme colour ends in the rhyme's own words). The player runs the plan, the teacher marks absences, then completes it.
 
 **Endpoints:** `GET /api/classes` · `GET /api/classes/{id}/today` · `POST /api/classes/{id}/sessions`
 

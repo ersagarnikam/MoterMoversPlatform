@@ -63,13 +63,13 @@ class InductionAndResourcesTest {
     }
 
     @Test
-    void yellowSessionsCarryAnApprovedRhyme() throws Exception {
+    void aYellowSessionShowsTheRhymeFromTheGrid() throws Exception {
         String hardy = login("teacher@oakfield.test");
         Integer classId = JsonPath.read(fetch(hardy, "/api/classes"), "$[0].id");
         mvc.perform(get("/api/classes/" + classId + "/today").header("Authorization", bearer(hardy)))
                 .andExpect(jsonPath("$.inductionComplete").value(true))
-                .andExpect(jsonPath("$.nextSession.rhyme.title").isNotEmpty())
-                .andExpect(jsonPath("$.nextSession.rhyme.lines.length()").value(greaterThan(2)));
+                .andExpect(jsonPath("$.nextSession.steps.length()").value(1))
+                .andExpect(jsonPath("$.nextSession.steps[0].instructions").isNotEmpty());
     }
 
     @Test

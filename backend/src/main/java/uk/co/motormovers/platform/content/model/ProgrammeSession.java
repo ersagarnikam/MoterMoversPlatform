@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -53,6 +55,7 @@ public class ProgrammeSession {
     private LibraryResource rhyme;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
     @CollectionTable(name = "programme_session_activity", joinColumns = @JoinColumn(name = "session_id"))
     @OrderColumn(name = "position")
     @Column(name = "description")

@@ -80,7 +80,7 @@ sequenceDiagram
   API->>API: requireFamilyOf
   API->>DB: exercises for stage, sessions done, ratings
   API->>HR: plan(list, done) and reviewDue
-  API->>API: CoolDowns.forModule (Green to Indigo)
+  API->>API: CoolDowns.forModule (Green to Violet)
   API-->>A: week, sessionTitle, exercises, newThisWeek, safetyNote, coolDown
   opt inductionDone is false
     P->>A: Read the parent induction
@@ -111,7 +111,7 @@ sequenceDiagram
 - A parent finishes the parent induction before their first session; each carer does their own. The API refuses a
   session until then, and finishing is permanent: lessons added later lock nobody out.
 - The safety note shows before the first session.
-- From Green to Indigo the session ends with the module's cool-down (the latest one sent for that colour); a rhyme
+- From Green to Violet the session ends with the module's cool-down (the colour's last one past module 6); a rhyme
   ends with its own, in its words (Pat, 2026-11-05).
 - Parents rate with the same 1 to 4 scale. A flag shows only the gentle prompt (nursery or health visitor).
 

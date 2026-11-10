@@ -11,5 +11,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
     List<Exercise> findByStageOrderByNumber(ColourStage stage);
 
+    List<Exercise> findByStageAndTitleIn(ColourStage stage, List<String> titles);
+
     boolean existsByStage(ColourStage stage);
 }

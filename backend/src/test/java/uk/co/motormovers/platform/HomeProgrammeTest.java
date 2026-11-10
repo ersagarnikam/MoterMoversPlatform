@@ -156,8 +156,8 @@ class HomeProgrammeTest {
                 .andExpect(jsonPath("$.modules").value(6))
                 .andExpect(jsonPath("$.progressLabel").value("Module 2 of 6 · week 1 of 5"))
                 .andExpect(jsonPath("$.sessionTitle").value("Module 2 · week 1"))
-                // Green ends with a cool-down; module 2 has none of its own yet, so Cool Down 1 carries on.
-                .andExpect(jsonPath("$.coolDown.title").value("Cool Down 1"))
+                // Green ends with the module's cool-down.
+                .andExpect(jsonPath("$.coolDown.title").value("Cool Down 2"))
                 .andExpect(jsonPath("$.coolDown.text").value(containsString("Count to 10")))
                 // The first week of a module: what carries on from module 1 and the first new ones, nothing added yet.
                 .andExpect(jsonPath("$.exercises.length()").value(greaterThan(1)))

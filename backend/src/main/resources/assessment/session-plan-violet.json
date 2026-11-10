@@ -1,0 +1,73 @@
+{
+  "source": "Pat's Daily Session Plans (email of 2026-11-07), with her answers of 2026-11-10",
+  "stage": "VIOLET",
+  "unitName": "Module",
+  "units": [
+    {
+      "number": 1,
+      "weeks": [
+        ["Motor Lift One"],
+        ["Motor Lift One", "Motor Lift Two"],
+        ["Motor Lift One", "Motor Lift Two", "Motor Lift Three"],
+        ["Motor Lift One", "Motor Lift Two", "Motor Lift Three", "Motor Lift Four"],
+        ["Motor Lift One", "Motor Lift Two", "Motor Lift Three", "Motor Lift Four"],
+        ["Motor Lift One", "Motor Lift Two", "Motor Lift Three", "Motor Lift Four"]
+      ]
+    },
+    {
+      "number": 2,
+      "weeks": [
+        ["Motor Swing One"],
+        ["Motor Swing One", "Motor Swing Two"],
+        ["Motor Swing One", "Motor Swing Two", "Motor Swing Three"],
+        ["Motor Swing One", "Motor Swing Two", "Motor Swing Three", "Motor Swing Four"],
+        ["Motor Swing One", "Motor Swing Two", "Motor Swing Three", "Motor Swing Four"],
+        ["Motor Swing One", "Motor Swing Two", "Motor Swing Three", "Motor Swing Four"]
+      ]
+    },
+    {
+      "number": 3,
+      "weeks": [
+        ["Motor Star One"],
+        ["Motor Star One", "Motor Star Two"],
+        ["Motor Star One", "Motor Star Two", "Motor Star Three"],
+        ["Motor Star One", "Motor Star Two", "Motor Star Three", "Motor Star Four"],
+        ["Motor Star One", "Motor Star Two", "Motor Star Three", "Motor Star Four"],
+        ["Motor Star One", "Motor Star Two", "Motor Star Three", "Motor Star Four"]
+      ]
+    },
+    {
+      "number": 4,
+      "weeks": [
+        ["Motor Star Five"],
+        ["Motor Star Five", "Motor Jump One"],
+        ["Motor Star Five", "Motor Jump One", "Motor Jump Two"],
+        ["Motor Star Five", "Motor Jump One", "Motor Jump Two", "Motor Jump Three"],
+        ["Motor Star Five", "Motor Jump One", "Motor Jump Two", "Motor Jump Three"],
+        ["Motor Star Five", "Motor Jump One", "Motor Jump Two", "Motor Jump Three"]
+      ]
+    },
+    {
+      "number": 5,
+      "weeks": [
+        ["Motor Lift Five"],
+        ["Motor Lift Five", "Motor Lift Six"],
+        ["Motor Lift Five", "Motor Lift Six", "Motor Lift Seven"],
+        ["Motor Lift Five", "Motor Lift Six", "Motor Lift Seven", "Motor Lift Eight"],
+        ["Motor Lift Five", "Motor Lift Six", "Motor Lift Seven", "Motor Lift Eight"],
+        ["Motor Lift Five", "Motor Lift Six", "Motor Lift Seven", "Motor Lift Eight"]
+      ]
+    },
+    {
+      "number": 6,
+      "weeks": [
+        ["Motor Cross One"],
+        ["Motor Cross One", "Motor Cross Two"],
+        ["Motor Cross One", "Motor Cross Two", "Motor Cross Three"],
+        ["Motor Cross One", "Motor Cross Two", "Motor Cross Three", "Motor Cross Four"],
+        ["Motor Cross One", "Motor Cross Two", "Motor Cross Three", "Motor Cross Four"],
+        ["Motor Cross One", "Motor Cross Two", "Motor Cross Three", "Motor Cross Four"]
+      ]
+    }
+  ]
+}

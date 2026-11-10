@@ -96,7 +96,7 @@ class ApiIntegrationTest {
         String admin = login("admin@motormovers.test");
         String created = mvc.perform(post("/api/admin/content").header("Authorization", bearer(admin))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"stage\":\"RED\",\"unit\":9,\"day\":1,\"title\":\"Signs of autism\","
+                .content("{\"stage\":\"RED\",\"unit\":99,\"day\":1,\"title\":\"Signs of autism\","
                         + "\"focus\":\"Spotting it early\",\"durationMinutes\":10,\"activities\":[]}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("DRAFT"))
