@@ -186,7 +186,7 @@ refuses placeholders.
 
 ## Current state (2026-11-10)
 
-(added by Dev, 2026-11-10) **In progress: go-live task 80 (Dev, branch `task-80`, pull request to follow).** Built and passing locally; CI, then the Tester, then the PM
+(added by Dev, 2026-11-10) **In progress: go-live task 80 (Dev, branch `task-80`, pull request #62).** Built and passing locally; CI, then the Tester, then the PM
 merges. Remove this note once merged.
 
 (added by Dev, 2026-11-10) **Pat's daily session plans (go-live task 80; no migration).** `assessment/session-plan-<colour>.json`, made from her "Daily Session Plans"
