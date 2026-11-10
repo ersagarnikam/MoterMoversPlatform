@@ -74,6 +74,15 @@ public class LocalFileStorage implements FileStorage {
         return Files.isRegularFile(pathOf(key));
     }
 
+    @Override
+    public void delete(String key) {
+        try {
+            Files.deleteIfExists(pathOf(key));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     /** Takes one upload. The type and size came with the link and must be what the browser actually sends. */
     void save(String key, long expires, String type, long size, String sig, String sentType, InputStream body) {
         require(sig, sign("PUT", key, expires, type, size), expires);

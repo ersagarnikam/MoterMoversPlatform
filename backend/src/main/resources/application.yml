@@ -154,6 +154,8 @@ platform:
     # How long a signed read link lasts. A film stops being seekable once its link expires, so this covers a school day.
     read-hours: ${STORAGE_READ_HOURS:8}
     max-upload-mb: ${STORAGE_MAX_UPLOAD_MB:2048}
+    # How long an uploaded file waits to be saved on an item before UnsavedUploadJob deletes it.
+    unsaved-days: ${STORAGE_UNSAVED_DAYS:7}
 
 ---
 spring:

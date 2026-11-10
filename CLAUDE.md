@@ -41,7 +41,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V21`, added by Dev 2026-11-06);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V22`, added by Dev 2026-11-10);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -57,7 +57,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-06) 241 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-10) 254 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-06) 62 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -175,7 +175,15 @@ Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. Its 
 to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_...`, `deploy/country.env`); production
 refuses placeholders.
 
-## Current state (2026-11-06)
+## Current state (2026-11-10)
+
+(added by Dev, 2026-11-10) **Unsaved uploads are cleaned up (go-live task 74; migration V22).** `POST /api/admin/files` records each key it hands
+out in `unsaved_upload`, and `FileLinks.requireKey` removes the row in the item's own transaction. `UnsavedUploadJob` (daily at 02:45) takes rows
+older than `STORAGE_UNSAVED_DAYS` (7; production refuses under 1). A key on none of the four key columns has its file and row deleted; a key
+still used loses only its row; a failed delete keeps the row for the next day. It only ever takes keys from that table and never lists the
+bucket, so it cannot remove a file it did not hand out. Each key has its own transaction with the row locked, so a save and the job cannot
+cross. `FileStorage.delete` is a signed DELETE on a bucket and needs the Spaces key to allow deleting. Not tried on a real bucket. Known limits:
+a file replaced or left behind by deleting a saved item stays, and keys handed out before V22 have no row.
 
 [PM: Claude, 2026-11-06] **Film access decided by the owner (settles the three questions in the notes below).** Staff
 induction films go only to staff at a school with a licence running today, plus the team; everyone else keeps the lesson
@@ -224,8 +232,8 @@ resources (a resource for all stages needs some licence), for a parent with a li
 activities, and for anyone who can already see an induction lesson. **Reads and uploads go to the bucket, never the CDN.**
 **Only `/admin/content` allows the bucket in connect-src** (`STORAGE_ORIGIN`, nginx.conf and vite.config.ts), and a CSP is set
 when a page loads, so links to that page must be full page loads (`reloadDocument`), as with `/live`. Drafts show "Open the
-file" so a reviewer can check it. Not built: deleting files, including ones uploaded for a draft never saved or a draft
-sent back. Details: RUNBOOK, File storage.
+file" so a reviewer can check it. (added by Dev, 2026-11-10) Files uploaded for a form never saved are now cleaned up (task 74, above); a file left
+behind by a saved item is still not deleted. Details: RUNBOOK, File storage.
 
 (added by Dev, 2026-11-06) **The Tester's findings on country and refunds (go-live task 72).** Two more country settings,
 both in `GET /api/settings`: `time-label` ("UK time", "Irish time", "Queensland time"; required), used by session reminders,
@@ -808,7 +816,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-06): (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-10): (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

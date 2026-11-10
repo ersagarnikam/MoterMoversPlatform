@@ -239,7 +239,8 @@ works: the team pastes links, as before. **This has not yet been tried on a real
    any CORS change, or browsers keep failing.
 3. Add one CORS rule to the bucket, so browsers can upload to it: origin `https://<APP_DOMAIN>` (the full origin), method
    `PUT`, allowed header `content-type`, max age 5 seconds. Playing a file needs no rule.
-4. Create an access key limited to this bucket, then set these in `deploy/.env` and restart `api` and `web`:
+4. Create an access key limited to this bucket, with permission to read, write **and delete** (the daily clean-up of
+   unsaved uploads needs to delete), then set these in `deploy/.env` and restart `api` and `web`:
 
 | Setting | Example |
 |---|---|
@@ -255,7 +256,9 @@ security policy blocks the upload and the form says the file could not be sent.
 **First checks on a real bucket:** upload a small file and a film of a few hundred MB on Content approval; save the draft
 (the API checks the file is there, with a signed HEAD); open it from the draft; download a printable, which must save
 under its title; approve it, then play it as a teacher and drag the video's position bar (seeking); try a file that is too
-large; open a link after `STORAGE_READ_HOURS`, which must fail; and open the film in the parent app.
+large; open a link after `STORAGE_READ_HOURS`, which must fail; open the film in the parent app; and, for the clean-up, upload a
+file without saving the form, set `STORAGE_UNSAVED_DAYS=1`, and check after two nights that the file has gone and the API's
+log has no `Could not delete unsaved upload` line.
 
 **Limits (DigitalOcean's docs, checked 2026-11-06).** One PUT can be up to 5 GB, and the platform sends each file as one
 PUT, so a film stops at `STORAGE_MAX_UPLOAD_MB` (2048 by default, 5120 at most); a failed upload starts again. A new bucket
@@ -265,7 +268,13 @@ suggest the CDN above 400 reads a second, which signed links cannot use. Signed 
 are supported on GET.
 
 A signed link works for anyone who has it until it expires, so a shared link can be opened without a licence for those
-hours. Uploaded files are never deleted by the platform: one uploaded for a draft that was not saved stays in the bucket.
+hours.
+
+**Unsaved uploads.** A file uploaded for a form that is never saved is deleted by a daily job at 02:45, once it is older than
+`STORAGE_UNSAVED_DAYS` (7 by default, at least 1). The job only takes keys the API recorded when it handed them out, and never
+lists the bucket. If a delete fails, it logs `Could not delete unsaved upload` with the key and tries again the next day. A
+form left open past that time is told to upload the file again when it is saved. **Known limits:** a file replaced, or left
+behind when a saved item is removed, stays in the bucket, as do files uploaded before this was added.
 
 ## Everyday operations
 

@@ -28,9 +28,9 @@ import javax.crypto.spec.SecretKeySpec;
  */
 class S3FileStorage implements FileStorage {
 
-    /** Asks the store about a signed link, and gives the HTTP status. */
+    /** Sends a signed link to the store, and gives the HTTP status. */
     interface Probe {
-        int head(String url) throws IOException, InterruptedException;
+        int send(String method, String url) throws IOException, InterruptedException;
     }
 
     private static final Duration UPLOAD_LINK = Duration.ofHours(1);
@@ -44,7 +44,7 @@ class S3FileStorage implements FileStorage {
     private final Probe probe;
 
     S3FileStorage(StorageProperties properties, Clock clock) {
-        this(properties, clock, S3FileStorage::head);
+        this(properties, clock, S3FileStorage::send);
     }
 
     S3FileStorage(StorageProperties properties, Clock clock, Probe probe) {
@@ -81,8 +81,21 @@ class S3FileStorage implements FileStorage {
 
     @Override
     public boolean exists(String key) {
+        return ask("HEAD", key) == 200;
+    }
+
+    @Override
+    public void delete(String key) {
+        // A bucket answers 204 whether or not the file was there; 404 is also a file already gone.
+        int status = ask("DELETE", key);
+        if ((status < 200 || status >= 300) && status != 404) {
+            throw new IllegalStateException("The file store refused to delete a file: " + status);
+        }
+    }
+
+    private int ask(String method, String key) {
         try {
-            return probe.head(presign("HEAD", key, Duration.ofMinutes(1), Map.of())) == 200;
+            return probe.send(method, presign(method, key, Duration.ofMinutes(1), Map.of()));
         } catch (IOException e) {
             throw new IllegalStateException("The file store could not be reached. Please try saving again.");
         } catch (InterruptedException e) {
@@ -91,9 +104,9 @@ class S3FileStorage implements FileStorage {
         }
     }
 
-    private static int head(String url) throws IOException, InterruptedException {
+    private static int send(String method, String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(10))
-                .method("HEAD", HttpRequest.BodyPublishers.noBody()).build();
+                .method(method, HttpRequest.BodyPublishers.noBody()).build();
         try (HttpClient client = HttpClient.newHttpClient()) {
             return client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
         }

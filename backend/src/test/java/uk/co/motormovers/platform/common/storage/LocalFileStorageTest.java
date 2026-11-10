@@ -54,8 +54,21 @@ class LocalFileStorageTest {
         assertThat(Files.list(directory)).isEmpty();
     }
 
+    @Test
+    void deletingTakesTheFileAndAFileAlreadyGoneIsFine() throws Exception {
+        LocalFileStorage storage = storage(NOW);
+        String upload = storage.uploadLink(KEY, "audio/mpeg", 3);
+        storage.save(KEY, number(upload, "expires"), "audio/mpeg", 3, text(upload, "sig"), "audio/mpeg",
+                new ByteArrayInputStream(new byte[3]));
+        assertThat(storage.exists(KEY)).isTrue();
+
+        storage.delete(KEY);
+        assertThat(storage.exists(KEY)).isFalse();
+        storage.delete(KEY);
+    }
+
     private LocalFileStorage storage(Instant now) {
-        return new LocalFileStorage(new StorageProperties(directory.toString(), "", "", "", "", "", 8, 2048),
+        return new LocalFileStorage(new StorageProperties(directory.toString(), "", "", "", "", "", 8, 2048, 7),
                 Clock.fixed(now, ZoneOffset.UTC));
     }
 

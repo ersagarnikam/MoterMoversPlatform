@@ -21,7 +21,7 @@ class S3FileStorageTest {
     @Test
     void matchesAwsPublishedExample() {
         StorageProperties example = new StorageProperties("", "https://s3.amazonaws.com", "us-east-1", "examplebucket",
-                "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", 8, 2048);
+                "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", 8, 2048, 7);
 
         String link = new S3FileStorage(example, AWS_EXAMPLE_TIME).presign("GET", "test.txt", Duration.ofHours(24),
                 Map.of());
@@ -71,25 +71,46 @@ class S3FileStorageTest {
 
     @Test
     void aFileExistsWhenTheStoreSaysSo() {
-        assertThat(probing(url -> {
+        assertThat(probing((method, url) -> {
+            assertThat(method).isEqualTo("HEAD");
             assertThat(url).contains("/uploads/film.mp4?").contains("X-Amz-Expires=60");
             return 200;
         }).exists("uploads/film.mp4")).isTrue();
-        assertThat(probing(url -> 404).exists("uploads/film.mp4")).isFalse();
-        assertThat(probing(url -> 403).exists("uploads/film.mp4")).isFalse();
+        assertThat(probing((method, url) -> 404).exists("uploads/film.mp4")).isFalse();
+        assertThat(probing((method, url) -> 403).exists("uploads/film.mp4")).isFalse();
     }
 
     @Test
     void aStoreThatCannotBeReachedIsSaidPlainly() {
-        assertThatThrownBy(() -> probing(url -> {
+        assertThatThrownBy(() -> probing((method, url) -> {
             throw new IOException("connect timed out");
         }).exists("uploads/film.mp4")).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("could not be reached");
     }
 
+    @Test
+    void deletingSendsASignedDeleteAndAFileAlreadyGoneIsFine() {
+        probing((method, url) -> {
+            assertThat(method).isEqualTo("DELETE");
+            assertThat(url).contains("/uploads/film.mp4?").contains("X-Amz-Expires=60").contains("X-Amz-Signature=");
+            assertThat(signature(url)).isNotEqualTo(signature(spaces().readLink("uploads/film.mp4")));
+            return 204;
+        }).delete("uploads/film.mp4");
+        probing((method, url) -> 404).delete("uploads/film.mp4");
+    }
+
+    @Test
+    void aDeleteTheStoreRefusesIsAFailure() {
+        assertThatThrownBy(() -> probing((method, url) -> 403).delete("uploads/film.mp4"))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("403");
+        assertThatThrownBy(() -> probing((method, url) -> {
+            throw new IOException("connect timed out");
+        }).delete("uploads/film.mp4")).isInstanceOf(IllegalStateException.class);
+    }
+
     private static S3FileStorage probing(S3FileStorage.Probe probe) {
         return new S3FileStorage(new StorageProperties("", "https://lon1.digitaloceanspaces.com", "lon1",
-                "motor-movers-uk", "access", "secret", 8, 2048), AWS_EXAMPLE_TIME, probe);
+                "motor-movers-uk", "access", "secret", 8, 2048, 7), AWS_EXAMPLE_TIME, probe);
     }
 
     private static String signature(String link) {
@@ -98,6 +119,6 @@ class S3FileStorageTest {
 
     private static S3FileStorage spaces() {
         return new S3FileStorage(new StorageProperties("", "https://lon1.digitaloceanspaces.com", "lon1",
-                "motor-movers-uk", "access", "secret", 8, 2048), AWS_EXAMPLE_TIME);
+                "motor-movers-uk", "access", "secret", 8, 2048, 7), AWS_EXAMPLE_TIME);
     }
 }
