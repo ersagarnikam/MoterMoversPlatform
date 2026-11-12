@@ -186,8 +186,6 @@ refuses placeholders.
 
 ## Current state (2026-11-12)
 
-(added by Dev, 2026-11-12) **In progress: go-live task 82 (Dev, branch `task-82`, pull request #65).** Remove this note once merged.
-
 (added by Dev, 2026-11-12) **Home pass follow-ups (go-live task 82, the Tester's notes on pull request #64).** (a) A full refund
 with a renewal queued no longer leaves a gap: `HomePassService.closeGaps` moves the parts queued after the refunded one forward to follow on the next day,
 each keeping its length, and buying or extending follows on from the end of the unbroken run of pass days (`runsUntil`), or starts today when none
