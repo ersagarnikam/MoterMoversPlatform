@@ -50,7 +50,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V22`, added by Dev 2026-11-10);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V23`, added by Dev 2026-11-12);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -66,8 +66,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 270 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-12) 64 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 278 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-12) 69 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -185,6 +185,22 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-12)
+
+(added by Dev, 2026-11-12) **In progress: go-live task 26 (Dev, branch `task-26`, PR_PLACEHOLDER).** Remove this note once merged.
+
+(added by Dev, 2026-11-12) **The Motor Movers at Home pass (go-live task 26; migration V23).** A family buys a 12-month pass, for all its children and carers, by card through the
+existing Stripe Checkout (`POST /api/home/pass/checkout`; a pass started but not paid is reused). It is a person's payment with the new purpose `HOME_PASS` ("Home
+programme"), so it shows on Payments and in the team's figures. Only the signed webhook marks it paid: `OnlinePaymentService` and the team's mark-paid now publish
+`PaymentEvents.Paid`, and refunds `PaymentEvents.Refunded`, which `HomePassService` listens to. The pass runs from the day it is paid, or from the end of the pass running
+then (`home_pass` rows; a row bought by card has no dates until paid). Price: `home_pass_price`, dated like licence prices, set on Plans and prices; with none the pass
+is not on sale (`GET /api/home/pass` `onSale`). **Gate, in the API** (`HomePassService.requireReady`, the one rule): the parent induction first, then for a child at home a
+running pass, for sessions (`POST /api/home/sessions`), the starting check (GET and POST) and ratings (`AssessmentService.requireRecorder`); Today carries `passRunning` and
+`passEndsOn` and sends no session while locked. Adding, editing and deleting children, sharing, progress and linking a school stay open. Uploaded home films need a
+running pass (`FamilyService.hasChild`). Reminders (`HomePassService.remindEnding`, daily 08:15): by email and push 30 and 7 days before the end and on the day, once each per
+end date (`home_pass_reminder`). A pass refunded in full ends on the refund day; a partial refund leaves it. The team finds a family by any member's email and extends its pass
+on Payments (`/api/admin/home-pass/family`, `/extend`, recorded with who and why). A child linked to a school needs no pass. Web: `HomePassCard` on At home, the child page
+and session page say what is missing, the check page explains a refusal; app: a pass card on Today. Demo: a placeholder price of 35 from two years ago; Priya's pass runs;
+**lapsed@example.test** (Tom Reid, Noah) has one that ended. Not in this task: monthly billing (Release 2, task 68), and the price in each country (Kay, decision 3).
 
 (added by Dev, 2026-11-12) **Ireland and Australia details, and six-week modules at home (go-live task 81; no migration).** From Pat's answers of 2026-11-10:
 Ireland's and Australia's assessment points and year names are confirmed (Ireland's end point April to June; a July or August record still counts as the end of the year
@@ -900,7 +916,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
