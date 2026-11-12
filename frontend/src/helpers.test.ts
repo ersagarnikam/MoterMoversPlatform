@@ -3,7 +3,7 @@ import type { CountrySettings } from './api'
 import { counterLabel, schoolYearLabel } from './country'
 import { sessionTime, startsIn, ZOOM_SDK } from './live'
 import { currencySymbol, money, setCurrency, taxLine } from './money'
-import { CONTACT_EMAIL, mailto, signInRole, SIGN_IN_ROLES } from './site'
+import { mailto, signInRole, SIGN_IN_ROLES } from './site'
 import { pct, stageInfo, STAGES } from './stages'
 
 describe('money', () => {
@@ -140,13 +140,19 @@ describe('ZOOM_SDK', () => {
 })
 
 describe('mailto', () => {
-  it('opens an email to the contact address with spaces kept as spaces', () => {
-    const link = mailto('Apply for Motor Movers', 'Name:\nSchool:')
-    expect(link.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true)
+  it('opens an email to the given address with spaces kept as spaces', () => {
+    const link = mailto('hello@example.test', 'Apply for Motor Movers', 'Name:\nSchool:')!
+    expect(link.startsWith('mailto:hello@example.test?')).toBe(true)
     const query = new URLSearchParams(link.split('?')[1])
     expect(query.get('subject')).toBe('Apply for Motor Movers')
     expect(query.get('body')).toBe('Name:\nSchool:')
     expect(link).not.toContain('+')
+  })
+
+  it('gives no link without an address, so a page leaves it off', () => {
+    expect(mailto(null, 'Apply for Motor Movers')).toBeNull()
+    expect(mailto(undefined, 'Motor Movers CD and book')).toBeNull()
+    expect(mailto('', 'Motor Movers')).toBeNull()
   })
 })
 

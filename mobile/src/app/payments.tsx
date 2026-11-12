@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Linking, View } from 'react-native'
 import { Banner, Body, Button, Card, ErrorState, H2, Loading, Muted, Row, Screen } from '@/components/ui'
-import { api, creditNoteName, formatDate, legalLine, money, taxLine, type Payment } from '@/lib/api'
-import { CONTACT_EMAIL, CONTACT_PHONE } from '@/lib/contact'
+import { api, contacts, creditNoteName, formatDate, legalLine, money, taxLine, type Payment } from '@/lib/api'
 import { space, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
@@ -37,6 +36,7 @@ export default function PaymentsScreen() {
   if (error && !data) return <ErrorState message={error} onRetry={() => reload()} />
   if (!data) return <Loading />
   const due = data.payments.filter((x) => x.status === 'DUE')
+  const { email, phone } = contacts()
 
   return (
     <Screen refreshing={refreshing} onRefresh={() => reload(true)}>
@@ -65,12 +65,14 @@ export default function PaymentsScreen() {
             {data.cards ? 'Or pay' : 'Pay'} as set out on your invoice, quoting the reference so the Motor Movers team can match your payment. It
             shows here as paid once they have received it.
           </Muted>
-          <Button
-            label="Email about a payment"
-            variant="secondary"
-            onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('A Motor Movers payment')}`)}
-          />
-          <Muted>Or call {CONTACT_PHONE}.</Muted>
+          {email && (
+            <Button
+              label="Email about a payment"
+              variant="secondary"
+              onPress={() => Linking.openURL(`mailto:${email}?subject=${encodeURIComponent('A Motor Movers payment')}`)}
+            />
+          )}
+          {phone && <Muted>{email ? `Or call ${phone}.` : `Questions about a payment: call ${phone}.`}</Muted>}
         </Card>
       )}
 

@@ -148,7 +148,26 @@ class CountrySettingsTest {
 
     @Test
     void theUkCountsItsSessionsByHalfTerm() {
-        assertThat(countries(Map.of()).get(Region.UK).validated("uk").termLabel()).isEqualTo("This half-term");
+        assertThat(countries(Map.of()).get(Region.UK).validated("uk").termLabel()).isEqualTo("This half-term", null);
+    }
+
+    @Test
+    void onlyTheUkHasACurriculumLineUntilPatGivesTheOthers() {
+        Map<Region, CountrySettings> countries = countries(Map.of());
+        assertThat(countries.get(Region.UK).curriculumLineOrNull()).isEqualTo("Motor Movers supports the Physical "
+                + "Development area of the EYFS. It does not replace PE or other physical activity.");
+        // Blank is allowed and leaves the line off the website.
+        assertThat(countries.get(Region.IE).validated("ie").curriculumLineOrNull()).isNull();
+        assertThat(countries.get(Region.AU).validated("au").curriculumLineOrNull()).isNull();
+    }
+
+    @Test
+    void theCurriculumLineCanBeOverriddenByAnEnvironmentVariable() {
+        Map<Region, CountrySettings> countries = countries(Map.of(
+                "PLATFORM_COUNTRIES_IE_CURRICULUMLINE", "A line for Ireland.",
+                "PLATFORM_COUNTRIES_UK_CURRICULUMLINE", " "));
+        assertThat(countries.get(Region.IE).curriculumLineOrNull()).isEqualTo("A line for Ireland.");
+        assertThat(countries.get(Region.UK).curriculumLineOrNull()).isNull();
     }
 
     @Test
@@ -161,23 +180,23 @@ class CountrySettingsTest {
     void aValueThatCannotWorkStopsStartUp() {
         CountrySettings uk = countries(Map.of()).get(Region.UK);
         assertThatThrownBy(() -> new CountrySettings(uk.name(), "POUNDS", uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term").validated("uk"))
+                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", null).validated("uk"))
                 .hasMessageContaining("platform.countries.uk.currency");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term")
+                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", null)
                 .validated("uk"))
                 .hasMessageContaining("tax-percent");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term")
+                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", null)
                 .validated("uk"))
                 .hasMessageContaining("time-zone");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), new CountrySettings.SchoolYear(9, 8, 3, 13, 1, 5), uk.yearNames(),
-                uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term").validated("uk"))
+                uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", null).validated("uk"))
                 .hasMessageContaining("school-year");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note",
-                "UK time", "the UK", " ").validated("uk"))
+                "UK time", "the UK", " ", null).validated("uk"))
                 .hasMessageContaining("term-label");
     }
 

@@ -53,10 +53,16 @@ picks the country's settings from `platform.countries` in `backend/src/main/reso
 | Counter on Today (`term-label`) | This half-term | This term | This term |
 | Times labelled | UK time | Irish time | Queensland time |
 | Data held in | the UK | the EU | Australia |
+| Curriculum line on the programme page (`curriculum-line`) | the EYFS sentence | blank (left off) | blank (left off) |
 | Legal entity | To be confirmed | To be confirmed | To be confirmed |
 
 `data-held-in` is what the website says about where data is held (the UK, the EU, Australia): check it against the
 server you chose, and blank it (`PLATFORM_COUNTRIES_<REGION>_DATAHELDIN=`) rather than leave something untrue.
+`curriculum-line` is the programme page's sentence on the country's early years curriculum; blank leaves it off.
+Ireland's and Australia's wording is Pat's to give (`PLATFORM_COUNTRIES_<REGION>_CURRICULUMLINE`).
+**Our contact details on the website and in the parent app are the legal entity's `email` and `phone`** (footer,
+enquiry form, For schools, For families, Payments): each is left off while blank or "To be confirmed", and the
+platform holds no other contact details, so set them for every deployment.
 Ireland's and Australia's points and year names were confirmed by Pat on 2026-11-10; every legal entity is still to be
 confirmed. Anyone can read a
 deployment's settings at `GET /api/settings` (no sign-in); the website and the parent app use them.

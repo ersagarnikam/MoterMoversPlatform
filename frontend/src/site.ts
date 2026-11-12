@@ -1,11 +1,27 @@
 /** Facts the public website repeats on several pages. Change them here, not in the page text. */
-export const CONTACT_EMAIL = 'movementforlearningproject@gmail.com'
-export const CONTACT_PHONE = '01202 826 718'
 
-/** A mailto link that opens a new email with a subject and a template body for the sender to fill in. */
-export function mailto(subject: string, body = ''): string {
+// Our contact details are not here: they are the deployment's legal entity's email and phone, from the country
+// settings (useContacts in src/country.ts), and are left off while not set (go-live task 28).
+
+/**
+ * The credit to the project Motor Movers grew from, on the home page and in the footer. Its wording is waiting for
+ * Pat (go-live task 28): Movement for Learning will not be reopened. Change it only here.
+ */
+export const PROJECT_CREDIT = {
+  /** The home page's eyebrow. */
+  eyebrow: 'From the Movement for Learning Project',
+  /** The website footer. */
+  footer: 'A programme from the Movement for Learning Project.',
+} as const
+
+/**
+ * A mailto link to `address` that opens a new email with a subject and a template body for the sender to fill
+ * in; null with no address, so a page leaves the link off rather than writing to no one.
+ */
+export function mailto(address: string | null | undefined, subject: string, body = ''): string | null {
+  if (!address) return null
   const q = new URLSearchParams({ subject, body }).toString().replace(/\+/g, '%20')
-  return `mailto:${CONTACT_EMAIL}?${q}`
+  return `mailto:${address}?${q}`
 }
 
 export const ENQUIRY_BODY =

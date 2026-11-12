@@ -24,7 +24,7 @@ export default function SignInChooserPage() {
           ))}
         </div>
         <p className="muted">
-          No account yet? Staff are invited by their head teacher or the Motor Movers team. Parents and carers can create an account in the
+          No account yet? Staff are invited by their school leader or the Motor Movers team. Parents and carers can create an account in the
           parent app with the code from school.
         </p>
       </section>

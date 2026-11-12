@@ -3,8 +3,6 @@ import { expect, expectAccessible, PASSWORD, signIn, test } from './fixtures'
 
 /** The public website: open to everyone, the way in to the platform for every role. */
 
-const CONTACT_EMAIL = 'movementforlearningproject@gmail.com'
-
 const PAGES = [
   {
     path: '/',
@@ -124,7 +122,7 @@ test('the home page buttons and cards lead to the right pages', async ({ page })
     ['How to join', '/for-schools', 'Bring Motor Movers to your setting'],
     ['Already using Motor Movers? Sign in', '/sign-in', 'Who are you signing in as?'],
     ['Class teachers', '/programme', 'A few minutes of the right movement, every day'],
-    ['Heads and SENCos', '/for-schools', 'Bring Motor Movers to your setting'],
+    ['School leaders', '/for-schools', 'Bring Motor Movers to your setting'],
     ['Parents and carers', '/for-families', 'Keep the movement going at home'],
   ]
   for (const [name, path, heading] of links) {
@@ -164,27 +162,45 @@ test('no website page uses diagnostic wording', async ({ page }) => {
   }
 })
 
-test('enquiry links open a filled-in email to the Motor Movers team', async ({ page }) => {
-  const mail = async (name: string) => {
-    const href = await page.getByRole('link', { name, exact: true }).first().getAttribute('href')
-    expect(href).toMatch(new RegExp(`^mailto:${CONTACT_EMAIL}`))
-    return new URL(href!).searchParams
+// Our contact details come only from the country settings (the legal entity's email and phone, go-live task 28). The
+// demo's legal entity is a placeholder, so no page shows an email or phone, and none shows the Movement for Learning
+// project's, which used to stand in for ours.
+test('no page shows the old project contact details, and none shows ours while they are not set', async ({ page }) => {
+  const settings = await (await page.request.get('/api/settings')).json()
+  expect(settings.contactEmail).toBeNull()
+  expect(settings.contactPhone).toBeNull()
+  for (const { path } of PAGES) {
+    await page.goto(path)
+    await expect(h1(page)).toBeVisible()
+    const html = (await page.content()).toLowerCase()
+    expect(html, path).not.toContain('movementforlearningproject')
+    expect(html, path).not.toContain('01202')
+    expect(await page.locator('a[href^="mailto:"]').count(), path).toBe(0)
   }
-
   await page.goto('/for-schools')
-  const params = await mail('Email us to apply')
-  expect(params.get('subject')).toBe('Apply for Motor Movers')
-  for (const field of ['Name:', 'School or setting:', 'Phone:', 'Number of classes:', 'Message:']) {
-    expect(params.get('body')).toContain(field)
-  }
-  await expect(page.getByText('01202 826 718').first()).toBeVisible()
-
+  await expect(page.getByRole('button', { name: 'Apply online' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Email us to apply' })).toHaveCount(0)
   await page.goto('/for-families')
-  expect((await mail('Ask us about the CD and book')).get('subject')).toBe('Motor Movers CD and book')
-  await expect(page.getByRole('contentinfo').getByRole('link', { name: CONTACT_EMAIL })).toHaveAttribute(
-    'href',
-    `mailto:${CONTACT_EMAIL}`,
-  )
+  await expect(page.getByRole('heading', { name: 'The CD and book' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ask us about the CD and book' })).toHaveCount(0)
+})
+
+test('the UK programme page names the EYFS, from the country settings', async ({ page }) => {
+  await page.goto('/programme')
+  await expect(page.getByText('Motor Movers supports the Physical Development area of the EYFS.')).toBeVisible()
+})
+
+test('with no contact details set, the apply form still sends', async ({ page }) => {
+  await page.goto('/for-schools')
+  await page.getByRole('button', { name: 'Apply online' }).click()
+  const form = page.getByRole('form', { name: 'Apply for Motor Movers' })
+  await expect(form).toContainText('We use these details only to reply.')
+  await expect(form.locator('a[href^="mailto:"]')).toHaveCount(0)
+  await form.getByLabel('Your name').fill('Alex Kim')
+  await form.getByLabel('Email').fill('alex@school.test')
+  await form.getByLabel('School or setting').fill('Elm Primary')
+  await form.getByRole('button', { name: 'Send' }).click()
+  await expect(page.locator('.enquiry-form[role=status]')).toContainText('We will reply to alex@school.test')
 })
 
 test('a school sees the price chart and asks for the price guide, no email program needed', async ({ page }) => {

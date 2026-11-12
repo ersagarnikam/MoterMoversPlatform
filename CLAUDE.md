@@ -69,13 +69,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 284 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-12) 72 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev-Rahul, 2026-11-12) 286 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev-Rahul, 2026-11-12) 73 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # (added by Dev, 2026-11-12) 71 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev-Rahul, 2026-11-12) 73 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 (added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
@@ -138,6 +138,7 @@ Queensland, Jan-Dec in four terms, Kindy/Prep). Code work this needs (board task
 - Website per country (task 28): the site still uses the Movement for Learning project's contact email and phone
   (`site.ts`) and leads with "From the Movement for Learning Project"; Pat said Movement for Learning will not be
   reopened, so the credit wording must be agreed with her. `PLATFORM_ENQUIRY_EMAIL` still defaults to the owner.
+  (added by Dev-Rahul, 2026-11-12) Part A (pull request on `task-28`) takes the old contact details out: see Current state.
 This supersedes Next steps item 13 (Australia "later").
 
 **Tracking.** monday.com board "Motor Movers Go-Live (Dec 2026)", id 5032300138
@@ -198,6 +199,28 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-12)
+
+(added by Dev-Rahul, 2026-11-12) **In progress: go-live task 28 part A, the website per country (team Rahul, Developer, branch
+`task-28`, pull request open, waiting for the Tester).** Remove this note once merged.
+
+(added by Dev-Rahul, 2026-11-12) **The website per country, part A (go-live task 28; no migration).** The Movement for Learning
+project's email and phone are gone from the website and the parent app. Our contact details are now only the legal entity's
+`email` and `phone` from the country settings (`contactEmail`, `contactPhone` in `GET /api/settings`), each left off while blank or
+"To be confirmed", so in the demo and until Kay's decision 1 no contact details show anywhere. Web: `useContacts()` (`src/country.ts`),
+`components/ContactWays` ("email … or call …"), and `mailto(address, subject, body)` in `site.ts`, which gives null with no address, in
+the footer, the enquiry form (a failure with no contacts says "Please try again later"), For schools ("Email us to apply" only with an
+email), For families (the CD and book link only with an email) and My payments. App: `contacts()` in `lib/api.ts`, set with the
+currency from the settings; `lib/contact.ts` is deleted; Payments shows the email button and the phone only when set. New country
+setting `curriculum-line` (`curriculumLine` in the settings, null when blank): the UK keeps the programme page's EYFS sentence word
+for word; Ireland and Australia are blank, so the line is left off until Pat gives their wording (Aistear, EYLF). The credit to Movement
+for Learning (the home page's eyebrow and the footer, text unchanged) is one constant, `PROJECT_CREDIT` in `site.ts`, waiting for Pat.
+Wording made neutral for three countries: "Heads and SENCos" on the home page is "School leaders"; "summaries for governors" reads
+"for governors or the board" (home and programme pages); For schools says "Tell us about your setting", "your school leader's or
+manager's agreement" and "Trusts, other groups of schools" (was "Academy trusts"); the sign-in chooser says staff are invited by "their
+school leader". The research history (About, pilot figures) is unchanged, and so are role names such as "Head teacher or SENCo" on the
+sign-in chooser, which are the platform's role labels everywhere. Out of scope (part B): real contact details per country, public
+prices, the brand, Irish and Australian curriculum wording, the credit wording, `PLATFORM_ENQUIRY_EMAIL`. **The guides need rebuilding**
+(footer and site pages changed). Backend tests could not run on Rahul's computer (Maven cannot download the JUnit provider there); CI runs them.
 
 (added by Dev, 2026-11-12) **Home pass follow-ups (go-live task 82, the Tester's notes on pull request #64).** (a) A full refund
 with a renewal queued no longer leaves a gap: `HomePassService.closeGaps` moves the parts queued after the refunded one forward to follow on the next day,
@@ -982,7 +1005,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-12): (added by Dev-Rahul, 2026-11-12) contact details and curriculum line from the country settings on the website and in the app; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

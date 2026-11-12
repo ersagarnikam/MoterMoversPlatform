@@ -11,7 +11,8 @@ import java.util.stream.Stream;
 
 /**
  * What differs between the countries a deployment can serve: money, tax, the time zone, the school year and its year
- * names, what the session counter is called, and the legal entity that contracts with schools and families. One block per region in application.yml
+ * names, what the session counter is called, the website's curriculum line, and the legal entity that contracts with
+ * schools and families. One block per region in application.yml
  * ({@code platform.countries}); {@code PLATFORM_REGION} picks the deployment's, and every value can be overridden by
  * an environment variable (for example {@code PLATFORM_COUNTRIES_IE_TAX_PERCENT}). Values still to be confirmed by Pat
  * or Kay are marked in application.yml.
@@ -29,7 +30,8 @@ public record CountrySettings(
         String creditNoteTitle,
         String timeLabel,
         String dataHeldIn,
-        String termLabel) {
+        String termLabel,
+        String curriculumLine) {
 
     /**
      * The school year runs from {@code firstMonth} to {@code lastMonth} (1 = January). Its three assessment points start
@@ -132,6 +134,14 @@ public record CountrySettings(
         require(timeLabel != null && !timeLabel.isBlank(), where + "time-label is missing");
         require(termLabel != null && !termLabel.isBlank(), where + "term-label is missing");
         return this;
+    }
+
+    /**
+     * The website's sentence on how the programme fits the country's early years curriculum, or null when blank: the
+     * UK names the EYFS; Ireland's and Australia's wording is Pat's to give, so their line is left off until then.
+     */
+    public String curriculumLineOrNull() {
+        return curriculumLine == null || curriculumLine.isBlank() ? null : curriculumLine.strip();
     }
 
     /** The tax rate in basis points: 2000 for 20%, 1350 for 13.5%. */

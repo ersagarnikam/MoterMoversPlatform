@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { PROJECT_CREDIT } from '../../site'
 import { STAGES } from '../../stages'
 
 const STEPS = [
@@ -18,7 +19,7 @@ const STEPS = [
 
 const AUDIENCES = [
   { title: 'Class teachers', text: "Today's session ready to play, ongoing assessment, and each child's profile.", to: '/programme' },
-  { title: 'Heads and SENCos', text: 'Progress across the school, classes that need support, and summaries for governors.', to: '/for-schools' },
+  { title: 'School leaders', text: 'Progress across the school, classes that need support, and summaries for governors or the board.', to: '/for-schools' },
   { title: 'Trusts and school groups', text: 'Licences and summary results for every school in the trust or group.', to: '/for-schools' },
   { title: 'Practitioners', text: 'Courses with live sessions to learn to run the programme well.', to: '/for-schools' },
   { title: 'Parents and carers', text: 'A parent course and an app with home activities at your child’s stage.', to: '/for-families' },
@@ -44,7 +45,7 @@ export default function HomePage() {
     <>
       <section className="site-hero">
         <div className="site-hero-inner">
-          <p className="eyebrow eyebrow-light">From the Movement for Learning Project</p>
+          <p className="eyebrow eyebrow-light">{PROJECT_CREDIT.eyebrow}</p>
           <h1>Movement that gets children ready to learn</h1>
           <p className="site-lead">
             Motor Movers is a daily movement programme that builds the balance, coordination and hand control children

@@ -777,9 +777,11 @@ export interface CountrySettings {
   legalLine: string | null
   /** The teacher's counter of daily sessions: "This half-term" (UK) or "This term" (Ireland, Australia). */
   termLabel: string
-  /** The legal entity's contact details; null while blank or a placeholder. */
+  /** The legal entity's contact details, the only ones shown as ours; null while blank or a placeholder. */
   contactEmail: string | null
   contactPhone: string | null
+  /** The programme page's sentence on the country's early years curriculum; null where there is none yet. */
+  curriculumLine: string | null
   /** How times are labelled: "UK time", "Irish time", "Queensland time". */
   timeLabel: string
   /** Where this deployment's data is held, e.g. "the UK"; empty when it is not stated. */

@@ -189,7 +189,7 @@ sequenceDiagram
   end
   V->>W: open a page
   W->>API: GET /api/settings
-  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity and legalLine, time label, where data is held, credit note title
+  API-->>W: region, country, currency, locale, tax label and percent, time zone, school year, year names, legal entity and legalLine, time label, where data is held, credit note title, term label, contact email and phone, curriculum line
 ```
 
 **Rules in the code**
@@ -200,3 +200,6 @@ sequenceDiagram
 - Nothing in the settings is private, so the endpoint needs no sign-in.
 - `legalLine` is null while any legal entity value says "To be confirmed", and a production deployment refuses to start
   until they are set.
+- `contactEmail` and `contactPhone` are the legal entity's, each null while blank or a placeholder; the website and the
+  parent app show only these as our contact details, and leave them off while null. `curriculumLine` is null where
+  the country has none (Ireland and Australia for now), and the programme page leaves it off.

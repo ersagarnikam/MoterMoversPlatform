@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import EnquiryForm from '../../components/EnquiryForm'
 import type { EnquiryKind } from '../../api'
-import { CONTACT_EMAIL, CONTACT_PHONE, ENQUIRY_BODY, mailto } from '../../site'
+import ContactWays, { hasContacts } from '../../components/ContactWays'
+import { useContacts } from '../../country'
+import { ENQUIRY_BODY, mailto } from '../../site'
 
 const INCLUDED = [
   'An annual licence to run your chosen colour stages in your setting',
@@ -16,7 +18,7 @@ const INCLUDED = [
 const STEPS = [
   {
     title: 'Get in touch',
-    text: 'Email us with your setting, how many classes you have and the stages you are interested in.',
+    text: 'Tell us about your setting, how many classes you have and the stages you are interested in.',
   },
   {
     title: 'Choose your stages',
@@ -24,7 +26,7 @@ const STEPS = [
   },
   {
     title: 'Agree the licence',
-    text: 'With your head teacher’s or manager’s agreement, we set up your annual licence.',
+    text: 'With your school leader’s or manager’s agreement, we set up your annual licence.',
   },
   {
     title: 'Start moving',
@@ -35,6 +37,8 @@ const STEPS = [
 export default function ForSchoolsPage() {
   // The enquiry form opens in place under the button that asked for it.
   const [open, setOpen] = useState<EnquiryKind | null>(null)
+  const contacts = useContacts()
+  const applyByEmail = mailto(contacts.email, 'Apply for Motor Movers', ENQUIRY_BODY)
   return (
     <>
       <section className="site-page-head">
@@ -94,7 +98,7 @@ export default function ForSchoolsPage() {
           <div className="card">
             <h3>Trusts and school groups</h3>
             <p>
-              Academy trusts, other groups of schools and independent groups: the group lead sees every school’s licence
+              Trusts, other groups of schools and independent groups: the group lead sees every school’s licence
               and summary results in one place. Schools choose whether to share
               more than the summary.
             </p>
@@ -112,7 +116,13 @@ export default function ForSchoolsPage() {
       <section className="site-section site-cta-band" id="contact">
         <h2>Apply for Motor Movers</h2>
         <p>
-          Email <a href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>{CONTACT_EMAIL}</a> or call {CONTACT_PHONE}.
+          {hasContacts(contacts) ? (
+            <>
+              Apply online, or <ContactWays contacts={contacts} subject="Apply for Motor Movers" body={ENQUIRY_BODY} />.
+            </>
+          ) : (
+            'Apply online.'
+          )}{' '}
           We reply by email, usually within a week.
         </p>
         {open === 'APPLY' ? (
@@ -122,9 +132,11 @@ export default function ForSchoolsPage() {
             <button type="button" className="btn btn-big btn-light" onClick={() => setOpen('APPLY')}>
               Apply online
             </button>
-            <a className="btn btn-big btn-ghost-dark" href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>
-              Email us to apply
-            </a>
+            {applyByEmail && (
+              <a className="btn btn-big btn-ghost-dark" href={applyByEmail}>
+                Email us to apply
+              </a>
+            )}
           </div>
         )}
       </section>

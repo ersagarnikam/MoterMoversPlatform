@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { api, type EnquiryKind } from '../api'
-import { CONTACT_EMAIL, CONTACT_PHONE, mailto, ENQUIRY_BODY } from '../site'
+import { useContacts } from '../country'
+import { ENQUIRY_BODY } from '../site'
+import ContactWays, { hasContacts } from './ContactWays'
 import PriceChart from './PriceChart'
 
 const TITLES: Record<EnquiryKind, string> = {
@@ -10,10 +12,12 @@ const TITLES: Record<EnquiryKind, string> = {
 
 /**
  * The website's enquiry form: the platform emails it to the Motor Movers team, so it works without an email program
- * on the sender's computer. The email link stays as a second way in. Asking for the price guide shows the price chart
+ * on the sender's computer. Our email and phone, from the country settings, stay as a second way in while set. Asking for the price guide shows the price chart
  * first, and the plan chosen there goes with the enquiry.
  */
 export default function EnquiryForm({ kind, onClose }: { kind: EnquiryKind; onClose?: () => void }) {
+  const contacts = useContacts()
+  const subject = kind === 'PRICE_GUIDE' ? 'Motor Movers price guide' : 'Apply for Motor Movers'
   const [fields, setFields] = useState({ name: '', email: '', setting: '', phone: '', classes: '', stages: '', plan: '', message: '' })
   // Hidden from people; a bot that fills it in is quietly ignored by the API.
   const [website, setWebsite] = useState('')
@@ -110,7 +114,14 @@ export default function EnquiryForm({ kind, onClose }: { kind: EnquiryKind; onCl
       </label>
       {error && (
         <p className="error" role="alert">
-          {error} You can email us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ring {CONTACT_PHONE}.
+          {error}{' '}
+          {hasContacts(contacts) ? (
+            <>
+              You can <ContactWays contacts={contacts} subject={subject} body={ENQUIRY_BODY} />.
+            </>
+          ) : (
+            'Please try again later.'
+          )}
         </p>
       )}
       <div className="row-end">
@@ -124,11 +135,12 @@ export default function EnquiryForm({ kind, onClose }: { kind: EnquiryKind; onCl
         )}
       </div>
       <p className="fine">
-        We use these details only to reply. You can also email{' '}
-        <a href={mailto(kind === 'PRICE_GUIDE' ? 'Motor Movers price guide' : 'Apply for Motor Movers', ENQUIRY_BODY)}>
-          {CONTACT_EMAIL}
-        </a>{' '}
-        or call {CONTACT_PHONE}.
+        We use these details only to reply.
+        {hasContacts(contacts) && (
+          <>
+            {' '}You can also <ContactWays contacts={contacts} subject={subject} body={ENQUIRY_BODY} />.
+          </>
+        )}
       </p>
     </form>
   )

@@ -481,12 +481,16 @@ export const api = {
   joinSchool: (id: number, code: string) =>
     request<LinkedChild>('POST', `/api/home/children/${id}/join-school`, { code }),
 
-  /** Open to anyone: the server's country settings (currency, tax, year names). */
+  /** Open to anyone: the server's country settings (currency, tax, legal entity, our contact details). */
   settings: () =>
-    request<{ currency: string; taxLabel: string; legalLine: string | null; creditNoteTitle: string }>(
-      'GET',
-      '/api/settings',
-    ),
+    request<{
+      currency: string
+      taxLabel: string
+      legalLine: string | null
+      creditNoteTitle: string
+      contactEmail: string | null
+      contactPhone: string | null
+    }>('GET', '/api/settings'),
 
   /** Emails the credit note to the parent: the app cannot save a file. */
   emailCreditNote: (refundId: number) => request<void>('POST', `/api/payments/refunds/${refundId}/credit-note/email`),
@@ -503,18 +507,36 @@ let currencySymbol = '£'
 let taxLabel = 'VAT'
 let legal: string | null = null
 let creditNoteTitle = 'Credit note'
+let contact: Contacts = { email: null, phone: null }
 
-/** The server's currency, tax label and legal entity from GET /api/settings; until known, amounts show in pounds. */
+/** Our contact details: the country's legal entity's email and phone, each null while not set (go-live task 28). */
+export interface Contacts {
+  email: string | null
+  phone: string | null
+}
+
+/**
+ * The server's currency, tax label, legal entity and contact details from GET /api/settings; until known, amounts
+ * show in pounds and no contact details show.
+ */
 export function setCountry(settings: {
   currency: string
   taxLabel: string
   legalLine: string | null
   creditNoteTitle?: string
+  contactEmail?: string | null
+  contactPhone?: string | null
 }): void {
   currencySymbol = CURRENCY_SYMBOLS[settings.currency] ?? `${settings.currency} `
   taxLabel = settings.taxLabel
   legal = settings.legalLine
   if (settings.creditNoteTitle) creditNoteTitle = settings.creditNoteTitle
+  contact = { email: settings.contactEmail ?? null, phone: settings.contactPhone ?? null }
+}
+
+/** Whom to ask: the chosen country's email and phone, each null while not set. Never anyone else's details. */
+export function contacts(): Contacts {
+  return contact
 }
 
 /** "credit note", or "adjustment note" in Australia. */

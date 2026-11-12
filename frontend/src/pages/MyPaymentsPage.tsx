@@ -4,7 +4,8 @@ import { api, type Payment, type Totals } from '../api'
 import { CardPaymentReturn, PayByCard, useCardPayments } from '../components/PayByCard'
 import PaymentTable from '../components/PaymentTable'
 import { money, taxLine } from '../money'
-import { CONTACT_EMAIL, CONTACT_PHONE } from '../site'
+import ContactWays, { hasContacts } from '../components/ContactWays'
+import { useContacts } from '../country'
 import { day } from '../dates'
 import Skeleton from '../components/Skeleton'
 
@@ -12,6 +13,7 @@ import Skeleton from '../components/Skeleton'
 export default function MyPaymentsPage() {
   const [data, setData] = useState<(Totals & { payments: Payment[] }) | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const contacts = useContacts()
   const cards = useCardPayments()
 
   useEffect(() => {
@@ -68,8 +70,12 @@ export default function MyPaymentsPage() {
           <p className="fine">
             {cards && 'Pay by card on our payment provider’s secure page, or '}
             {cards ? 'pay' : 'Pay'} as set out on your invoice, quoting the reference so the Motor Movers team can match
-            your payment. It shows here as paid once they have received it. Questions about a payment: email{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or call {CONTACT_PHONE}.
+            your payment. It shows here as paid once they have received it.
+            {hasContacts(contacts) && (
+              <>
+                {' '}Questions about a payment: <ContactWays contacts={contacts} subject="A Motor Movers payment" />.
+              </>
+            )}
           </p>
         </section>
       )}

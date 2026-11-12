@@ -16,12 +16,15 @@ const PLATFORM = [
   { title: 'Child profiles', text: "Each child's colour, the movements now secure, and their exercise scores over the colour." },
   { title: 'Staff induction', text: 'A one-hour induction in short lessons before staff run their first session.' },
   { title: 'Resource library', text: 'Rhymes and guidance for every stage your setting holds.' },
-  { title: 'Dashboards', text: 'School and trust or group progress, flagged classes and a governor summary to download.' },
+  { title: 'Dashboards', text: 'School and trust or group progress, flagged classes and a summary for governors or the board to download.' },
   { title: 'Parent app', text: 'Home activities matched to each child’s stage, linked with a code from school.' },
 ]
 
 export default function ProgrammePage() {
-  const dataHeldIn = useCountry()?.dataHeldIn
+  const country = useCountry()
+  const dataHeldIn = country?.dataHeldIn
+  // The country's early years curriculum (the EYFS in the UK); left off where there is no line yet.
+  const curriculumLine = country?.curriculumLine
   return (
     <>
       <section className="site-page-head">
@@ -69,10 +72,7 @@ export default function ProgrammePage() {
             </li>
           ))}
         </ol>
-        <p className="muted site-narrow">
-          Motor Movers supports the Physical Development area of the EYFS. It does not replace PE or other physical
-          activity.
-        </p>
+        {curriculumLine && <p className="muted site-narrow">{curriculumLine}</p>}
       </section>
 
       <section className="site-section">

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type CountrySettings } from './api'
 
 // The deployment's country (UK, Ireland or Australia): currency, tax, year names and the legal entity, from the open
-// GET /api/settings. Money, tax lines and year names on screen follow it (go-live task 25).
+// GET /api/settings. Money, tax lines, year names and our contact details on screen follow it (go-live tasks 25, 28).
 
 /** "2026 to 2027", or "2026" where the school year is the calendar year, as in Australia. */
 export function schoolYearLabel(year: number, country: CountrySettings | null): string {
@@ -28,4 +28,15 @@ export function useCountry(): CountrySettings | null {
     }
   }, [])
   return country
+}
+
+/** Our contact details: the legal entity's email and phone, each null while not set (or the settings not known yet). */
+export interface Contacts {
+  email: string | null
+  phone: string | null
+}
+
+export function useContacts(): Contacts {
+  const country = useCountry()
+  return { email: country?.contactEmail ?? null, phone: country?.contactPhone ?? null }
 }

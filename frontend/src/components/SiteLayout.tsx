@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { homeFor } from '../App'
 import { useAuth } from '../auth'
 import { useCountry } from '../country'
-import { CONTACT_EMAIL, CONTACT_PHONE } from '../site'
+import { mailto, PROJECT_CREDIT } from '../site'
 import StageStripe from './StageStripe'
 import ThemeSwitch from './ThemeSwitch'
 
@@ -19,7 +19,11 @@ const NAV = [
 export default function SiteLayout() {
   const { user } = useAuth()
   const { pathname } = useLocation()
-  const legalLine = useCountry()?.legalLine
+  const country = useCountry()
+  const legalLine = country?.legalLine
+  // Our contact details, from the country settings; each left off while not set.
+  const email = country?.contactEmail ?? null
+  const phone = country?.contactPhone ?? null
 
   // A new page starts at the top, as it would on an ordinary website.
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function SiteLayout() {
             <p className="site-footer-brand">
               <StageStripe /> Motor Movers
             </p>
-            <p className="muted-on-dark">A programme from the Movement for Learning Project.</p>
+            <p className="muted-on-dark">{PROJECT_CREDIT.footer}</p>
           </div>
           <nav aria-label="Footer">
             {NAV.slice(1).map((item) => (
@@ -73,10 +77,12 @@ export default function SiteLayout() {
             <Link to="/sign-in">Sign in</Link>
           </nav>
           <div>
-            <p>
-              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            </p>
-            <p className="muted-on-dark">{CONTACT_PHONE}</p>
+            {email && (
+              <p>
+                <a href={mailto(email, 'Motor Movers') ?? undefined}>{email}</a>
+              </p>
+            )}
+            {phone && <p className="muted-on-dark">{phone}</p>}
           </div>
         </div>
         {legalLine && <p className="site-footer-legal muted-on-dark">{legalLine}</p>}

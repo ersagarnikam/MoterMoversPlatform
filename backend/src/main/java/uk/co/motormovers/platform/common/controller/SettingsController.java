@@ -24,12 +24,15 @@ public class SettingsController {
      * What {@code GET /api/settings} returns. {@code taxPercent} is, for example, 20 for VAT at 20%. {@code legalLine}
      * is the legal entity in one line, or null while it is a placeholder. {@code termLabel} names the
      * teacher's counter of daily sessions: "This half-term" in the UK, "This term" in Ireland and Australia.
-     * {@code contactEmail} and {@code contactPhone} are the legal entity's, each null while blank or a placeholder.
+     * {@code contactEmail} and {@code contactPhone} are the legal entity's, each null while blank or a placeholder;
+     * the website and the parent app show only these as our contact details. {@code curriculumLine} is the
+     * programme page's sentence on the country's curriculum, null when the country has none yet.
      */
     public record Settings(Region region, String country, String currency, String locale, String taxLabel,
             BigDecimal taxPercent, String timeZone, CountrySettings.SchoolYear schoolYear, List<String> yearNames,
             CountrySettings.LegalEntity legalEntity, String legalLine, String timeLabel, String dataHeldIn,
-            String creditNoteTitle, String termLabel, String contactEmail, String contactPhone) {
+            String creditNoteTitle, String termLabel, String contactEmail, String contactPhone,
+            String curriculumLine) {
     }
 
     private final Settings settings;
@@ -39,7 +42,8 @@ public class SettingsController {
                 country.taxLabel(), country.taxPercent(), country.timeZone(), country.schoolYear(),
                 List.copyOf(country.yearNames()), country.legalEntity(), country.legalEntity().line(),
                 country.timeLabel(), country.dataHeldIn(), country.creditNoteTitle(),
-                country.termLabel(), country.legalEntity().contactEmail(), country.legalEntity().contactPhone());
+                country.termLabel(), country.legalEntity().contactEmail(), country.legalEntity().contactPhone(),
+                country.curriculumLineOrNull());
     }
 
     @GetMapping

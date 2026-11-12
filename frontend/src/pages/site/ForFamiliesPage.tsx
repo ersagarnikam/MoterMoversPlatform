@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
 import NotADiagnosis from '../../components/NotADiagnosis'
+import { useContacts } from '../../country'
 import { useHomeAvailable } from '../../homeProgramme'
 import { mailto } from '../../site'
 
 export default function ForFamiliesPage() {
   const home = useHomeAvailable()
+  const askAboutCd = mailto(useContacts().email, 'Motor Movers CD and book')
   return (
     <>
       <section className="site-page-head">
@@ -35,7 +37,7 @@ export default function ForFamiliesPage() {
           <div className="card">
             <h3>The CD and book</h3>
             <p>The Motor Movers CD and book are available to buy for families as well as schools.</p>
-            <a href={mailto('Motor Movers CD and book')}>Ask us about the CD and book</a>
+            {askAboutCd && <a href={askAboutCd}>Ask us about the CD and book</a>}
           </div>
         </div>
       </section>

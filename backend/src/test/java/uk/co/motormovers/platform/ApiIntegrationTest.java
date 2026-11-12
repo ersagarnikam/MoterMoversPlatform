@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,7 +35,9 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.taxLabel").value("VAT"))
                 .andExpect(jsonPath("$.taxPercent").value(20))
                 .andExpect(jsonPath("$.timeZone").value("Europe/London"))
-                .andExpect(jsonPath("$.yearNames[1]").value("Reception"));
+                .andExpect(jsonPath("$.yearNames[1]").value("Reception"))
+                .andExpect(jsonPath("$.curriculumLine").value(startsWith(
+                        "Motor Movers supports the Physical Development area of the EYFS.")));
     }
 
     @Test

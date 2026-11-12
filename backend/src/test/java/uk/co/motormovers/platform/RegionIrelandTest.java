@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
@@ -72,6 +73,8 @@ class RegionIrelandTest {
                 .andExpect(jsonPath("$.schoolYear.lastMonth").value(6))
                 .andExpect(jsonPath("$.yearNames[1]").value("Junior Infants"))
                 .andExpect(jsonPath("$.termLabel").value("This term"))
+                .andExpect(jsonPath("$.curriculumLine").value(nullValue()))
+                .andExpect(jsonPath("$.contactEmail").value(nullValue()))
                 .andExpect(jsonPath("$.legalEntity.name").value("To be confirmed"));
         assertThat(clock.getZone()).isEqualTo(ZoneId.of("Europe/Dublin"));
         assertThat(schoolYear.pointOn(LocalDate.of(2027, 4, 1))).isEqualTo(YearPoint.END);
