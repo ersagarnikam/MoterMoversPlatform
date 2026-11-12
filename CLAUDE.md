@@ -383,6 +383,20 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-12, `task-81` at 3758d3d, before merge, the Project manager's brief): pull request #63 (task 81,
+Ireland and Australia details and six-week modules at home) passes, no bugs.** Backend 270, web 64 unit tests, the build and the parent app typecheck run here. The browser tests
+were not rerun; CI passed them on 3758d3d. Installed Chrome, the API with demo data on H2.
+- **Each country (`PLATFORM_REGION` UK, IE and AU):** `GET /api/settings` gives the right `termLabel`, year names and school-year months (Ireland end point April, last month June;
+  Australia January, May, September). The teacher's Today counter reads "This half-term" in the UK and "This term" in Ireland and Australia, and no other label ever appeared while the
+  page loaded. The class form suggests each country's year names.
+- **Australia:** a class made in the form with "Preschool/Kindergarten" saves and lists. A class saved as "Kindy" can still be created, edited, given children and exported; the research CSV
+  carries both names unquoted.
+- **Motor Movers at Home, on the API, the website and the app's web preview:** a new Green child reads "week n of 6" through module 1. Week 6 has the same eight exercises as week 5,
+  with nothing new and no review. After 30 sessions the child is in module 2 week 1 with the module 1 review due, and the review page lists its exercises. A child part-way through shows
+  "week 6 of 6" and its session in both. An Orange child stays at one rhyme a week (session 5 of 5, then rhyme 2). Ava: module 2 week 1 of 6, review due. No page errors.
+- **UK otherwise unchanged:** by the diff, the only other UK change is the starter induction lesson saying "the counter".
+- **Not tested:** a real phone; the guides still show "This half-term" and "week n of 5" until they are rebuilt (task 41).
+
 **Task tested on its branch (updated by tester, 2026-11-10, `task-80` at ecc03a8, before merge, the Project manager's brief): pull request #62 (task 80,
 Pat's daily session plans) passes, no bugs.** Backend 267, web 62 unit tests and the build run here. The 70 browser tests and the mobile job were not rerun: CI passed them on
 ecc03a8. Run on PostgreSQL 17 with installed Chrome.
