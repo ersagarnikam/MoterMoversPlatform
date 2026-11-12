@@ -495,7 +495,8 @@ public class HomeService {
             }
             Child child = findChild(s.childId());
             access.requireParentOf(child);
-            requireReadyForSessions(me, child);
+            // Saved offline while the pass ran: accepted after it ends (task 82).
+            passes.requireReady(me, child, s.doneOn());
             ColourStage stage = child.getCurrentStage() == null ? ColourStage.RED : child.getCurrentStage();
             sessions.save(new HomeProgrammeSession(s.clientId(), child.getId(), stage, s.doneOn(), me.email()));
             saved++;

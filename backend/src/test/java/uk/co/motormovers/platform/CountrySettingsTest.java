@@ -86,6 +86,27 @@ class CountrySettingsTest {
     }
 
     @Test
+    void theContactDetailsLeaveOutPlaceholdersAndBlanks() {
+        CountrySettings.LegalEntity real = new CountrySettings.LegalEntity("Neuroway Ltd", "1 High Street", "123",
+                "VAT number", "GB456", "hello@example.org", " 0118 000 0000 ");
+        assertThat(real.contactEmail()).isEqualTo("hello@example.org");
+        assertThat(real.contactPhone()).isEqualTo("0118 000 0000");
+        CountrySettings.LegalEntity partly = new CountrySettings.LegalEntity("Neuroway Ltd",
+                CountrySettings.LegalEntity.PLACEHOLDER, "123", "VAT number", "GB456", "hello@example.org",
+                CountrySettings.LegalEntity.PLACEHOLDER);
+        assertThat(partly.contactEmail()).isEqualTo("hello@example.org");
+        assertThat(partly.contactPhone()).isNull();
+        CountrySettings.LegalEntity blank = new CountrySettings.LegalEntity("Neuroway Ltd", "1 High Street", "123",
+                "VAT number", "GB456", "", null);
+        assertThat(blank.contactEmail()).isNull();
+        assertThat(blank.contactPhone()).isNull();
+        for (CountrySettings c : countries(Map.of()).values()) {
+            assertThat(c.legalEntity().contactEmail()).isNull();
+            assertThat(c.legalEntity().contactPhone()).isNull();
+        }
+    }
+
+    @Test
     void aPlaceholderLegalEntityShowsNothing() {
         CountrySettings.LegalEntity partly = new CountrySettings.LegalEntity("Neuroway Ltd",
                 CountrySettings.LegalEntity.PLACEHOLDER, "123", "VAT number", "GB456", "a@example.org", "0118");

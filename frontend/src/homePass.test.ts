@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HomePass } from './api'
-import { passState } from './homePass'
+import { contactUs, passState, sessionsOpen } from './homePass'
 
 const pass = (p: Partial<HomePass>): HomePass => ({
   hasFamily: true,
@@ -10,7 +10,32 @@ const pass = (p: Partial<HomePass>): HomePass => ({
   running: false,
   endsOn: null,
   ended: false,
+  inductionDone: true,
+  contactEmail: null,
+  contactPhone: null,
   ...p,
+})
+
+describe('contactUs', () => {
+  it('gives the email and phone when both are confirmed', () => {
+    expect(contactUs(pass({ contactEmail: 'hello@example.test', contactPhone: '0118 000 0000' }))).toBe(
+      'Please contact us at hello@example.test or 0118 000 0000 to buy the pass.',
+    )
+  })
+
+  it('leaves out what is not confirmed yet', () => {
+    expect(contactUs(pass({ contactPhone: '0118 000 0000' }))).toBe('Please contact us at 0118 000 0000 to buy the pass.')
+    expect(contactUs(pass({}))).toBe('Please contact us to buy the pass.')
+  })
+})
+
+describe('sessionsOpen', () => {
+  it('needs a running pass and the induction, so the check is not offered otherwise', () => {
+    expect(sessionsOpen(pass({ running: true }))).toBe(true)
+    expect(sessionsOpen(pass({ running: false, ended: true, endsOn: '2026-11-01' }))).toBe(false)
+    expect(sessionsOpen(pass({ running: true, inductionDone: false }))).toBe(false)
+    expect(sessionsOpen(null)).toBe(false)
+  })
 })
 
 describe('passState', () => {

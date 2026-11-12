@@ -777,6 +777,9 @@ export interface CountrySettings {
   legalLine: string | null
   /** The teacher's counter of daily sessions: "This half-term" (UK) or "This term" (Ireland, Australia). */
   termLabel: string
+  /** The legal entity's contact details; null while blank or a placeholder. */
+  contactEmail: string | null
+  contactPhone: string | null
   /** How times are labelled: "UK time", "Irish time", "Queensland time". */
   timeLabel: string
   /** Where this deployment's data is held, e.g. "the UK"; empty when it is not stated. */
@@ -794,6 +797,11 @@ export interface HomePass {
   running: boolean
   endsOn: string | null
   ended: boolean
+  /** This parent has finished the parent induction (sessions and the check need it and a running pass). */
+  inductionDone: boolean
+  /** Whom to ask about the pass; null until the country's legal entity gives one. */
+  contactEmail: string | null
+  contactPhone: string | null
 }
 
 /** A family's pass as the team sees it, found by any member's email. */

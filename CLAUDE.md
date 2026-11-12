@@ -69,13 +69,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 279 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-12) 69 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 284 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-12) 72 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # (added by Dev, 2026-11-10) 70 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-12) 71 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 (added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
@@ -198,6 +198,17 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-12)
+
+(added by Dev, 2026-11-12) **Home pass follow-ups (go-live task 82, the Tester's notes on pull request #64).** (a) A full refund
+with a renewal queued no longer leaves a gap: `HomePassService.closeGaps` moves the parts queued after the refunded one forward to follow on the next day,
+each keeping its length, and buying or extending follows on from the end of the unbroken run of pass days (`runsUntil`), or starts today when none
+runs; with no gaps, `ended` is true whenever a family that has had a pass has none today. (b) `requireReady(parent, child, doneOn)`: a session
+(`doneOn`) or a rating or movement (`assessedOn`, `achievedOn`) saved offline is accepted if a pass covered that day, even after it ended; today, tomorrow
+and days outside any pass still need a pass running today; the induction always. (c) `GET /api/home/pass` carries `inductionDone`; the web child page and
+the app's Today offer "Start the check" (and the check-due banner) only with a running pass and the induction, and show the pass card or the induction
+otherwise. (d) "Please contact us" names the country's contact email and phone (`LegalEntity.contactEmail`/`contactPhone`, in `GET /api/settings` and
+the pass), each left out while blank or the placeholder. The app's child screen (`home-child/[id]`) still offers "Do the check again", which explains a
+refusal. Tests: `HomePassTest` (12), `CountrySettingsTest`, `homePass.test.ts`, the browser test with **lapsed@example.test**.
 
 (added by Dev, 2026-11-12) **Intermittent live-session test failures fixed (go-live task 83).** `TeamOverviewTest`, `BookingRequestTest` and
 `LiveSessionTest` failed on some CI runs because `LicenceCheckTest` (a clock fixed on 4 Nov 2026) and `RegionAustraliaTest` (Brisbane time)
@@ -414,6 +425,18 @@ latest licence and `statusOn`, which ignores the start date (a licence starting 
 is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
+
+**Task tested on its branch (updated by tester, 2026-11-12, `task-82` at abefc0d, before merge, the Project manager's brief): pull request #65 (task 82,
+the home pass follow-ups to the tester's four notes on #64) passes, no bugs.** Backend 283 (the live-session tests pass here), web 72 unit tests, the build, the parent app typecheck and all 71 browser tests pass (H2 with demo data, installed Chrome).
+- **Refund with something queued:** refunding the current pass in full moves a queued renewal, or a team extension, to start the next day, so no day is left without a pass. Refunding the middle of three moves the third up behind the first.
+  A partial refund changes nothing. Buying (Tom) or extending with no pass running starts today; buying again after a refund follows on the next day.
+- **Offline dates (sessions and ratings, Tom, whose pass ended 1 Nov):** a day the pass covered is accepted after it lapsed. Refused: the day after it ended, today, tomorrow, beyond 30 days, and no induction (even with a pass). A batch with one refused date is refused whole. The check stays refused.
+- **The check:** Tom's child page on the web and the app's Today no longer offer "Start the check". Priya is still offered it, for Leo, on both.
+- **Contact:** with the placeholders, "Please contact us to buy the pass" (web and app). With test values through `PLATFORM_COUNTRIES_UK_LEGALENTITY_EMAIL` and `_PHONE`: "Please contact us at hello@motormovers.test or 0118 000 0000 to buy the pass"; phone only gives just the phone in `/api/settings`.
+- **Low, for the owner or the Developer to decide:** (1) While a pass runs today, a past day no pass covered (between an old pass and a new one) is still accepted; the brief says dates outside any pass are refused. Harmless: it only lets a family backfill up to 30 days.
+  (2) A moved part keeps its length in days, so across 29 Feb 2028 it ends a day later or earlier than 12 calendar months. (3) The team's history lists a refunded part as "Paid", and a refunded part that had not started as ending the day before it starts.
+  (4) With the pass ended, the web child page still links "do the check again" under Colour, and At home still says "Time for the check again" (like the app's known "Do the check again").
+- **Not tested:** Stripe test checkout and the webhook (no test keys in this run); a real phone.
 
 **Task tested on its branch (updated by tester, 2026-11-12, `task-83` at 7fd0a68, before merge, the Project manager's brief): pull request #66 (task 83,
 the intermittent live-session test failures) passes, no bugs.**
@@ -959,7 +982,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

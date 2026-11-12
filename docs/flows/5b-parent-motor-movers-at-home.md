@@ -155,7 +155,15 @@ sequenceDiagram
 - A running pass covers the whole family: every child at home and every carer. A child linked to a school needs none.
 - The parent induction is checked first, then the pass; the API refuses with a problem detail saying which is missing.
 - While locked, Today sends no session (no exercises, review or cool-down); the family's own data stays open to it.
-- A pass refunded in full ends on the day of the refund; a partial refund leaves it.
+- A pass refunded in full ends on the day of the refund; a partial refund leaves it. A renewal or extension queued
+  after it moves forward to follow on the next day, keeping its length, so no day is left without a pass.
+- A pass bought or extended while one runs follows on from the end of the unbroken run; with none running, from today.
+- A session or rating saved offline is accepted if a pass covered its date (`doneOn`, `assessedOn`), even after
+  the pass ends; today's and tomorrow's need a pass running today. The induction is always needed.
+- The website and app offer the check only when the pass runs and the induction is done (`GET /api/home/pass`
+  `running`, `inductionDone`); otherwise they show the pass card or the induction.
+- Without card payments, "please contact us" gives the country's contact email and phone (`contactEmail`,
+  `contactPhone`, also in `GET /api/settings`), each left out while it is a placeholder.
 - The team extends a pass by hand (recorded with who and why), and sets the price from today or later only.
 
 <a id="home-family"></a>

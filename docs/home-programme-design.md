@@ -163,8 +163,12 @@ Each had a suggested answer. Your answers are in the table above.
   it is not on sale. It runs from the day Stripe confirms the payment, and buying again while it runs carries on from
   its end. Sessions, the starting check and ratings need a running pass and the parent induction; adding, editing and
   deleting children, sharing, progress and linking a school stay open. Reminders go 30 and 7 days before the end and
-  on the day. A pass refunded in full ends on the day of the refund. The team can extend a family's pass by hand
-  (Payments page). Monthly billing is Release 2 (task 68); the price in each country is Kay's.
+  on the day. A pass refunded in full ends on the day of the refund, and a renewal already bought moves forward to
+  start the next day, so the family is never without a pass in between. The team can extend a family's pass by hand
+  (Payments page). A session or rating saved on the phone while the pass ran is accepted after it ends. The check
+  and sessions are only offered once the pass runs and the induction is done; until then the family sees the pass
+  card or the induction. "Please contact us" gives the country's contact email and phone once they are confirmed.
+  Monthly billing is Release 2 (task 68); the price in each country is Kay's.
 - **Switching it on.** `HOME_PROGRAMME=true` in production (it is on in development and the demo).
 
 ## How it is built

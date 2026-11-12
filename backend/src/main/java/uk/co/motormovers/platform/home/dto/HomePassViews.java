@@ -18,10 +18,13 @@ public final class HomePassViews {
     /**
      * A family's pass. {@code onSale}: a price is set today ({@code pricePence}, tax included). {@code running}: it
      * covers today, to {@code endsOn}; {@code ended}: it ended on {@code endsOn}. {@code cardPayments}: Stripe is on, so
-     * it can be bought here. {@code hasFamily} is false for a parent with no children at home yet.
+     * it can be bought here. {@code hasFamily} is false for a parent with no children at home yet. {@code inductionDone}:
+     * this parent has finished the parent induction, so with a running pass sessions and the check are open.
+     * {@code contactEmail} and {@code contactPhone}: whom to ask about the pass, each null until the country's legal
+     * entity gives one.
      */
     public record Pass(boolean hasFamily, boolean onSale, Integer pricePence, boolean cardPayments, boolean running,
-            LocalDate endsOn, boolean ended) {
+            LocalDate endsOn, boolean ended, boolean inductionDone, String contactEmail, String contactPhone) {
     }
 
     public record Checkout(String url) {
