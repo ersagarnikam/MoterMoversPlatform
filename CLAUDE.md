@@ -189,7 +189,7 @@ refuses placeholders.
 
 ## Current state (2026-11-12)
 
-(added by Dev, 2026-11-12) **In progress: go-live task 83 (Dev, branch `task-83`, PR_PLACEHOLDER).** Remove this note once merged.
+(added by Dev, 2026-11-12) **In progress: go-live task 83 (Dev, branch `task-83`, pull request #66).** Remove this note once merged.
 
 (added by Dev, 2026-11-12) **Intermittent live-session test failures fixed (go-live task 83).** `TeamOverviewTest`, `BookingRequestTest` and
 `LiveSessionTest` failed on some CI runs because `LicenceCheckTest` (a clock fixed on 4 Nov 2026) and `RegionAustraliaTest` (Brisbane time)
