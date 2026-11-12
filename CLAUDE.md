@@ -186,7 +186,7 @@ refuses placeholders.
 
 ## Current state (2026-11-12)
 
-(added by Dev, 2026-11-12) **In progress: go-live task 26 (Dev, branch `task-26`, PR_PLACEHOLDER).** Remove this note once merged.
+(added by Dev, 2026-11-12) **In progress: go-live task 26 (Dev, branch `task-26`, pull request #64).** Remove this note once merged.
 
 (added by Dev, 2026-11-12) **The Motor Movers at Home pass (go-live task 26; migration V23).** A family buys a 12-month pass, for all its children and carers, by card through the
 existing Stripe Checkout (`POST /api/home/pass/checkout`; a pass started but not paid is reused). It is a person's payment with the new purpose `HOME_PASS` ("Home
