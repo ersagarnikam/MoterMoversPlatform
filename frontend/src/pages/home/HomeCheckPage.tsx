@@ -33,7 +33,25 @@ export default function HomeCheckPage() {
       .catch((e) => setError(e.message))
   }, [id])
 
-  if (!check) return error ? <p className="error">{error}</p> : <Skeleton />
+  if (!check) {
+    if (!error) return <Skeleton />
+    // The check needs the parent induction and the family's pass, as sessions do: say which, and where to go.
+    return (
+      <section className="card home-today">
+        <h1>Before the check</h1>
+        <p className="error">{error}</p>
+        {/induction/i.test(error) ? (
+          <Link to="/home/induction" className="btn btn-primary">
+            Start the induction
+          </Link>
+        ) : /pass/i.test(error) ? (
+          <Link to="/home" className="btn btn-primary">
+            See the pass
+          </Link>
+        ) : null}
+      </section>
+    )
+  }
   if (result) return <Result childId={id} name={check.name} result={result} />
 
   const answered = Object.keys(answers).length

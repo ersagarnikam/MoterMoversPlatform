@@ -11,6 +11,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import uk.co.motormovers.platform.common.util.Money;
 import uk.co.motormovers.platform.payment.dto.PaymentViews;
 import uk.co.motormovers.platform.payment.dto.PaymentViews.PaymentView;
 import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentEvents;
 import uk.co.motormovers.platform.payment.model.PaymentRefund;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
 import uk.co.motormovers.platform.payment.repository.CreditNoteCounterRepository;
@@ -60,10 +62,12 @@ public class RefundService {
     private final Money money;
     private final CountrySettings country;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     public RefundService(PaymentRepository payments, PaymentRefundRepository refunds,
             CreditNoteCounterRepository counter, AppUserRepository users, StripeClient stripe, AccessPolicy access,
-            CurrentUserResolver currentUser, Mailer mailer, Money money, CountrySettings country, Clock clock) {
+            CurrentUserResolver currentUser, Mailer mailer, Money money, CountrySettings country, Clock clock,
+            ApplicationEventPublisher events) {
         this.payments = payments;
         this.refunds = refunds;
         this.counter = counter;
@@ -75,6 +79,7 @@ public class RefundService {
         this.money = money;
         this.country = country;
         this.clock = clock;
+        this.events = events;
     }
 
     /**
@@ -196,6 +201,7 @@ public class RefundService {
         PaymentRefund refund = refunds.save(new PaymentRefund(payment, amount, payment.taxInRefund(amount), reason,
                 LocalDate.now(clock), recordedBy, clock.instant(), stripeRefundId, clientId, number));
         payment.getRefunds().add(refund);
+        events.publishEvent(new PaymentEvents.Refunded(payment.getId(), refund.getRefundedOn()));
         recipients(payment).forEach(to -> send(to, refund));
     }
 

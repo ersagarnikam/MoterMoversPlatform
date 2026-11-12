@@ -38,6 +38,7 @@ import uk.co.motormovers.platform.family.model.ParentLink;
 import uk.co.motormovers.platform.family.repository.HomeSessionRecordRepository;
 import uk.co.motormovers.platform.family.repository.ParentInviteRepository;
 import uk.co.motormovers.platform.family.repository.ParentLinkRepository;
+import uk.co.motormovers.platform.home.service.HomePassService;
 import uk.co.motormovers.platform.home.repository.FamilyMemberRepository;
 import uk.co.motormovers.platform.family.util.InviteCodes;
 import uk.co.motormovers.platform.security.model.CurrentUser;
@@ -74,13 +75,15 @@ public class FamilyService {
     private final ExerciseScoreRepository scores;
     private final FamilyMemberRepository members;
     private final FileLinks files;
+    private final HomePassService homePasses;
 
     public FamilyService(ParentLinkRepository links, ParentInviteRepository invites, ChildRepository children,
             ChildAccessLogRepository accessLog, HomeActivityRepository activities,
             HomeSessionRecordRepository homeRecords, GuidanceArticleRepository guidance,
             DailySessionRecordRepository classRecords, AppUserRepository users,
             AccessPolicy access, CurrentUserResolver currentUser, Clock clock, ParentProgress parentProgress,
-            ExerciseScoreRepository scores, FamilyMemberRepository members, FileLinks files) {
+            ExerciseScoreRepository scores, FamilyMemberRepository members, FileLinks files,
+            HomePassService homePasses) {
         this.links = links;
         this.invites = invites;
         this.children = children;
@@ -97,6 +100,7 @@ public class FamilyService {
         this.scores = scores;
         this.members = members;
         this.files = files;
+        this.homePasses = homePasses;
     }
 
     /** Children this parent may currently see. Links stay dormant while the school has parent links off. */
@@ -275,9 +279,9 @@ public class FamilyService {
         return FamilyViews.Article.of(article);
     }
 
-    /** Any parent can read the activities; an uploaded film needs a linked child or a family at home. */
+    /** Any parent can read the activities; an uploaded film needs a linked child, or a family with a running pass. */
     private boolean hasChild(CurrentUser me) {
-        return !visibleLinks(me.id()).isEmpty() || members.findByUserId(me.id()).isPresent();
+        return !visibleLinks(me.id()).isEmpty() || homePasses.familyRunning(me);
     }
 
     private FamilyViews.ActivityCard card(HomeActivity a, boolean mayHaveFiles) {

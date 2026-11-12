@@ -1,6 +1,6 @@
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Pressable, View } from 'react-native'
+import { Linking, Pressable, View } from 'react-native'
 import { Banner, Body, Button, Card, Chip, CounterGrid, ErrorState, H1, H2, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
 import { api, money, type ColourStage, type Home, type HomeChild, type HomeToday, type LinkedChild } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
@@ -261,9 +261,54 @@ function CheckCard({ kid }: { kid: HomeChild }) {
   )
 }
 
+/**
+ * The family's 12-month pass, needed for sessions (go-live task 26): Buy, or Renew once it has ended, on Stripe's own
+ * page in the browser. The pass runs once Stripe confirms the payment; pull down to refresh after paying.
+ */
+function PassCard({ ended }: { ended: boolean }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const pass = useLoad(() => api.homePass(), [])
+  const p = pass.data
+  async function buy() {
+    setBusy(true)
+    setError(null)
+    try {
+      await Linking.openURL((await api.homePassCheckout()).url)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Card payments are not available just now')
+    } finally {
+      setBusy(false)
+    }
+  }
+  const price = p?.pricePence != null ? money(p.pricePence) : null
+  return (
+    <Card>
+      <H2>{ended ? 'Your pass has ended' : 'The 12-month pass'}</H2>
+      <Body>
+        {!p
+          ? 'Sessions need your family’s pass.'
+          : !p.onSale || !price
+            ? 'The Motor Movers at Home pass is not on sale yet. Your children’s details are safe here until it is.'
+            : ended
+              ? `Your children’s records are kept. Renew for ${price} to carry on with the sessions.`
+              : `Sessions need a 12-month pass for your family: ${price}, for all your children and anyone you share with.`}
+      </Body>
+      {p?.onSale && price && p.cardPayments && (
+        <Button label={busy ? 'Opening…' : ended ? `Renew for ${price}` : `Buy the pass for ${price}`} onPress={buy} disabled={busy} />
+      )}
+      {p?.onSale && !p.cardPayments && <Muted>Paying by card is not switched on yet. Please contact us to buy the pass.</Muted>}
+      {error && <Banner tone="warn">{error}</Banner>}
+    </Card>
+  )
+}
+
 /** Today's session with Pat's exercises, and the ratings due at the end of a module. */
 function HomeSessionCard({ today }: { today: HomeToday }) {
   const open = () => router.push({ pathname: '/home-session/[id]', params: { id: today.childId } })
+  if (!today.passRunning) {
+    return <PassCard ended={today.passEndsOn != null} />
+  }
   if (!today.inductionDone) {
     return (
       <Card>

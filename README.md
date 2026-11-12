@@ -49,7 +49,8 @@ password `password`:
 | `trust@northbridge.test` | Trust or group lead, Northbridge Academy Trust | Our schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
-| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on Motor Movers at Home) | Use the parent app |
+| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on Motor Movers at Home, pass running) | Use the parent app |
+| `lapsed@example.test` | Parent, no school (Tom Reid: Noah; the family's pass ended) | Renew on At home |
 | `admin@motormovers.test` | Motor Movers team | Content approval |
 | `pat@motormovers.test` | Motor Movers team (Pat, trainer) | Content approval; Live sessions to start a course session |
 | `trainer@motormovers.test` | Trainer in Pat's team (Amy Clarke) | Live sessions for her own cohorts only |

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,8 @@ import tools.jackson.databind.json.JsonMapper;
 import uk.co.motormovers.platform.common.config.PlatformProperties;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentEvents;
+import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
 import uk.co.motormovers.platform.payment.repository.PaymentRepository;
 import uk.co.motormovers.platform.payment.stripe.StripeClient;
@@ -58,10 +61,11 @@ public class OnlinePaymentService {
     private final JsonMapper json;
     private final Clock clock;
     private final RefundService refunds;
+    private final ApplicationEventPublisher events;
 
     public OnlinePaymentService(PaymentRepository payments, StripeClient stripe, StripeProperties properties,
             PlatformProperties platform, AccessPolicy access, CurrentUserResolver currentUser, JsonMapper json,
-            Clock clock, RefundService refunds) {
+            Clock clock, RefundService refunds, ApplicationEventPublisher events) {
         this.payments = payments;
         this.stripe = stripe;
         this.properties = properties;
@@ -71,6 +75,7 @@ public class OnlinePaymentService {
         this.json = json;
         this.clock = clock;
         this.refunds = refunds;
+        this.events = events;
     }
 
     public boolean enabled() {
@@ -94,7 +99,8 @@ public class OnlinePaymentService {
         if (p.getStatus() != PaymentStatus.DUE) {
             throw new IllegalStateException("This payment is not due");
         }
-        String page = link(school ? "/school/payments" : "/payments");
+        String page = link(school ? "/school/payments"
+                : p.getPurpose() == PaymentPurpose.HOME_PASS ? "/home" : "/payments");
         return stripe.createCheckout(p.getId(), p.getAmountPence(), p.getDescription(),
                 school ? me.email() : p.getPayer().getEmail(), page + "?paid=1", page + "?cancelled=1").url();
     }
@@ -135,8 +141,14 @@ public class OnlinePaymentService {
             return false;
         }
         return payments.findById(paymentId)
-                .map(p -> p.paidOnline(LocalDate.now(clock),
-                        session.payment_intent() != null ? session.payment_intent() : session.id()))
+                .map(p -> {
+                    boolean paid = p.paidOnline(LocalDate.now(clock),
+                            session.payment_intent() != null ? session.payment_intent() : session.id());
+                    if (paid) {
+                        events.publishEvent(new PaymentEvents.Paid(p.getId()));
+                    }
+                    return paid;
+                })
                 .orElseGet(() -> {
                     log.warn("Stripe payment {} is for payment {}, which does not exist", session.id(), paymentId);
                     return false;

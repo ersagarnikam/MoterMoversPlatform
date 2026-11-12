@@ -228,6 +228,9 @@ public class DemoDataLoader implements ApplicationRunner {
         // Motor Movers at Home: a family whose school is not on Motor Movers.
         demoHome.seed(users.save(new AppUser("home@example.test", "Priya Shah", hash, Role.PARENT, null, null)),
                 today);
+        // A family whose Motor Movers at Home pass has ended, so Renew shows.
+        demoHome.seedEnded(users.save(new AppUser("lapsed@example.test", "Tom Reid", hash, Role.PARENT, null, null)),
+                today);
         seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today);

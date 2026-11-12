@@ -10,7 +10,8 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByRole('heading', { name: 'Create a parent account' })).toBeVisible()
   await expectAccessible(page)
   await page.getByLabel('Your name').fill('Sam Rivers')
-  await page.getByLabel('Email').fill(`web-family-${Date.now()}@example.test`)
+  const email = `web-family-${Date.now()}@example.test`
+  await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill('a-long-test-password')
   await page.getByRole('button', { name: 'Create account' }).click()
 
@@ -20,6 +21,44 @@ test('a family signs up on the website, does the check and the first session', a
   await page.getByLabel('Age: years').fill('4')
   await page.getByLabel('and months').fill('2')
   await page.getByRole('button', { name: 'Add and start the check' }).click()
+
+  // The check, like the sessions, needs the parent induction first. Its lessons are placeholders until Pat's arrive.
+  await expect(page.getByRole('heading', { name: 'Before the check' })).toBeVisible()
+  await page.getByRole('link', { name: 'Start the induction' }).click()
+  await expect(page.getByRole('heading', { name: 'Before your first session' })).toBeVisible()
+  await expect(page.getByText('Placeholder lesson 1')).toBeVisible()
+  await expectAccessible(page)
+  for (const title of ['Placeholder lesson 1', 'Placeholder lesson 2']) {
+    await page.getByText(title).click()
+    await page.getByRole('button', { name: 'Mark as done' }).click()
+  }
+  await expect(page.getByText('You have finished the induction.')).toBeVisible()
+  await page.getByRole('link', { name: 'Back to At home' }).click()
+
+  // Then the family's 12-month pass (go-live task 26), offered at the price the team set. Card payments are off in
+  // these tests, so the team extends the pass by hand, as it would for support.
+  const pass = page.locator('.home-pass')
+  await expect(pass.getByRole('heading', { name: 'The 12-month pass' })).toBeVisible()
+  await expect(pass).toContainText('Sessions need a 12-month pass for your family')
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Payments', exact: true }).click()
+  const support = page.locator('section', { has: page.getByRole('heading', { name: /Motor Movers at Home pass/ }) })
+  await support.getByLabel('Parent or carer’s email').fill(email)
+  await support.getByRole('button', { name: 'Find the family' }).click()
+  await expect(support).toContainText('No pass yet.')
+  const nextYear = new Date()
+  nextYear.setFullYear(nextYear.getFullYear() + 1)
+  await support.getByLabel('Extend to').fill(nextYear.toISOString().slice(0, 10))
+  await support.getByRole('button', { name: 'Extend the pass' }).click()
+  await expect(support).toContainText('Extended by the team')
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await signIn(page, email, 'a-long-test-password')
+  await page.getByRole('link', { name: 'At home', exact: true }).click()
+  await expect(pass.getByRole('heading', { name: 'Your pass' })).toBeVisible()
+  await page.getByRole('link', { name: /^Mo 4 years/ }).click()
+  await page.getByRole('link', { name: 'Start the check' }).first().click()
 
   // The starting check: movements from Pat's charts for the year up to Mo's age.
   await expect(page.getByRole('heading', { name: 'Can Mo do these?' })).toBeVisible()
@@ -35,20 +74,6 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByRole('heading', { name: 'Mo', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Today’s session for Mo' })).toBeVisible()
   await expectAccessible(page)
-  // The parent induction comes first: no Start until it is done. Its lessons are placeholders until Pat's arrive.
-  await expect(page.getByRole('link', { name: 'Start', exact: true })).toHaveCount(0)
-  await page.getByRole('link', { name: 'Start the induction' }).click()
-  await expect(page.getByRole('heading', { name: 'Before your first session' })).toBeVisible()
-  await expect(page.getByText('Placeholder lesson 1')).toBeVisible()
-  await expectAccessible(page)
-  for (const title of ['Placeholder lesson 1', 'Placeholder lesson 2']) {
-    await page.getByText(title).click()
-    await page.getByRole('button', { name: 'Mark as done' }).click()
-  }
-  await expect(page.getByText('You have finished the induction.')).toBeVisible()
-  await page.getByRole('link', { name: 'Back to At home' }).click()
-  await page.getByRole('link', { name: /^Mo 4 years/ }).click()
-  await expect(page.getByRole('heading', { name: 'Today’s session for Mo' })).toBeVisible()
   await page.getByRole('link', { name: 'Start', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Module 1 · week 1' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Before you start' })).toContainText('an adult is present')

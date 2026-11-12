@@ -36,6 +36,21 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
   )
   const firstTime = today.exercises.filter((e) => today.firstTime.includes(e.id))
 
+  if (!today.passRunning) {
+    return (
+      <>
+        {back}
+        <section className="card home-today">
+          <h1>{today.passEndsOn ? 'Your family’s pass has ended' : 'Sessions need a pass'}</h1>
+          <p>Your children’s records are kept. Sessions open again with your family’s 12-month pass.</p>
+          <Link to="/home" className="btn btn-primary">
+            {today.passEndsOn ? 'Renew the pass' : 'Buy the pass'}
+          </Link>
+        </section>
+      </>
+    )
+  }
+
   if (!today.inductionDone) {
     return (
       <>
