@@ -66,8 +66,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-10) 267 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-06) 62 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 270 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-12) 64 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -184,7 +184,19 @@ Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. Its 
 to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_...`, `deploy/country.env`); production
 refuses placeholders.
 
-## Current state (2026-11-10)
+## Current state (2026-11-12)
+
+(added by Dev, 2026-11-12) **In progress: go-live task 81 (Dev, branch `task-81`, PR_PLACEHOLDER).** Remove this note once merged.
+
+(added by Dev, 2026-11-12) **Ireland and Australia details, and six-week modules at home (go-live task 81; no migration).** From Pat's answers of 2026-11-10:
+Ireland's and Australia's assessment points and year names are confirmed (Ireland's end point April to June; a July or August record still counts as the end of the year
+just finished). Australia's first year is "Preschool/Kindergarten" in place of "Kindy"; a class's year group is free text with the names only suggested, so classes saved
+as "Kindy" keep that name and no migration renames them. A new country setting `term-label` names the teacher's counter on Today: "This half-term" in the UK, "This term"
+in Ireland and Australia (`GET /api/settings` `termLabel`; `counterLabel` in `src/country.ts`, blank until the settings load). The starter induction lesson now says "the
+counter". **Motor Movers at Home modules are six weeks** from Green to Violet (the owner's decision of 2026-11-12): built up over five weeks as before, week 6 repeats week 5,
+then the module's review (`HomeRules.WEEKS_PER_MODULE` 6, `BUILD_UP_WEEKS` 5). Where a child is comes from the sessions done, so a family in week 5 goes on to week 6; one
+that had finished a module in five weeks would find itself back in that module's week 6 (no real families exist: `HOME_PROGRAMME` is off in production). The demo's Ava did
+her check seven weeks ago.
 
 (added by Dev, 2026-11-10) **Pat's daily session plans (go-live task 80; no migration).** `assessment/session-plan-<colour>.json`, made from her "Daily Session Plans"
 (email of 2026-11-07) and her answers of 2026-11-10, load on every start through `SessionPlans` as drafts, adding only sessions that are missing: 990 in all (18 rhymes of 5 days
@@ -193,8 +205,8 @@ titles read "Green Module 1, Week 2, Day 3" and "Red Rhyme 1, Day 3". A session 
 the grid when it is shown, so a revised grid reaches sessions at once, and adds the module's cool-down (`coolDown`, the last step; `cool-downs.json` now has all 24, Violet included,
 so home sessions show them too). A name not in that colour's grid stops the start-up. A rhyme session links to the library rhyme of that name on every start. `POST
 /api/admin/content/approve-all` (`stage`, optional `unit`; `AccessPolicy.requireAdmin`) approves a colour or module; a draft failing the wording check stays a draft and is named. Content
-approval has colour and module filters and shows 100 cards at a time. The demo approves these in place of the filler; its two drafts are Yellow unit 19. **Motor Movers at Home stays
-at five weeks** (`HomeRules.buildUp`, `WEEKS_PER_MODULE`) until Pat confirms. **Known limit:** a session already loaded keeps its list of exercises if a plan file is later changed (only
+approval has colour and module filters and shows 100 cards at a time. The demo approves these in place of the filler; its two drafts are Yellow unit 19. Motor Movers at Home stayed
+at five weeks then; (added by Dev, 2026-11-12) six since task 81. **Known limit:** a session already loaded keeps its list of exercises if a plan file is later changed (only
 missing sessions are added, as the spec asks). **The guides need rebuilding** (`docs/guide-builder`): the player and Content approval changed. Names mapped and points for Pat:
 `docs/assessment-design.md`, Daily session plans.
 
@@ -876,7 +888,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-10): (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

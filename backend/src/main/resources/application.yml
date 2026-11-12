@@ -51,6 +51,8 @@ platform:
       # September to August, three terms; assessment points: start Sep-Dec, middle Jan-Apr, end May-Aug.
       school-year: { first-month: 9, last-month: 8, terms: 3, start-month: 9, middle-month: 1, end-month: 5 }
       year-names: Nursery, Reception, Year 1, Year 2, Year 3
+      # What the teacher's Today page calls its counter of daily sessions; six-week modules match UK half terms.
+      term-label: This half-term
       # To confirm (accountant, go-live task 17), here and for the other countries.
       credit-note-title: Credit note
       legal-entity: &placeholder-entity
@@ -72,10 +74,12 @@ platform:
       time-zone: Europe/Dublin
       time-label: Irish time
       data-held-in: the EU
-      # September to June, three terms. To confirm (Pat): start Sep-Dec, middle Jan-Mar, end Apr-Aug.
+      # September to June, three terms (Pat, 2026-11-10): start Sep-Dec, middle Jan-Mar, end Apr-Jun. Schools close in
+      # June; an assessment recorded in July or August still counts as the end of the year just finished.
       school-year: { first-month: 9, last-month: 6, terms: 3, start-month: 9, middle-month: 1, end-month: 4 }
-      # To confirm (Pat).
       year-names: Preschool, Junior Infants, Senior Infants, First Class, Second Class
+      # No season names (Pat, 2026-11-10).
+      term-label: This term
       credit-note-title: Credit note
       legal-entity: *placeholder-entity
     au:
@@ -88,10 +92,11 @@ platform:
       time-zone: Australia/Brisbane
       time-label: Queensland time
       data-held-in: Australia
-      # January to December, four terms. To confirm (Pat): start Jan-Apr, middle May-Aug, end Sep-Dec.
+      # January to December, four terms (Pat, 2026-11-10): start Jan-Apr, middle May-Aug, end Sep-Dec.
       school-year: { first-month: 1, last-month: 12, terms: 4, start-month: 1, middle-month: 5, end-month: 9 }
-      # To confirm (Pat).
-      year-names: Kindy, Prep, Year 1, Year 2, Year 3
+      # Pat, 2026-11-10: the first year's name varies between states, so both. Classes saved as "Kindy" keep their name.
+      year-names: Preschool/Kindergarten, Prep, Year 1, Year 2, Year 3
+      term-label: This term
       credit-note-title: Adjustment note
       # To confirm (Kay): suggested one of our Australian companies.
       legal-entity:

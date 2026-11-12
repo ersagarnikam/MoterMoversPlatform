@@ -112,9 +112,9 @@ public final class HomeViews {
      * {@code exercises}; without them, the app shows the colour's home activities instead. In a rhyme colour
      * ({@code rhymes}) {@code module} is the rhyme, done for a week; otherwise a module builds up over {@code weeks},
      * and {@code newThisWeek} are the exercises added this week. {@code progressLabel} and {@code sessionTitle} say
-     * where the child is ("Module 2 of 6 · week 3 of 5"). {@code firstTime}: the exercises to rate after doing them for
+     * where the child is ("Module 2 of 6 · week 3 of 6"). {@code firstTime}: the exercises to rate after doing them for
      * the first time. {@code canRate} is false for a child linked to a school, whose teacher does the assessing.
-     * {@code coolDown} ends a session from Green to Indigo (a rhyme ends with its own, in its instructions); null
+     * {@code coolDown} ends a session from Green to Violet (a rhyme ends with its own, in its instructions); null
      * when there is none. {@code inductionDone}: this parent has finished the parent induction; sessions stay locked
      * until they have.
      */

@@ -69,6 +69,7 @@ class RegionIrelandTest {
                 .andExpect(jsonPath("$.taxPercent").value(23))
                 .andExpect(jsonPath("$.schoolYear.lastMonth").value(6))
                 .andExpect(jsonPath("$.yearNames[1]").value("Junior Infants"))
+                .andExpect(jsonPath("$.termLabel").value("This term"))
                 .andExpect(jsonPath("$.legalEntity.name").value("To be confirmed"));
         assertThat(clock.getZone()).isEqualTo(ZoneId.of("Europe/Dublin"));
         assertThat(schoolYear.pointOn(LocalDate.of(2027, 4, 1))).isEqualTo(YearPoint.END);

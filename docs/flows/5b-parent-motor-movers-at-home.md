@@ -62,7 +62,7 @@ sequenceDiagram
 
 ## Today's home session and ratings
 
-HomeRules builds today's plan: one rhyme a week for the rhyme colours, modules built up over five weeks from Green on.
+HomeRules builds today's plan: one rhyme a week for the rhyme colours, modules of six weeks from Green on (built up over five, then week 5 repeated, then the module's review).
 
 **Endpoints:** `GET /api/home/children/{id}/today` · `GET /api/home/induction` · `POST /api/home/induction/lessons/{id}/complete` · `POST /api/home/sessions` · `POST /api/assessment/exercise-scores` · `GET /api/home/children/{id}`
 

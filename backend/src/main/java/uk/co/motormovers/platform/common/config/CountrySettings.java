@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 /**
  * What differs between the countries a deployment can serve: money, tax, the time zone, the school year and its year
- * names, and the legal entity that contracts with schools and families. One block per region in application.yml
+ * names, what the session counter is called, and the legal entity that contracts with schools and families. One block per region in application.yml
  * ({@code platform.countries}); {@code PLATFORM_REGION} picks the deployment's, and every value can be overridden by
  * an environment variable (for example {@code PLATFORM_COUNTRIES_IE_TAX_PERCENT}). Values still to be confirmed by Pat
  * or Kay are marked in application.yml.
@@ -28,7 +28,8 @@ public record CountrySettings(
         LegalEntity legalEntity,
         String creditNoteTitle,
         String timeLabel,
-        String dataHeldIn) {
+        String dataHeldIn,
+        String termLabel) {
 
     /**
      * The school year runs from {@code firstMonth} to {@code lastMonth} (1 = January). Its three assessment points start
@@ -115,6 +116,7 @@ public record CountrySettings(
         require(legalEntity != null, where + "legal-entity is missing");
         require(creditNoteTitle != null && !creditNoteTitle.isBlank(), where + "credit-note-title is missing");
         require(timeLabel != null && !timeLabel.isBlank(), where + "time-label is missing");
+        require(termLabel != null && !termLabel.isBlank(), where + "term-label is missing");
         return this;
     }
 

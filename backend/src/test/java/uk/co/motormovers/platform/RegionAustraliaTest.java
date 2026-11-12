@@ -72,7 +72,8 @@ class RegionAustraliaTest {
                 .andExpect(jsonPath("$.timeZone").value("Australia/Brisbane"))
                 .andExpect(jsonPath("$.schoolYear.firstMonth").value(1))
                 .andExpect(jsonPath("$.schoolYear.terms").value(4))
-                .andExpect(jsonPath("$.yearNames[0]").value("Kindy"));
+                .andExpect(jsonPath("$.yearNames[0]").value("Preschool/Kindergarten"))
+                .andExpect(jsonPath("$.termLabel").value("This term"));
         // Not Sydney: Queensland has no daylight saving.
         assertThat(clock.getZone()).isEqualTo(ZoneId.of("Australia/Brisbane"));
         // The school year is the calendar year: this deployment's bean follows the settings.

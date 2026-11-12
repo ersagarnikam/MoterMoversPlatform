@@ -17,8 +17,9 @@ import uk.co.motormovers.platform.common.model.ColourStage;
  * through the colours at their own pace, so the colour does not follow the age: young children start at Orange and
  * older ones at Green, the core programme, then go on through the colours. A rhyme colour (Red, Orange, Yellow) does
  * one rhyme a week, five times, in the order of its grid; a colour with modules (Green to Violet) builds each module up
- * over five weeks, adding one or two exercises a week. Pat confirmed five weeks for Green to Indigo; Violet is assumed
- * the same until she says otherwise.
+ * over five weeks, adding one or two exercises a week, then repeats week five in a sixth week before the module's
+ * review: six weeks a module, as in Pat's school plans (her answer of 2026-11-10; the owner applied it at home on
+ * 2026-11-12).
  */
 public final class HomeRules {
 
@@ -33,8 +34,11 @@ public final class HomeRules {
 
     public static final int SESSIONS_PER_WEEK = 5;
 
-    /** Five weeks of five sessions a module: confirmed for Green to Indigo (2026-11-05). */
-    public static final int WEEKS_PER_MODULE = 5;
+    /** Six weeks of five sessions a module, Green to Violet, as in school (2026-11-12). */
+    public static final int WEEKS_PER_MODULE = 6;
+
+    /** The weeks new exercises are added in; the weeks after repeat the last of them, for practice. */
+    static final int BUILD_UP_WEEKS = 5;
 
     /** New exercises in a module's first week; the rest are added one or two a week after that. */
     static final int NEW_IN_FIRST_WEEK = 2;
@@ -106,8 +110,9 @@ public final class HomeRules {
     }
 
     /**
-     * A module's exercises week by week: those carried on from the module before from the first week, with the first
-     * two new ones; the other new ones are added one or two a week, in Pat's order, so all are in by the last week.
+     * The exercises each week of a module adds: those carried on from the module before and the first two new ones in
+     * week 1; the other new ones one or two a week, in Pat's order, so all are in by week 5. Week 6 adds nothing: it
+     * repeats week 5.
      */
     static List<List<Exercise>> buildUp(List<Exercise> module, List<Exercise> previous) {
         List<Exercise> carried = module.stream().filter(previous::contains).toList();
@@ -118,12 +123,15 @@ public final class HomeRules {
         week1.addAll(fresh.subList(0, first));
         weeks.add(week1);
         int rest = fresh.size() - first;
-        int laterWeeks = WEEKS_PER_MODULE - 1;
+        int laterWeeks = BUILD_UP_WEEKS - 1;
         int from = first;
         for (int w = 0; w < laterWeeks; w++) {
             int take = rest / laterWeeks + (w < rest % laterWeeks ? 1 : 0);
             weeks.add(fresh.subList(from, from + take));
             from += take;
+        }
+        while (weeks.size() < WEEKS_PER_MODULE) {
+            weeks.add(List.of());
         }
         return weeks;
     }
@@ -151,7 +159,7 @@ public final class HomeRules {
         return modules;
     }
 
-    /** "Module 2 of 6 · week 3 of 5", "Rhyme 4 of 18 · session 2 of 5", or the colour done. */
+    /** "Module 2 of 6 · week 3 of 6", "Rhyme 4 of 18 · session 2 of 5", or the colour done. */
     public static String progressLabel(Plan plan) {
         String unit = plan.rhymes() ? "rhymes" : "modules";
         if (plan.colourComplete()) {
