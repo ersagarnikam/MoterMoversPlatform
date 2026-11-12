@@ -186,7 +186,7 @@ refuses placeholders.
 
 ## Current state (2026-11-12)
 
-(added by Dev, 2026-11-12) **In progress: go-live task 81 (Dev, branch `task-81`, PR_PLACEHOLDER).** Remove this note once merged.
+(added by Dev, 2026-11-12) **In progress: go-live task 81 (Dev, branch `task-81`, pull request #63).** Remove this note once merged.
 
 (added by Dev, 2026-11-12) **Ireland and Australia details, and six-week modules at home (go-live task 81; no migration).** From Pat's answers of 2026-11-10:
 Ireland's and Australia's assessment points and year names are confirmed (Ireland's end point April to June; a July or August record still counts as the end of the year
