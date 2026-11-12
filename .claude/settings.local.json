@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./backend/mvnw -B spring-boot:run)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}

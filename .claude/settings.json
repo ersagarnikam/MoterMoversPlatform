@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd C:\\\\Users\\\\rahul\\\\projects\\\\MotorMovers-Windows; powershell -File backend\\\\run-local.ps1)",
+      "PowerShell(netstat -ano)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match 'node|npm' } | Select-Object ProcessName, Id)",
+      "PowerShell(netstat -ano 2>$null)",
+      "Bash(curl -s http://localhost:8080/api/me -H \"Authorization: Bearer invalid\")",
+      "PowerShell(try { $response = Invoke-WebRequest -Uri http://localhost:8080/actuator/health -TimeoutSec 5 -ErrorAction Stop; Write-Host \"✓ Backend responding: $\\($response.StatusCode\\)\"; $response.Content } catch { Write-Host \"✗ Backend not responding yet: $_\" })",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}
