@@ -397,6 +397,22 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-12, `task-26` at a928542, before merge, the Project manager's brief): pull request #64 (task 26,
+the Motor Movers at Home pass) passes, no bugs.** Backend 278, web 69 unit tests, the build, the parent app typecheck and all 70 browser tests pass here (H2 with demo data, installed Chrome).
+- **Through the API, 78 checks:** Tom (lapsed@example.test) is refused a session, the check (GET and POST) and a rating with "Your family's pass ended on ..."; Today sends no session, review or cool-down.
+  Adding, editing and deleting a child, progress, the invite code and the induction stay open. Priya's session and check work. A new parent is refused for the induction first, even with a pass.
+  Each family is refused on the other's child, and teachers, heads, trainers and parents get 403 on the team's pass endpoints.
+- **Team:** finding a family by any member's email, in any case (unknown 404, an account with no family 400). Extending is refused for a past date, a missing date or one before the current end; once extended, Tom's sessions work.
+  The price is refused in the past and at zero or below, can be revised for a future date, and today's price is unchanged. A pass payment recorded as paid, or marked paid later, starts a 12-month pass, and a second one carries on from the end.
+- **Refunds:** a partial refund leaves the pass, and the rest refunded ends it on the refund day (it still runs that day). A full refund at once ends it the same way.
+- **Reminders, on a moving clock (a test of the tester's, not committed), day by day for 46 days:** one each at 30, 7 and 0 days. Missed days catch up (sent at 28 if 30 and 29 were missed; the 7-day one is skipped when days 7 to 1 are missed). A renewal before the end stops them.
+- **Screens:** web (At home, the child page, the session and check pages, a phone width) and the app's web preview show "Your pass has ended" with no session, and Priya runs hers. Payments has Find the family and Extend the pass, with history and who did it; Plans and prices has the pass price.
+  Without Stripe keys the card says "Paying by card is not switched on yet. Please contact us to buy the pass", checkout answers 400, and no payment is left behind.
+- **Low, for the owner or the Developer to decide:** (1) Refunding a pass in full while a renewal is queued leaves a gap: the family has no pass until the renewal starts, the card does not say "ended", and buying again would start after the renewal.
+  The team cannot extend into the gap either, since an extension must end after the latest end. (2) Sessions saved offline in the app while the pass ran are refused once it has lapsed: the gate looks at today, not the session's date. They stay queued until the pass is renewed.
+  (3) With the pass ended, the web child page and the app's Today still offer "Start the check", which then explains the refusal. (4) "Please contact us" gives no email or phone.
+- **Not tested:** Stripe test checkout, the webhook and `/home?paid=1` (no Stripe test keys in this run; the tester does not read `backend/.env`); a real phone; push reminders on a phone.
+
 **Task tested on its branch (updated by tester, 2026-11-12, `task-81` at 3758d3d, before merge, the Project manager's brief): pull request #63 (task 81,
 Ireland and Australia details and six-week modules at home) passes, no bugs.** Backend 270, web 64 unit tests, the build and the parent app typecheck run here. The browser tests
 were not rerun; CI passed them on 3758d3d. Installed Chrome, the API with demo data on H2.
