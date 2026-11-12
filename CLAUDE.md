@@ -168,8 +168,9 @@ computers: its **Team** column (Sagar, Rahul, People only) says whose agents tak
 Dev working, Ready to test, Testing, Bug found, Passed, Merged, Blocked) where it stands, and **Pull request** links
 it, with a tagged reply at each step. Each team tests and merges only its own pull requests. Which team a computer's
 agents belong to is set in `CLAUDE.local.md` (git ignores it). Rules, tags, migration numbering and setup:
-`.claude/team.md`; agent definitions: `.claude/agents/` (the Project manager's is kept out of this public repository
-and shared privately).
+`.claude/team.md`; agent definitions: `.claude/agents/`. The Project manager's private details (contacts, open
+decisions, prices, risks) are in `.claude/pm-private.md`, which git ignores and Sagar shares by hand, since this
+repository is public.
 
 **Waiting on Pat and Kay (email of 2026-11-05, decisions due Fri 13 Nov).** Each was sent with a suggested answer:
 1 contracting company per country until the joint venture exists (suggested: Neuroway for UK and Ireland, an

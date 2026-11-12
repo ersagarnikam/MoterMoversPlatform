@@ -105,9 +105,10 @@ read them.
    - Agents on this computer: Developer, Tester, Project manager (one Claude session each, named so)
    ```
 
-4. The **Project manager** agent definition (`.claude/agents/project-manager.md`) is not in the repository, because
-   the repository is public and it holds private contacts and business details. Get the file from Sagar and save it
-   there; git ignores it. The Developer and Tester definitions come with the repository.
+4. All three agent definitions come with the repository. The Project manager's **private details** (contacts,
+   open business decisions, prices, risks, links to private documents) are not in it, because the repository is
+   public: they live in `.claude/pm-private.md`, which git ignores. Sagar shares that file by hand when he wants a
+   team's PM to have it; save it there. Never commit it or copy from it into anything public.
 5. Start three sessions named **Developer**, **Tester** and **Project manager**, each told to act as that agent
    (or use the agent of that name). Within the team they message each other by those names.
 6. Ask your Project manager: "Read the board: what is there for our team?"
