@@ -388,6 +388,10 @@ public class DemoDataLoader implements ApplicationRunner {
         live.schedule(cohort(new Cohort(parent, "Cohort B · three weeks", today.plusDays(7), LocalTime.of(19, 30),
                 "Thursdays 7:30 pm UK", 50, null, true), t.laura()));
         LocalDateTime soon = LocalDateTime.now(clock).plusMinutes(10).truncatedTo(ChronoUnit.MINUTES);
+        if (!soon.toLocalDate().equals(today)) {
+            // Loaded in the last ten minutes of the day: start now instead, so the session is still today's (task 83).
+            soon = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MINUTES);
+        }
         Cohort now = cohort(new Cohort(parent, "Cohort A · starting now", soon.toLocalDate(),
                 soon.toLocalTime(), "Weekly at " + soon.toLocalTime() + " UK", Math.max(50, loadTestLearners + 10),
                 null, false), t.pat());

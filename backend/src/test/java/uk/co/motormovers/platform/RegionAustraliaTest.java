@@ -28,7 +28,9 @@ import uk.co.motormovers.platform.notification.service.PushService;
 import uk.co.motormovers.platform.training.service.SessionReminderJob;
 
 /** A deployment started with PLATFORM_REGION=AU: Australia's settings, on Queensland time. */
-@SpringBootTest(properties = "PLATFORM_REGION=AU")
+// Its own database: the demo data is loaded once per database, on the clock of the first context to start, so a
+// context with another clock or time zone must not share the default one (task 83).
+@SpringBootTest(properties = { "PLATFORM_REGION=AU", "spring.datasource.url=jdbc:h2:mem:regionau;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH" })
 @AutoConfigureMockMvc
 class RegionAustraliaTest {
 
