@@ -54,7 +54,7 @@ sequenceDiagram
 
 ## Scheduled jobs
 
-Five jobs run on the API's clock (the deployment's time zone): session reminders, session opening, certificate expiry, deleting leavers and cleaning up unsaved uploads.
+Six jobs run on the API's clock (the deployment's time zone): session reminders, session opening, certificate expiry, deleting leavers, cleaning up unsaved uploads and reminding families before their home pass ends (`HomePassService.remindEnding`, daily at 08:15; flow 5b, 4).
 
 **Endpoints:** `SessionReminderJob.remind` · `SessionReminderJob.announceOpening` · `CertificateService.remindExpiring` · `RetentionJob.purgeLeavers` · `UnsavedUploadJob.cleanUp`
 

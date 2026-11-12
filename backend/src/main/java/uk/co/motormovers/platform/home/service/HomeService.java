@@ -109,6 +109,7 @@ public class HomeService {
     private final ParentProgress parentProgress;
     private final CoolDowns coolDowns;
     private final InductionService induction;
+    private final HomePassService passes;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
@@ -116,7 +117,7 @@ public class HomeService {
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
             Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns, SchoolYear schoolYear,
-            InductionService induction) {
+            InductionService induction, HomePassService passes) {
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -137,6 +138,7 @@ public class HomeService {
         this.parentProgress = parentProgress;
         this.coolDowns = coolDowns;
         this.induction = induction;
+        this.passes = passes;
     }
 
     public boolean isEnabled() {
@@ -307,6 +309,7 @@ public class HomeService {
     @Transactional(readOnly = true)
     public HomeViews.Check check(Long childId) {
         Child child = homeChild(childId);
+        requireReadyForSessions(currentUser.current(), child);
         int age = child.ageMonthsOn(today());
         Set<Long> secure = achievements.findByChildId(childId).stream().map(a -> a.getMilestone().getId())
                 .collect(Collectors.toSet());
@@ -327,6 +330,7 @@ public class HomeService {
     public HomeViews.CheckResult submitCheck(Long childId, HomeViews.CheckIn in) {
         Child child = homeChild(childId);
         CurrentUser me = currentUser.current();
+        requireReadyForSessions(me, child);
         LocalDate today = today();
         int age = child.ageMonthsOn(today);
         Map<Long, Milestone> asked = milestones.findAllByOrderByChartAscPositionAsc().stream()
@@ -401,13 +405,11 @@ public class HomeService {
     }
 
     /**
-     * What a parent needs before a home session, the one place it is decided: the parent induction (each carer does
-     * their own). Task 26 (the 12-month pass) adds its payment check here, so both are one rule.
+     * What a parent needs before a home session, the starting check or a rating: the parent induction (each carer does
+     * their own) and, for a child at home, the family's running pass. One rule, in HomePassService.
      */
-    private void requireReadyForSessions(CurrentUser parent) {
-        if (!induction.isComplete(parent)) {
-            throw new IllegalStateException("Please finish the short parent induction before your first session");
-        }
+    private void requireReadyForSessions(CurrentUser parent, Child child) {
+        passes.requireReady(parent, child);
     }
 
     // --- The daily session ------------------------------------------------------------------------------------------
@@ -435,33 +437,39 @@ public class HomeService {
             levels.add(new HomeViews.Level(i + 1, HomeViews.LEVELS.get(i)));
         }
         boolean checkDue = checkDue(child, today);
+        boolean inductionDone = induction.isComplete(currentUser.current());
+        boolean passRunning = !child.isAtHome() || passes.running(child.getFamilyId());
+        LocalDate passEndsOn = child.isAtHome() ? passes.endsOn(child.getFamilyId()) : null;
+        boolean locked = child.isAtHome() && !(passRunning && inductionDone);
         if (list.isEmpty()) {
             return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), false, false, 0,
                     0, 0, 0, 0, 0, false, "", "", List.of(), List.of(), List.of(), canRate, days.contains(today), grid,
                     days.size(), COUNTER_DAYS, sessions.countByChildId(childId), null, checkDue,
-                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE, null,
-                    induction.isComplete(currentUser.current()));
+                    new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE, null, inductionDone,
+                    passRunning, passEndsOn);
         }
         List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
         Set<String> rated = theirs.stream().map(s -> s.getExercise().getId() + ":" + s.getPoint())
                 .collect(Collectors.toSet());
         HomeRules.Plan plan = HomeRules.plan(list, done);
-        HomeRules.Review due = canRate ? HomeRules.reviewDue(list, plan, rated) : null;
-        List<Long> firstTime = canRate ? plan.today().stream()
+        HomeRules.Review due = canRate && !locked ? HomeRules.reviewDue(list, plan, rated) : null;
+        List<Exercise> session = locked ? List.of() : plan.today();
+        List<Long> firstTime = canRate ? session.stream()
                 .filter(e -> e.getPoints().contains(ExercisePoints.START)
                         && !rated.contains(e.getId() + ":" + ExercisePoints.START))
                 .map(Exercise::getId).toList() : List.of();
         return new HomeViews.Today(child.getId(), child.displayName(), stage, stage.displayName(), true,
                 plan.rhymes(), plan.module(), plan.modules(), plan.week(), plan.weeks(), plan.sessionInModule(),
                 plan.sessionsPerModule(), plan.colourComplete(), HomeRules.progressLabel(plan),
-                HomeRules.sessionTitle(plan), plan.today().stream().map(AssessmentViews.ExerciseView::of).toList(),
-                plan.newThisWeek().stream().map(Exercise::getId).toList(), firstTime, canRate, days.contains(today),
+                HomeRules.sessionTitle(plan), session.stream().map(AssessmentViews.ExerciseView::of).toList(),
+                locked ? List.of() : plan.newThisWeek().stream().map(Exercise::getId).toList(), firstTime, canRate,
+                days.contains(today),
                 grid, days.size(), COUNTER_DAYS, sessions.countByChildId(childId),
                 due == null ? null : new HomeViews.Review(due.point(), ExercisePoints.label(due.point(), stage),
                         due.exercises().stream().map(AssessmentViews.ExerciseView::of).toList()),
                 checkDue, canRate ? support(stage, theirs) : new HomeViews.Support(false, null), levels,
-                HomeViews.SAFETY_NOTE, plan.rhymes() ? null : coolDowns.forModule(stage, plan.module()),
-                induction.isComplete(currentUser.current()));
+                HomeViews.SAFETY_NOTE, plan.rhymes() || locked ? null : coolDowns.forModule(stage, plan.module()),
+                inductionDone, passRunning, passEndsOn);
     }
 
     /** Accepts a batch of home sessions, typically saved on the phone while offline. Safe to resend. */
@@ -469,7 +477,6 @@ public class HomeService {
     public HomeViews.SubmitResult recordSessions(List<HomeViews.SessionIn> batch) {
         requireEnabled();
         CurrentUser me = currentUser.current();
-        requireReadyForSessions(me);
         LocalDate today = today();
         int saved = 0;
         int duplicates = 0;
@@ -488,6 +495,7 @@ public class HomeService {
             }
             Child child = findChild(s.childId());
             access.requireParentOf(child);
+            requireReadyForSessions(me, child);
             ColourStage stage = child.getCurrentStage() == null ? ColourStage.RED : child.getCurrentStage();
             sessions.save(new HomeProgrammeSession(s.clientId(), child.getId(), stage, s.doneOn(), me.email()));
             saved++;
@@ -571,6 +579,11 @@ public class HomeService {
     private CurrentUser requireParent() {
         requireEnabled();
         return currentUser.current();
+    }
+
+    /** The home programme is on in this deployment; otherwise its endpoints answer 404. */
+    public void requireAvailable() {
+        requireEnabled();
     }
 
     private void requireEnabled() {

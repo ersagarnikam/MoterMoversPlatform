@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { api, type HomeOverview } from '../../api'
+import HomePassCard from '../../components/HomePassCard'
+import { CardPaymentReturn } from '../../components/PayByCard'
 import Skeleton from '../../components/Skeleton'
 import StageBadge from '../../components/StageBadge'
 import { day } from '../../dates'
@@ -37,6 +39,8 @@ export default function HomeOverviewPage() {
         A few minutes of movement most days, with the same exercises schools use. Only you, and anyone you invite, see
         your children.
       </p>
+      <CardPaymentReturn />
+      <HomePassCard always />
 
       {data.children.length > 0 && (
         <div className="home-kids">

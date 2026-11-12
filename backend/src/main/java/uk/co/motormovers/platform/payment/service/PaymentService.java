@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import uk.co.motormovers.platform.payment.dto.PaymentViews.PaymentView;
 import uk.co.motormovers.platform.payment.dto.PaymentViews.SchoolTotal;
 import uk.co.motormovers.platform.payment.model.PayerType;
 import uk.co.motormovers.platform.payment.model.Payment;
+import uk.co.motormovers.platform.payment.model.PaymentEvents;
 import uk.co.motormovers.platform.payment.model.PaymentRefund;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
@@ -57,11 +59,12 @@ public class PaymentService {
     private final PushService push;
     private final Clock clock;
     private final Money money;
+    private final ApplicationEventPublisher events;
     private final CountrySettings country;
 
     public PaymentService(PaymentRepository payments, SchoolRepository schools, TrustRepository trusts,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, PushService push,
-            Clock clock, Money money, CountrySettings country) {
+            Clock clock, Money money, CountrySettings country, ApplicationEventPublisher events) {
         this.payments = payments;
         this.schools = schools;
         this.trusts = trusts;
@@ -72,6 +75,7 @@ public class PaymentService {
         this.clock = clock;
         this.money = money;
         this.country = country;
+        this.events = events;
     }
 
     @Transactional(readOnly = true)
@@ -171,6 +175,9 @@ public class PaymentService {
             payment.markPaid(r.paidOn());
         }
         payment = payments.save(payment);
+        if (payment.getStatus() == PaymentStatus.PAID) {
+            events.publishEvent(new PaymentEvents.Paid(payment.getId()));
+        }
         if (payment.getPayer() != null && payment.getStatus() == PaymentStatus.DUE) {
             // A parent with the app hears about it there too; a tap opens their Payments screen.
             push.notify(List.of(payment.getPayer().getId()), "A payment is due",
@@ -187,6 +194,7 @@ public class PaymentService {
         }
         Payment payment = find(paymentId);
         payment.markPaid(paidOn);
+        events.publishEvent(new PaymentEvents.Paid(payment.getId()));
         return PaymentView.of(payment);
     }
 

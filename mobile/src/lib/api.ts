@@ -206,6 +206,21 @@ export interface HomeToday {
   inductionDone: boolean
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
+  /** A child at home is covered by the family's pass (always true for a child linked to a school). */
+  passRunning: boolean
+  /** When the family's pass ends or ended; null for a school child or a family that never had one. */
+  passEndsOn: string | null
+}
+
+/** The family's Motor Movers at Home pass: twelve months for the whole family, bought by card. Prices include tax. */
+export interface HomePass {
+  hasFamily: boolean
+  onSale: boolean
+  pricePence: number | null
+  cardPayments: boolean
+  running: boolean
+  endsOn: string | null
+  ended: boolean
 }
 
 export interface HomeSessionEntry {
@@ -438,6 +453,8 @@ export const api = {
     request<CheckResult>('POST', `/api/home/children/${id}/check`, { answers }),
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
+  homePass: () => request<HomePass>('GET', '/api/home/pass'),
+  homePassCheckout: () => request<{ url: string }>('POST', '/api/home/pass/checkout'),
   homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
   homeInduction: () => request<HomeInduction>('GET', '/api/home/induction'),
   completeHomeInductionLesson: (lessonId: number) =>

@@ -116,7 +116,9 @@ public final class HomeViews {
      * the first time. {@code canRate} is false for a child linked to a school, whose teacher does the assessing.
      * {@code coolDown} ends a session from Green to Violet (a rhyme ends with its own, in its instructions); null
      * when there is none. {@code inductionDone}: this parent has finished the parent induction; sessions stay locked
-     * until they have.
+     * until they have. {@code passRunning}: a child at home is covered by the family's pass (always true for a child
+     * linked to a school), which ended or ends on {@code passEndsOn}. While a home child is locked by either, the
+     * session itself (exercises, ratings, review, cool-down) is not sent.
      */
     public record Today(Long childId, String name, ColourStage stage, String stageName, boolean hasExercises,
             boolean rhymes, int module, int modules, int week, int weeks, int sessionInModule, int sessionsPerModule,
@@ -124,7 +126,8 @@ public final class HomeViews {
             List<AssessmentViews.ExerciseView> exercises, List<Long> newThisWeek, List<Long> firstTime,
             boolean canRate, boolean doneToday, List<Boolean> counterGrid, int daysDone, int counterDays,
             long sessionsDone, Review review, boolean checkDue, Support support, List<Level> levels,
-            String safetyNote, CoolDown coolDown, boolean inductionDone) {
+            String safetyNote, CoolDown coolDown, boolean inductionDone, boolean passRunning,
+            java.time.LocalDate passEndsOn) {
     }
 
     public record CoolDown(String title, String text) {

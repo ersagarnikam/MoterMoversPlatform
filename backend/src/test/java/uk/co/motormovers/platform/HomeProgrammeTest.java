@@ -42,6 +42,9 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.home.model.HomeProgrammeSession;
 import uk.co.motormovers.platform.home.repository.HomeProgrammeSessionRepository;
+import uk.co.motormovers.platform.home.model.HomePass;
+import uk.co.motormovers.platform.home.repository.HomePassRepository;
+import uk.co.motormovers.platform.user.repository.AppUserRepository;
 import uk.co.motormovers.platform.content.util.WordingGuard;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 import uk.co.motormovers.platform.home.service.CoolDowns;
@@ -74,6 +77,15 @@ class HomeProgrammeTest {
 
     @Autowired
     HomeProgrammeSessionRepository homeSessions;
+
+    @Autowired
+    HomePassRepository homePasses;
+
+    @Autowired
+    AppUserRepository users;
+
+    /** The email each account made by register() signed up with. */
+    private static final Map<String, String> EMAILS = new ConcurrentHashMap<>();
 
     @Test
     void aFamilyAddsAChildWithoutASchool() throws Exception {
@@ -222,6 +234,9 @@ class HomeProgrammeTest {
         mia.placeAt(ColourStage.GREEN);
         mia.checkedOn(today.minusDays(60));
         children.save(mia);
+        // Today sends the session only with a running pass and the induction (go-live task 26).
+        withPass((int) id);
+        inductionDone(parent);
         sessionsDone(id, 0, 24, today);
 
         String week5 = mvc.perform(get("/api/home/children/" + id + "/today").header("Authorization", bearer(parent)))
@@ -338,6 +353,8 @@ class HomeProgrammeTest {
                 .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Kai\",\"ageMonths\":80}"))
                 .andReturn().getResponse().getContentAsString();
         Integer kai = JsonPath.read(added, "$.id");
+        withPass(kai);
+        inductionDone(parent);
         String check = mvc.perform(get("/api/home/children/" + kai + "/check").header("Authorization", bearer(parent)))
                 .andReturn().getResponse().getContentAsString();
         Integer movement = JsonPath.read(check, "$.questions[0].milestoneId");
@@ -383,6 +400,7 @@ class HomeProgrammeTest {
         Integer child = JsonPath.read(mvc.perform(post("/api/home/children").header("Authorization", bearer(parent))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Kit\",\"ageMonths\":50}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(), "$.id");
+        withPass(child);
         mvc.perform(put("/api/home/children/" + child + "/stage").header("Authorization", bearer(parent))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"stage\":\"GREEN\"}"))
                 .andExpect(status().isOk());
@@ -476,7 +494,24 @@ class HomeProgrammeTest {
                         + "\"displayName\":\"A Parent\"}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return JsonPath.read(body, "$.token");
+        String token = JsonPath.read(body, "$.token");
+        EMAILS.put(token, email);
+        return token;
+    }
+
+    /** A running Motor Movers at Home pass for the child's family (go-live task 26), as the team would extend it. */
+    private void withPass(Integer childId) {
+        Long familyId = children.findById(childId.longValue()).orElseThrow().getFamilyId();
+        LocalDate today = LocalDate.now(clock);
+        homePasses.save(new HomePass(familyId, null, "test", clock.instant(), null).runs(today.minusDays(1),
+                today.plusYears(1)));
+    }
+
+    /** The parent induction done, for a test about something else. */
+    private void inductionDone(String token) {
+        var user = users.findByEmailIgnoreCase(EMAILS.get(token)).orElseThrow();
+        user.completeInduction(LocalDate.now(clock));
+        users.save(user);
     }
 
     /** Signs each account in once: the tests share one sign-in rate limit per address with every other test. */

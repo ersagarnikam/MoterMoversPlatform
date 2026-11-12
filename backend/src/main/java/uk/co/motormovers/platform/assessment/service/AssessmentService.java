@@ -44,6 +44,7 @@ import uk.co.motormovers.platform.child.repository.ChildAccessLogRepository;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.home.service.HomePassService;
 import uk.co.motormovers.platform.school.model.School;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
@@ -81,12 +82,13 @@ public class AssessmentService {
     private final AccessPolicy access;
     private final Clock clock;
     private final SchoolYear schoolYear;
+    private final HomePassService homePasses;
 
     public AssessmentService(MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             DevelopmentCommentRepository comments, ExerciseRepository exercises, ExerciseScoreRepository scores,
             ColourSummaryRepository summaries, ChildRepository children, SchoolClassRepository classes,
             SchoolRepository schools, ChildAccessLogRepository accessLog, AccessPolicy access, Clock clock,
-            SchoolYear schoolYear) {
+            SchoolYear schoolYear, HomePassService homePasses) {
         this.milestones = milestones;
         this.achievements = achievements;
         this.comments = comments;
@@ -100,6 +102,7 @@ public class AssessmentService {
         this.access = access;
         this.clock = clock;
         this.schoolYear = schoolYear;
+        this.homePasses = homePasses;
     }
 
     // --- Programme content -----------------------------------------------------------------------------------------
@@ -495,6 +498,10 @@ public class AssessmentService {
         }
         if (child.getLeftOn() != null) {
             throw new IllegalArgumentException("This child has left the school");
+        }
+        if (child.isAtHome()) {
+            // A family rates its own child at home: the induction and a running pass first.
+            homePasses.requireReady(me, child);
         }
         return me;
     }

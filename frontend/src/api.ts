@@ -585,7 +585,7 @@ export interface LiveRegister {
 }
 
 export type PayerType = 'SCHOOL' | 'PARENT' | 'INDIVIDUAL'
-export type PaymentPurpose = 'LICENCE' | 'COURSE' | 'OTHER'
+export type PaymentPurpose = 'LICENCE' | 'COURSE' | 'HOME_PASS' | 'OTHER'
 
 /** Money returned on a paid payment, with its credit note. failed: Stripe could not return it, so it no longer counts. */
 export interface PaymentRefund {
@@ -785,6 +785,39 @@ export interface CountrySettings {
   creditNoteTitle: string
 }
 
+/** The family's Motor Movers at Home pass (go-live task 26). Prices include tax. */
+export interface HomePass {
+  hasFamily: boolean
+  onSale: boolean
+  pricePence: number | null
+  cardPayments: boolean
+  running: boolean
+  endsOn: string | null
+  ended: boolean
+}
+
+/** A family's pass as the team sees it, found by any member's email. */
+export interface AdminFamilyPass {
+  familyId: number
+  members: { name: string; email: string; role: string }[]
+  running: boolean
+  endsOn: string | null
+  history: {
+    startsOn: string
+    endsOn: string
+    paymentId: number | null
+    how: string
+    addedBy: string
+    addedAt: string
+    note: string | null
+  }[]
+}
+
+export interface HomePassPrices {
+  currentPence: number | null
+  prices: { pricePence: number; effectiveFrom: string; changedBy: string; changedAt: string }[]
+}
+
 export interface HomeToday {
   childId: number
   name: string
@@ -826,6 +859,10 @@ export interface HomeToday {
   safetyNote: string
   /** This parent has finished the parent induction; sessions stay locked until they have. */
   inductionDone: boolean
+  /** A child at home is covered by the family's pass (always true for a child linked to a school). */
+  passRunning: boolean
+  /** When the family's pass ends or ended; null for a school child or a family that never had one. */
+  passEndsOn: string | null
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
 }
@@ -1190,6 +1227,15 @@ export const api = {
     request<CheckResult>('POST', `/api/home/children/${id}/check`, { answers }),
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
+  homePass: () => request<HomePass>('GET', '/api/home/pass'),
+  homePassCheckout: () => request<{ url: string }>('POST', '/api/home/pass/checkout'),
+  homePassPrices: () => request<HomePassPrices>('GET', '/api/admin/home-pass/prices'),
+  changeHomePassPrice: (pricePence: number, effectiveFrom: string) =>
+    request<HomePassPrices>('POST', '/api/admin/home-pass/prices', { pricePence, effectiveFrom }),
+  familyPass: (email: string) =>
+    request<AdminFamilyPass>('GET', `/api/admin/home-pass/family?email=${encodeURIComponent(email)}`),
+  extendFamilyPass: (email: string, endsOn: string, note: string) =>
+    request<AdminFamilyPass>('POST', '/api/admin/home-pass/extend', { email, endsOn, note }),
   homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
   homeInduction: () => request<Induction>('GET', '/api/home/induction'),
   completeHomeInductionLesson: (lessonId: number) =>

@@ -62,7 +62,8 @@ without a smartphone, or who prefers a bigger screen, is not left out.
 
 In the parent app, or on the website under **At home**, sign in as **home@example.test** with the password **password**. Priya Shah
 has two children: **Ava**, 4 years 2 months, on Green, in the first week of module 2 with her module 1 ratings due,
-and **Leo**, 1 year 8 months, who has not done the starting check yet (he will start at Red).
+and **Leo**, 1 year 8 months, who has not done the starting check yet (he will start at Red). Priya's family pass runs; **lapsed@example.test**
+(Tom Reid, with Noah at Orange) has a pass that ended eleven days ago, so Renew shows.
 
 ## Your answers (3 November 2026)
 
@@ -157,7 +158,13 @@ Each had a suggested answer. Your answers are in the table above.
   exercise ratings and session dates. No date of birth, no birth history, no photos or videos.
 - **Who sees it.** Only the family. The Motor Movers team and schools cannot see a home child unless the parent links
   a school.
-- **Price.** Not built. Card payments already work, so a subscription could be added once the price is decided.
+- **Price and the pass** (go-live task 26). A 12-month pass for the whole family (all its children and carers), bought by
+  card through Stripe Checkout. The team sets the price on Plans and prices, dated like licence prices; with no price
+  it is not on sale. It runs from the day Stripe confirms the payment, and buying again while it runs carries on from
+  its end. Sessions, the starting check and ratings need a running pass and the parent induction; adding, editing and
+  deleting children, sharing, progress and linking a school stay open. Reminders go 30 and 7 days before the end and
+  on the day. A pass refunded in full ends on the day of the refund. The team can extend a family's pass by hand
+  (Payments page). Monthly billing is Release 2 (task 68); the price in each country is Kay's.
 - **Switching it on.** `HOME_PROGRAMME=true` in production (it is on in development and the demo).
 
 ## How it is built

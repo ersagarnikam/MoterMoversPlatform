@@ -16,10 +16,12 @@ import { currencySymbol, money } from '../money'
 import { useConfirm, useToast } from '../components/Feedback'
 import ListFilter, { matches } from '../components/ListFilter'
 import Skeleton from '../components/Skeleton'
+import { FamilyPassCard } from '../components/HomePassAdmin'
 
 const PURPOSES: [PaymentPurpose, string][] = [
   ['LICENCE', 'Licence'],
   ['COURSE', 'Course'],
+  ['HOME_PASS', 'Home programme'],
   ['OTHER', 'Other'],
 ]
 const PAYER_TYPE = { SCHOOL: 'School', PARENT: 'Parent or carer', INDIVIDUAL: 'Practitioner or staff' }
@@ -205,6 +207,7 @@ export default function PaymentsPage() {
           }
         />
       </section>
+      <FamilyPassCard />
     </>
   )
 }
