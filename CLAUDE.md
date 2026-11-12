@@ -165,6 +165,16 @@ notifications tried for real, the staging load test, and in the new group **"Rel
 videos, home subscriptions, a shared rate-limit store, Zoom attendance, renewing certificates online). The go-live
 board now also has **Details** and **Where in the repository** columns. Add new work only there.
 
+[PM: Claude, 2026-11-12] **Two teams of agents (Sagar's and Rahul's).** Sagar and Rahul each run a Developer, a Tester and a
+Project manager on their own computer. They share the go-live board, which is the only channel between the two
+computers: its **Team** column (Sagar, Rahul, People only) says whose agents take a task, **Agent stage** (Spec ready,
+Dev working, Ready to test, Testing, Bug found, Passed, Merged, Blocked) where it stands, and **Pull request** links
+it, with a tagged reply at each step. Each team tests and merges only its own pull requests. Which team a computer's
+agents belong to is set in `CLAUDE.local.md` (git ignores it). Rules, tags, migration numbering and setup:
+`.claude/team.md`; agent definitions: `.claude/agents/`. The Project manager's private details (contacts, open
+decisions, prices, risks) are in `.claude/pm-private.md`, which git ignores and Sagar shares by hand, since this
+repository is public.
+
 **Waiting on Pat and Kay (email of 2026-11-05, decisions due Fri 13 Nov).** Each was sent with a suggested answer:
 1 contracting company per country until the joint venture exists (suggested: Neuroway for UK and Ireland, an
 Australian company of ours for Australia); 2 brand (Motor Movers Programme or Professor Pat Preedy Programme); 3 prices in

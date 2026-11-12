@@ -31,3 +31,12 @@ frontend/playwright-report/
 # Guide builder: screenshots and working HTML are rebuilt (docs/guide-builder/README.md)
 docs/guide-builder/shots/
 docs/guide-builder/html/
+
+# Claude Code: per-computer settings and state (the agents in .claude/agents and .claude/team.md are shared)
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
+.claude/m2pack/
+.claude/scheduled_tasks.lock
+# The Project manager's private details (contacts, decisions, prices, risks): shared by hand, never committed
+.claude/pm-private.md
