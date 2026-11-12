@@ -39,13 +39,13 @@ import uk.co.motormovers.platform.user.model.AppUser;
 
 /**
  * A demo family on Motor Movers at Home, not linked to a school: Priya Shah (home@example.test) with Ava, 50 months
- * (started at Green, as children at school do), who did the starting check six weeks ago and is in her second Green
+ * (started at Green, as children at school do), who did the starting check seven weeks ago and is in her second Green
  * module (module 1's review is due), and Leo, 20 months, who has not done the check yet.
  */
 @Component
 class DemoHome {
 
-    /** Sessions Ava has done: module 1 (five weeks of five) and two of module 2. */
+    /** Sessions Ava has done: module 1 (six weeks of five) and two of module 2. */
     static final int AVA_SESSIONS = HomeRules.WEEKS_PER_MODULE * HomeRules.SESSIONS_PER_WEEK + 2;
 
     static final int AVA_AGE = 50;
@@ -94,7 +94,7 @@ class DemoHome {
         Family family = families.save(new Family());
         members.save(new FamilyMember(family.getId(), parent.getId(), FamilyMember.Role.OWNER));
 
-        LocalDate checked = today.minusDays(42);
+        LocalDate checked = today.minusDays(49);
         passPrices.save(new HomePassPrice(DEMO_PASS_PENCE, today.minusYears(2), "admin@motormovers.test",
                 Instant.now()));
         // Priya bought the family's pass by card the day she did Ava's check.

@@ -84,7 +84,7 @@ class HomeRulesTest {
     }
 
     @Test
-    void aModuleBuildsUpOverFiveWeeks() {
+    void aModuleBuildsUpOverFiveWeeksThenRepeatsWeekFive() {
         // Seven exercises in module 1, as in Pat's Green example: two in week 1, then one or two added each week.
         List<Exercise> green = new ArrayList<>();
         for (int i = 1; i <= 7; i++) {
@@ -94,7 +94,7 @@ class HomeRulesTest {
         HomeRules.Plan week1 = HomeRules.plan(green, 0);
         assertThat(week1.today()).extracting(Exercise::getNumber).containsExactly(1, 2);
         assertThat(week1.newThisWeek()).isEmpty();
-        assertThat(HomeRules.progressLabel(week1)).isEqualTo("Module 1 of 2 · week 1 of 5");
+        assertThat(HomeRules.progressLabel(week1)).isEqualTo("Module 1 of 2 · week 1 of 6");
         HomeRules.Plan week2 = HomeRules.plan(green, 5);
         assertThat(week2.today()).extracting(Exercise::getNumber).containsExactly(1, 2, 3, 4);
         assertThat(week2.newThisWeek()).extracting(Exercise::getNumber).containsExactly(3, 4);
@@ -102,6 +102,17 @@ class HomeRulesTest {
         assertThat(week5.week()).isEqualTo(5);
         assertThat(week5.today()).hasSize(7);
         assertThat(week5.newThisWeek()).extracting(Exercise::getNumber).containsExactly(7);
+        // Week 6 repeats week 5, and the module's review waits until it is done.
+        HomeRules.Plan week6 = HomeRules.plan(green, 25);
+        assertThat(week6.week()).isEqualTo(6);
+        assertThat(week6.module()).isEqualTo(1);
+        assertThat(week6.today()).isEqualTo(week5.today());
+        assertThat(week6.newThisWeek()).isEmpty();
+        assertThat(HomeRules.progressLabel(week6)).isEqualTo("Module 1 of 2 · week 6 of 6");
+        assertThat(HomeRules.reviewDue(green, HomeRules.plan(green, 29), Set.of())).isNull();
+        HomeRules.Plan next = HomeRules.plan(green, 30);
+        assertThat(next.module()).isEqualTo(2);
+        assertThat(HomeRules.reviewDue(green, next, Set.of()).point()).isEqualTo("MODULE_1");
     }
 
     @Test
@@ -109,7 +120,7 @@ class HomeRulesTest {
         List<Exercise> green = List.of(exercise(1, 1, "START", "MODULE_1", "MODULE_2", "END"),
                 exercise(2, 2, "START", "MODULE_1", "END"), exercise(3, 3, "START", "MODULE_2", "END"),
                 exercise(4, 4, "START", "MODULE_2", "END"), exercise(5, 5, "START", "MODULE_2", "END"));
-        HomeRules.Plan module2 = HomeRules.plan(green, 25);
+        HomeRules.Plan module2 = HomeRules.plan(green, 30);
         assertThat(module2.module()).isEqualTo(2);
         assertThat(module2.today()).extracting(Exercise::getNumber).containsExactly(1, 3, 4);
     }
@@ -123,13 +134,13 @@ class HomeRulesTest {
         assertThat(start.sessionInModule()).isEqualTo(1);
         assertThat(HomeRules.reviewDue(green, start, Set.of())).isNull();
 
-        HomeRules.Plan next = HomeRules.plan(green, 27);
+        HomeRules.Plan next = HomeRules.plan(green, 32);
         assertThat(next.module()).isEqualTo(2);
         assertThat(next.sessionInModule()).isEqualTo(3);
         assertThat(HomeRules.reviewDue(green, next, Set.of()).point()).isEqualTo("MODULE_1");
         assertThat(HomeRules.reviewDue(green, next, Set.of("1:MODULE_1"))).isNull();
 
-        HomeRules.Plan done = HomeRules.plan(green, 50);
+        HomeRules.Plan done = HomeRules.plan(green, 60);
         assertThat(done.colourComplete()).isTrue();
         assertThat(HomeRules.reviewDue(green, done, Set.of("1:MODULE_1", "2:MODULE_2")).point()).isEqualTo("END");
     }

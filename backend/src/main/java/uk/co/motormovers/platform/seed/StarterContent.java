@@ -215,8 +215,8 @@ public class StarterContent {
                 "Clear a space, take off shoes, socks, jumpers and ties, and press Start session. The screen "
                         + "leads the class through a warm up, four activities and a cool down. The session is in "
                         + "addition to PE, not part of it.\n\n"
-                        + "At the end, tap any child who was absent and press Complete session. The half-term "
-                        + "counter on the Today screen shows how many school days the class has managed. Little "
+                        + "At the end, tap any child who was absent and press Complete session. The counter "
+                        + "on the Today screen shows how many school days the class has managed. Little "
                         + "and often is what makes the difference."},
             {"Assessing the children", "The two assessments, when to do them, and what they do not tell you.",
                 "There are two assessments, both under Assess children. The developmental assessment uses the "

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import type { CountrySettings } from './api'
-import { schoolYearLabel } from './country'
+import { counterLabel, schoolYearLabel } from './country'
 import { sessionTime, startsIn, ZOOM_SDK } from './live'
 import { currencySymbol, money, setCurrency, taxLine } from './money'
 import { CONTACT_EMAIL, mailto, signInRole, SIGN_IN_ROLES } from './site'
@@ -59,6 +59,19 @@ describe('schoolYearLabel', () => {
 
   it('names one year where it is the calendar year', () => {
     expect(schoolYearLabel(2026, months(1))).toBe('2026')
+  })
+})
+
+describe('counterLabel', () => {
+  const labelled = (termLabel: string) => ({ termLabel }) as CountrySettings
+
+  it('names the counter the way the country does', () => {
+    expect(counterLabel(labelled('This half-term'))).toBe('This half-term')
+    expect(counterLabel(labelled('This term'))).toBe('This term')
+  })
+
+  it('shows nothing until the settings are known', () => {
+    expect(counterLabel(null)).toBe('')
   })
 })
 

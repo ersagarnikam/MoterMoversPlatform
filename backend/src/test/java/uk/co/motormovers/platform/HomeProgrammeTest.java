@@ -36,8 +36,12 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
 
+import uk.co.motormovers.platform.child.model.Child;
 import uk.co.motormovers.platform.child.repository.ChildRepository;
+import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.config.Mailer;
+import uk.co.motormovers.platform.home.model.HomeProgrammeSession;
+import uk.co.motormovers.platform.home.repository.HomeProgrammeSessionRepository;
 import uk.co.motormovers.platform.home.model.HomePass;
 import uk.co.motormovers.platform.home.repository.HomePassRepository;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
@@ -70,6 +74,9 @@ class HomeProgrammeTest {
 
     @Autowired
     ChildRepository children;
+
+    @Autowired
+    HomeProgrammeSessionRepository homeSessions;
 
     @Autowired
     HomePassRepository homePasses;
@@ -170,7 +177,7 @@ class HomeProgrammeTest {
                 .andExpect(jsonPath("$.rhymes").value(false))
                 .andExpect(jsonPath("$.module").value(2))
                 .andExpect(jsonPath("$.modules").value(6))
-                .andExpect(jsonPath("$.progressLabel").value("Module 2 of 6 · week 1 of 5"))
+                .andExpect(jsonPath("$.progressLabel").value("Module 2 of 6 · week 1 of 6"))
                 .andExpect(jsonPath("$.sessionTitle").value("Module 2 · week 1"))
                 // Green ends with the module's cool-down.
                 .andExpect(jsonPath("$.coolDown.title").value("Cool Down 2"))
@@ -213,6 +220,50 @@ class HomeProgrammeTest {
         mvc.perform(get("/api/home/children/" + ava).header("Authorization", bearer(priya)))
                 .andExpect(jsonPath("$.exercises[0].latest").value("Nearly"))
                 .andExpect(jsonPath("$.charts[0].secure").value(greaterThan(10)));
+    }
+
+    @Test
+    void aChildInWeekFiveGoesOnToWeekSixBeforeTheModulesReview() throws Exception {
+        String parent = register();
+        String added = mvc.perform(post("/api/home/children").header("Authorization", bearer(parent))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Mia\",\"ageMonths\":50}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        long id = ((Number) JsonPath.read(added, "$.id")).longValue();
+        LocalDate today = LocalDate.now(clock);
+        Child mia = children.findById(id).orElseThrow();
+        mia.placeAt(ColourStage.GREEN);
+        mia.checkedOn(today.minusDays(60));
+        children.save(mia);
+        // Today sends the session only with a running pass and the induction (go-live task 26).
+        withPass((int) id);
+        inductionDone(parent);
+        sessionsDone(id, 0, 24, today);
+
+        String week5 = mvc.perform(get("/api/home/children/" + id + "/today").header("Authorization", bearer(parent)))
+                .andExpect(jsonPath("$.progressLabel").value("Module 1 of 6 · week 5 of 6"))
+                .andReturn().getResponse().getContentAsString();
+        sessionsDone(id, 24, 25, today);
+        String week6 = mvc.perform(get("/api/home/children/" + id + "/today").header("Authorization", bearer(parent)))
+                .andExpect(jsonPath("$.progressLabel").value("Module 1 of 6 · week 6 of 6"))
+                .andExpect(jsonPath("$.newThisWeek.length()").value(0))
+                .andExpect(jsonPath("$.review").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        List<Integer> five = JsonPath.read(week5, "$.exercises[*].id");
+        List<Integer> six = JsonPath.read(week6, "$.exercises[*].id");
+        assertThat(six).isEqualTo(five);
+
+        sessionsDone(id, 25, 30, today);
+        mvc.perform(get("/api/home/children/" + id + "/today").header("Authorization", bearer(parent)))
+                .andExpect(jsonPath("$.progressLabel").value("Module 2 of 6 · week 1 of 6"))
+                .andExpect(jsonPath("$.review.point").value("MODULE_1"));
+    }
+
+    /** Sessions numbered from to until (exclusive), one a day, ending before today. */
+    private void sessionsDone(long childId, int from, int until, LocalDate today) {
+        for (int n = from; n < until; n++) {
+            homeSessions.save(new HomeProgrammeSession(UUID.randomUUID().toString(), childId, ColourStage.GREEN,
+                    today.minusDays(50 - n), "test"));
+        }
     }
 
     @Test

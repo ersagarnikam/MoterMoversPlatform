@@ -775,6 +775,8 @@ export interface CountrySettings {
   }
   /** The legal entity in one line, or null while it is a placeholder. */
   legalLine: string | null
+  /** The teacher's counter of daily sessions: "This half-term" (UK) or "This term" (Ireland, Australia). */
+  termLabel: string
   /** How times are labelled: "UK time", "Irish time", "Queensland time". */
   timeLabel: string
   /** Where this deployment's data is held, e.g. "the UK"; empty when it is not stated. */

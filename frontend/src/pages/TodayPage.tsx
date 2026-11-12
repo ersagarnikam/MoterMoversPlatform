@@ -4,6 +4,7 @@ import { api, type Today } from '../api'
 import StageBadge from '../components/StageBadge'
 import { rosterChild } from '../components/RosterChild'
 import Skeleton from '../components/Skeleton'
+import { counterLabel, useCountry } from '../country'
 
 /** A teacher's day starts with one button. */
 export default function TodayPage() {
@@ -11,6 +12,7 @@ export default function TodayPage() {
   const navigate = useNavigate()
   const [today, setToday] = useState<Today | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const country = useCountry()
 
   useEffect(() => {
     api.today(Number(classId)).then(setToday).catch((e) => setError(e.message))
@@ -82,7 +84,7 @@ export default function TodayPage() {
         </section>
 
         <section className="card counter-card">
-          <p className="muted">This half-term</p>
+          <p className="muted">{counterLabel(country)}</p>
           <p className="big-number">
             {today.sessionsDone} / {today.counterDays}
           </p>
