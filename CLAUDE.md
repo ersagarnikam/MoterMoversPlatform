@@ -407,6 +407,15 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-12, `task-83` at 7fd0a68, before merge, the Project manager's brief): pull request #66 (task 83,
+the intermittent live-session test failures) passes, no bugs.**
+- **Reproduced and fixed:** `-Dtest=LicenceCheckTest,TeamOverviewTest -Dsurefire.runOrder=alphabetical` fails on `main` (adbf57f, `TeamOverviewTest.theTeamSeesWhatNeedsAttention`) and passes on `task-83`.
+- **Random order, three runs:** 279 tests, no failures each time (seeds 32597616537100, 32738544288700, 32840360326000; rerun one with `-Dsurefire.runOrder=random -Dsurefire.runOrder.random.seed=<seed>`).
+- **No assertion weakened:** the diff changes only the three tests' database URLs, adds `DemoNearMidnightTest` and the loader's last-ten-minutes case. The tests that fix a clock as a bean (`LicenceCheckTest`, `DemoNearMidnightTest`) or set a region now all have their own database;
+  `UnsavedUploadTest` only makes a fixed clock locally, so it can share the default one.
+- **Demo:** all 70 browser tests pass. On a fresh start "Cohort A · starting now" begins ten minutes after start-up, is in the team's sessions today and is open for Jo to join, with sessions 2 and 3 a week apart.
+- **Not tested:** loading the demo between 11:50 pm and midnight UK time by hand (`DemoNearMidnightTest` covers it).
+
 **Task tested on its branch (updated by tester, 2026-11-12, `task-26` at a928542, before merge, the Project manager's brief): pull request #64 (task 26,
 the Motor Movers at Home pass) passes, no bugs.** Backend 278, web 69 unit tests, the build, the parent app typecheck and all 70 browser tests pass here (H2 with demo data, installed Chrome).
 - **Through the API, 78 checks:** Tom (lapsed@example.test) is refused a session, the check (GET and POST) and a rating with "Your family's pass ended on ..."; Today sends no session, review or cool-down.
