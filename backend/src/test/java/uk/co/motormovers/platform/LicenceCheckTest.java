@@ -46,7 +46,9 @@ import uk.co.motormovers.platform.school.service.PlanService;
  * colour. Each test sets up its own school and licences; the clock is fixed on a school day so recording works
  * whatever day the tests run.
  */
-@SpringBootTest
+// Its own database: the demo data is loaded once per database, on the clock of the first context to start, so a
+// context with another clock or time zone must not share the default one (task 83).
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:licencecheck;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH")
 @AutoConfigureMockMvc
 class LicenceCheckTest {
 
