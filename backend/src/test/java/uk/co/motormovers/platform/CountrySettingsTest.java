@@ -46,7 +46,9 @@ class CountrySettingsTest {
         assertThat(ie.taxPercent()).isEqualByComparingTo("23");
         assertThat(ie.timeZone()).isEqualTo("Europe/Dublin");
         assertThat(ie.schoolYear()).isEqualTo(new CountrySettings.SchoolYear(9, 6, 3, 9, 1, 4));
-        assertThat(ie.yearNames()).startsWith("Preschool", "Junior Infants", "Senior Infants");
+        assertThat(ie.yearNames()).containsExactly("Preschool", "Junior Infants", "Senior Infants", "First Class",
+                "Second Class");
+        assertThat(ie.termLabel()).isEqualTo("This term");
     }
 
     @Test
@@ -58,7 +60,8 @@ class CountrySettingsTest {
         // Queensland has no daylight saving, unlike Sydney.
         assertThat(au.timeZone()).isEqualTo("Australia/Brisbane");
         assertThat(au.schoolYear()).isEqualTo(new CountrySettings.SchoolYear(1, 12, 4, 1, 5, 9));
-        assertThat(au.yearNames()).startsWith("Kindy", "Prep");
+        assertThat(au.yearNames()).containsExactly("Preschool/Kindergarten", "Prep", "Year 1", "Year 2", "Year 3");
+        assertThat(au.termLabel()).isEqualTo("This term");
     }
 
     @Test
@@ -123,23 +126,38 @@ class CountrySettingsTest {
     }
 
     @Test
+    void theUkCountsItsSessionsByHalfTerm() {
+        assertThat(countries(Map.of()).get(Region.UK).validated("uk").termLabel()).isEqualTo("This half-term");
+    }
+
+    @Test
+    void aYearNameWithASlashSurvivesAnEnvironmentOverride() {
+        assertThat(countries(Map.of("PLATFORM_COUNTRIES_AU_YEARNAMES", "Preschool/Kindergarten,Prep,Year 1"))
+                .get(Region.AU).yearNames()).containsExactly("Preschool/Kindergarten", "Prep", "Year 1");
+    }
+
+    @Test
     void aValueThatCannotWorkStopsStartUp() {
         CountrySettings uk = countries(Map.of()).get(Region.UK);
         assertThatThrownBy(() -> new CountrySettings(uk.name(), "POUNDS", uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK").validated("uk"))
+                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term").validated("uk"))
                 .hasMessageContaining("platform.countries.uk.currency");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK")
+                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term")
                 .validated("uk"))
                 .hasMessageContaining("tax-percent");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK")
+                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term")
                 .validated("uk"))
                 .hasMessageContaining("time-zone");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), new CountrySettings.SchoolYear(9, 8, 3, 13, 1, 5), uk.yearNames(),
-                uk.legalEntity(), "Credit note", "UK time", "the UK").validated("uk"))
+                uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term").validated("uk"))
                 .hasMessageContaining("school-year");
+        assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
+                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note",
+                "UK time", "the UK", " ").validated("uk"))
+                .hasMessageContaining("term-label");
     }
 
     /** application.yml's countries, bound as Spring binds them, with these environment variables on top. */

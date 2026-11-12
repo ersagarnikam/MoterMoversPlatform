@@ -180,7 +180,7 @@ export interface HomeToday {
   sessionInModule: number
   sessionsPerModule: number
   colourComplete: boolean
-  /** "Module 2 of 6 · week 3 of 5", "Rhyme 4 of 18 · session 2 of 5" or the colour done. */
+  /** "Module 2 of 6 · week 3 of 6", "Rhyme 4 of 18 · session 2 of 5" or the colour done. */
   progressLabel: string
   /** "Module 2 · week 3", "Rhyme 4 · session 2". */
   sessionTitle: string

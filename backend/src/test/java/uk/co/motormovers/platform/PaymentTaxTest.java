@@ -86,6 +86,6 @@ class PaymentTaxTest {
 
     private static CountrySettings country(String percent) {
         return new CountrySettings("Test", "GBP", "en-GB", "VAT", new BigDecimal(percent), "Europe/London",
-                new CountrySettings.SchoolYear(9, 8, 3, 9, 1, 5), List.of("Year 1"), null, "Credit note", "UK time", "the UK");
+                new CountrySettings.SchoolYear(9, 8, 3, 9, 1, 5), List.of("Year 1"), null, "Credit note", "UK time", "the UK", "This half-term");
     }
 }

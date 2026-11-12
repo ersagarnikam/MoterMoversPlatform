@@ -9,6 +9,11 @@ export function schoolYearLabel(year: number, country: CountrySettings | null): 
   return country?.schoolYear.firstMonth === 1 ? String(year) : `${year} to ${year + 1}`
 }
 
+/** What the teacher's counter is called in this country; empty until the settings are known, so no wrong one shows. */
+export function counterLabel(country: CountrySettings | null): string {
+  return country?.termLabel ?? ''
+}
+
 let settings: Promise<CountrySettings | null> | null = null
 
 /** The country settings, asked once per page load; null until known, or if the call fails. */

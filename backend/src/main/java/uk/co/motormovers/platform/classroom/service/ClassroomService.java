@@ -36,11 +36,11 @@ import uk.co.motormovers.platform.security.service.AccessPolicy;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.service.InductionService;
 
-/** The teacher's day: today's session, the half-term counter, the roster, and completing a session. */
+/** The teacher's day: today's session, the counter of daily sessions, the roster, and completing a session. */
 @Service
 public class ClassroomService {
 
-    /** Days shown on the half-term counter. */
+    /** Days shown on the counter ("This half-term" or "This term", from the country settings). */
     public static final int COUNTER_DAYS = 20;
 
     private final SchoolClassRepository classes;

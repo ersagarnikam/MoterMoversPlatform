@@ -48,15 +48,17 @@ picks the country's settings from `platform.countries` in `backend/src/main/reso
 | Tax | VAT 20% | VAT 23% | GST 10% |
 | Time zone (the platform's clock) | Europe/London | Europe/Dublin | Australia/Brisbane (Queensland, no daylight saving) |
 | School year | September to August, 3 terms | September to June, 3 terms | January to December, 4 terms |
-| Assessment points start | Sep / Jan / May | Sep / Jan / Apr | Jan / May / Sep |
-| Year names | Nursery, Reception, Year 1-3 | Preschool, Junior Infants, Senior Infants, First Class, Second Class | Kindy, Prep, Year 1-3 |
+| Assessment points start | Sep / Jan / May | Sep / Jan / Apr (end Apr to Jun) | Jan / May / Sep |
+| Year names | Nursery, Reception, Year 1-3 | Preschool, Junior Infants, Senior Infants, First Class, Second Class | Preschool/Kindergarten, Prep, Year 1-3 |
+| Counter on Today (`term-label`) | This half-term | This term | This term |
 | Times labelled | UK time | Irish time | Queensland time |
 | Data held in | the UK | the EU | Australia |
 | Legal entity | To be confirmed | To be confirmed | To be confirmed |
 
 `data-held-in` is what the website says about where data is held (the UK, the EU, Australia): check it against the
 server you chose, and blank it (`PLATFORM_COUNTRIES_<REGION>_DATAHELDIN=`) rather than leave something untrue.
-Ireland's and Australia's points and year names, and every legal entity, are still to be confirmed. Anyone can read a
+Ireland's and Australia's points and year names were confirmed by Pat on 2026-11-10; every legal entity is still to be
+confirmed. Anyone can read a
 deployment's settings at `GET /api/settings` (no sign-in); the website and the parent app use them.
 
 **The legal entity must be set before a production deployment will start.** While any of its values says "To be
@@ -81,7 +83,8 @@ if present) as `PLATFORM_COUNTRIES_<REGION>_<NAME>`, with the name's dashes and 
 ```bash
 PLATFORM_COUNTRIES_IE_TAXPERCENT=23
 PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME=Motor Movers Australia Pty Ltd
-PLATFORM_COUNTRIES_AU_YEARNAMES=Kindy,Prep,Year 1,Year 2,Year 3
+PLATFORM_COUNTRIES_AU_YEARNAMES=Preschool/Kindergarten,Prep,Year 1,Year 2,Year 3
+PLATFORM_COUNTRIES_IE_TERMLABEL=This term
 ```
 
 then `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d api`. A value that cannot work
