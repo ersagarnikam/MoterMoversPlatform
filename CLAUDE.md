@@ -49,6 +49,9 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   refuses new full names and never sends saved ones (they are kept, hidden, until it is on again). Leavers are deleted
   365 days after leaving (`RetentionJob`).
 - **Time comes from the `Clock` bean** (`common/config/ClockConfig`), never `LocalDate.now()` without it.
+  (added by Dev, 2026-11-12) A test that changes the clock or the region (a fixed `Clock`, `PLATFORM_REGION`) must use its own H2
+  database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
+  start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
 - **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V23`, added by Dev 2026-11-12);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
@@ -66,7 +69,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 283 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 284 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-12) 72 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -196,6 +199,13 @@ the app's Today offer "Start the check" (and the check-due banner) only with a r
 otherwise. (d) "Please contact us" names the country's contact email and phone (`LegalEntity.contactEmail`/`contactPhone`, in `GET /api/settings` and
 the pass), each left out while blank or the placeholder. The app's child screen (`home-child/[id]`) still offers "Do the check again", which explains a
 refusal. Tests: `HomePassTest` (12), `CountrySettingsTest`, `homePass.test.ts`, the browser test with **lapsed@example.test**.
+
+(added by Dev, 2026-11-12) **Intermittent live-session test failures fixed (go-live task 83).** `TeamOverviewTest`, `BookingRequestTest` and
+`LiveSessionTest` failed on some CI runs because `LicenceCheckTest` (a clock fixed on 4 Nov 2026) and `RegionAustraliaTest` (Brisbane time)
+shared the default H2 database: when one started first, the demo (loaded once per database) was dated on its clock, so "Cohort A · starting
+now" was not today's for the others. Linux CI runs test classes in no fixed order; Windows ran them alphabetically, so it passed locally.
+Those two and `RegionIrelandTest` now have their own databases. The demo's "starting now" session, loaded in the last ten minutes of a day,
+now starts at once rather than after midnight (`DemoDataLoader`; `DemoNearMidnightTest`, clock fixed at 11:55 pm UK). No assertion was weakened.
 
 (added by Dev, 2026-11-12) **The Motor Movers at Home pass (go-live task 26; migration V23).** A family buys a 12-month pass, for all its children and carers, by card through the
 existing Stripe Checkout (`POST /api/home/pass/checkout`; a pass started but not paid is reused). It is a person's payment with the new purpose `HOME_PASS` ("Home
@@ -417,6 +427,15 @@ the home pass follow-ups to the tester's four notes on #64) passes, no bugs.** B
   (2) A moved part keeps its length in days, so across 29 Feb 2028 it ends a day later or earlier than 12 calendar months. (3) The team's history lists a refunded part as "Paid", and a refunded part that had not started as ending the day before it starts.
   (4) With the pass ended, the web child page still links "do the check again" under Colour, and At home still says "Time for the check again" (like the app's known "Do the check again").
 - **Not tested:** Stripe test checkout and the webhook (no test keys in this run); a real phone.
+
+**Task tested on its branch (updated by tester, 2026-11-12, `task-83` at 7fd0a68, before merge, the Project manager's brief): pull request #66 (task 83,
+the intermittent live-session test failures) passes, no bugs.**
+- **Reproduced and fixed:** `-Dtest=LicenceCheckTest,TeamOverviewTest -Dsurefire.runOrder=alphabetical` fails on `main` (adbf57f, `TeamOverviewTest.theTeamSeesWhatNeedsAttention`) and passes on `task-83`.
+- **Random order, three runs:** 279 tests, no failures each time (seeds 32597616537100, 32738544288700, 32840360326000; rerun one with `-Dsurefire.runOrder=random -Dsurefire.runOrder.random.seed=<seed>`).
+- **No assertion weakened:** the diff changes only the three tests' database URLs, adds `DemoNearMidnightTest` and the loader's last-ten-minutes case. The tests that fix a clock as a bean (`LicenceCheckTest`, `DemoNearMidnightTest`) or set a region now all have their own database;
+  `UnsavedUploadTest` only makes a fixed clock locally, so it can share the default one.
+- **Demo:** all 70 browser tests pass. On a fresh start "Cohort A · starting now" begins ten minutes after start-up, is in the team's sessions today and is open for Jo to join, with sessions 2 and 3 a week apart.
+- **Not tested:** loading the demo between 11:50 pm and midnight UK time by hand (`DemoNearMidnightTest` covers it).
 
 **Task tested on its branch (updated by tester, 2026-11-12, `task-26` at a928542, before merge, the Project manager's brief): pull request #64 (task 26,
 the Motor Movers at Home pass) passes, no bugs.** Backend 278, web 69 unit tests, the build, the parent app typecheck and all 70 browser tests pass here (H2 with demo data, installed Chrome).
@@ -953,7 +972,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-12): (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
