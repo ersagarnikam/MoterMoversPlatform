@@ -77,6 +77,20 @@ public record CountrySettings(
             return line.toString();
         }
 
+        /** The contact email, or null while it is blank or still the placeholder. */
+        public String contactEmail() {
+            return shown(email);
+        }
+
+        /** The contact phone, or null while it is blank or still the placeholder. */
+        public String contactPhone() {
+            return shown(phone);
+        }
+
+        private static String shown(String value) {
+            return present(value) && !PLACEHOLDER.equals(value.strip()) ? value.strip() : null;
+        }
+
         private static boolean present(String value) {
             return value != null && !value.isBlank();
         }

@@ -160,7 +160,7 @@ public class AssessmentService {
             }
             checkDate(s.assessedOn());
             Child child = findChild(s.childId());
-            CurrentUser me = requireRecorder(child);
+            CurrentUser me = requireRecorder(child, s.assessedOn());
             Exercise exercise = exerciseCache.computeIfAbsent(s.exerciseId(),
                     id -> exercises.findById(id).orElseThrow(() -> new NotFoundException("Exercise", id)));
             if (!exercise.getPoints().contains(s.point())) {
@@ -245,7 +245,7 @@ public class AssessmentService {
                 throw new IllegalArgumentException("Age in months must be between 0 and " + MAX_AGE_MONTHS);
             }
             Child child = findChild(a.childId());
-            CurrentUser me = requireRecorder(child);
+            CurrentUser me = requireRecorder(child, a.achievedOn());
             Milestone milestone = milestones.findById(a.milestoneId())
                     .orElseThrow(() -> new NotFoundException("Movement", a.milestoneId()));
             if (achievements.findByChildIdAndMilestoneId(child.getId(), milestone.getId()).isPresent()) {
@@ -492,6 +492,14 @@ public class AssessmentService {
      * child (Motor Movers at Home), the child's family.
      */
     private CurrentUser requireRecorder(Child child) {
+        return requireRecorder(child, null);
+    }
+
+    /**
+     * As {@link #requireRecorder(Child)}, for a record made on {@code doneOn}: a home family's rating saved offline
+     * while its pass ran is accepted after the pass ends (task 82).
+     */
+    private CurrentUser requireRecorder(Child child, LocalDate doneOn) {
         CurrentUser me = access.requireRecordAccess(child);
         if (me.is(Role.TRUST_LEAD)) {
             throw new AccessDeniedException("Trust or group leads cannot record assessments");
@@ -501,7 +509,7 @@ public class AssessmentService {
         }
         if (child.isAtHome()) {
             // A family rates its own child at home: the induction and a running pass first.
-            homePasses.requireReady(me, child);
+            homePasses.requireReady(me, child, doneOn);
         }
         return me;
     }

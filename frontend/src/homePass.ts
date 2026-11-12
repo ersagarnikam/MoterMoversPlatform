@@ -12,6 +12,20 @@ export interface PassState {
   action: string | null
 }
 
+/**
+ * "Please contact us at hello@example.com or 0118 000 0000 to buy the pass": the country's contact details, leaving out
+ * any not yet confirmed (task 82).
+ */
+export function contactUs(pass: Pick<HomePass, 'contactEmail' | 'contactPhone'>): string {
+  const ways = [pass.contactEmail, pass.contactPhone].filter((v): v is string => !!v)
+  return `Please contact us${ways.length ? ` at ${ways.join(' or ')}` : ''} to buy the pass.`
+}
+
+/** Sessions and the starting check are open: a running pass and this parent's induction done. */
+export function sessionsOpen(pass: HomePass | null): boolean {
+  return !!pass && pass.running && pass.inductionDone
+}
+
 export function passState(pass: HomePass): PassState {
   if (!pass.hasFamily) return { kind: 'no-family', text: '', action: null }
   if (pass.running) {

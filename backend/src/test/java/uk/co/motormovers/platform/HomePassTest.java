@@ -41,8 +41,10 @@ import com.jayway.jsonpath.JsonPath;
 import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.model.ColourStage;
+import uk.co.motormovers.platform.home.model.HomePass;
 import uk.co.motormovers.platform.home.model.HomePassPrice;
 import uk.co.motormovers.platform.home.repository.HomePassPriceRepository;
+import uk.co.motormovers.platform.home.repository.HomePassRepository;
 import uk.co.motormovers.platform.home.service.HomePassService;
 import uk.co.motormovers.platform.payment.stripe.StripeClient;
 import uk.co.motormovers.platform.payment.stripe.StripeSignature;
@@ -76,6 +78,9 @@ class HomePassTest {
 
     @Autowired
     HomePassPriceRepository prices;
+
+    @Autowired
+    HomePassRepository passRows;
 
     @Autowired
     AppUserRepository users;
@@ -298,7 +303,108 @@ class HomePassTest {
         pass(f.token).andExpect(jsonPath("$.endsOn").value(today.toString()));
     }
 
+    @Test
+    void aFullRefundWithARenewalQueuedLeavesNoDayWithoutAPass() throws Exception {
+        Family f = family();
+        String admin = login("admin@motormovers.test");
+        LocalDate today = LocalDate.now(clock);
+        // This year's pass, and next year's bought early: it is queued to start when this one ends.
+        Integer first = paidByHand(admin, f.email, today);
+        paidByHand(admin, f.email, today);
+        LocalDate renewalEnds = today.plusYears(2).minusDays(1);
+        pass(f.token).andExpect(jsonPath("$.endsOn").value(renewalEnds.toString()));
+
+        refundInFull(admin, first);
+
+        // The refunded pass ends today, and the renewal moves forward to start tomorrow, keeping its length.
+        Long familyId = familyId(admin, f.email);
+        LocalDate renewalStarts = today.plusDays(1);
+        LocalDate movedEnd = renewalStarts.plusDays(java.time.temporal.ChronoUnit.DAYS
+                .between(today.plusYears(1), renewalEnds));
+        pass(f.token).andExpect(jsonPath("$.running").value(true))
+                .andExpect(jsonPath("$.endsOn").value(movedEnd.toString()))
+                .andExpect(jsonPath("$.ended").value(false));
+        assertThat(passes.coveredOn(familyId, today)).isTrue();
+        assertThat(passes.coveredOn(familyId, renewalStarts)).isTrue();
+        assertThat(passes.coveredOn(familyId, movedEnd)).isTrue();
+        assertThat(passes.coveredOn(familyId, movedEnd.plusDays(1))).isFalse();
+    }
+
+    @Test
+    void sessionsAndRatingsSavedOfflineWhileThePassRanAreAcceptedAfterItEnds() throws Exception {
+        Family f = family();
+        String admin = login("admin@motormovers.test");
+        LocalDate today = LocalDate.now(clock);
+        Long exercise = exercises.findByStageOrderByNumber(ColourStage.GREEN).getFirst().getId();
+        inductionDone(f.email);
+        // A pass that ran from 20 days ago to 6 days ago.
+        Long familyId = familyId(admin, f.email);
+        passRows.save(new HomePass(familyId, null, "test", clock.instant(), null)
+                .runs(today.minusDays(20), today.minusDays(6)));
+        pass(f.token).andExpect(jsonPath("$.running").value(false)).andExpect(jsonPath("$.ended").value(true));
+
+        // Done while it ran: accepted.
+        session(f.token, f.child, today.minusDays(10)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.saved").value(1));
+        rate(f.token, f.child, exercise, today.minusDays(10)).andExpect(status().isOk());
+        // Before the first pass, after it ended, today or tomorrow: refused.
+        session(f.token, f.child, today.minusDays(25)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("pass")));
+        session(f.token, f.child, today.minusDays(3)).andExpect(status().isBadRequest());
+        session(f.token, f.child, today).andExpect(status().isBadRequest());
+        session(f.token, f.child, today.plusDays(1)).andExpect(status().isBadRequest());
+        rate(f.token, f.child, exercise, today.minusDays(3)).andExpect(status().isBadRequest());
+        // The check (today) stays locked.
+        check(f.token, f.child).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void theInductionIsStillNeededForASessionSavedWhileThePassRan() throws Exception {
+        Family f = family();
+        LocalDate today = LocalDate.now(clock);
+        passRows.save(new HomePass(familyId(login("admin@motormovers.test"), f.email), null, "test", clock.instant(),
+                null).runs(today.minusDays(20), today.minusDays(6)));
+        session(f.token, f.child, today.minusDays(10)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(containsString("parent induction")));
+        pass(f.token).andExpect(jsonPath("$.inductionDone").value(false));
+        inductionDone(f.email);
+        pass(f.token).andExpect(jsonPath("$.inductionDone").value(true));
+    }
+
+    @Test
+    void theContactDetailsAreLeftOutWhileTheyArePlaceholders() throws Exception {
+        Family f = family();
+        pass(f.token).andExpect(jsonPath("$.contactEmail").doesNotExist())
+                .andExpect(jsonPath("$.contactPhone").doesNotExist());
+        mvc.perform(get("/api/settings")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.contactEmail").doesNotExist())
+                .andExpect(jsonPath("$.contactPhone").doesNotExist());
+    }
+
     // --- Helpers ------------------------------------------------------------------------------------------------------
+
+    /** A pass payment the team records as paid today for the parent. */
+    private Integer paidByHand(String admin, String email, LocalDate today) throws Exception {
+        String body = mvc.perform(post("/api/admin/payments").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"payerEmail\":\"" + email + "\",\"purpose\":\"HOME_PASS\",\"description\":\"Pass\","
+                        + "\"amountPence\":3500,\"invoicedOn\":\"" + today + "\",\"paidOn\":\"" + today + "\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.id");
+    }
+
+    private void refundInFull(String admin, Integer payment) throws Exception {
+        mvc.perform(post("/api/admin/payments/" + payment + "/refund").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amountPence\":3500,\"reason\":\"Changed their mind\",\"clientId\":\""
+                        + UUID.randomUUID() + "\"}"))
+                .andExpect(status().isOk());
+    }
+
+    private Long familyId(String admin, String email) throws Exception {
+        Number id = JsonPath.read(fetch(admin, "/api/admin/home-pass/family?email=" + email), "$.familyId");
+        return id.longValue();
+    }
 
     private record Account(String email, String token) {
     }
@@ -347,18 +453,25 @@ class HomePassTest {
     }
 
     private ResultActions session(String token, Integer child) throws Exception {
+        return session(token, child, LocalDate.now(clock));
+    }
+
+    private ResultActions session(String token, Integer child, LocalDate doneOn) throws Exception {
         return mvc.perform(post("/api/home/sessions").header("Authorization", bearer(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("[{\"clientId\":\"" + UUID.randomUUID() + "\",\"childId\":" + child + ",\"doneOn\":\""
-                        + LocalDate.now(clock) + "\"}]"));
+                        + doneOn + "\"}]"));
     }
 
     private ResultActions rate(String token, Integer child, Long exercise) throws Exception {
+        return rate(token, child, exercise, LocalDate.now(clock));
+    }
+
+    private ResultActions rate(String token, Integer child, Long exercise, LocalDate on) throws Exception {
         return mvc.perform(post("/api/assessment/exercise-scores").header("Authorization", bearer(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("[{\"clientId\":\"" + UUID.randomUUID() + "\",\"childId\":" + child + ",\"exerciseId\":"
-                        + exercise + ",\"point\":\"START\",\"score\":2,\"assessedOn\":\"" + LocalDate.now(clock)
-                        + "\"}]"));
+                        + exercise + ",\"point\":\"START\",\"score\":2,\"assessedOn\":\"" + on + "\"}]"));
     }
 
     private ResultActions extend(String email, LocalDate endsOn) throws Exception {

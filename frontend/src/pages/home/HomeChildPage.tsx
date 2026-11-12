@@ -4,13 +4,16 @@ import {
   api,
   type ColourStage,
   type FamilyActivities,
+  type HomePass,
   type HomeProgress,
   type HomeToday,
 } from '../../api'
 import { useConfirm, useToast } from '../../components/Feedback'
+import HomePassCard from '../../components/HomePassCard'
 import NotADiagnosis from '../../components/NotADiagnosis'
 import Skeleton from '../../components/Skeleton'
 import StageBadge from '../../components/StageBadge'
+import { sessionsOpen } from '../../homePass'
 import { CHART_NAMES, ageLabel, reviewName, toMonths } from '../../homeProgramme'
 import { STAGES } from '../../stages'
 
@@ -24,12 +27,15 @@ export default function HomeChildPage() {
   const [progress, setProgress] = useState<HomeProgress | null>(null)
   const [today, setToday] = useState<HomeToday | null>(null)
   const [activities, setActivities] = useState<FamilyActivities | null>(null)
+  const [pass, setPass] = useState<HomePass | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
       const p = await api.homeProgress(id)
       setProgress(p)
+      // The check needs what sessions need (task 82): offer it only when the API would take it.
+      setPass(await api.homePass().catch(() => null))
       if (p.child.stage) {
         const t = await api.homeToday(id)
         setToday(t)
@@ -46,6 +52,7 @@ export default function HomeChildPage() {
 
   if (!progress) return error ? <p className="error">{error}</p> : <Skeleton />
   const { child } = progress
+  const open = sessionsOpen(pass)
 
   return (
     <>
@@ -75,13 +82,17 @@ export default function HomeChildPage() {
             A few questions about what {child.name} can do now. It takes about five minutes and suggests the colour to
             start at.
           </p>
-          <Link to={`/home/child/${id}/check`} className="btn btn-primary">
-            Start the check
-          </Link>
+          {open ? (
+            <Link to={`/home/child/${id}/check`} className="btn btn-primary">
+              Start the check
+            </Link>
+          ) : (
+            <CheckLocked pass={pass} />
+          )}
         </section>
       ) : (
         <>
-          {child.checkDue && (
+          {child.checkDue && open && (
             <p className="banner-info">
               A new part of the school year: time to do {child.name}’s check again.{' '}
               <Link to={`/home/child/${id}/check`}>Start the check</Link>
@@ -156,6 +167,17 @@ export default function HomeChildPage() {
       <h2>Settings</h2>
       <Settings progress={progress} onChange={load} />
     </>
+  )
+}
+
+/** In place of "Start the check" while the API would refuse it: the pass card, or the induction. */
+function CheckLocked({ pass }: { pass: HomePass | null }) {
+  if (pass && !pass.running) return <HomePassCard />
+  return (
+    <p>
+      The check opens once you have read the short parent induction.{' '}
+      <Link to="/home/induction">Start the induction</Link>
+    </p>
   )
 }
 

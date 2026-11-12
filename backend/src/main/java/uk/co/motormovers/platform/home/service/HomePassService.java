@@ -109,6 +109,11 @@ public class HomePassService {
         return familyId != null && passes.findByFamilyIdOrderById(familyId).stream().anyMatch(p -> p.covers(today));
     }
 
+    /** Whether a pass covered the family on that day. */
+    public boolean coveredOn(Long familyId, LocalDate day) {
+        return familyId != null && passes.findByFamilyIdOrderById(familyId).stream().anyMatch(p -> p.covers(day));
+    }
+
     /** The last day of the family's pass, or null if it never had one. */
     public LocalDate endsOn(Long familyId) {
         return familyId == null ? null : latestEnd(passes.findByFamilyIdOrderById(familyId));
@@ -120,8 +125,21 @@ public class HomePassService {
      * the programme.
      */
     public void requireReady(CurrentUser parent, Child child) {
+        requireReady(parent, child, null);
+    }
+
+    /**
+     * As {@link #requireReady(CurrentUser, Child)}, for something done on {@code doneOn}, typically saved on a phone
+     * while offline and sent later: accepted if a pass covered the family that day, even if it has since ended. Today,
+     * a day after today, or null needs a pass running today, as before. The induction is always needed.
+     */
+    public void requireReady(CurrentUser parent, Child child, LocalDate doneOn) {
         if (!induction.isComplete(parent)) {
             throw new IllegalStateException("Please finish the short parent induction before your first session");
+        }
+        if (child != null && child.isAtHome() && doneOn != null && doneOn.isBefore(today())
+                && coveredOn(child.getFamilyId(), doneOn)) {
+            return;
         }
         if (child != null && child.isAtHome() && !running(child.getFamilyId())) {
             LocalDate ended = endsOn(child.getFamilyId());
@@ -145,8 +163,11 @@ public class HomePassService {
         Integer price = priceToday();
         LocalDate end = family.map(this::endsOn).orElse(null);
         boolean running = family.map(this::running).orElse(false);
+        // A family's passes leave no gap (see refunded), so one that has had a pass and has none today has one that
+        // ended.
         return new HomePassViews.Pass(family.isPresent(), price != null, price, onlinePayments.enabled(), running, end,
-                !running && end != null && end.isBefore(today()));
+                !running && end != null, induction.isComplete(me), country.legalEntity().contactEmail(),
+                country.legalEntity().contactPhone());
     }
 
     /**
@@ -205,13 +226,17 @@ public class HomePassService {
             return;
         }
         LocalDate paidOn = payment.getPaidOn();
-        LocalDate end = latestEnd(passes.findByFamilyIdOrderById(pass.getFamilyId()));
-        LocalDate from = end != null && !end.isBefore(paidOn) ? end.plusDays(1) : paidOn;
+        LocalDate runsTo = runsUntil(passes.findByFamilyIdOrderById(pass.getFamilyId()), paidOn);
+        LocalDate from = runsTo != null ? runsTo.plusDays(1) : paidOn;
         passes.save(pass.runs(from, from.plusYears(1).minusDays(1)));
         log.info("Home pass for family {} runs from {} to {}", pass.getFamilyId(), from, pass.getEndsOn());
     }
 
-    /** A pass refunded in full ends on the day of the refund; a partial refund leaves it running. */
+    /**
+     * A pass refunded in full ends on the day of the refund; a partial refund leaves it running. Parts of the family's
+     * pass queued after it (a renewal bought early, or an extension) move forward to follow on with no gap, each
+     * keeping its length (task 82), so the family is never left without a pass between the refund and a renewal.
+     */
     @EventListener
     public void refunded(PaymentEvents.Refunded event) {
         Payment payment = payments.findById(event.paymentId()).orElse(null);
@@ -226,7 +251,33 @@ public class HomePassService {
                 pass.runs(pass.getStartsOn(), on);
             }
             passes.save(pass);
+            closeGaps(pass.getFamilyId(), on);
         });
+    }
+
+    /**
+     * Moves the family's parts that start after {@code from} forward, in order, so each starts the day after the one
+     * before ends (or on {@code from} when nothing covers the days before), keeping its length. Parts begun by
+     * {@code from} are left as they are: the past is never rewritten.
+     */
+    private void closeGaps(Long familyId, LocalDate from) {
+        List<HomePass> all = passes.findByFamilyIdOrderById(familyId).stream()
+                .filter(p -> p.started() && !p.getEndsOn().isBefore(p.getStartsOn()))
+                .sorted(Comparator.comparing(HomePass::getStartsOn).thenComparing(HomePass::getId))
+                .toList();
+        LocalDate covered = null;
+        for (HomePass p : all) {
+            if (p.getStartsOn().isAfter(from)) {
+                LocalDate start = covered == null || covered.isBefore(from) ? from : covered.plusDays(1);
+                if (start.isBefore(p.getStartsOn())) {
+                    long length = ChronoUnit.DAYS.between(p.getStartsOn(), p.getEndsOn());
+                    passes.save(p.runs(start, start.plusDays(length)));
+                    log.info("Home pass part {} of family {} moved forward to {} after a refund", p.getId(), familyId,
+                            start);
+                }
+            }
+            covered = covered == null || p.getEndsOn().isAfter(covered) ? p.getEndsOn() : covered;
+        }
     }
 
     // --- The team -----------------------------------------------------------------------------------------------------
@@ -250,7 +301,8 @@ public class HomePassService {
         if (end != null && !request.endsOn().isAfter(end)) {
             throw new IllegalArgumentException("The pass already runs to " + DAY.format(end));
         }
-        LocalDate from = end != null && !end.isBefore(today) ? end.plusDays(1) : today;
+        LocalDate runsTo = runsUntil(passes.findByFamilyIdOrderById(familyId), today);
+        LocalDate from = runsTo != null ? runsTo.plusDays(1) : today;
         String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
         passes.save(new HomePass(familyId, null, me.email(), clock.instant(), note).runs(from, request.endsOn()));
         return view(familyId);
@@ -339,6 +391,26 @@ public class HomePassService {
     public Integer priceToday() {
         return prices.findFirstByEffectiveFromLessThanEqualOrderByEffectiveFromDesc(today())
                 .map(HomePassPrice::getPricePence).orElse(null);
+    }
+
+    /**
+     * The last day of the unbroken run of pass days from {@code day} (parts that follow on with no gap count as one),
+     * or null if no part covers that day. A new part starts the day after it, or on the day itself when null.
+     */
+    static LocalDate runsUntil(List<HomePass> list, LocalDate day) {
+        List<HomePass> parts = list.stream().filter(HomePass::started)
+                .filter(p -> !p.getEndsOn().isBefore(p.getStartsOn()))
+                .sorted(Comparator.comparing(HomePass::getStartsOn)).toList();
+        if (parts.stream().noneMatch(p -> p.covers(day))) {
+            return null;
+        }
+        LocalDate to = day.minusDays(1);
+        for (HomePass p : parts) {
+            if (!p.getStartsOn().isAfter(to.plusDays(1)) && p.getEndsOn().isAfter(to)) {
+                to = p.getEndsOn();
+            }
+        }
+        return to;
     }
 
     private static LocalDate latestEnd(List<HomePass> list) {

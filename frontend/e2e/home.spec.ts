@@ -122,3 +122,15 @@ test('a parent rates the end of a module and emails a family code', async ({ pag
   await page.getByRole('button', { name: 'Email a code' }).click()
   await expect(page.getByText(/^Emailed to gran@example\.test\. Works once/)).toBeVisible()
 })
+
+test('a family whose pass has ended is offered Renew, not the check (task 82)', async ({ page }) => {
+  await signIn(page, 'lapsed@example.test')
+  await page.getByRole('link', { name: 'At home', exact: true }).click()
+  await expect(page.locator('.home-pass').getByRole('heading', { name: 'Your pass has ended' })).toBeVisible()
+  await page.getByRole('link', { name: /^Noah / }).click()
+  await expect(page.getByRole('heading', { name: 'Noah', level: 1 })).toBeVisible()
+  // Noah's check is due again, but the API would refuse it without a running pass, so it is not offered.
+  await expect(page.getByRole('link', { name: 'Renew the pass' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Start the check' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Start', exact: true })).toHaveCount(0)
+})

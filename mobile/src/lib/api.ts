@@ -221,6 +221,11 @@ export interface HomePass {
   running: boolean
   endsOn: string | null
   ended: boolean
+  /** This parent has finished the parent induction (sessions and the check need it and a running pass). */
+  inductionDone: boolean
+  /** Whom to ask about the pass; null until the country's legal entity gives one. */
+  contactEmail: string | null
+  contactPhone: string | null
 }
 
 export interface HomeSessionEntry {

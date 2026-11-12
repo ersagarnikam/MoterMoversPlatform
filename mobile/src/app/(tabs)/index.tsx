@@ -13,6 +13,12 @@ import { useLoad } from '@/lib/useLoad'
 
 const STAGE_KEY = 'mm.home.stage'
 
+/** "Please contact us at … or … to buy the pass", leaving out details not yet confirmed (task 82). */
+function contactUs(p: { contactEmail: string | null; contactPhone: string | null }): string {
+  const ways = [p.contactEmail, p.contactPhone].filter((v): v is string => !!v)
+  return `Please contact us${ways.length ? ` at ${ways.join(' or ')}` : ''} to buy the pass.`
+}
+
 /**
  * Who today is for: a child linked through their school (their stage), a family's own child on Motor Movers at Home
  * (homeId), or a stage the parent picked.
@@ -51,6 +57,8 @@ export default function TodayScreen() {
     }
     const kid = homeKids.find((k) => k.id === homeId) ?? null
     const homeToday = kid?.stage ? await api.homeToday(kid.id) : null
+    // The check needs what sessions need (task 82): offer it only when the API would take it.
+    const pass = kid ? await api.homePass().catch(() => null) : null
     const params = kid
       ? { childId: kid.id }
       : choice && 'childId' in choice && children.some((c) => c.childId === choice.childId)
@@ -71,6 +79,7 @@ export default function TodayScreen() {
       homeKids,
       kid,
       homeToday,
+      pass,
       home,
       due,
       liveNow,
@@ -89,7 +98,8 @@ export default function TodayScreen() {
 
   if (error && !data) return <ErrorState message={error} onRetry={() => reload()} />
   if (!data) return <Loading />
-  const { children, homeEnabled, homeKids, kid, homeToday, home, due, liveNow, forChild } = data
+  const { children, homeEnabled, homeKids, kid, homeToday, pass, home, due, liveNow, forChild } = data
+  const checkOpen = !!pass && pass.running && pass.inductionDone
   // Pat's exercises for this home child's colour; otherwise the colour's home activities, as for everyone else.
   const exercisesToday = kid && homeToday?.hasExercises ? homeToday : null
 
@@ -122,10 +132,16 @@ export default function TodayScreen() {
         onChoose={choose}
       />
       {kid && !kid.stage ? (
-        <CheckCard kid={kid} />
+        checkOpen ? (
+          <CheckCard kid={kid} />
+        ) : pass && !pass.running ? (
+          <PassCard ended={pass.ended} />
+        ) : (
+          <InductionCard />
+        )
       ) : exercisesToday ? (
         <>
-          {kid?.checkDue && (
+          {kid?.checkDue && checkOpen && (
             <Pressable
               accessibilityRole="button"
               onPress={() => router.push({ pathname: '/check/[id]', params: { id: kid.id } })}
@@ -297,8 +313,19 @@ function PassCard({ ended }: { ended: boolean }) {
       {p?.onSale && price && p.cardPayments && (
         <Button label={busy ? 'Opening…' : ended ? `Renew for ${price}` : `Buy the pass for ${price}`} onPress={buy} disabled={busy} />
       )}
-      {p?.onSale && !p.cardPayments && <Muted>Paying by card is not switched on yet. Please contact us to buy the pass.</Muted>}
+      {p?.onSale && !p.cardPayments && <Muted>Paying by card is not switched on yet. {contactUs(p)}</Muted>}
       {error && <Banner tone="warn">{error}</Banner>}
+    </Card>
+  )
+}
+
+/** Before the first session or the check: the parent induction. */
+function InductionCard() {
+  return (
+    <Card>
+      <H2>Before your first session</H2>
+      <Body>There is a short induction to read first. Sessions and the check open once you have finished it.</Body>
+      <Button label="Start the induction" onPress={() => router.push('/home-induction')} />
     </Card>
   )
 }
@@ -310,13 +337,7 @@ function HomeSessionCard({ today }: { today: HomeToday }) {
     return <PassCard ended={today.passEndsOn != null} />
   }
   if (!today.inductionDone) {
-    return (
-      <Card>
-        <H2>Before your first session</H2>
-        <Body>There is a short induction to read first. Sessions open once you have finished it.</Body>
-        <Button label="Start the induction" onPress={() => router.push('/home-induction')} />
-      </Card>
-    )
+    return <InductionCard />
   }
   return (
     <>

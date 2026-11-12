@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, type HomePass } from '../api'
-import { passState } from '../homePass'
+import { contactUs, passState } from '../homePass'
 
 /**
  * The family's Motor Movers at Home pass: when it ends, or Buy or Renew, which opens Stripe's own page. The pass runs
@@ -45,7 +45,7 @@ export default function HomePassCard({ always = false }: { always?: boolean }) {
             {state.action}
           </button>
         ) : (
-          <p className="muted">Paying by card is not switched on yet. Please contact us to buy the pass.</p>
+          <p className="muted">Paying by card is not switched on yet. {contactUs(pass)}</p>
         ))}
       {error && <p className="error">{error}</p>}
     </section>
