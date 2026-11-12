@@ -43,7 +43,7 @@ Developer tasks are items named **"DEV: ..."**, with the full spec in the item's
 4. **Testing.** The same team's Tester sets Testing, tests the branch and either sets **Bug found** (with the bug as a
    reply, and the Developer fixes it on the same branch, back to Ready to test) or **Passed** (with the results as a
    reply, and its CLAUDE.md note on the branch).
-5. **Merged.** The same team's Project manager merges once the Tester passed and every CI check is green on the
+5. **Merged.** The same team's Project manager merges (Sagar decided, 2026-11-12: each team merges its own) once the Tester passed and every CI check is green on the
    latest commit, sets Merged and replies with the merge commit. The person sets Status to Done.
 6. **Blocked.** Waiting on someone outside the agents (Pat, Kay, a file, a decision): say who and what in a reply.
 
