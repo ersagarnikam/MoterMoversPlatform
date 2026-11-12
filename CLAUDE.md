@@ -408,6 +408,18 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-12, `task-82` at abefc0d, before merge, the Project manager's brief): pull request #65 (task 82,
+the home pass follow-ups to the tester's four notes on #64) passes, no bugs.** Backend 283 (the live-session tests pass here), web 72 unit tests, the build, the parent app typecheck and all 71 browser tests pass (H2 with demo data, installed Chrome).
+- **Refund with something queued:** refunding the current pass in full moves a queued renewal, or a team extension, to start the next day, so no day is left without a pass. Refunding the middle of three moves the third up behind the first.
+  A partial refund changes nothing. Buying (Tom) or extending with no pass running starts today; buying again after a refund follows on the next day.
+- **Offline dates (sessions and ratings, Tom, whose pass ended 1 Nov):** a day the pass covered is accepted after it lapsed. Refused: the day after it ended, today, tomorrow, beyond 30 days, and no induction (even with a pass). A batch with one refused date is refused whole. The check stays refused.
+- **The check:** Tom's child page on the web and the app's Today no longer offer "Start the check". Priya is still offered it, for Leo, on both.
+- **Contact:** with the placeholders, "Please contact us to buy the pass" (web and app). With test values through `PLATFORM_COUNTRIES_UK_LEGALENTITY_EMAIL` and `_PHONE`: "Please contact us at hello@motormovers.test or 0118 000 0000 to buy the pass"; phone only gives just the phone in `/api/settings`.
+- **Low, for the owner or the Developer to decide:** (1) While a pass runs today, a past day no pass covered (between an old pass and a new one) is still accepted; the brief says dates outside any pass are refused. Harmless: it only lets a family backfill up to 30 days.
+  (2) A moved part keeps its length in days, so across 29 Feb 2028 it ends a day later or earlier than 12 calendar months. (3) The team's history lists a refunded part as "Paid", and a refunded part that had not started as ending the day before it starts.
+  (4) With the pass ended, the web child page still links "do the check again" under Colour, and At home still says "Time for the check again" (like the app's known "Do the check again").
+- **Not tested:** Stripe test checkout and the webhook (no test keys in this run); a real phone.
+
 **Task tested on its branch (updated by tester, 2026-11-12, `task-26` at a928542, before merge, the Project manager's brief): pull request #64 (task 26,
 the Motor Movers at Home pass) passes, no bugs.** Backend 278, web 69 unit tests, the build, the parent app typecheck and all 70 browser tests pass here (H2 with demo data, installed Chrome).
 - **Through the API, 78 checks:** Tom (lapsed@example.test) is refused a session, the check (GET and POST) and a rating with "Your family's pass ended on ..."; Today sends no session, review or cool-down.
