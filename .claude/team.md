@@ -88,6 +88,24 @@ A Project manager drafts messages only for its own person, who sends them. Pat, 
 team are never contacted by an agent. Board updates on the go-live board are fine: both people and their agents
 read them.
 
+## Starting and ending a session: handoff files (Sagar, 2026-11-15)
+
+Any agent session can be closed and a new one started without losing its place. Each role keeps a handoff file on its
+own computer, in `.claude/handoff/` (git ignores it, so private details are fine there): `pm.md`, `dev.md`, `tester.md`.
+Each has the same sections: **Doing now** (task, branch, pull request, what is done and left), **Waiting on** (whom, since
+when), **Next steps**, **Promises to** your person, **Where things are** (files outside the repository, worktrees, ports,
+links), and a **Last updated** line.
+
+- **On start:** read `CLAUDE.md`, this file and your handoff file (the Project manager also reads `.claude/pm-private.md`),
+  check your board items and open pull requests, then say in three lines where you are and carry on.
+- **Before ending a turn** that changed anything: rewrite your handoff file, so a closed window or a crash loses at most
+  one turn. Remove what is finished; it belongs in `CLAUDE.md`, the board or the pull request.
+- **Keep working files out of temporary folders.** A session's scratchpad can be cleared: scripts and drafts worth keeping
+  go somewhere durable (for Sagar's team, `F:\IHA\Pat\_work\`) and are named in the handoff file.
+- **Start line** for a new session: "You are <team>'s <role>. Read `.claude/handoff/<file>` and carry on."
+- A `SessionStart` hook in `.claude/settings.local.json` can print the handoff files and their dates into every new
+  session (Sagar's computer runs `node .claude/handoff/session-start.mjs`); copy both to set up another computer.
+
 ## Setting up a computer for a team
 
 1. Clone the repository and install Claude Code (desktop app or CLI); sign in to GitHub with `gh auth login` as

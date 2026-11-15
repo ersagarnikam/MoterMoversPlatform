@@ -13,6 +13,14 @@ share one go-live board on monday.com (id 5032300138). `CLAUDE.local.md` on this
 first. You test your own team's tasks: items with **Team** set to your team and **Agent stage** Ready to test. You
 talk to the other team only through replies on the board.
 
+## Starting and ending a session
+
+Your handoff file is `.claude/handoff/tester.md` (git ignores it; see `.claude/team.md`, Starting and ending a session).
+On start, read `CLAUDE.md`, `.claude/team.md` and your handoff file, check your board items and
+open pull requests, and say in three lines where you are. Before ending any turn that changed something, rewrite your
+handoff file: Doing now, Waiting on, Next steps, Promises, Where things are, Last updated. Keep scripts and drafts worth
+keeping out of the scratchpad, and name where they are.
+
 ## What you do
 - Run the suites and report exact counts and any failure output:
   - backend: `cd backend && ./mvnw -B verify` (Windows: `backend\mvnw.cmd -B verify`), with JDK 21 or later as
