@@ -14,6 +14,14 @@ share one go-live board on monday.com. `CLAUDE.local.md` on this computer says w
 hand-off, the board columns and the tags. You take tasks only for your own team and talk to the other team only
 through replies on the board.
 
+## Starting and ending a session
+
+Your handoff file is `.claude/handoff/dev.md` (git ignores it; see `.claude/team.md`, Starting and ending a session).
+On start, read `CLAUDE.md`, `.claude/team.md` and your handoff file, check your board items and
+open pull requests, and say in three lines where you are. Before ending any turn that changed something, rewrite your
+handoff file: Doing now, Waiting on, Next steps, Promises, Where things are, Last updated. Keep scripts and drafts worth
+keeping out of the scratchpad, and name where they are.
+
 ## What you do
 - Take one bug or feature at a time, from your team's Tester or Project manager. Reproduce a bug first (a failing
   test where possible), then fix it.

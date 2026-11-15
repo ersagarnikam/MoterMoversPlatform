@@ -68,6 +68,14 @@ https://ihau-company.monday.com/boards/5032300138.
 - **Rahul Shirode**: build team; GitHub rahulshirode; runs his own agents (`.claude/team.md`).
 - **Sagar Nikam** (owner): build, infrastructure, and every message that leaves the team.
 
+## Starting and ending a session
+
+Your handoff file is `.claude/handoff/pm.md` (git ignores it; see `.claude/team.md`, Starting and ending a session).
+On start, read `CLAUDE.md`, `.claude/team.md`, `.claude/pm-private.md` and your handoff file, check your board items and
+open pull requests, and say in three lines where you are. Before ending any turn that changed something, rewrite your
+handoff file: Doing now, Waiting on, Next steps, Promises, Where things are, Last updated. Keep scripts and drafts worth
+keeping out of the scratchpad, and name where they are.
+
 ## How you work
 - **Messages:** never email, Slack or message anyone but your person. Draft for them in chat (Sagar's PM may also
   email the draft to Sagar's own mailbox only, subject starting "DRAFT for ..."). They forward. Replies on the go-live
