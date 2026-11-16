@@ -135,7 +135,7 @@ await desk(async (page) => {
   await shot(page, 'teacher-today')
   await step('player', async () => {
     await page.getByRole('button', { name: 'Start session' }).click()
-    await page.getByRole('heading', { name: /^Rhyme · / }).waitFor()
+    await page.getByText('Session plan').first().waitFor()
     await shot(page, 'teacher-player')
     await page.getByRole('button', { name: 'Skip to end' }).click()
     await shot(page, 'teacher-player-end')
@@ -376,6 +376,16 @@ await desk(async (page) => {
   })
 })
 
+// The parent app asks for the country first (go-live task 27); the guides use the United Kingdom.
+async function chooseCountry(page, capture = false) {
+  const chooser = page.getByText('Where are you?')
+  await chooser.or(page.getByText('Sign in', { exact: true }).first()).first().waitFor({ timeout: 60000 })
+  if (await chooser.isVisible()) {
+    if (capture) await shot(page, 'app-country')
+    await page.getByText('United Kingdom', { exact: true }).click()
+  }
+}
+
 // Parent app (phone), when it is running on the web
 await phone(async (page) => {
   try {
@@ -384,6 +394,7 @@ await phone(async (page) => {
     failures.push(`parent app not running at ${APP}: app screens kept as they were`)
     return
   }
+  await chooseCountry(page, true)
   await page.getByText('Sign in', { exact: true }).first().waitFor({ timeout: 60000 })
   await shot(page, 'app-sign-in')
   await page.locator('input').nth(0).fill('parent@example.test')
@@ -424,6 +435,7 @@ await phone(async (page) => {
   } catch {
     return
   }
+  await chooseCountry(page)
   await page.getByText('Sign in', { exact: true }).first().waitFor({ timeout: 60000 })
   await page.locator('input').nth(0).fill('home@example.test')
   await page.locator('input').nth(1).fill('password')

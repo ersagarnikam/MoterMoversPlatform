@@ -303,17 +303,17 @@ function overviewBody() {
     <h2>How the platform earns</h2>
     <p>Income comes from two sources, both managed in the platform: yearly school licences and live training courses. Schools, families and practitioners can pay by card online; staff course places are invoiced to the school once the head approves them. The team sees income by month, school, trust or group, family and type.</p>
     <table>
-      <thead><tr><th>Source</th><th>Who pays</th><th>What it is</th><th class="num">Price</th></tr></thead>
+      <thead><tr><th>Source</th><th>Who pays</th><th class="num">UK</th><th class="num">Ireland</th><th class="num">Australia</th></tr></thead>
       <tbody>
-        <tr><td>Early years plan</td><td>Early-years setting</td><td>Yearly programme licence</td><td class="num">£450 / year</td></tr>
-        <tr><td>Primary core plan</td><td>Primary school</td><td>Yearly programme licence</td><td class="num">£900 / year</td></tr>
-        <tr><td>Full programme plan</td><td>Primary school</td><td>Yearly programme licence</td><td class="num">£1,750 / year</td></tr>
-        <tr><td>Trust plan</td><td>Each school in a trust or group</td><td>Yearly licence at trust pricing</td><td class="num">£1,487.50 / year</td></tr>
-        <tr><td>Practitioner course</td><td>Practitioner or employer</td><td>4 live sessions, assessment, certificate</td><td class="num">£180, then £60 / year</td></tr>
-        <tr><td>Parent course</td><td>Family</td><td>3 live sessions and home activities</td><td class="num">£45 per family</td></tr>
+        <tr><td>Childcare centre or kindergarten licence</td><td>Early-years setting, per year</td><td class="num">£395</td><td class="num">€465</td><td class="num">A$750</td></tr>
+        <tr><td>School licence</td><td>Primary school, per year</td><td class="num">£635</td><td class="num">€745</td><td class="num">A$1,200</td></tr>
+        <tr><td>Group of schools</td><td>Each school in a group</td><td class="num" colspan="3">10% off licences and training</td></tr>
+        <tr><td>Practitioner course</td><td>Practitioner or employer; then a yearly renewal</td><td class="num">£105, then £30</td><td class="num">€125, then €35</td><td class="num">A$200, then A$60</td></tr>
+        <tr><td>Parent course</td><td>Family</td><td class="num">£55</td><td class="num">€60</td><td class="num">A$100</td></tr>
+        <tr><td>The Programme at Home</td><td>Family, 12-month pass</td><td class="num">£530</td><td class="num">€620</td><td class="num">A$1,000</td></tr>
       </tbody>
     </table>
-    <p class="muted">Licence prices are the proposed plans built into the platform, and each licence covers the stages the team sets for that school. Course prices are those in the demonstration; the team can change them in the platform at any time. A free trial lets a school start before it buys.</p>
+    <p class="muted">Launch prices agreed in November 2026. Each country runs separately and charges in its own currency; the team can change any price in the platform at any time, and each licence covers the stages the team sets for that school. A free trial lets a school start before it buys.</p>
     <figure><img src="${shot('admin-payments')}" alt="" style="max-height:88mm"><figcaption>The team’s Payments page: money received, outstanding invoices and income month by month.</figcaption></figure>
   </section>`}
 
@@ -324,19 +324,19 @@ function overviewBody() {
       <div class="card yes"><h3>Built and tested</h3><ul>
         <li>Public website, and the web platform for all seven kinds of user.</li>
         <li>Parent phone app for iPhone and Android, with phone notifications.</li>
-        <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates emailed as PDFs.</li>
-        <li>Content approval with the wording check, school onboarding, staff training approved by heads, and payments by card online.</li>
-        <li>Pat Preedy’s two assessments for all seven colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
-        <li>The Programme at Home for families without a school, in the app and on the website (switched off until Pat and the owner agree).</li>
-        <li>Checked automatically on every change: 140 checks of the system behind the screens, 51 of the web app’s building blocks, 67 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
-        <li>Production set-up tried in full: secure web address (HTTPS), nightly backups with copies off the server, and a refusal to start with unsafe settings.</li>
+        <li>Live courses on Zoom with registers, quizzes and certificates; payments by card, refunds and credit notes.</li>
+        <li>Pat Preedy’s two assessments and her 990 daily session plans, for all seven colours.</li>
+        <li>The Programme at Home, sold as a 12-month family pass (switched off until Pat and the owner agree).</li>
+        <li>The UK, Ireland and Australia from one build, each with its own currency, tax, school year and data held in that country.</li>
+        <li>Checked automatically on every change: 290 system checks, 79 web checks, 71 that click through every role, and a load test of 50 learners joining at once.</li>
+        <li>Production set-up tried in full: HTTPS, nightly off-site backups, safe logs, and a refusal to start with unsafe settings.</li>
       </ul></div>
       <div class="card no"><h3>Next steps</h3><ul>
-        <li>Go live: a UK server, the web address and an email account for invitations.</li>
+        <li>Go live: a server in each country, the web addresses for the new name, and email for invitations.</li>
         <li>Publish the parent app in the Apple and Google app stores, which also switches on phone notifications.</li>
-        <li>Connect the card payment account, and confirm VAT.</li>
-        <li>Upload the filmed session videos and rhyme recordings.</li>
-        <li>Pat’s revised descriptions for three exercises, and the induction she wants for families on the Programme at Home, with a privacy notice for families.</li>
+        <li>Connect a card payment account for each country’s company, and confirm VAT and GST with the accountant.</li>
+        <li>Upload the filmed session videos (Orange and Yellow first) and the rhyme recordings.</li>
+        <li>Pat’s lessons for the parent induction, terms and privacy notices for each country, and user testing with pilot schools.</li>
       </ul></div>
     </div>
     ${guideList()}
