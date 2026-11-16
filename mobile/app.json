@@ -36,7 +36,16 @@
           "enableBackgroundRemoteNotifications": false
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#f4f1ea"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

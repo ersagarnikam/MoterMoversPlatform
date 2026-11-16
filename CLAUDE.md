@@ -230,8 +230,10 @@ sign-offs, the certificate and credit note PDFs' properties, messages, and the d
 `deploy/.env.example`). **Content names** lost the prefix in the starter and demo content: "Practitioner course", "Parent course", "Rhyme
 book", "Induction"; enquiry subjects are "Price guide" and "Apply for the programme"; the certificate downloads as `certificate.pdf`.
 A deployment that already holds the starter content keeps its old titles (the demo reloads on a fresh database; no real deployment exists).
-**Not changed:** code names; the certificate number ("Certificate MM-12") and payment references ("MM-1033"), for the owner to decide; the
-app has no `expo-splash-screen` set up, so `splash-icon.png` is replaced but not yet shown; the website's contact details and Movement
+**Splash screen:** `expo-splash-screen` (new package, set up as a plugin in `app.json`) shows the child on the cream background
+(`#f4f1ea`, the same in light and dark); it only appears in a store or development build, not in Expo Go or the web preview.
+**Not changed:** code names; the certificate number ("Certificate MM-12") and payment references ("MM-1033"), which keep MM (the
+owner's decision, 2026-11-16); the website's contact details and Movement
 for Learning credit (task 28, Rahul's team, whose branch touches the same website files); `docs/assessment-design.md` and
 `docs/home-programme-design.md`, which are dated notes. **The guides need rebuilding** (task 41): their wording files are renamed, the
 built PDFs are not, and their file names change to "Professor Pat Preedy Programme ...".
