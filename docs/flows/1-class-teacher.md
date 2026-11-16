@@ -80,9 +80,9 @@ sequenceDiagram
   API->>API: requireClassAccess
   API->>DB: LicenceService.licensedFor (school, stage, today)
   API->>DB: next approved session for stage (only when licensed), last 20 school days
-  API-->>W: stageLicensed, next session (an uploaded film or rhyme as a signed link), counter, doneToday
+  API-->>W: stageLicensed, next session (its own film or its rhyme's or module's, each step's exercise film, and the rhyme, as signed links, with each film's credit line), counter, doneToday
   T->>W: Start session (/class/{id}/play)
-  W-->>T: Plan ticks along, video (placeholder), rhyme for Red, Orange, Yellow
+  W-->>T: Plan ticks along, each step's film (the next starts when one ends), the session's film or a timed placeholder, rhyme for Red, Orange, Yellow
   T->>W: Tap children who are absent
   T->>W: Complete session
   W->>API: POST /api/classes/{id}/sessions (sessionId, absentChildIds)

@@ -25,10 +25,11 @@ public interface UnsavedUploadRepository extends JpaRepository<UnsavedUpload, St
     @Query("delete from UnsavedUpload u where u.storageKey = :key")
     int forget(@Param("key") String key);
 
-    /** How many items hold this key, in the four columns a key can be saved on. */
+    /** How many items hold this key, in the five columns a key can be saved on. */
     @Query(value = """
             SELECT COUNT(*) FROM (
                 SELECT 1 AS found FROM programme_session WHERE video_key = :key
+                UNION ALL SELECT 1 FROM programme_film WHERE video_key = :key
                 UNION ALL SELECT 1 FROM home_activity WHERE video_key = :key
                 UNION ALL SELECT 1 FROM induction_lesson WHERE video_key = :key
                 UNION ALL SELECT 1 FROM library_resource WHERE file_key = :key

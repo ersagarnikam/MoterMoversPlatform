@@ -29,10 +29,19 @@ export interface SessionCard {
   title: string
   focus: string
   durationMinutes: number
+  /** The session's own film, or its rhyme's or module's. */
   videoUrl: string | null
+  /** The line to show under the film; null for a film with none. */
+  filmCredit: string | null
   activities: string[]
   /** Each exercise with the grid's instructions; a step the team wrote has none. */
-  steps: { title: string; instructions: string | null }[]
+  steps: {
+    title: string
+    instructions: string | null
+    /** The exercise's own film and the line under it; null where it has none. */
+    videoUrl: string | null
+    filmCredit: string | null
+  }[]
   /** The module's cool-down, the last step. Rhyme colours end in the rhyme, so have none. */
   coolDown: { title: string; text: string } | null
   rhyme: { id: number; title: string; audioUrl: string | null; lines: string[] } | null
@@ -355,6 +364,29 @@ export interface ContentItem {
 }
 
 /** What approving a colour or module did: drafts that failed the wording check stay drafts and are named. */
+/** One of the programme's films: for a rhyme or module of a colour (unit), or for one exercise of its grid. */
+export interface ProgrammeFilm {
+  stage: ColourStage
+  unit: number | null
+  exerciseId: number | null
+  fileLink: string
+  /** A file in the store, not a pasted link. */
+  uploaded: boolean
+  /** What the team typed; null for the usual line. */
+  credit: string | null
+  /** The line the screens show under the film. */
+  creditShown: string
+  attachedBy: string
+  attachedAt: string
+}
+
+/** An exercise of a colour's grid, to attach a film to. */
+export interface FilmExercise {
+  id: number
+  number: number
+  title: string
+}
+
 export interface ApprovedAll {
   approved: number
   left: { id: number; label: string; title: string; wordingIssues: { text: string; term: string }[] }[]
@@ -873,6 +905,11 @@ export interface HomeToday {
   passEndsOn: string | null
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
+  /** The film of the child's rhyme or module, and the line to show under it; null where there is none. */
+  videoUrl: string | null
+  filmCredit: string | null
+  /** The session's exercises that have a film of their own, which a step shows in place of the module's. */
+  exerciseFilms: { exerciseId: number; videoUrl: string; filmCredit: string }[]
 }
 
 /** Movements secure on one of Pat's charts, and those secured in the last few months. */
@@ -1181,6 +1218,23 @@ export const api = {
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
   approveAllSessions: (stage: ColourStage, unit: number | null) =>
     request<ApprovedAll>('POST', '/api/admin/content/approve-all', { stage, unit }),
+  programmeFilms: () => request<ProgrammeFilm[]>('GET', '/api/admin/content/films'),
+  filmExercises: (stage: ColourStage) =>
+    request<FilmExercise[]>('GET', `/api/admin/content/films/exercises?stage=${stage}`),
+  attachProgrammeFilm: (
+    film: ({ stage: ColourStage; unit: number } | { exerciseId: number }) & {
+      videoKey: string | null
+      videoUrl: string | null
+      credit: string | null
+    },
+  ) => request<ProgrammeFilm>('PUT', '/api/admin/content/films', film),
+  removeProgrammeFilm: (target: { stage: ColourStage; unit: number } | { exerciseId: number }) =>
+    request<{ removed: boolean }>(
+      'DELETE',
+      'exerciseId' in target
+        ? `/api/admin/content/films?exerciseId=${target.exerciseId}`
+        : `/api/admin/content/films?stage=${target.stage}&unit=${target.unit}`,
+    ),
   reject: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/reject`),
   payments: () => request<Payment[]>('GET', '/api/admin/payments'),

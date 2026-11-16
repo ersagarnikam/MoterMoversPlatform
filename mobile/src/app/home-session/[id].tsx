@@ -1,9 +1,9 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import { Text, View } from 'react-native'
+import { Linking, Text, View } from 'react-native'
 import { RateExercises } from '@/components/RateExercises'
 import { Banner, Body, Button, Card, ErrorState, H1, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
-import { api, localDate, newClientId } from '@/lib/api'
+import { api, fullUrl, localDate, newClientId } from '@/lib/api'
 import { homeSessions } from '@/lib/homeOutbox'
 import { space, stageInfo, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
@@ -78,6 +78,13 @@ export default function HomeSessionScreen() {
   const coolingDown = step === today.exercises.length
   const exercise = coolingDown ? null : today.exercises[step]
   const last = step === steps - 1
+  // The exercise's own film if it has one, else the film of the rhyme or module.
+  const own = exercise ? today.exerciseFilms.find((f) => f.exerciseId === exercise.id) : undefined
+  const film = own
+    ? { url: own.videoUrl, credit: own.filmCredit }
+    : today.videoUrl
+      ? { url: today.videoUrl, credit: today.filmCredit }
+      : null
 
   return (
     <Screen>
@@ -107,7 +114,18 @@ export default function HomeSessionScreen() {
           </>
         )}
       </Card>
-      <Muted>Video coming soon. Read each step aloud and do it together.</Muted>
+      {film ? (
+        <>
+          <Button
+            label="Watch the film"
+            variant="secondary"
+            onPress={() => Linking.openURL(fullUrl(film.url))}
+          />
+          {film.credit && <Muted>{film.credit}</Muted>}
+        </>
+      ) : (
+        <Muted>Video coming soon. Read each step aloud and do it together.</Muted>
+      )}
       <Row>
         {step > 0 && (
           <View style={{ flex: 1 }}>

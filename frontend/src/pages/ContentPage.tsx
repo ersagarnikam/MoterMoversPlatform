@@ -1,5 +1,14 @@
 import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { api, type ApprovedAll, type ColourStage, type ContentItem, type ContentKind, type UploadRules } from '../api'
+import {
+  api,
+  type ApprovedAll,
+  type ColourStage,
+  type ContentItem,
+  type ContentKind,
+  type FilmExercise,
+  type ProgrammeFilm,
+  type UploadRules,
+} from '../api'
 import StageBadge from '../components/StageBadge'
 import { STAGES } from '../stages'
 import { day } from '../dates'
@@ -146,11 +155,17 @@ function FileChoice({
   accept,
   onUploaded,
   onBusy,
+  then = 'Save the draft to keep it.',
+  formats,
 }: {
   rules: UploadRules
   accept: (type: string) => boolean
   onUploaded: (key: string) => void
   onBusy: (busy: boolean) => void
+  /** What to do next, said once the file is uploaded. */
+  then?: string
+  /** The formats in words, where the form takes fewer than the store does. */
+  formats?: string
 }) {
   const [percent, setPercent] = useState<number | null>(null)
   const [uploaded, setUploaded] = useState<string | null>(null)
@@ -165,7 +180,7 @@ function FileChoice({
     try {
       onUploaded(await uploadFile(file, setPercent))
       setUploaded(file.name)
-      setNotice(`“${file.name}” is uploaded. Save the draft to keep it.`)
+      setNotice(`“${file.name}” is uploaded. ${then}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not upload the file')
     } finally {
@@ -194,7 +209,7 @@ function FileChoice({
         <label>
           Or upload a file
           <span className="hint">
-            {rules.formats}, up to {rules.maxMegabytes} MB
+            {formats ?? rules.formats}, up to {rules.maxMegabytes} MB
           </span>
           <input
             type="file"
@@ -309,6 +324,243 @@ function NewItemForm({
         </div>
       </form>
     </details>
+  )
+}
+
+const RHYME_COLOURS: ColourStage[] = ['RED', 'ORANGE', 'YELLOW']
+
+/** What a film belongs to: a rhyme or module of a colour, or one exercise of its grid. */
+type FilmTarget = { stage: ColourStage; unit: number } | { exerciseId: number }
+
+/**
+ * One place a film can go, with the film it has or the form to attach one. `what` names it ("Orange rhyme 4",
+ * "Motor Spin") and `reach` says who will see it.
+ */
+function FilmSlot({
+  target,
+  what,
+  reach,
+  film,
+  rules,
+  onChange,
+}: {
+  target: FilmTarget
+  what: string
+  reach: string
+  film: ProgrammeFilm | null
+  rules: UploadRules | null
+  onChange: (film: ProgrammeFilm | null) => void
+}) {
+  const [link, setLink] = useState('')
+  const [key, setKey] = useState('')
+  const [credit, setCredit] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const setNotice = useToast()
+  const confirm = useConfirm()
+
+  async function attach(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      onChange(
+        await api.attachProgrammeFilm({
+          ...target,
+          videoKey: key || null,
+          videoUrl: key ? null : link.trim() || null,
+          credit: credit.trim() || null,
+        }),
+      )
+      setLink('')
+      setKey('')
+      setCredit('')
+      setNotice(`The film is attached to ${what}.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not attach the film')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove() {
+    const sure = await confirm({
+      title: `Remove the film from ${what}?`,
+      body: 'It stops playing at school and at home. Attach another at any time.',
+      confirmLabel: 'Remove the film',
+    })
+    if (!sure) return
+    setBusy(true)
+    setError(null)
+    try {
+      await api.removeProgrammeFilm(target)
+      onChange(null)
+      setNotice(`The film is removed from ${what}.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not remove the film')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      {film ? (
+        <>
+          <p>
+            {reach} {film.uploaded ? 'An uploaded file' : 'A link'}, attached by {film.attachedBy} on{' '}
+            {day(film.attachedAt)}.
+          </p>
+          <p className="muted">
+            Credit line: “{film.creditShown}”{film.credit ? '' : ' (the usual one)'}. To change it, remove the film and
+            attach it again.
+          </p>
+          <div className="actions">
+            <a className="btn" href={film.fileLink} target="_blank" rel="noreferrer">
+              Open the film
+            </a>
+            <button className="btn" disabled={busy} onClick={remove}>
+              Remove the film
+            </button>
+          </div>
+        </>
+      ) : (
+        <form className="inline-form" onSubmit={attach}>
+          <p className="muted form-wide">{reach} Paste a link or upload the file.</p>
+          <label className="form-wide">
+            Film link
+            <span className="hint">An https:// address</span>
+            <input
+              type="url"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              maxLength={500}
+              pattern="https://.*"
+              disabled={key !== ''}
+            />
+          </label>
+          {rules?.available && (
+            <FileChoice
+              rules={rules}
+              accept={(type) => type.startsWith('video/')}
+              onBusy={setUploading}
+              onUploaded={setKey}
+              then="Attach it to keep it."
+              formats="MP4 or WebM video"
+            />
+          )}
+          <label className="form-wide">
+            Credit line (optional)
+            <span className="hint">Shown under the film in place of the usual one</span>
+            <input type="text" value={credit} onChange={(e) => setCredit(e.target.value)} maxLength={200} />
+          </label>
+          <div className="actions form-wide">
+            <button className="btn btn-primary" disabled={busy || uploading || (!key && !link.trim())}>
+              Attach the film
+            </button>
+          </div>
+        </form>
+      )}
+      {error && <p className="error">{error}</p>}
+    </>
+  )
+}
+
+/**
+ * The films of the colour being looked at. With a rhyme or module chosen, its one film, which every session of it
+ * plays. From Green to Violet, also a film for each exercise of the colour's grid, which each step of a session plays as
+ * its own. Sessions added later have them too.
+ */
+function FilmsPanel({
+  stage,
+  unit,
+  sessions,
+  rules,
+}: {
+  stage: ColourStage
+  unit: number | null
+  sessions: number
+  rules: UploadRules | null
+}) {
+  const [films, setFilms] = useState<ProgrammeFilm[] | null>(null)
+  const [exercises, setExercises] = useState<FilmExercise[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const rhymes = RHYME_COLOURS.includes(stage)
+  const colour = STAGES.find((s) => s.key === stage)?.label
+  const what = `${colour} ${rhymes ? 'rhyme' : 'module'} ${unit}`
+
+  useEffect(() => {
+    let current = true
+    setFilms(null)
+    setExercises([])
+    Promise.all([api.programmeFilms(), rhymes ? Promise.resolve([]) : api.filmExercises(stage)])
+      .then(([all, grid]) => {
+        if (!current) return
+        setFilms(all)
+        setExercises(grid)
+      })
+      .catch((e) => current && setError(e.message))
+    return () => {
+      current = false
+    }
+  }, [stage, rhymes])
+
+  if (error) return <p className="error">{error}</p>
+  if (!films) return <p className="muted">Loading the films…</p>
+
+  const ofUnit = films.find((f) => f.stage === stage && f.unit === unit) ?? null
+  const ofExercise = (id: number) => films.find((f) => f.exerciseId === id) ?? null
+  const replace = (matches: (f: ProgrammeFilm) => boolean, film: ProgrammeFilm | null) =>
+    setFilms((all) => [...(all ?? []).filter((f) => !matches(f)), ...(film ? [film] : [])])
+  const withFilm = exercises.filter((e) => ofExercise(e.id)).length
+
+  return (
+    <>
+      {unit !== null && (
+        <section className="card film-slot" aria-label={`Film for ${what}`}>
+          <h3>Film for {what}</h3>
+          <FilmSlot
+            key={`${stage}-${unit}`}
+            target={{ stage, unit }}
+            what={what}
+            reach={
+              rhymes
+                ? `One film for all ${sessions} sessions of ${what}, and any added later, at school and at home.`
+                : `One film for all ${sessions} sessions of ${what}, at school and at home. A step whose exercise has a film of its own plays that instead.`
+            }
+            film={ofUnit}
+            rules={rules}
+            onChange={(film) => replace((f) => f.stage === stage && f.unit === unit, film)}
+          />
+        </section>
+      )}
+      {!rhymes && (
+        <details className="card film-slot">
+          <summary>
+            Films for {colour} exercises ({withFilm} of {exercises.length} have one)
+          </summary>
+          <p className="muted">
+            Each exercise can have its own film. A session then shows, step by step, the film of the exercise being done.
+          </p>
+          {exercises.map((e) => (
+            <details key={e.id} className="film-exercise">
+              <summary>
+                {e.number}. {e.title} <span className="muted">· {ofExercise(e.id) ? 'has a film' : 'no film yet'}</span>
+              </summary>
+              <FilmSlot
+                target={{ exerciseId: e.id }}
+                what={e.title}
+                reach={`Plays in the ${e.title} step of every ${colour} session with it, at school and at home.`}
+                film={ofExercise(e.id)}
+                rules={rules}
+                onChange={(film) => replace((f) => f.exerciseId === e.id, film)}
+              />
+            </details>
+          ))}
+        </details>
+      )}
+    </>
   )
 }
 
@@ -472,6 +724,9 @@ export default function ContentPage() {
             </div>
           )}
         </div>
+      )}
+      {kind === 'content' && stage && (
+        <FilmsPanel stage={stage} unit={unit ? Number(unit) : null} sessions={narrowed.length} rules={rules} />
       )}
       {error && <p className="error">{error}</p>}
       {left.length > 0 && (

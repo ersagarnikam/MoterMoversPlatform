@@ -64,7 +64,7 @@ sequenceDiagram
 
 ## Today's home session and ratings
 
-HomeRules builds today's plan: one rhyme a week for the rhyme colours, modules of six weeks from Green on (built up over five, then week 5 repeated, then the module's review).
+HomeRules builds today's plan: one rhyme a week for the rhyme colours, modules of six weeks from Green on (built up over five, then week 5 repeated, then the module's review). Today also carries the film of the child's rhyme or module (`videoUrl`, a signed link, and `filmCredit`) and the films of the session's own exercises (`exerciseFilms`) once the pass and induction checks are met; while locked, no link is sent.
 
 **Endpoints:** `GET /api/home/children/{id}/today` · `GET /api/home/induction` · `POST /api/home/induction/lessons/{id}/complete` · `POST /api/home/sessions` · `POST /api/assessment/exercise-scores` · `GET /api/home/children/{id}`
 

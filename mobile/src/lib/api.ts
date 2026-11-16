@@ -210,6 +210,11 @@ export interface HomeToday {
   passRunning: boolean
   /** When the family's pass ends or ended; null for a school child or a family that never had one. */
   passEndsOn: string | null
+  /** The film of the child's rhyme or module, and the line to show under it; null where there is none. */
+  videoUrl: string | null
+  filmCredit: string | null
+  /** The session's exercises that have a film of their own, which a step shows in place of the module's. */
+  exerciseFilms: { exerciseId: number; videoUrl: string; filmCredit: string }[]
 }
 
 /** The family's Programme at Home pass: twelve months for the whole family, bought by card. Prices include tax. */

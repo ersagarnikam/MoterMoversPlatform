@@ -23,7 +23,13 @@ checked) gives an upload link, the browser sends the file straight to the store,
 API checks the store holds. The draft
 shows Open the file. The content page alone may reach the store, so it opens with a full page load.
 
-**Endpoints:** `POST /api/admin/content` · `GET /api/admin/content` · `POST /api/admin/content/{id}/approve` · `POST /api/admin/content/approve-all` · `POST /api/admin/content/{id}/reject`
+Films are attached once, with a colour chosen (`ProgrammeFilms`, table `programme_film`): one for a rhyme or module, which
+every session of it plays, or, from Green to Violet, one for an exercise of the colour's grid, which each step of a
+session plays as its own. Both reach school and home sessions, including sessions the session plans add later. A step's
+own film comes first, then the session's own, then its rhyme's or module's. A typed credit line passes the wording guard;
+without one the line is "Film: " and the programme's name.
+
+**Endpoints:** `POST /api/admin/content` · `GET /api/admin/content` · `POST /api/admin/content/{id}/approve` · `POST /api/admin/content/approve-all` · `POST /api/admin/content/{id}/reject` · `GET /api/admin/content/films` · `GET /api/admin/content/films/exercises?stage=` · `PUT /api/admin/content/films` · `DELETE /api/admin/content/films?stage=&unit=` or `?exerciseId=`
 
 ```mermaid
 sequenceDiagram
@@ -56,6 +62,13 @@ sequenceDiagram
   end
   opt reject
     W->>API: POST /api/admin/content/{id}/reject
+  end
+  opt a film for a rhyme or module, or for an exercise (colour chosen)
+    W->>API: POST /api/admin/files, then the file goes straight to the store
+    W->>API: PUT /api/admin/content/films (stage and unit, or exerciseId; videoKey or videoUrl; credit)
+    API->>API: requireAdmin, one of key or https link, the unit has sessions or the exercise is Green to Violet, credit passes the wording guard
+    API->>DB: save programme_film (one per stage and unit, one per exercise)
+    API-->>W: the film with a link to open it
   end
   Note over API,DB: Teachers' Today now offers the session
 ```

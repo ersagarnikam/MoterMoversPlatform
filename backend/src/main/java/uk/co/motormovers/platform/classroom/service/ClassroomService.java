@@ -27,6 +27,7 @@ import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
+import uk.co.motormovers.platform.content.service.ProgrammeFilms;
 import uk.co.motormovers.platform.home.service.CoolDowns;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
@@ -55,11 +56,13 @@ public class ClassroomService {
     private final FileLinks files;
     private final ExerciseRepository exercises;
     private final CoolDowns coolDowns;
+    private final ProgrammeFilms films;
 
     public ClassroomService(SchoolClassRepository classes, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceService licences,
             AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock,
-            FileLinks files, ExerciseRepository exercises, CoolDowns coolDowns) {
+            FileLinks files, ExerciseRepository exercises, CoolDowns coolDowns, ProgrammeFilms films) {
+        this.films = films;
         this.classes = classes;
         this.children = children;
         this.content = content;
@@ -168,13 +171,19 @@ public class ClassroomService {
     /** The session as the teacher sees it: each exercise with the grid's instructions, then the module's cool-down. */
     private ClassroomViews.SessionCard card(ProgrammeSession session) {
         List<String> names = List.copyOf(session.getActivities());
-        Map<String, String> instructions = names.isEmpty() ? Map.of()
+        Map<String, Exercise> grid = names.isEmpty() ? Map.of()
                 : exercises.findByStageAndTitleIn(session.getStage(), names).stream()
-                        .collect(Collectors.toMap(Exercise::getTitle, Exercise::getInstructions, (a, b) -> a));
-        List<ClassroomViews.SessionStep> steps = names.stream()
-                .map(name -> new ClassroomViews.SessionStep(name, instructions.get(name)))
-                .toList();
-        return ClassroomViews.SessionCard.of(session, files, steps,
+                        .collect(Collectors.toMap(Exercise::getTitle, e -> e, (a, b) -> a));
+        // Each exercise's own film, signed here: this card is only built for a class licensed for the colour.
+        Map<Long, ProgrammeFilms.Film> own = films.forExercises(grid.values().stream().map(Exercise::getId).toList());
+        List<ClassroomViews.SessionStep> steps = names.stream().map(name -> {
+            Exercise exercise = grid.get(name);
+            ProgrammeFilms.Film film = exercise == null ? ProgrammeFilms.Film.NONE
+                    : own.getOrDefault(exercise.getId(), ProgrammeFilms.Film.NONE);
+            return new ClassroomViews.SessionStep(name, exercise == null ? null : exercise.getInstructions(),
+                    film.videoUrl(), film.credit());
+        }).toList();
+        return ClassroomViews.SessionCard.of(session, files, films.forSession(session), steps,
                 coolDowns.forModule(session.getStage(), session.getUnit()));
     }
 

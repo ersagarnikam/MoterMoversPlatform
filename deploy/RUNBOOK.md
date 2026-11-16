@@ -271,7 +271,8 @@ security policy blocks the upload and the form says the file could not be sent.
 
 **First checks on a real bucket:** upload a small file and a film of a few hundred MB on Content approval; save the draft
 (the API checks the file is there, with a signed HEAD); open it from the draft; download a printable, which must save
-under its title; approve it, then play it as a teacher and drag the video's position bar (seeking); try a file that is too
+under its title; approve it, then play it as a teacher and drag the video's position bar (seeking); attach a film to a
+rhyme (below) and play it in the class player and a home session; try a file that is too
 large; open a link after `STORAGE_READ_HOURS`, which must fail; open the film in the parent app; and, for the clean-up, upload a
 file without saving the form, set `STORAGE_UNSAVED_DAYS=1`, and check after two nights that the file has gone and the API's
 log has no `Could not delete unsaved upload` line.
@@ -291,6 +292,37 @@ hours.
 lists the bucket. If a delete fails, it logs `Could not delete unsaved upload` with the key and tries again the next day. A
 form left open past that time is told to upload the file again when it is saved. **Known limits:** a file replaced, or left
 behind when a saved item is removed, stays in the bucket, as do files uploaded before this was added.
+
+### Films for sessions
+
+Open **Content approval** from the menu (a full page load, or the upload is blocked), stay on **Class sessions**, and
+choose the colour under **Show colour**. There are two kinds of film:
+
+- **A rhyme or module** (Red, Orange and Yellow are filmed a rhyme at a time). Choose the rhyme or module under **Show
+  module**. In the card **Film for <colour> rhyme <n>**, upload the MP4 (or paste an `https://` link) and press **Attach
+  the film**. Every session of that rhyme or module then plays it.
+- **An exercise** (Green to Violet are filmed an exercise at a time). Open **Films for <colour> exercises**, then the
+  exercise, and attach its film the same way. Each step of a session then plays the film of its own exercise, the plan
+  moves on when a film ends, and the next one starts by itself. A step with no film of its own goes back to the
+  module's film, from where it had got to, or to the timed plan.
+
+Wait for the upload's progress bar to finish before attaching. **Open the film** checks it. **Remove the film** takes it
+off again; attach another to replace it.
+
+Films play in the class player for a school licensed for the colour, and in the home session for a family with a
+running pass (or a parent whose child is linked to a school), on the website and in the parent app. Sessions added later
+have them too, so reloading the session plans never drops a film. Where a step has no film of its own, the session's
+own film (the session form's video field) plays, then its rhyme's or module's, then the timed plan. The line under a
+film is "Film: " and the programme's name unless a credit line is typed for that film; to change it, remove the film and
+attach it again. A removed or replaced film's file stays in the bucket.
+
+**Film size.** The player loads only a film's details until someone presses play, then fetches it in ranges, so a film
+is never downloaded whole and dragging the position bar works. A range can only play as fast as the connection: the
+first recordings received are 1280x720 at 8 Mbps (200 to 440 MB for 3 to 7 minutes), which needs a steady 8 Mbps and
+uses that much mobile data, and their index is at the end of the file, which costs one more request before playing.
+**Before uploading for real, re-save each film at about 1.5 Mbps (720p, H.264, AAC) with the index at the front ("fast
+start" or "web optimised"): about 12 MB a minute, so under 100 MB a film.** The platform does not convert films,
+and does not embed or fetch films from video sites.
 
 ## Everyday operations
 

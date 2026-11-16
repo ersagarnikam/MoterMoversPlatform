@@ -64,7 +64,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
   start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V24`, added by Dev 2026-11-16);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V25`, added by Dev 2026-11-16);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -80,13 +80,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 299 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-16) 79 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 305 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-16) 87 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # (added by Dev, 2026-11-12) 71 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-16) 72 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 (added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
@@ -217,6 +217,47 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-16)
+
+(added by Dev, 2026-11-16) **In progress: go-live task 57, part 1 (Dev, Sagar's team, branch `task-57`, pull request #76).** Built and waiting for the
+Tester. Remove this note once merged.
+
+(added by Dev, 2026-11-16) **The programme's films (go-live task 57, part 1; migration V25).** The team attaches films on Content approval,
+Class sessions, once a colour is chosen, and can remove them. Each is an uploaded MP4 or WebM (the existing upload flow) or a pasted
+`https://` link, with an optional credit line. **Two kinds, by colour** (the PM, 2026-11-16: Orange is filmed a rhyme at a time, Green an
+exercise at a time):
+- **A rhyme or module** (choose the module too; card "Film for Orange rhyme 4"): every session of it plays the film. This is the kind for
+  Red, Orange and Yellow.
+- **An exercise** of a colour's grid, from Green to Violet ("Films for Green exercises", one row each): each step of a session plays its own
+  exercise's film. A rhyme colour's exercise is refused ("Attach it to the rhyme").
+
+**Where they live:** table `programme_film`, a row per colour and unit or per exercise (`content/model/ProgrammeFilm`,
+`content/service/ProgrammeFilms`, `ProgrammeFilmController` at `/api/admin/content/films`: GET, GET `/exercises?stage=`, PUT and DELETE, all
+through `AccessPolicy.requireAdmin`). Nothing is copied onto the sessions, so sessions added later (`SessionPlans`) have the films too and a
+reload never drops one. **Which film a screen plays:** a step's own exercise film; else the session's own film
+(`programme_session.video_key` or `video_url`); else its rhyme's or module's; else the timed plan. `UnsavedUploadRepository.uses` counts
+`programme_film.video_key`, so the clean-up never deletes an attached film. **Who gets a link (unchanged rules):** the class's session card
+(`SessionCard.videoUrl`, `filmCredit`, and the same two on each of `steps`), only for a school licensed for the colour today; the home
+session's Today (`videoUrl`, `filmCredit`, `exerciseFilms`), only for a family with a running pass and the induction done, or a parent whose
+child is linked to a school; signed links through `FileLinks`, as before. **Screens:** `components/Film.tsx` (web: `preload="metadata"`, so
+only a film's details load until play, with the credit line under it). In the class player a step with its own film plays it, the plan moves
+on when the film ends and the next step's film starts by itself; the clock waits meanwhile, so a film is never cut. The home session shows
+the film of the exercise on screen. The parent app has **Watch the film**, which opens the link as home activities do (no player inside the
+app). **Credit line:** `ProgrammeFilms.DEFAULT_CREDIT`, "Film: " and `Brand.NAME` (the owner, 2026-11-16), unless the team types another for
+a film. **Tried with local storage only**, with Pat's Orange films from `F:\IHA\Pat\Films` (never committed or uploaded anywhere): they are
+1280x720 at 8 Mbps, 200 to 440 MB for 3 to 7 minutes, with the index (moov) at the end of the file. They stream in ranges and seek without
+loading the whole file, but need a steady 8 Mbps: suggested target before the real upload, about 1.5 Mbps 720p with fast start, under 100 MB
+a film (RUNBOOK, Films for sessions). No transcoding is built. **Not in this part:** uploading the real films (the buckets, task 29, and the
+owner's consent and ownership question on the Orange recordings come first); the Green files themselves (not received; no YouTube embedding
+or downloading). **Known limits:** a removed or replaced film's file stays in the store; to change only a credit line, remove the film and
+attach it again; a cool-down has no film of its own. Tests: `ProgrammeFilmTest` (own database), and a browser test that attaches a film
+recorded in the test and plays it in the class player. **The guides need rebuilding** when films are attached for real (the player and
+Content approval changed).
+(added by Dev, 2026-11-16, the Tester's bug on pull request #76) **The class player's clock is now one module, `frontend/src/playerClock.ts`**,
+with its rules tested in `playerClock.test.ts` (a session mixing steps with their own film, steps on the module's film and a step with
+none). The plan and the picture had drifted apart in such a session. Now: a step with its own film waits for the film's end, never the
+clock; on the session's film the clock counts only while that film is really playing; with no film it counts while the session is under
+way. Being under way carries from step to step, so whatever the next step shows starts by itself, and a pause stays a pause. The session's
+film carries on from where it had got to when it comes back after a step's own film. The film cards' upload hint names video only.
 
 (added by Dev, 2026-11-16) **Launch prices per country (go-live task 85; migration V24).** Kay's Australian prices and the owner's UK and
 Irish ones (task 4), tax included:
@@ -521,6 +562,37 @@ latest licence and `statusOn`, which ignores the start date (a licence starting 
 is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
+
+**Fix verified (updated by tester, 2026-11-16, `task-57` at 4157161, before merge): pull request #76 (task 57 part 1) now passes, no bugs.** Web 87 unit tests (the new `playerClock.test.ts` included), the build and all 72 browser
+tests pass; the backend was not rerun (only web files changed; 305 passed at 0e6bc0f). In Chrome on Year 3 K with real Orange films on local storage, standing in for Green: Yes and No, Flying Machines and Motor Spin with their own films.
+- **(a)** When Flying Machines' film ends, the module film starts by itself on Starfish and the bar counts. With no module film, the timed plan runs on by itself there instead.
+- **(b)** During a step film the bar holds still (Yes and No, Flying Machines, Motor Spin, reached by the clock). After Motor Spin's film the module film carries on from where it was (88 s) and the bar counts.
+- **(c)** Paused, nothing counts: a step film, the module film (6 s) and the timed plan (5 s).
+- **(d)** A step with no film (the timed plan) and the cool-down count while running; Skip to end fills the bar. **(e)** Orange rhyme 4 (one film, at 390px): the bar counts only while the film plays, holds while paused, resumes with it.
+- **Low note 1 fixed:** the film card's upload hint names video only. **New, low:** after Skip to end the module film keeps playing; it only stops when paused by hand. No console or content policy errors.
+
+**Task tested on its branch (updated by tester, 2026-11-16, `task-57` at 0e6bc0f, before merge, the Project manager's brief): pull request #76 (task 57 part 1,
+films in sessions) has one bug, handed back to the Developer.** Backend 305, web 79 unit tests, the build, the parent app typecheck and all 72 browser tests pass (H2 with demo data, installed Chrome).
+- **Bug (minor): the class player's clock and the film get out of step when a session mixes steps with their own film and steps without one** (`PlayerPage.tsx`). Tried on Year 3 K with Orange films standing in for
+  Green: Yes and No and Flying Machines with their own films, Motor Spin too, and a module film. (a) When the second step's film ends, the module film shows for Starfish paused at 0:00 and the plan stops there until
+  someone presses play; it does not start by itself as the step films do. (b) With the module film playing, moving on to Motor Spin (its own film) stops the module film without its pause being noticed, so when Motor
+  Spin's film ends the module film shows paused at 0:00 while the plan's clock runs on: in 60 seconds the bar went from 57% to 67% with nothing playing, and it would reach the end of the session that way. The step
+  films' own play and pause do not reach `playing`, and the session film is unmounted without `onPause`. Real Green sessions will mix them (Quick March and Roundabout have no film; the cool-down never has one).
+- **Attach, replace, remove (64 API checks):** a rhyme film (Orange, Yellow) and an exercise film (Green), by upload and by https link, with the default credit "Film: Professor Pat Preedy Programme" or one typed
+  (trimmed). Replacing keeps one row; the same key with a new credit is accepted; removing clears the film and its credit, and removing again answers false. Refused with clear messages: key and link together or
+  neither, http or javascript links, a link over 500 characters, a module or rhyme with no sessions, unit 0, a made-up key, a PDF key, a credit over 200 characters or with a diagnostic word, both a unit and an
+  exercise, an exercise film for Orange, an unknown exercise (404). On Content approval in Chrome: a 226 MB film uploaded on the rhyme card, attached with a credit, shown, and removed; Green lists its 27 exercises.
+- **Restarts:** after a restart every film and the player's films are the same, and new signed links work. A session deleted from the database and added back by the session plans (Orange rhyme 4 day 5, Green
+  module 1 week 6 day 5, as drafts) belongs to the same rhyme or module, whose film stays.
+- **Access:** teachers, heads, trust or group lead, practitioner, trainer and parents get 403 on all four team endpoints, signed out 401, and nothing changes. Ms Hardy, the trust lead, practitioner, trainer and
+  parents cannot open another class's session. An Indigo class at Oakfield (licensed Red to Blue) gets no session and no file link, with films on Indigo module 1 and all its exercises. Tom (pass ended) gets no
+  film and no exercise films; a new parent and Jo cannot open Ava's session. Links are signed for 8 hours; a changed signature, a changed expiry, another key or no signature is refused.
+- **Real films on local storage:** Orange 04 (425 MB) on rhyme 4 in Year 1 M's player streams in ranges: 3.4 MB before play, 17 MB after 4 seconds, 24 MB after seeking to 70% (a new range request), never the whole file.
+  Step films (Orange 02 and 03 as Green exercises) play one after another and the plan follows; the credit shows under each. Desktop and 390px, no overflow, no console or content policy errors.
+- **Home:** Ava (web) shows her first exercise's own film and the module film for the others, each with its credit. The parent app's web preview shows Watch the film with the credit on each exercise, opening the signed film.
+- **Low, for the owner or the Developer:** (1) The film card's upload hint lists "MP3, M4A or WAV audio, PDF, PNG or JPEG", though only video can be chosen and attached. (2) A credit can only be changed by removing and
+  attaching the film again (as the card says). (3) A removed or replaced film's file stays in the store (as the Developer says).
+- **Not tested:** a real bucket, a real phone on 4G, Green films (none yet), PostgreSQL itself.
 
 **Task tested on its branch (updated by tester, 2026-11-16, `task-85` at d00b37b, before merge, the Project manager's brief): pull request #72 (task 85,
 launch prices per country) passes, no bugs.** Backend 299, web 79 unit tests, the build, the parent app typecheck and all 71 browser tests pass (H2 with demo data, installed Chrome).
@@ -1116,7 +1188,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-16): [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-16): (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
