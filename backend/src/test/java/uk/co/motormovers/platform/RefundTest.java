@@ -218,7 +218,7 @@ class RefundTest {
         try (PDDocument doc = Loader.loadPDF(pdf)) {
             String text = new PDFTextStripper().getText(doc);
             assertThat(text).contains("Credit note").contains(number).contains("Jo Bennett")
-                    .contains("Amount refunded: £60").contains("Includes VAT £10").contains("Original payment: MM-");
+                    .contains("Amount refunded: £60").contains("Includes VAT £10").contains("Original payment: PPP-");
         }
         mvc.perform(get(path).header("Authorization", bearer(admin))).andExpect(status().isOk());
         mvc.perform(get(path).header("Authorization", bearer(login("practitioner@example.test"))))
@@ -284,7 +284,7 @@ class RefundTest {
                 .header("Authorization", bearer(login("admin@motormovers.test")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{" + payer + ",\"purpose\":\"OTHER\",\"description\":\"Session cards\",\"amountPence\":"
-                        + amount + ",\"invoicedOn\":\"" + LocalDate.now(clock) + "\",\"reference\":\"MM-" + amount
+                        + amount + ",\"invoicedOn\":\"" + LocalDate.now(clock) + "\",\"reference\":\"PPP-" + amount
                         + "\",\"paidOn\":" + (paidOn == null ? "null" : "\"" + paidOn + "\"") + "}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();

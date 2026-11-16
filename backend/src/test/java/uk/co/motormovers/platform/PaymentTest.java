@@ -57,7 +57,7 @@ class PaymentTest {
 
         String payment = send(admin, "/api/admin/payments", "{\"schoolId\":" + ferrers + ",\"purpose\":\"LICENCE\","
                 + "\"description\":\"Early years licence\",\"amountPence\":45000,\"invoicedOn\":\""
-                + LocalDate.now(clock) + "\",\"reference\":\"MM-2001\"}")
+                + LocalDate.now(clock) + "\",\"reference\":\"PPP-2001\"}")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("DUE"))
                 .andExpect(jsonPath("$.payerName").value("Ferrers Park"))
@@ -128,7 +128,7 @@ class PaymentTest {
         assertThat((List<Integer>) JsonPath.read(trust, "$.schools[?(@.schoolName == 'Brookhouse')].outstandingPence"))
                 .containsExactly(TRUST_LICENCE);
         // Totals only: no list of individual payments.
-        assertThat(trust).doesNotContain("MM-1031");
+        assertThat(trust).doesNotContain("PPP-1031");
 
         mvc.perform(get("/api/trusts/" + (trustId + 100) + "/payments").header("Authorization", bearer(lead)))
                 .andExpect(status().isForbidden());
@@ -142,7 +142,7 @@ class PaymentTest {
         assertThat((Integer) JsonPath.read(mine, "$.outstandingPence")).isEqualTo(1_500);
         assertThat((List<String>) JsonPath.read(mine, "$.payments[*].description"))
                 .containsExactly("Rhyme book and CD", "Parent course");
-        assertThat((List<String>) JsonPath.read(mine, "$.payments[*].reference")).contains("MM-1033");
+        assertThat((List<String>) JsonPath.read(mine, "$.payments[*].reference")).contains("PPP-1033");
 
         mvc.perform(get("/api/payments/mine").header("Authorization", bearer(login("practitioner@example.test"))))
                 .andExpect(jsonPath("$.paidPence").value(18_000));

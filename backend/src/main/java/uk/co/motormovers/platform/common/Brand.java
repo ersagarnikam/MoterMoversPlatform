@@ -17,6 +17,13 @@ public final class Brand {
     /** The team that runs the programme and the platform (the ADMIN role). */
     public static final String TEAM = "Programme team";
 
+    /**
+     * What the numbers people quote start with: a certificate's number ("Certificate PPP-12") and the references the
+     * team gives invoices ("PPP-1033"; a reference is typed by the team, so this is the convention, not a check).
+     * Credit notes keep their own "CN-" numbers.
+     */
+    public static final String REFERENCE_PREFIX = "PPP-";
+
     private Brand() {
     }
 }

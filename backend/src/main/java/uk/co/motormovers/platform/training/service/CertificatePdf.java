@@ -67,7 +67,7 @@ final class CertificatePdf {
                 centred(c, regular, 12, MUTED, cohort.getName(), width, y -= 24);
                 centred(c, regular, 13, INK, "Issued " + date(e.getCertificateIssuedOn()) + "    ·    Valid until "
                         + date(e.getCertificateExpiresOn()), width, y -= 52);
-                centred(c, regular, 10, MUTED, "Certificate MM-" + e.getId(), width, 48);
+                centred(c, regular, 10, MUTED, "Certificate " + Brand.REFERENCE_PREFIX + e.getId(), width, 48);
                 if (legalLine != null) {
                     centred(c, regular, 8, MUTED, legalLine, width, 32);
                 }

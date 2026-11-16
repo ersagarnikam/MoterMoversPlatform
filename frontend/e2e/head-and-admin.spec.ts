@@ -557,7 +557,7 @@ test('a parent sees what is due, how to pay it, and what they have paid', async 
   await expect(page.locator('.kpi', { hasText: 'Due now' })).toContainText('£15')
   const toPay = page.locator('section', { has: page.getByRole('heading', { name: 'To pay' }) })
   await expect(toPay.getByText('Rhyme book and CD')).toBeVisible()
-  await expect(toPay.getByText(/reference MM-1033/)).toBeVisible()
+  await expect(toPay.getByText(/reference PPP-1033/)).toBeVisible()
   const history = page.locator('section', { has: page.getByRole('heading', { name: 'Payment history' }) })
   await expect(history.getByRole('cell', { name: /Parent course/ })).toBeVisible()
   await expectAccessible(page)

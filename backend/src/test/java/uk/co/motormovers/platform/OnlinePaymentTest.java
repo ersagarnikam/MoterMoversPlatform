@@ -107,7 +107,7 @@ class OnlinePaymentTest {
         String invoice = mvc.perform(post("/api/admin/payments").header("Authorization", bearer(login("admin@motormovers.test")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"schoolId\":" + oakfield + ",\"purpose\":\"OTHER\",\"description\":\"Session cards\","
-                                + "\"amountPence\":2400,\"invoicedOn\":\"2026-10-01\",\"paidOn\":null,\"reference\":\"MM-2001\"}"))
+                                + "\"amountPence\":2400,\"invoicedOn\":\"2026-10-01\",\"paidOn\":null,\"reference\":\"PPP-2001\"}"))
                 .andReturn().getResponse().getContentAsString();
         Integer id = JsonPath.read(invoice, "$.id");
         call(head, "/api/payments/" + id + "/checkout").andExpect(status().isOk());

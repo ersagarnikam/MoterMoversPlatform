@@ -1,6 +1,7 @@
 package uk.co.motormovers.platform.seed;
 
 import java.time.Clock;
+import uk.co.motormovers.platform.common.Brand;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -329,22 +330,22 @@ public class DemoDataLoader implements ApplicationRunner {
         int trustLicence = plans.priceOn("TRUST", today);
         List<Payment> list = new ArrayList<>();
         list.add(paid(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
-                today.minusMonths(11), "MM-1001", team, clock.instant()), today.minusMonths(11).plusDays(12)));
+                today.minusMonths(11), Brand.REFERENCE_PREFIX + "1001", team, clock.instant()), today.minusMonths(11).plusDays(12)));
         list.add(paid(Payment.bySchool(marlow, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
-                today.minusMonths(5), "MM-1014", team, clock.instant()), today.minusMonths(5).plusDays(20)));
+                today.minusMonths(5), Brand.REFERENCE_PREFIX + "1014", team, clock.instant()), today.minusMonths(5).plusDays(20)));
         list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
-                today.minusMonths(3), "MM-1020", team, clock.instant()), today.minusMonths(3).plusDays(9)));
+                today.minusMonths(3), Brand.REFERENCE_PREFIX + "1020", team, clock.instant()), today.minusMonths(3).plusDays(9)));
         list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.OTHER, "Printed session cards", 6_000,
-                today.minusMonths(2), "MM-1026", team, clock.instant()), today.minusMonths(2).plusDays(3)));
+                today.minusMonths(2), Brand.REFERENCE_PREFIX + "1026", team, clock.instant()), today.minusMonths(2).plusDays(3)));
         list.add(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 2", trustLicence,
-                today.minusDays(7), "MM-1031", team, clock.instant()));
+                today.minusDays(7), Brand.REFERENCE_PREFIX + "1031", team, clock.instant()));
         list.add(paid(Payment.byPerson(practitioner, PaymentPurpose.COURSE, "Practitioner course",
                 18_000, today.minusMonths(4), null, team, clock.instant()), today.minusMonths(4)));
         list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Parent course", 4_500,
                 today.minusMonths(1), null, team, clock.instant()), today.minusMonths(1)));
         // Still to pay, so the parent sees what is due.
         list.add(Payment.byPerson(parent, PaymentPurpose.OTHER, "Rhyme book and CD", 1_500,
-                today.minusDays(5), "MM-1033", team, clock.instant()));
+                today.minusDays(5), Brand.REFERENCE_PREFIX + "1033", team, clock.instant()));
         payments.saveAll(list);
     }
 

@@ -60,6 +60,15 @@ class BrandTest {
     }
 
     @Test
+    void numbersStartWithTheNewPrefix() throws IOException {
+        Pattern oldPrefix = Pattern.compile("\\bMM-\\d|MM-\"");
+        assertThat(linesWith(MAIN, line -> oldPrefix.matcher(line).find())).as("use Brand.REFERENCE_PREFIX").isEmpty();
+        assertThat(linesWith(MAIN, line -> line.contains("\"PPP-")))
+                .allMatch(found -> found.startsWith("Brand.java"));
+        assertThat(Brand.REFERENCE_PREFIX).isEqualTo("PPP-");
+    }
+
+    @Test
     void theHomeProgrammesNameIsWrittenOnce() throws IOException {
         Pattern inText = Pattern.compile("\"[^\"]*Programme at Home");
         assertThat(linesWith(MAIN, line -> inText.matcher(line).find()))

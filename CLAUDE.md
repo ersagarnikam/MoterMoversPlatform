@@ -54,8 +54,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   `common/Brand.java` (API), `frontend/src/brand.ts` (web) and `mobile/src/lib/brand.ts` (parent app, with `name` in `app.json`).
   Use those, never the words themselves. `BrandTest` (API and parent app) and `brand.test.ts` (web) fail on a "Motor Movers" or a
   written-out name anywhere else. **Code names keep the old name** and are not renamed: the package `uk.co.motormovers`, the
-  repository, environment variables, the demo domains (`motormovers.test`), the app's slug, scheme and store ids, payment
-  references ("MM-1033") and applied migrations.
+  repository, environment variables, the demo domains (`motormovers.test`), the app's slug, scheme and store ids
+  and applied migrations. Certificate numbers and payment references start "PPP-" (`Brand.REFERENCE_PREFIX`; "MM-" until 2026-11-16).
 - **Children are identified by initials** unless a school switches full names on. While it is off, the API
   refuses new full names and never sends saved ones (they are kept, hidden, until it is on again). Leavers are deleted
   365 days after leaving (`RetentionJob`).
@@ -80,7 +80,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 288 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 289 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-16) 78 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -232,8 +232,10 @@ book", "Induction"; enquiry subjects are "Price guide" and "Apply for the progra
 A deployment that already holds the starter content keeps its old titles (the demo reloads on a fresh database; no real deployment exists).
 **Splash screen:** `expo-splash-screen` (new package, set up as a plugin in `app.json`) shows the child on the cream background
 (`#f4f1ea`, the same in light and dark); it only appears in a store or development build, not in Expo Go or the web preview.
-**Not changed:** code names; the certificate number ("Certificate MM-12") and payment references ("MM-1033"), which keep MM (the
-owner's decision, 2026-11-16); the website's contact details and Movement
+**Numbers:** certificate numbers and payment references start "PPP-" in place of "MM-" (the owner, 2026-11-16, through the PM;
+`Brand.REFERENCE_PREFIX`): the certificate PDF prints "Certificate PPP-12", and the demo's payments are PPP-1001 to PPP-1033. A payment's
+reference is free text the team types, so nothing stored needed changing and there is no migration; credit notes keep "CN-".
+**Not changed:** code names; the website's contact details and Movement
 for Learning credit (task 28, Rahul's team, whose branch touches the same website files); `docs/assessment-design.md` and
 `docs/home-programme-design.md`, which are dated notes. **The guides need rebuilding** (task 41): their wording files are renamed, the
 built PDFs are not, and their file names change to "Professor Pat Preedy Programme ...".
