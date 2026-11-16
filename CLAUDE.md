@@ -557,6 +557,29 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-16, `task-57` at 0e6bc0f, before merge, the Project manager's brief): pull request #76 (task 57 part 1,
+films in sessions) has one bug, handed back to the Developer.** Backend 305, web 79 unit tests, the build, the parent app typecheck and all 72 browser tests pass (H2 with demo data, installed Chrome).
+- **Bug (minor): the class player's clock and the film get out of step when a session mixes steps with their own film and steps without one** (`PlayerPage.tsx`). Tried on Year 3 K with Orange films standing in for
+  Green: Yes and No and Flying Machines with their own films, Motor Spin too, and a module film. (a) When the second step's film ends, the module film shows for Starfish paused at 0:00 and the plan stops there until
+  someone presses play; it does not start by itself as the step films do. (b) With the module film playing, moving on to Motor Spin (its own film) stops the module film without its pause being noticed, so when Motor
+  Spin's film ends the module film shows paused at 0:00 while the plan's clock runs on: in 60 seconds the bar went from 57% to 67% with nothing playing, and it would reach the end of the session that way. The step
+  films' own play and pause do not reach `playing`, and the session film is unmounted without `onPause`. Real Green sessions will mix them (Quick March and Roundabout have no film; the cool-down never has one).
+- **Attach, replace, remove (64 API checks):** a rhyme film (Orange, Yellow) and an exercise film (Green), by upload and by https link, with the default credit "Film: Professor Pat Preedy Programme" or one typed
+  (trimmed). Replacing keeps one row; the same key with a new credit is accepted; removing clears the film and its credit, and removing again answers false. Refused with clear messages: key and link together or
+  neither, http or javascript links, a link over 500 characters, a module or rhyme with no sessions, unit 0, a made-up key, a PDF key, a credit over 200 characters or with a diagnostic word, both a unit and an
+  exercise, an exercise film for Orange, an unknown exercise (404). On Content approval in Chrome: a 226 MB film uploaded on the rhyme card, attached with a credit, shown, and removed; Green lists its 27 exercises.
+- **Restarts:** after a restart every film and the player's films are the same, and new signed links work. A session deleted from the database and added back by the session plans (Orange rhyme 4 day 5, Green
+  module 1 week 6 day 5, as drafts) belongs to the same rhyme or module, whose film stays.
+- **Access:** teachers, heads, trust or group lead, practitioner, trainer and parents get 403 on all four team endpoints, signed out 401, and nothing changes. Ms Hardy, the trust lead, practitioner, trainer and
+  parents cannot open another class's session. An Indigo class at Oakfield (licensed Red to Blue) gets no session and no file link, with films on Indigo module 1 and all its exercises. Tom (pass ended) gets no
+  film and no exercise films; a new parent and Jo cannot open Ava's session. Links are signed for 8 hours; a changed signature, a changed expiry, another key or no signature is refused.
+- **Real films on local storage:** Orange 04 (425 MB) on rhyme 4 in Year 1 M's player streams in ranges: 3.4 MB before play, 17 MB after 4 seconds, 24 MB after seeking to 70% (a new range request), never the whole file.
+  Step films (Orange 02 and 03 as Green exercises) play one after another and the plan follows; the credit shows under each. Desktop and 390px, no overflow, no console or content policy errors.
+- **Home:** Ava (web) shows her first exercise's own film and the module film for the others, each with its credit. The parent app's web preview shows Watch the film with the credit on each exercise, opening the signed film.
+- **Low, for the owner or the Developer:** (1) The film card's upload hint lists "MP3, M4A or WAV audio, PDF, PNG or JPEG", though only video can be chosen and attached. (2) A credit can only be changed by removing and
+  attaching the film again (as the card says). (3) A removed or replaced film's file stays in the store (as the Developer says).
+- **Not tested:** a real bucket, a real phone on 4G, Green films (none yet), PostgreSQL itself.
+
 **Task tested on its branch (updated by tester, 2026-11-16, `task-85` at d00b37b, before merge, the Project manager's brief): pull request #72 (task 85,
 launch prices per country) passes, no bugs.** Backend 299, web 79 unit tests, the build, the parent app typecheck and all 71 browser tests pass (H2 with demo data, installed Chrome).
 - **Each country, started fresh (`PLATFORM_REGION` UK, IE and AU, 21 checks each):** `GET /api/settings` has the currency; the price chart (API and `/for-schools` on screen) lists Free trial, "Childcare centre or kindergarten", "School" and "Group of schools"
