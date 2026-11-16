@@ -486,6 +486,11 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fix verified (updated by tester, 2026-11-16, `task-84` at ebdb734, before merge): pull request #71 (task 84) now passes, no bugs.** Backend 290, web 79 unit tests, the build, the parent app typecheck and all 71 browser tests pass.
+- **The bug is fixed:** the website home page reads "The programme builds on that work." No "Motor Movers" on any website page, at 1280 and 390px; both brand tests (`BrandTest`, `brand.test.ts`) now also catch the name split over two lines, and fail on the old sentence.
+- **Low notes 1 and 2 fixed:** under 520px "Professor" is hidden from sight only, so the logo is still read as "Professor Pat Preedy Programme" (checked in the accessibility tree, website and teacher header). The app says "the Programme at Home" in all three places, and its tabs for Priya, Jo and Tom have no old name.
+- **Left as it is:** low note 3, the splash has no dark-mode setting. Not tested: a store or development build (the splash and icons on a phone).
+
 **Task tested on its branch (updated by tester, 2026-11-16, `task-84` at 3feec55 and again at d228d9f, before merge, the Project manager's brief): pull request #71 (task 84,
 the Professor Pat Preedy Programme) has one bug, handed back to the Developer.** Backend 288 (289 at d228d9f), web 78 unit tests, the build, the parent app typecheck (after `npm ci`) and all 71 browser tests pass (at both commits) (H2 with demo data, installed Chrome).
 - **Bug (minor, but the brief's first rule): the website's home page still says "Motor Movers builds on that work."** (`frontend/src/pages/site/HomePage.tsx` lines 88 and 89), in the UK, Ireland and Australia. The name is split over two source lines, so neither `brand.test.ts` nor
