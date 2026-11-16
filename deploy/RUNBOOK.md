@@ -303,7 +303,8 @@ choose the colour under **Show colour**. There are two kinds of film:
   the film**. Every session of that rhyme or module then plays it.
 - **An exercise** (Green to Violet are filmed an exercise at a time). Open **Films for <colour> exercises**, then the
   exercise, and attach its film the same way. Each step of a session then plays the film of its own exercise, the plan
-  moves on when a film ends, and the next one starts by itself.
+  moves on when a film ends, and the next one starts by itself. A step with no film of its own goes back to the
+  module's film, from where it had got to, or to the timed plan.
 
 Wait for the upload's progress bar to finish before attaching. **Open the film** checks it. **Remove the film** takes it
 off again; attach another to replace it.

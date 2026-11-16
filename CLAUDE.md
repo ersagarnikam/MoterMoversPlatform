@@ -81,7 +81,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 
 ```bash
 cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 305 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-16) 79 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
+cd frontend && npm test             # (added by Dev, 2026-11-16) 87 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -252,6 +252,12 @@ or downloading). **Known limits:** a removed or replaced film's file stays in th
 attach it again; a cool-down has no film of its own. Tests: `ProgrammeFilmTest` (own database), and a browser test that attaches a film
 recorded in the test and plays it in the class player. **The guides need rebuilding** when films are attached for real (the player and
 Content approval changed).
+(added by Dev, 2026-11-16, the Tester's bug on pull request #76) **The class player's clock is now one module, `frontend/src/playerClock.ts`**,
+with its rules tested in `playerClock.test.ts` (a session mixing steps with their own film, steps on the module's film and a step with
+none). The plan and the picture had drifted apart in such a session. Now: a step with its own film waits for the film's end, never the
+clock; on the session's film the clock counts only while that film is really playing; with no film it counts while the session is under
+way. Being under way carries from step to step, so whatever the next step shows starts by itself, and a pause stays a pause. The session's
+film carries on from where it had got to when it comes back after a step's own film. The film cards' upload hint names video only.
 
 (added by Dev, 2026-11-16) **Launch prices per country (go-live task 85; migration V24).** Kay's Australian prices and the owner's UK and
 Irish ones (task 4), tax included:

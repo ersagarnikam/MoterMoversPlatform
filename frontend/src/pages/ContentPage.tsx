@@ -156,6 +156,7 @@ function FileChoice({
   onUploaded,
   onBusy,
   then = 'Save the draft to keep it.',
+  formats,
 }: {
   rules: UploadRules
   accept: (type: string) => boolean
@@ -163,6 +164,8 @@ function FileChoice({
   onBusy: (busy: boolean) => void
   /** What to do next, said once the file is uploaded. */
   then?: string
+  /** The formats in words, where the form takes fewer than the store does. */
+  formats?: string
 }) {
   const [percent, setPercent] = useState<number | null>(null)
   const [uploaded, setUploaded] = useState<string | null>(null)
@@ -206,7 +209,7 @@ function FileChoice({
         <label>
           Or upload a file
           <span className="hint">
-            {rules.formats}, up to {rules.maxMegabytes} MB
+            {formats ?? rules.formats}, up to {rules.maxMegabytes} MB
           </span>
           <input
             type="file"
@@ -444,6 +447,7 @@ function FilmSlot({
               onBusy={setUploading}
               onUploaded={setKey}
               then="Attach it to keep it."
+              formats="MP4 or WebM video"
             />
           )}
           <label className="form-wide">

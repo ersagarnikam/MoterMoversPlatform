@@ -257,6 +257,8 @@ test('the team attaches a film to a rhyme and the class player plays it, and to 
   await page.getByLabel('Show colour').selectOption('YELLOW')
   await page.getByLabel('Show module').selectOption(rhyme)
   const card = page.getByRole('region', { name: `Film for Yellow rhyme ${rhyme}` })
+  // The card takes video only, and says so.
+  await expect(card.getByText(/^MP4 or WebM video, up to \d+ MB$/)).toBeVisible()
   await card.getByLabel(/Or upload a file/).setInputFiles({ name: 'rhyme.webm', mimeType: 'video/webm', buffer: film })
   await expect(page.getByText('“rhyme.webm” is uploaded. Attach it to keep it.')).toBeVisible()
   await expect(card.getByText('One film for all 5 sessions of Yellow rhyme')).toBeVisible()

@@ -8,15 +8,21 @@ export default function Film({
   onPlay,
   onPause,
   onEnded,
+  onTime,
   autoPlay = false,
+  startAt = 0,
 }: {
   src: string
   credit: string | null
   onPlay?: () => void
   onPause?: () => void
   onEnded?: () => void
-  /** Start at once: for the next step's film, when the one before it has just ended. */
+  /** Where the film has got to, in seconds, as it plays. */
+  onTime?: (seconds: number) => void
+  /** Start at once: the session is already under way when this film comes on screen. */
   autoPlay?: boolean
+  /** Carry on from here, for a film that left the screen and has come back. */
+  startAt?: number
 }) {
   return (
     <figure className="film">
@@ -26,6 +32,10 @@ export default function Film({
         preload="metadata"
         playsInline
         autoPlay={autoPlay}
+        onLoadedMetadata={(e) => {
+          if (startAt > 0 && startAt < e.currentTarget.duration) e.currentTarget.currentTime = startAt
+        }}
+        onTimeUpdate={(e) => onTime?.(e.currentTarget.currentTime)}
         onPlay={onPlay}
         onPause={onPause}
         onEnded={onEnded}
