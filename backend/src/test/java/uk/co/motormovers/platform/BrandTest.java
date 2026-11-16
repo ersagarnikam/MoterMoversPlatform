@@ -27,6 +27,8 @@ class BrandTest {
     /** The parent app, beside the API in the repository: it has no test runner of its own, so it is checked here. */
     private static final Path APP = Path.of("..", "mobile");
     private static final Pattern OLD_NAME = Pattern.compile("motor[ -]?movers", Pattern.CASE_INSENSITIVE);
+    /** The old name even when it is split over two lines of text or of a comment. */
+    private static final Pattern OLD_NAME_SPLIT = Pattern.compile("motor[\\s*/-]*movers", Pattern.CASE_INSENSITIVE);
     /** Code names that hold the old name: the package, the main class, the token issuer, the app and its folder. */
     private static final List<String> CODE_NAMES = List.of("motormovers", "MotorMoversApplication",
             "issuer(\"motor-movers\")", "name: motor-movers-platform", "/motor-movers-files}",
@@ -35,6 +37,14 @@ class BrandTest {
     @Test
     void nothingTheApiWritesSaysMotorMovers() throws IOException {
         assertThat(linesWith(MAIN, line -> OLD_NAME.matcher(withoutCodeNames(line)).find())).isEmpty();
+    }
+
+    @Test
+    void theOldNameIsNotSplitOverTwoLines() throws IOException {
+        assertThat(filesWithSplitName(MAIN)).isEmpty();
+        assumeTrue(Files.isDirectory(APP.resolve("src")), "the parent app's sources are not here");
+        assertThat(filesWithSplitName(APP.resolve("src"))).isEmpty();
+        assertThat(OLD_NAME_SPLIT.matcher("and the register. The Motor\n * Movers team hosts").find()).isTrue();
     }
 
     @Test
@@ -92,6 +102,25 @@ class BrandTest {
                     .filter(f -> f.toString().matches(".*[.](java|yml|json|properties|txt|html|ts|tsx)$"))
                     .flatMap(f -> matching(f, matches))
                     .toList();
+        }
+    }
+
+    private static List<String> filesWithSplitName(Path root) throws IOException {
+        try (Stream<Path> files = Files.walk(root)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(f -> !f.toString().contains("migration"))
+                    .filter(f -> f.toString().matches(".*[.](java|yml|json|properties|txt|html|ts|tsx)$"))
+                    .filter(f -> OLD_NAME_SPLIT.matcher(withoutCodeNames(read(f))).find())
+                    .map(f -> f.getFileName().toString())
+                    .toList();
+        }
+    }
+
+    private static String read(Path file) {
+        try {
+            return Files.readString(file);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

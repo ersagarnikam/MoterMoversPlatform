@@ -80,8 +80,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 289 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-16) 78 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 290 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-16) 79 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -237,7 +237,11 @@ A deployment that already holds the starter content keeps its old titles (the de
 reference is free text the team types, so nothing stored needed changing and there is no migration; credit notes keep "CN-".
 **Not changed:** code names; the website's contact details and Movement
 for Learning credit (task 28, Rahul's team, whose branch touches the same website files); `docs/assessment-design.md` and
-`docs/home-programme-design.md`, which are dated notes. **The guides need rebuilding** (task 41): their wording files are renamed, the
+`docs/home-programme-design.md`, which are dated notes. (added by Dev, 2026-11-16, the Tester's bug on pull request #71) The website home page still said "Motor Movers builds on that work", with the
+name split over two source lines, which the tests read line by line and missed. Both tests now also read each file whole, so a name
+split over two lines of text or of a comment fails. At phone width "Professor" is hidden from sight only, so a screen reader still reads
+the name in full, and the parent app says "the Programme at Home" in the three places that had it in lower case.
+**The guides need rebuilding** (task 41): their wording files are renamed, the
 built PDFs are not, and their file names change to "Professor Pat Preedy Programme ...".
 
 [PM: Claude, 2026-11-16] **The platform is being renamed to the Professor Pat Preedy Programme (the owner, 2026-11-16).** Go-live task 84

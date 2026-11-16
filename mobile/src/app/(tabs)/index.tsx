@@ -192,7 +192,7 @@ export default function TodayScreen() {
       )}
       {homeEnabled && homeKids.length === 0 && (
         <Card accent={stageInfo('GREEN')?.colour}>
-          <H2>Doing the programme at home?</H2>
+          <H2>Doing the {HOME_PROGRAMME}?</H2>
           <Muted>
             No school needed. Add your child, do a short check, and get a few minutes of movement for most days,
             with the exercises schools use.

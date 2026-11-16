@@ -1,3 +1,4 @@
+import { HOME_PROGRAMME } from '@/lib/brand'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
@@ -57,7 +58,7 @@ export default function AddChildScreen() {
       <Stack.Screen options={{ title: editing ? 'Name and age' : 'Add your child' }} />
       {!editing && (
         <Body>
-          The programme at home: a few minutes of movement most days, with the same exercises schools use. Add your
+          The {HOME_PROGRAMME}: a few minutes of movement most days, with the same exercises schools use. Add your
           child, then a short check suggests where to start.
         </Body>
       )}

@@ -85,8 +85,8 @@ export default function HomePage() {
             </p>
             <p>
               In the Movement for Learning pilot, more than half of the Reception children assessed had significant
-              movement difficulties that could affect their learning, in state and independent schools alike. Motor
-              Movers builds on that work.
+              movement difficulties that could affect their learning, in state and independent schools alike. The
+              programme builds on that work.
             </p>
             <Link to="/about">Read about the research</Link>
           </div>

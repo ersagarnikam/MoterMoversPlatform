@@ -1,4 +1,4 @@
-import { BRAND } from '@/lib/brand'
+import { BRAND, HOME_PROGRAMME } from '@/lib/brand'
 import Constants from 'expo-constants'
 import { router } from 'expo-router'
 import { useState } from 'react'
@@ -73,7 +73,7 @@ export default function AccountScreen() {
         </Body>
         <Body>The home activities you record are yours. They are not shared with the school.</Body>
         <Body>
-          Children you add yourself (the programme at home) are seen only by you and anyone you invite. A school sees
+          Children you add yourself (the {HOME_PROGRAMME}) are seen only by you and anyone you invite. A school sees
           them only if you link the school. Deleting a child deletes everything recorded.
         </Body>
         <Body>
