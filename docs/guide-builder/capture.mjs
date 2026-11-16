@@ -101,7 +101,7 @@ await desk(async (page) => {
   await step('families', async () => {
     await page.goto(`${WEB}/for-families`)
     await part(
-      page.locator('.site-section', { has: page.getByRole('heading', { name: 'Your child’s school is not on Motor Movers?' }) }),
+      page.locator('.site-section', { has: page.getByRole('heading', { name: 'Your child’s school is not on the programme?' }) }),
       'site-families-home',
     )
     await page.goto(`${WEB}/join`)
@@ -116,12 +116,12 @@ await desk(async (page) => {
   await shot(page, 'newteacher-locked')
   await step('induction', async () => {
     await page.getByRole('link', { name: 'Go to the induction' }).click()
-    await page.getByRole('heading', { name: 'Motor Movers induction' }).waitFor()
+    await page.getByRole('heading', { name: 'Induction' }).waitFor()
     await page.locator('details.lesson').first().locator('summary').click()
     await shot(page, 'newteacher-induction')
   })
   await step('ask for a place', async () => {
-    const course = page.locator('section.card', { has: page.getByRole('heading', { name: 'Motor Movers practitioner course' }) })
+    const course = page.locator('section.card', { has: page.getByRole('heading', { name: 'Practitioner course' }) })
     await part(course, 'staff-course')
     await course.locator('.cohort', { hasText: 'Cohort A · UK evening' }).getByRole('button', { name: 'Ask for a place' }).click()
     await page.getByText('Request sent').waitFor()
@@ -166,7 +166,7 @@ await desk(async (page) => {
   })
   await step('resources', async () => {
     await page.getByRole('link', { name: 'Resources' }).click()
-    await page.getByRole('heading', { name: 'Motor Movers rhyme book' }).waitFor()
+    await page.getByRole('heading', { name: 'Rhyme book' }).waitFor()
     await shot(page, 'teacher-resources')
   })
 })
@@ -194,7 +194,7 @@ await desk(async (page) => {
     await page.getByRole('heading', { name: /Payments/ }).waitFor()
     await part(page.locator('section.card', { has: page.getByRole('heading', { name: 'Course places to approve' }) }), 'head-requests')
     await page.locator('.cohort', { hasText: 'Mr Lewis' }).getByRole('button', { name: 'Approve' }).click()
-    await page.getByText(/place on Motor Movers practitioner course is booked/).waitFor()
+    await page.getByText(/place on Practitioner course is booked/).waitFor()
     await shot(page, 'head-payments')
   })
 })
@@ -272,7 +272,7 @@ await desk(async (page) => {
   })
 })
 
-// Motor Movers at Home on the website (Priya Shah: Ava on Green with her module 1 review due, Leo before his check)
+// The Programme at Home on the website (Priya Shah: Ava on Green with her module 1 review due, Leo before his check)
 const priya = await token('home@example.test')
 const family = await api(priya, 'GET', '/api/home')
 const ava = family.children.find((c) => c.name === 'Ava')
@@ -321,7 +321,7 @@ await desk(async (page) => {
   })
 })
 
-// Motor Movers team
+// Programme team
 await desk(async (page) => {
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('heading', { name: /^Hello/ }).waitFor()
@@ -349,8 +349,8 @@ await desk(async (page) => {
     await page.getByRole('link', { name: 'Courses', exact: true }).click()
     await page.getByRole('heading', { name: 'Courses', exact: true }).waitFor()
     await shot(page, 'admin-courses')
-    await page.getByRole('link', { name: /Motor Movers practitioner course/ }).click()
-    const course = page.locator('.course-admin', { hasText: 'Motor Movers practitioner course' })
+    await page.getByRole('link', { name: /Practitioner course/ }).click()
+    const course = page.locator('.course-admin', { hasText: 'Practitioner course' })
     await course.getByText('Quizzes (3)').click()
     await part(course.locator('details.add-item').first(), 'admin-quizzes')
     await course.locator('.quiz-list li').first().getByRole('button', { name: 'Edit' }).click()
@@ -417,7 +417,7 @@ await phone(async (page) => {
   })
 })
 
-// Motor Movers at Home in the parent app (Priya)
+// The Programme at Home in the parent app (Priya)
 await phone(async (page) => {
   try {
     await page.goto(APP, { timeout: 10000 })

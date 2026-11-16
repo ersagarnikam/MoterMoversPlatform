@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.home.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -59,7 +60,7 @@ import uk.co.motormovers.platform.user.model.AppUser;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
- * Motor Movers at Home (docs/home-programme-design.md): a family's own children, not linked to a school. The parent
+ * The Programme at Home (docs/home-programme-design.md): a family's own children, not linked to a school. The parent
  * adds a child with an age in months, does a starting check from Pat's charts (the colour to start at comes from the
  * age), then a daily session from Pat's exercises, rating each exercise the first time and at the end of each module
  * and of the colour. A second carer
@@ -83,7 +84,7 @@ public class HomeService {
 
     static final int MAX_BACKDATE_DAYS = 30;
 
-    static final String NOT_AVAILABLE = "Motor Movers at Home is not available yet";
+    static final String NOT_AVAILABLE = "The " + Brand.HOME + " is not available yet";
 
     private static final DateTimeFormatter EMAIL_DATE = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.UK);
 
@@ -223,7 +224,7 @@ public class HomeService {
         String shown = InviteCodes.format(invite.getCode());
         if (email != null) {
             String from = users.findById(me.id()).map(AppUser::getDisplayName).orElse("A parent");
-            mailer.send(email, from + " has invited you to Motor Movers at Home", inviteEmail(from, shown,
+            mailer.send(email, from + " has invited you to the " + Brand.HOME, inviteEmail(from, shown,
                     invite.getExpiresOn()));
         }
         return new HomeViews.Invite(shown, invite.getExpiresOn(), email);
@@ -231,13 +232,13 @@ public class HomeService {
 
     private String inviteEmail(String from, String code, LocalDate expiresOn) {
         return """
-                %1$s has invited you to share their children's Motor Movers at Home: the short daily movement \
+                %1$s has invited you to share their children's %6$s: the short daily movement \
                 sessions, and how each child is getting on.
 
                 Your family code is %2$s
 
                 To use it:
-                1. Open the Motor Movers app, or go to %4$s on the web.
+                1. Open the %5$s app, or go to %4$s on the web.
                 2. Sign in, or create a parent account with this email address.
                 3. Open Your family in the app (under Account), or Family and sharing on the web (under At home),
                    and enter the code under Join a family.
@@ -245,7 +246,7 @@ public class HomeService {
                 The code works once, until %3$s. If it has expired, ask %1$s for a new one.
 
                 If you were not expecting this, you can ignore this email.
-                """.formatted(from, code, EMAIL_DATE.format(expiresOn), mailer.link("/join"));
+                """.formatted(from, code, EMAIL_DATE.format(expiresOn), mailer.link("/join"), Brand.NAME, Brand.HOME);
     }
 
     /** Joins the family whose code this is. Someone who already has their own home children cannot. */
@@ -527,7 +528,7 @@ public class HomeService {
     // --- Linking a school -------------------------------------------------------------------------------------------
 
     /**
-     * The child's school has joined Motor Movers and given the parent a code. Links the parent to the school's record
+     * The child's school has joined the programme and given the parent a code. Links the parent to the school's record
      * and moves the home record onto it (the school's own records win where both have one), then removes the home
      * child. From then on the school sees what was recorded at home, as the parent agreed.
      */

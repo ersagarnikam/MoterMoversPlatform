@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
-import StageStripe from '../components/StageStripe'
+import Logo from '../components/Logo'
 
 const MIN_LENGTH = 10
 
@@ -36,8 +36,9 @@ export default function ResetPasswordPage() {
   return (
     <div className="login">
       <div className="login-hero">
-        <StageStripe />
-        <h1>Motor Movers</h1>
+        <h1>
+          <Logo stacked />
+        </h1>
       </div>
       <form className="card login-card" onSubmit={submit}>
         <h2>Choose a password</h2>

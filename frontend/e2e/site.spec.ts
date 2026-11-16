@@ -15,7 +15,7 @@ const PAGES = [
       'Assess, move every day, see progress',
       'Stages follow development, not age',
       'More than physical skills',
-      'Who Motor Movers is for',
+      'Who the programme is for',
       'Ready to start?',
     ],
   },
@@ -34,8 +34,8 @@ const PAGES = [
   {
     path: '/for-schools',
     nav: 'For schools',
-    h1: 'Bring Motor Movers to your setting',
-    headings: ['The licence', 'What is included', 'How to join', 'Trusts and school groups', 'Apply for Motor Movers'],
+    h1: 'Bring the programme to your setting',
+    headings: ['The licence', 'What is included', 'How to join', 'Trusts and school groups', 'Apply for the programme'],
   },
   {
     path: '/for-families',
@@ -52,7 +52,7 @@ const ROLES = [
   { label: 'Trust or group lead', key: 'trust', email: 'trust@northbridge.test', home: /\/trust$/ },
   { label: 'Practitioner', key: 'practitioner', email: 'practitioner@example.test', home: /\/training$/ },
   { label: 'Parent or carer', key: 'parent', email: 'parent@example.test', home: /\/training$/ },
-  { label: 'Motor Movers team', key: 'team', email: 'admin@motormovers.test', home: /\/admin$/ },
+  { label: 'Programme team', key: 'team', email: 'admin@motormovers.test', home: /\/admin$/ },
 ]
 
 /** The same terms the API's WordingGuard blocks in programme content. */
@@ -111,20 +111,20 @@ test('the footer links reach every page, and each new page starts at the top', a
 
 test('the brand in the header goes back home', async ({ page }) => {
   await page.goto('/for-families')
-  await header(page).getByRole('link', { name: 'Motor Movers', exact: true }).click()
+  await header(page).getByRole('link', { name: 'Professor Pat Preedy Programme', exact: true }).click()
   await expect(page).toHaveURL('/')
   await expect(h1(page)).toHaveText(PAGES[0].h1)
 })
 
 test('the home page buttons and cards lead to the right pages', async ({ page }) => {
   const links: [string, string, string][] = [
-    ['Bring Motor Movers to your setting', '/for-schools', 'Bring Motor Movers to your setting'],
+    ['Bring the programme to your setting', '/for-schools', 'Bring the programme to your setting'],
     ['Read about the research', '/about', 'Built on the Movement for Learning research'],
     ['See how the programme works', '/programme', 'A few minutes of the right movement, every day'],
-    ['How to join', '/for-schools', 'Bring Motor Movers to your setting'],
-    ['Already using Motor Movers? Sign in', '/sign-in', 'Who are you signing in as?'],
+    ['How to join', '/for-schools', 'Bring the programme to your setting'],
+    ['Already using the programme? Sign in', '/sign-in', 'Who are you signing in as?'],
     ['Class teachers', '/programme', 'A few minutes of the right movement, every day'],
-    ['Heads and SENCos', '/for-schools', 'Bring Motor Movers to your setting'],
+    ['Heads and SENCos', '/for-schools', 'Bring the programme to your setting'],
     ['Parents and carers', '/for-families', 'Keep the movement going at home'],
   ]
   for (const [name, path, heading] of links) {
@@ -144,7 +144,7 @@ test('the seven colour stages appear in programme order', async ({ page }) => {
   await expect(page.locator('.stage-ladder .muted')).toHaveText(order.map((_, i) => `Stage ${i + 1}`))
 })
 
-test('the programme and families pages say Motor Movers is not a diagnosis', async ({ page }) => {
+test('the programme and families pages say the programme is not a diagnosis', async ({ page }) => {
   for (const path of ['/programme', '/for-families']) {
     await page.goto(path)
     await expect(page.getByRole('note')).toContainText('Not a diagnosis.')
@@ -164,7 +164,7 @@ test('no website page uses diagnostic wording', async ({ page }) => {
   }
 })
 
-test('enquiry links open a filled-in email to the Motor Movers team', async ({ page }) => {
+test('enquiry links open a filled-in email to the programme team', async ({ page }) => {
   const mail = async (name: string) => {
     const href = await page.getByRole('link', { name, exact: true }).first().getAttribute('href')
     expect(href).toMatch(new RegExp(`^mailto:${CONTACT_EMAIL}`))
@@ -173,14 +173,14 @@ test('enquiry links open a filled-in email to the Motor Movers team', async ({ p
 
   await page.goto('/for-schools')
   const params = await mail('Email us to apply')
-  expect(params.get('subject')).toBe('Apply for Motor Movers')
+  expect(params.get('subject')).toBe('Apply for the programme')
   for (const field of ['Name:', 'School or setting:', 'Phone:', 'Number of classes:', 'Message:']) {
     expect(params.get('body')).toContain(field)
   }
   await expect(page.getByText('01202 826 718').first()).toBeVisible()
 
   await page.goto('/for-families')
-  expect((await mail('Ask us about the CD and book')).get('subject')).toBe('Motor Movers CD and book')
+  expect((await mail('Ask us about the CD and book')).get('subject')).toBe('CD and book')
   await expect(page.getByRole('contentinfo').getByRole('link', { name: CONTACT_EMAIL })).toHaveAttribute(
     'href',
     `mailto:${CONTACT_EMAIL}`,
@@ -287,7 +287,7 @@ test('signed in, the website stays open and leads back into the platform', async
   await page.goto('/')
   await expect(h1(page)).toHaveText(PAGES[0].h1)
   await expect(header(page).getByRole('link', { name: 'Sign in', exact: true })).toHaveCount(0)
-  await header(page).getByRole('link', { name: 'Open Motor Movers' }).click()
+  await header(page).getByRole('link', { name: 'Open the programme' }).click()
   await expect(page).toHaveURL('/dashboard')
 
   // The role chooser and the sign-in form are not needed once signed in.

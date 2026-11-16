@@ -1,3 +1,4 @@
+import { BRAND } from '@/lib/brand'
 import { useState } from 'react'
 import { Banner, Body, Button, Field, Muted, Screen } from '@/components/ui'
 import { api } from '@/lib/api'
@@ -30,7 +31,7 @@ export default function ForgotPasswordScreen() {
     return (
       <Screen>
         <Banner tone="ok">
-          If {email.trim()} has a Motor Movers account, we have emailed it a link to choose a new password.
+          If {email.trim()} has a {BRAND} account, we have emailed it a link to choose a new password.
         </Banner>
         <Muted>The link works for one hour. Open it on this phone or any computer, then sign in here.</Muted>
       </Screen>

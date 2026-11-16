@@ -60,7 +60,7 @@ public final class FileTypes {
         String name = Normalizer.normalize(title, Normalizer.Form.NFC).replaceAll("[^\\p{L}\\p{N}'\u2019 _-]", "")
                 .strip();
         name = name.length() > 80 ? name.substring(0, 80).strip() : name;
-        return (name.isEmpty() ? "Motor Movers file" : name) + key.substring(key.lastIndexOf('.'));
+        return (name.isEmpty() ? "Programme file" : name) + key.substring(key.lastIndexOf('.'));
     }
 
     /**

@@ -68,7 +68,7 @@ public class SecurityConfig {
                                 "/api/auth/password-reset", "/api/auth/password").permitAll()
                         // Stripe's payment confirmations: checked by their signature in OnlinePaymentService.
                         .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
-                        // Whether Motor Movers at Home is switched on, for the public website's sign-up.
+                        // Whether the Programme at Home is switched on, for the public website's sign-up.
                         .requestMatchers(HttpMethod.GET, "/api/home/available").permitAll()
                         // The deployment's country settings (currency, tax, year names), for the website and app.
                         .requestMatchers(HttpMethod.GET, "/api/settings").permitAll()

@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.home.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +49,7 @@ import uk.co.motormovers.platform.user.model.AppUser;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
- * The Motor Movers at Home pass (go-live task 26): twelve months for the whole family, bought by card. It runs from
+ * The Programme at Home pass (go-live task 26): twelve months for the whole family, bought by card. It runs from
  * the day it is paid; bought again while it runs, it carries on from its end. The one place that decides whether a
  * family may do sessions: a running pass and, for each carer, the parent induction.
  */
@@ -57,7 +58,7 @@ public class HomePassService {
 
     private static final Logger log = LoggerFactory.getLogger(HomePassService.class);
 
-    public static final String DESCRIPTION = "Motor Movers at Home: 12-month family pass";
+    public static final String DESCRIPTION = "The " + Brand.HOME + ": 12-month family pass";
 
     /** Reminders before the end: 30 days, 7 days and on the day. */
     static final List<Integer> REMIND_DAYS_BEFORE = List.of(30, 7, 0);
@@ -144,7 +145,7 @@ public class HomePassService {
         if (child != null && child.isAtHome() && !running(child.getFamilyId())) {
             LocalDate ended = endsOn(child.getFamilyId());
             throw new IllegalStateException(ended == null
-                    ? "Sessions need a Motor Movers at Home pass. Please buy one for your family first."
+                    ? "Sessions need a " + Brand.HOME + " pass. Please buy one for your family first."
                     : "Your family's pass ended on " + DAY.format(ended) + ". Please renew it to carry on.");
         }
     }
@@ -181,7 +182,7 @@ public class HomePassService {
                 .orElseThrow(() -> new IllegalStateException("Add a child first, then buy the pass for your family"));
         Integer price = priceToday();
         if (price == null) {
-            throw new IllegalStateException("The Motor Movers at Home pass is not on sale yet");
+            throw new IllegalStateException("The " + Brand.HOME + " pass is not on sale yet");
         }
         Payment payment = passes.findByFamilyIdOrderById(member.getFamilyId()).stream()
                 .filter(p -> !p.started() && p.getPaymentId() != null)
@@ -371,9 +372,9 @@ public class HomePassService {
 
     private void remind(Long familyId, LocalDate end, long left) {
         String when = left == 0 ? "ends today" : "ends on " + DAY.format(end);
-        String subject = "Your Motor Movers at Home pass " + when;
+        String subject = "Your " + Brand.HOME + " pass " + when;
         Integer price = priceToday();
-        String body = "Your family's Motor Movers at Home pass " + when + ". After that, your children's records stay "
+        String body = "Your family's " + Brand.HOME + " pass " + when + ". After that, your children's records stay "
                 + "safe, but sessions stop until the pass is renewed.\n\n"
                 + (price == null ? "" : "Renewing costs " + money.format(price) + " for another 12 months. ")
                 + "Renew from your children's page: " + mailer.link("/home") + "\n";
@@ -422,7 +423,7 @@ public class HomePassService {
         AppUser user = users.findByEmailIgnoreCase(email == null ? "" : email.strip())
                 .orElseThrow(() -> new NotFoundException("Account", email));
         return members.findByUserId(user.getId()).map(FamilyMember::getFamilyId)
-                .orElseThrow(() -> new IllegalArgumentException("That account has no family on Motor Movers at Home"));
+                .orElseThrow(() -> new IllegalArgumentException("That account has no family on the " + Brand.HOME));
     }
 
     private HomePassViews.FamilyPass view(Long familyId) {

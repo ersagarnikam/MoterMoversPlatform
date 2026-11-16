@@ -143,7 +143,7 @@ public class CourseAdminService {
         }
         AppUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("Trainer", userId));
         if (user.getRole() != Role.TRAINER && user.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("Choose a trainer or a member of the Motor Movers team");
+            throw new IllegalArgumentException("Choose a trainer or a member of the programme team");
         }
         return user;
     }

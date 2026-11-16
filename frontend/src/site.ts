@@ -1,3 +1,5 @@
+import { TEAM } from './brand'
+
 /** Facts the public website repeats on several pages. Change them here, not in the page text. */
 export const CONTACT_EMAIL = 'movementforlearningproject@gmail.com'
 export const CONTACT_PHONE = '01202 826 718'
@@ -34,7 +36,7 @@ export const SIGN_IN_ROLES = [
   {
     key: 'practitioner',
     label: 'Practitioner',
-    blurb: 'Your Motor Movers course, live sessions and bookings.',
+    blurb: 'Your course, live sessions and bookings.',
     demo: 'practitioner@example.test',
   },
   {
@@ -45,7 +47,7 @@ export const SIGN_IN_ROLES = [
   },
   {
     key: 'team',
-    label: 'Motor Movers team',
+    label: TEAM,
     blurb: 'Content approval, schools, licences and trusts.',
     demo: 'admin@motormovers.test',
   },

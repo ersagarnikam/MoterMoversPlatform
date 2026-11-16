@@ -9,7 +9,7 @@ const INCLUDED = [
   'A one-hour staff induction before the first session',
   'Session videos, rhymes and guidance for each stage',
   'An annual conference for participating schools',
-  'Two Motor Movers Meet and Greets',
+  'Two Meet and Greets',
   'The parent app and parent course for your families',
 ]
 
@@ -39,7 +39,7 @@ export default function ForSchoolsPage() {
     <>
       <section className="site-page-head">
         <p className="eyebrow eyebrow-light">For schools and settings</p>
-        <h1>Bring Motor Movers to your setting</h1>
+        <h1>Bring the programme to your setting</h1>
         <p className="site-lead">
           For primary schools, nurseries and other early years settings. Low cost, run by your own staff, and built to
           fit into the school day.
@@ -51,7 +51,7 @@ export default function ForSchoolsPage() {
           <div>
             <h2>The licence</h2>
             <p>
-              Joining gives your setting an annual licence to use the Motor Movers colour programmes. You can take all
+              Joining gives your setting an annual licence to use the colour programmes. You can take all
               seven stages or only the ones you need, so you pay for what your children will use.
             </p>
             <p>Ask us for the programme price guide and we will help you work out the right stages.</p>
@@ -110,9 +110,9 @@ export default function ForSchoolsPage() {
       </section>
 
       <section className="site-section site-cta-band" id="contact">
-        <h2>Apply for Motor Movers</h2>
+        <h2>Apply for the programme</h2>
         <p>
-          Email <a href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>{CONTACT_EMAIL}</a> or call {CONTACT_PHONE}.
+          Email <a href={mailto('Apply for the programme', ENQUIRY_BODY)}>{CONTACT_EMAIL}</a> or call {CONTACT_PHONE}.
           We reply by email, usually within a week.
         </p>
         {open === 'APPLY' ? (
@@ -122,7 +122,7 @@ export default function ForSchoolsPage() {
             <button type="button" className="btn btn-big btn-light" onClick={() => setOpen('APPLY')}>
               Apply online
             </button>
-            <a className="btn btn-big btn-ghost-dark" href={mailto('Apply for Motor Movers', ENQUIRY_BODY)}>
+            <a className="btn btn-big btn-ghost-dark" href={mailto('Apply for the programme', ENQUIRY_BODY)}>
               Email us to apply
             </a>
           </div>

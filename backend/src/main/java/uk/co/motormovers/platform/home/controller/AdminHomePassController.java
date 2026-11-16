@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.motormovers.platform.home.dto.HomePassViews;
 import uk.co.motormovers.platform.home.service.HomePassService;
 
-/** The team: the Motor Movers at Home pass price, and a family's pass for support. Under /api/admin (ADMIN only). */
+/** The team: the Programme at Home pass price, and a family's pass for support. Under /api/admin (ADMIN only). */
 @RestController
 @RequestMapping("/api/admin/home-pass")
 public class AdminHomePassController {

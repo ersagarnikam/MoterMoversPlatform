@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.user.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
  * Every other account is created by someone already signed in, so a new deployment needs one way in.
- * When {@code PLATFORM_ADMIN_EMAIL} is set and there is no Motor Movers team account yet, this creates one
+ * When {@code PLATFORM_ADMIN_EMAIL} is set and there is no programme team account yet, this creates one
  * and emails it a link to choose a password. Once any admin exists it does nothing.
  */
 @Component
@@ -51,9 +52,9 @@ public class AdminBootstrap implements ApplicationRunner {
             return;
         }
         // No usable password until they follow the invite link.
-        AppUser admin = users.save(new AppUser(email, "Motor Movers team",
+        AppUser admin = users.save(new AppUser(email, Brand.TEAM,
                 passwordEncoder.encode(UUID.randomUUID().toString()), Role.ADMIN, null, null));
-        passwords.sendInvite(admin, "Motor Movers");
+        passwords.sendInvite(admin, Brand.NAME);
         log.info("Created the first admin account and emailed a sign-in link");
     }
 }

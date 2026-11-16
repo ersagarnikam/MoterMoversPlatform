@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.training.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -70,12 +71,12 @@ public class CertificateService {
             return false;
         }
         Course course = e.getCohort().getCourse();
-        mailer.send(e.getUser().getEmail(), "Your Motor Movers certificate",
+        mailer.send(e.getUser().getEmail(), "Your " + Brand.NAME + " certificate",
                 "Congratulations, " + e.getUser().getDisplayName() + ".\n\nYou have completed the " + course.getTitle()
                         + ". Your certificate is attached, and on your Training page: "
                         + mailer.link("/training/certificate/" + e.getId()) + "\n\nIt is valid until "
                         + EMAIL_DATE.format(e.getCertificateExpiresOn()) + ".\n",
-                "motor-movers-certificate.pdf", pdf(e), "application/pdf");
+                "certificate.pdf", pdf(e), "application/pdf");
         return true;
     }
 
@@ -120,10 +121,10 @@ public class CertificateService {
             Course course = e.getCohort().getCourse();
             String renewal = course.getRenewalPence() == null ? ""
                     : " Renewing costs " + money.format(course.getRenewalPence()) + ".";
-            mailer.send(e.getUser().getEmail(), "Your Motor Movers certificate expires soon",
+            mailer.send(e.getUser().getEmail(), "Your " + Brand.NAME + " certificate expires soon",
                     "Hello " + e.getUser().getDisplayName() + ",\n\nYour " + course.getTitle() + " certificate is valid "
                             + "until " + EMAIL_DATE.format(e.getCertificateExpiresOn()) + "." + renewal
-                            + " To renew it, reply to this email or contact the Motor Movers team.\n\nYour certificate: "
+                            + " To renew it, reply to this email or contact the programme team.\n\nYour certificate: "
                             + mailer.link("/training/certificate/" + e.getId()) + "\n");
             e.expiryReminderSent(today);
         }

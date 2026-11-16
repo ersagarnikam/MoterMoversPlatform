@@ -1,3 +1,4 @@
+import { HOME_PROGRAMME } from '@/lib/brand'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
@@ -7,7 +8,7 @@ import { ageLabel, toMonths } from '@/lib/ages'
 import { space } from '@/lib/theme'
 
 /**
- * Motor Movers at Home: adds a child who is not linked to a school, or (with ?id=) changes their name or age. Only a
+ * The Programme at Home: adds a child who is not linked to a school, or (with ?id=) changes their name or age. Only a
  * first name or nickname and an age are asked for; no date of birth.
  */
 export default function AddChildScreen() {
@@ -57,7 +58,7 @@ export default function AddChildScreen() {
       <Stack.Screen options={{ title: editing ? 'Name and age' : 'Add your child' }} />
       {!editing && (
         <Body>
-          Motor Movers at home: a few minutes of movement most days, with the same exercises schools use. Add your
+          The {HOME_PROGRAMME}: a few minutes of movement most days, with the same exercises schools use. Add your
           child, then a short check suggests where to start.
         </Body>
       )}
@@ -79,7 +80,7 @@ export default function AddChildScreen() {
           </View>
         </Row>
         <Muted>
-          {age !== null ? ageLabel(age) : 'Motor Movers is for children from 6 months to 8 years.'} We do not ask for a
+          {age !== null ? ageLabel(age) : 'The programme is for children from 6 months to 8 years.'} We do not ask for a
           date of birth.
         </Muted>
       </View>

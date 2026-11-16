@@ -18,7 +18,7 @@ import uk.co.motormovers.platform.school.repository.LicenceRepository;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 
 /**
- * Licence plans and their prices, set by the Motor Movers team (under /api/admin, ADMIN only). A price change
+ * Licence plans and their prices, set by the programme team (under /api/admin, ADMIN only). A price change
  * applies from a date that has not passed yet, so licences already sold and invoices already sent keep their
  * price; every change records who made it and when.
  */

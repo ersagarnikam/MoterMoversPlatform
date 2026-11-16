@@ -26,7 +26,7 @@ export default function TrainerCohortsPage() {
     <>
       <h1>My cohorts</h1>
       {courses.length === 0 && (
-        <p className="muted">No cohorts are given to you yet. The Motor Movers team will let you know.</p>
+        <p className="muted">No cohorts are given to you yet. The programme team will let you know.</p>
       )}
       {courses.map((c) =>
         c.cohorts.map((h) => (

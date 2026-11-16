@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 /**
  * Published in the same transaction when a payment is marked paid (by Stripe's webhook or by the team) and when a
- * refund is recorded, so what was bought (a Motor Movers at Home pass) can follow without the payment code knowing it.
+ * refund is recorded, so what was bought (a Programme at Home pass) can follow without the payment code knowing it.
  */
 public final class PaymentEvents {
 

@@ -105,7 +105,7 @@ export default function ChildScreen() {
       <Card>
         <Field
           label="What do you call them?"
-          hint="Shown in this app instead of initials. Kept on this phone only; never sent to Motor Movers or the school."
+          hint="Shown in this app instead of initials. Kept on this phone only; never sent to us or the school."
           value={nickname}
           onChangeText={setNicknameDraft}
           placeholder={child.name}

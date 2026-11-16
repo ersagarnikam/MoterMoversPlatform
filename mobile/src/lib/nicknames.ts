@@ -1,5 +1,5 @@
 // Schools usually hold children by initials only. A parent can give their child a name that is
-// shown in the app; it is kept on this phone and never sent to Motor Movers.
+// shown in the app; it is kept on this phone and never sent to us.
 import { useCallback, useEffect, useState } from 'react'
 import { getLocal, setLocal } from './storage'
 

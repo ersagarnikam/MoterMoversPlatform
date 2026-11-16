@@ -1,3 +1,4 @@
+import { BRAND, HOME_PROGRAMME } from '@/lib/brand'
 import Constants from 'expo-constants'
 import { router } from 'expo-router'
 import { useState } from 'react'
@@ -72,11 +73,11 @@ export default function AccountScreen() {
         </Body>
         <Body>The home activities you record are yours. They are not shared with the school.</Body>
         <Body>
-          Children you add yourself (Motor Movers at home) are seen only by you and anyone you invite. A school sees
+          Children you add yourself (the {HOME_PROGRAMME}) are seen only by you and anyone you invite. A school sees
           them only if you link the school. Deleting a child deletes everything recorded.
         </Body>
         <Body>
-          Motor Movers describes where a child is in the programme. It is not a diagnosis or a clinical test. If you
+          This app describes where a child is in the programme. It is not a diagnosis or a clinical test. If you
           are worried about your child, talk to their school or your GP.
         </Body>
       </Card>
@@ -100,7 +101,7 @@ export default function AccountScreen() {
 
       <StageStripe height={4} />
       <Muted>
-        Motor Movers {Constants.expoConfig?.version}
+        {BRAND} {Constants.expoConfig?.version}
         {__DEV__ ? ` · ${apiUrl()}` : ''}
       </Muted>
     </Screen>

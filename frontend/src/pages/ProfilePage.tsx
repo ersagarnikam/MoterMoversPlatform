@@ -19,7 +19,7 @@ export default function ProfilePage() {
   )
 }
 
-/** Issues a one-time code the parent enters in the Motor Movers parent app. */
+/** Issues a one-time code the parent enters in the parent app. */
 function ParentInviteCard({ childId }: { childId: number }) {
   const [invite, setInvite] = useState<ParentInvite | null>(null)
   const [error, setError] = useState<string | null>(null)

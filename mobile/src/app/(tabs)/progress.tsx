@@ -10,7 +10,7 @@ import { useLoad } from '@/lib/useLoad'
 export default function ProgressScreen() {
   const { data, error, refreshing, reload } = useLoad(async () => ({
     children: await api.children(),
-    // Motor Movers at Home may be switched off, or the call may fail: then only school children show.
+    // The Programme at Home may be switched off, or the call may fail: then only school children show.
     home: await api.homeOverview().catch(() => null),
   }))
   const { nameFor } = useNicknames()
@@ -42,7 +42,7 @@ export default function ProgressScreen() {
         <Card>
           <H2>No children linked yet</H2>
           <Body>
-            When your child does Motor Movers at school, the school can give you a parent code. Enter it here to see
+            When your child does the programme at school, the school can give you a parent code. Enter it here to see
             their stage and how they are getting on.
           </Body>
           <Muted>Nothing about your child is shared with this app until the school gives you a code.</Muted>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Body, Button, H1, Screen, StageStripe } from '@/components/ui'
+import { Body, Button, H1, Logo, Screen } from '@/components/ui'
 import { availableCountries, suggestedCountry, type Country } from '@/lib/country'
 
 /** First launch, or after changing country: asks where the parent is, with the phone's own country first. */
@@ -17,9 +17,9 @@ export function CountryChooser({ onChoose }: { onChoose: (country: Country) => P
 
   return (
     <Screen>
-      <StageStripe height={4} />
+      <Logo />
       <H1>Where are you?</H1>
-      <Body>Motor Movers runs separately in each country, so choose yours to sign in.</Body>
+      <Body>The programme runs separately in each country, so choose yours to sign in.</Body>
       {countries.map((c) => (
         <Button
           key={c.code}

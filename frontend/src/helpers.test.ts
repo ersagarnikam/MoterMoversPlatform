@@ -141,10 +141,10 @@ describe('ZOOM_SDK', () => {
 
 describe('mailto', () => {
   it('opens an email to the contact address with spaces kept as spaces', () => {
-    const link = mailto('Apply for Motor Movers', 'Name:\nSchool:')
+    const link = mailto('Apply for the programme', 'Name:\nSchool:')
     expect(link.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true)
     const query = new URLSearchParams(link.split('?')[1])
-    expect(query.get('subject')).toBe('Apply for Motor Movers')
+    expect(query.get('subject')).toBe('Apply for the programme')
     expect(query.get('body')).toBe('Name:\nSchool:')
     expect(link).not.toContain('+')
   })

@@ -31,7 +31,7 @@ import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
 import uk.co.motormovers.platform.training.service.CourseAdminService;
 
 /**
- * What needs the Motor Movers team's attention today, for their home page: content waiting for sign-off, today's
+ * What needs the programme team's attention today, for their home page: content waiting for sign-off, today's
  * live sessions, invoices overdue, licences to renew, Zoom clashes, staff course requests and certificates running
  * out.
  */

@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** The Motor Movers at Home pass, as families and the team see it. */
+/** The Programme at Home pass, as families and the team see it. */
 public final class HomePassViews {
 
     private HomePassViews() {

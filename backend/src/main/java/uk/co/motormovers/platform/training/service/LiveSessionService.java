@@ -31,8 +31,8 @@ import uk.co.motormovers.platform.training.zoom.ZoomSignature;
 import uk.co.motormovers.platform.user.model.Role;
 
 /**
- * Live course sessions: their dates, joining them on Zoom inside the platform, and the register. The Motor
- * Movers team hosts; learners booked on the cohort join, from 15 minutes before the start.
+ * Live course sessions: their dates, joining them on Zoom inside the platform, and the register. The
+ * programme team hosts; learners booked on the cohort join, from 15 minutes before the start.
  */
 @Service
 public class LiveSessionService {
@@ -261,7 +261,7 @@ public class LiveSessionService {
     private CurrentUser requireHost(CohortSession session) {
         CurrentUser me = currentUser.current();
         if (!canHost(me, session.getCohort())) {
-            throw new AccessDeniedException("Only the session's trainer or the Motor Movers team keeps the register");
+            throw new AccessDeniedException("Only the session's trainer or the programme team keeps the register");
         }
         return me;
     }

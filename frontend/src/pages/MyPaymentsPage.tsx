@@ -67,7 +67,7 @@ export default function MyPaymentsPage() {
           </ul>
           <p className="fine">
             {cards && 'Pay by card on our payment provider’s secure page, or '}
-            {cards ? 'pay' : 'Pay'} as set out on your invoice, quoting the reference so the Motor Movers team can match
+            {cards ? 'pay' : 'Pay'} as set out on your invoice, quoting the reference so the programme team can match
             your payment. It shows here as paid once they have received it. Questions about a payment: email{' '}
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or call {CONTACT_PHONE}.
           </p>

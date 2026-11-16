@@ -154,7 +154,7 @@ const stripe = () => `<div class="stripe">${STAGES.map((c) => `<span style="back
 function cover({ title, strap, hero, audience }) {
   return `<section class="cover">
     <div class="cover-band">
-      <div class="brand">${stripe()} Motor Movers${PROTOTYPE ? '<span class="proto">Prototype</span>' : ''}</div>
+      <div class="brand">${stripe()} Professor Pat Preedy Programme${PROTOTYPE ? '<span class="proto">Prototype</span>' : ''}</div>
       <h1>${esc(title)}</h1>
       <p class="strap">${esc(strap)}</p>
     </div>
@@ -242,7 +242,7 @@ function overviewBody() {
     ['Practitioner', 'practitioner-training', 'Books the live practitioner course and works towards the yearly-renewed certificate.'],
     ['Parent or carer', 'app-today', 'Follows their child’s progress in the parent app, does short sessions at home (with or without a school) and takes the parent course.'],
     ['Trainer', 'trainer-live', 'Runs the live course sessions given to them on Zoom, keeps the register and completes their cohorts.'],
-    ['Motor Movers team', 'admin-content-wording', 'Publishes approved content, signs schools up, runs courses and trainers, and tracks income.'],
+    ['Programme team', 'admin-content-wording', 'Publishes approved content, signs schools up, runs courses and trainers, and tracks income.'],
   ]
     .map(([t, s, d]) => `<div class="role-card"><img src="${shot(s)}" alt=""><div><h3>${t}</h3><p>${d}</p></div></div>`)
     .join('')
@@ -250,22 +250,22 @@ function overviewBody() {
   return `
   <section class="section">
     <div class="eyebrow">The programme</div>
-    <h2>What Motor Movers is</h2>
-    <p>Motor Movers is a movement programme for primary schools and early-years settings. Many children start school without the movement skills that learning relies on, such as balance, coordination and control of their hands. Motor Movers gives them a few minutes of the right movement every school day, built on the Movement for Learning research.</p>
+    <h2>What the programme is</h2>
+    <p>The Professor Pat Preedy Programme is a movement programme for primary schools and early-years settings. Many children start school without the movement skills that learning relies on, such as balance, coordination and control of their hands. The programme gives them a few minutes of the right movement every school day, built on the Movement for Learning research.</p>
     <p>The programme runs in seven colour stages. Each class works through the stage that suits it, and schools can license all seven or only the ones their children need.</p>
     ${stageBar}
-    <p>The platform is the single place where the programme happens: teachers run sessions and assess children, leaders see progress, families continue at home, practitioners train, and the Motor Movers team runs the whole service.</p>
+    <p>The platform is the single place where the programme happens: teachers run sessions and assess children, leaders see progress, families continue at home, practitioners train, and the programme team runs the whole service.</p>
   </section>
 
   <section class="section">
     <div class="eyebrow">How it fits together</div>
     <h2>One platform, seven kinds of user</h2>
     <div class="loop">
-      <div><b>1 · The Motor Movers team</b><span>publishes approved sessions and activities, and licenses each school for its stages.</span></div>
+      <div><b>1 · The programme team</b><span>publishes approved sessions and activities, and licenses each school for its stages.</span></div>
       <div><b>2 · Teachers</b><span>run a guided 10-minute session daily, with ongoing assessment and start and end developmental assessments.</span></div>
       <div><b>3 · Head teachers</b><span>see participation and progress for every class, approve staff training and act where support is needed.</span></div>
       <div><b>4 · Trusts and school groups</b><span>see summaries across their schools to plan renewals and budgets.</span></div>
-      <div><b>5 · Families</b><span>link their child with a school code and keep the movement going at home; families without a school can use Motor Movers at Home.</span></div>
+      <div><b>5 · Families</b><span>link their child with a school code and keep the movement going at home; families without a school can use the Programme at Home.</span></div>
       <div><b>6 · Practitioners</b><span>take the live course, its quizzes and the certificate, growing the number of trained adults.</span></div>
       <div><b>7 · Trainers</b><span>run the live sessions on Zoom inside the platform, so training grows beyond one person.</span></div>
     </div>
@@ -281,13 +281,13 @@ function overviewBody() {
   <section class="section page">
     <div class="eyebrow">Trust and safety</div>
     <h2>Built to protect children</h2>
-    <p>Schools trust Motor Movers with records about young children. These protections are built into how the platform works, not left to good intentions:</p>
+    <p>Schools trust the programme with records about young children. These protections are built into how the platform works, not left to good intentions:</p>
     <ul class="ticks">
       <li><strong>Never a diagnosis.</strong> The platform assesses progress with the programme. Every profile says it is not a diagnosis, the extra-support flag never names a cause, and the team cannot approve wording that sounds like one.</li>
       <li><strong>Initials by default.</strong> Children are shown by initials unless the school chooses to show full names.</li>
       <li><strong>Everyone sees only their part.</strong> Teachers see their own class, heads their school, trusts and school groups summaries only, parents only the children linked to them.</li>
       <li><strong>Parents are invited by the school.</strong> A one-time code links a parent to a child, and the school can remove the link at any time. Parents see progress in plain words, never scores.</li>
-      <li><strong>A family’s own children stay with the family.</strong> With Motor Movers at Home, only the family sees its children, with no date of birth, unless it chooses to link the school.</li>
+      <li><strong>A family’s own children stay with the family.</strong> With the Programme at Home, only the family sees its children, with no date of birth, unless it chooses to link the school.</li>
       <li><strong>Every view is logged.</strong> Each time someone opens a child’s record it is written to an access log the head can review.</li>
       <li><strong>Records do not linger.</strong> Children who leave are deleted automatically a year after their leaving date.</li>
       <li><strong>Video is off by default.</strong> Assessment video needs the school to opt in and parents to consent.</li>
@@ -327,16 +327,16 @@ function overviewBody() {
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates emailed as PDFs.</li>
         <li>Content approval with the wording check, school onboarding, staff training approved by heads, and payments by card online.</li>
         <li>Pat Preedy’s two assessments for all seven colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
-        <li>Motor Movers at Home for families without a school, in the app and on the website (switched off until Pat and the owner agree).</li>
+        <li>The Programme at Home for families without a school, in the app and on the website (switched off until Pat and the owner agree).</li>
         <li>Checked automatically on every change: 140 checks of the system behind the screens, 51 of the web app’s building blocks, 67 that click through the screens as each kind of user, and a load test of 50 learners joining a live session at once.</li>
         <li>Production set-up tried in full: secure web address (HTTPS), nightly backups with copies off the server, and a refusal to start with unsafe settings.</li>
       </ul></div>
       <div class="card no"><h3>Next steps</h3><ul>
         <li>Go live: a UK server, the web address and an email account for invitations.</li>
         <li>Publish the parent app in the Apple and Google app stores, which also switches on phone notifications.</li>
-        <li>Connect the Motor Movers card payment account, and confirm VAT.</li>
+        <li>Connect the card payment account, and confirm VAT.</li>
         <li>Upload the filmed session videos and rhyme recordings.</li>
-        <li>Pat’s revised descriptions for three exercises, and the induction she wants for families on Motor Movers at Home, with a privacy notice for families.</li>
+        <li>Pat’s revised descriptions for three exercises, and the induction she wants for families on the Programme at Home, with a privacy notice for families.</li>
       </ul></div>
     </div>
     ${guideList()}
@@ -381,11 +381,11 @@ function protoStatus() {
         <li>Live course sessions on Zoom inside the platform, with a training team, registers, quizzes and certificates.</li>
         <li>Content approval with a wording check, school onboarding, staff training approved by heads, and payment by card.</li>
         <li>Pat Preedy’s two assessments for all seven colours: the developmental charts and the exercise scores, with profiles, the head’s overview and an extra-support flag.</li>
-        <li>Motor Movers at Home for families whose school does not use the programme, in the app and on the website.</li>
+        <li>The Programme at Home for families whose school does not use the programme, in the app and on the website.</li>
       </ul></div>
       <div class="card no"><h3>Still to settle</h3><ul>
         <li>Pat’s revised descriptions for Motor Spin, Jack and Jill and Twinkle Twinkle, and a few queries on the grids.</li>
-        <li>The induction for families on Motor Movers at Home, and where Red fits for the youngest children.</li>
+        <li>The induction for families on the Programme at Home, and where Red fits for the youngest children.</li>
         <li>The filmed session videos and rhyme recordings.</li>
         <li>Prices, and a privacy notice for families.</li>
       </ul></div>
@@ -428,7 +428,7 @@ function userBody(g) {
     <div class="eyebrow">Help</div>
     <h2>Questions and answers</h2>
     ${g.faq.map((f) => `<div class="faq"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join('')}
-    <p class="note">Something else? Contact the Motor Movers team: the contact details are on the Motor Movers website.</p>
+    <p class="note">Something else? Contact the programme team: the contact details are on the website.</p>
   </section>`
 }
 
@@ -437,18 +437,18 @@ const USER_HERO = { ...HERO, practitioner: 'practitioner-quiz' }
 const userDocs = [
   ...GUIDES.map((g, i) => ({
     out: 'user-guide',
-    file: `${i + 1} Motor Movers user guide - ${g.title}`,
-    title: `Motor Movers user guide: ${g.title}`,
+    file: `${i + 1} Professor Pat Preedy Programme user guide - ${g.title}`,
+    title: `Professor Pat Preedy Programme user guide: ${g.title}`,
     body: cover({ title: `${g.title} user guide`, strap: g.strap, hero: USER_HERO[g.slug], audience: USER_AUDIENCE }) + userBody(g),
   })),
   {
     out: 'user-guide',
-    file: 'Motor Movers user guide - all roles',
-    title: 'Motor Movers user guide',
+    file: 'Professor Pat Preedy Programme user guide - all roles',
+    title: 'Professor Pat Preedy Programme user guide',
     body:
       cover({
         title: 'User guide',
-        strap: 'How to use the Motor Movers platform, role by role: getting started, everyday tasks step by step, and answers to common questions.',
+        strap: 'How to use the platform, role by role: getting started, everyday tasks step by step, and answers to common questions.',
         hero: 'teacher-today',
         audience: 'Everyone who uses the platform. No technical knowledge needed.',
       }) +
@@ -464,8 +464,8 @@ const userDocs = [
 
 const flowDocs = [
   {
-    file: '0 Motor Movers platform overview',
-    title: 'Motor Movers platform overview',
+    file: '0 Professor Pat Preedy Programme platform overview',
+    title: 'Professor Pat Preedy Programme platform overview',
     body: cover({
       title: 'Platform overview',
       strap: OVERVIEW.strap,
@@ -474,20 +474,20 @@ const flowDocs = [
     }) + overviewBody(),
   },
   ...ROLES.map((r, i) => ({
-    file: `${i + 1} Motor Movers guide - ${r.title}`,
-    title: `Motor Movers guide: ${r.title}`,
+    file: `${i + 1} Professor Pat Preedy Programme guide - ${r.title}`,
+    title: `Professor Pat Preedy Programme guide: ${r.title}`,
     body: cover({ title: `${r.title} guide`, strap: r.strap, hero: HERO[r.slug], audience: AUDIENCE }) + roleBody(r),
   })),
 ]
 
 // The complete pack: the overview, then every guide, each starting on a new page.
 flowDocs.push({
-  file: 'Motor Movers platform guides - complete pack',
-  title: 'Motor Movers platform guides',
+  file: 'Professor Pat Preedy Programme platform guides - complete pack',
+  title: 'Professor Pat Preedy Programme platform guides',
   body:
     cover({
       title: 'Platform guides',
-      strap: 'How each person uses the Motor Movers platform, step by step, with the screens they see.',
+      strap: 'How each person uses the platform, step by step, with the screens they see.',
       hero: 'teacher-player',
       audience: 'Investors, partners and school leaders. No technical knowledge needed.',
     }) +

@@ -165,7 +165,7 @@ public class PaymentService {
             AppUser payer = users.findByEmailIgnoreCase(r.payerEmail().strip())
                     .orElseThrow(() -> new IllegalArgumentException("There is no account with that email"));
             if (payer.getRole() == Role.ADMIN) {
-                throw new IllegalArgumentException("Motor Movers team accounts do not pay");
+                throw new IllegalArgumentException("Programme team accounts do not pay");
             }
             payment = Payment.byPerson(payer, r.purpose(), r.description().strip(), r.amountPence(), r.invoicedOn(),
                     reference, recordedBy, clock.instant());

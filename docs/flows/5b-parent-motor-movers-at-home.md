@@ -1,6 +1,7 @@
-# Parent (Motor Movers at Home): sequence diagrams
+# Parent (the Programme at Home): sequence diagrams
 
-Families whose school is not on Motor Movers. Behind HOME_PROGRAMME, off in production.
+Families whose school is not on the programme. The home programme was called Motor Movers at Home until the rename
+of 2026-11-16 (go-live task 84); this file keeps its old name. Behind HOME_PROGRAMME, off in production.
 
 The app asks which country the parent is in at first launch: see [First launch](5a-parent-school-child.md#first-launch).
 
@@ -194,7 +195,7 @@ sequenceDiagram
   C->>A: Join family, type code
   A->>API: POST /api/home/join
   API->>DB: save FamilyMember CARER
-  Note over O,M: The child's school joins Motor Movers
+  Note over O,M: The child's school joins the programme
   O->>A: Link a school, type the school's parent code
   A->>API: POST /api/home/children/{id}/join-school
   API->>FS: redeem(code)

@@ -1,9 +1,10 @@
+import { HOME_PROGRAMME } from './brand'
 import type { HomePass } from './api'
 import { day } from './dates'
 import { money } from './money'
 
 /**
- * What the family sees about its Motor Movers at Home pass, and the button to offer: buy the first pass, renew one
+ * What the family sees about its Programme at Home pass, and the button to offer: buy the first pass, renew one
  * that ended, or nothing while it runs or is not on sale yet (go-live task 26).
  */
 export interface PassState {
@@ -34,7 +35,7 @@ export function passState(pass: HomePass): PassState {
   if (!pass.onSale || pass.pricePence == null) {
     return {
       kind: 'not-on-sale',
-      text: 'The Motor Movers at Home pass is not on sale yet. Your children’s details are safe here until it is.',
+      text: `The ${HOME_PROGRAMME} pass is not on sale yet. Your children’s details are safe here until it is.`,
       action: null,
     }
   }

@@ -1,6 +1,6 @@
 package uk.co.motormovers.platform.common.model;
 
-/** The seven Motor Movers colour stages, in programme order (6 months to 8 years). */
+/** The seven colour stages, in programme order (6 months to 8 years). */
 public enum ColourStage {
     RED("Red"),
     ORANGE("Orange"),

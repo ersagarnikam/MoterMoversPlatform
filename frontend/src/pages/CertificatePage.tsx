@@ -1,3 +1,4 @@
+import { BRAND } from '../brand'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type Enrolment } from '../api'
@@ -56,7 +57,7 @@ export default function CertificatePage() {
       )}
       <article className="certificate" aria-label="Certificate">
         <StageStripe />
-        <p className="eyebrow">Motor Movers</p>
+        <p className="eyebrow">{BRAND}</p>
         <h1>Certificate of completion</h1>
         <p>This certifies that</p>
         <p className="certificate-name">{enrolment.learnerName}</p>

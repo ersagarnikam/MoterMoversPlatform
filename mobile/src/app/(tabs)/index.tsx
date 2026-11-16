@@ -1,3 +1,4 @@
+import { HOME_PROGRAMME } from '@/lib/brand'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Linking, Pressable, View } from 'react-native'
@@ -20,7 +21,7 @@ function contactUs(p: { contactEmail: string | null; contactPhone: string | null
 }
 
 /**
- * Who today is for: a child linked through their school (their stage), a family's own child on Motor Movers at Home
+ * Who today is for: a child linked through their school (their stage), a family's own child on the Programme at Home
  * (homeId), or a stage the parent picked.
  */
 type Choice = { childId: number } | { homeId: number } | { stage: ColourStage } | null
@@ -48,7 +49,7 @@ export default function TodayScreen() {
     await flushHome()
     setUnsent(await countUnsent())
     const children = await api.children()
-    // Motor Movers at Home may be switched off, or the call may fail: then the app is as before.
+    // The Programme at Home may be switched off, or the call may fail: then the app is as before.
     const overview = await api.homeOverview().catch(() => null)
     const homeKids = overview?.enabled ? overview.children : []
     let homeId = choice && 'homeId' in choice && homeKids.some((k) => k.id === choice.homeId) ? choice.homeId : null
@@ -182,7 +183,7 @@ export default function TodayScreen() {
       )}
       {children.length === 0 && homeKids.length === 0 && (
         <Card accent={p.teal}>
-          <H2>Is your child on Motor Movers at school?</H2>
+          <H2>Is your child on the programme at school?</H2>
           <Muted>
             Ask the school for a parent code. Linking your child picks the right activities and shows their progress.
           </Muted>
@@ -191,7 +192,7 @@ export default function TodayScreen() {
       )}
       {homeEnabled && homeKids.length === 0 && (
         <Card accent={stageInfo('GREEN')?.colour}>
-          <H2>Doing Motor Movers at home?</H2>
+          <H2>Doing the {HOME_PROGRAMME}?</H2>
           <Muted>
             No school needed. Add your child, do a short check, and get a few minutes of movement for most days,
             with the exercises schools use.
@@ -305,7 +306,7 @@ function PassCard({ ended }: { ended: boolean }) {
         {!p
           ? 'Sessions need your family’s pass.'
           : !p.onSale || !price
-            ? 'The Motor Movers at Home pass is not on sale yet. Your children’s details are safe here until it is.'
+            ? `The ${HOME_PROGRAMME} pass is not on sale yet. Your children’s details are safe here until it is.`
             : ended
               ? `Your children’s records are kept. Renew for ${price} to carry on with the sessions.`
               : `Sessions need a 12-month pass for your family: ${price}, for all your children and anyone you share with.`}

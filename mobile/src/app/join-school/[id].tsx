@@ -5,7 +5,7 @@ import { api } from '@/lib/api'
 import { useLoad } from '@/lib/useLoad'
 
 /**
- * The child's school has joined Motor Movers and given the parent a code. Linking shares what was recorded at home
+ * The child's school has joined the programme and given the parent a code. Linking shares what was recorded at home
  * with the class teacher, and the school's record carries on from there. The parent agrees to this here.
  */
 export default function JoinSchoolScreen() {
@@ -35,7 +35,7 @@ export default function JoinSchoolScreen() {
     <Screen>
       <Stack.Screen options={{ title: 'Link a school' }} />
       <Body>
-        If {name}'s school now does Motor Movers, ask them for a parent code. It looks like ABCD-EFGH and works once.
+        If {name}'s school now does the programme, ask them for a parent code. It looks like ABCD-EFGH and works once.
       </Body>
       <Field
         label="Parent code from the school"

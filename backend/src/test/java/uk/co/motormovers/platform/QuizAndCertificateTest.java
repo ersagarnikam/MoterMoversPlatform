@@ -172,9 +172,9 @@ class QuizAndCertificateTest {
         assertThat(certificates.remindExpiring()).isZero();
 
         // Both emails write the date in words.
-        verify(mailer).send(anyString(), eq("Your Motor Movers certificate"),
+        verify(mailer).send(anyString(), eq("Your Professor Pat Preedy Programme certificate"),
                 matches(Pattern.compile("valid until \\d{1,2} [A-Z][a-z]+ \\d{4}\\.")), anyString(), any(), anyString());
-        verify(mailer, atLeastOnce()).send(anyString(), eq("Your Motor Movers certificate expires soon"),
+        verify(mailer, atLeastOnce()).send(anyString(), eq("Your Professor Pat Preedy Programme certificate expires soon"),
                 contains(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK).format(LocalDate.now(clock).plusDays(20))));
     }
 

@@ -21,7 +21,7 @@ import uk.co.motormovers.platform.school.model.SchoolClass;
  * A child on the programme. Held by initials and year group by default; a full name is stored only
  * when the school has switched full names on. No date of birth is held.
  *
- * <p>A child belongs to a school class, or (Motor Movers at Home) to a family: then {@code fullName} is the name the
+ * <p>A child belongs to a school class, or (the Programme at Home) to a family: then {@code fullName} is the name the
  * parent chose, and the age in months on a given day is kept instead of a year group.
  */
 @Entity

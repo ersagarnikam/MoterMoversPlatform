@@ -16,7 +16,7 @@ import uk.co.motormovers.platform.user.model.Role;
 /**
  * Who may see what. Each school controls its own children's records: teachers see their own class,
  * heads see their school, trust leads see summaries only unless the school grants access, and parents
- * see only the children the school has invited them to. A family's own child (Motor Movers at Home) is seen only by
+ * see only the children the school has invited them to. A family's own child (the Programme at Home) is seen only by
  * that family's parents and carers, never by a school.
  */
 @Component
@@ -56,11 +56,11 @@ public class AccessPolicy {
     }
 
     /** Head-level view of a school (dashboards, exports). */
-    /** The Motor Movers team only. */
+    /** The programme team only. */
     public CurrentUser requireAdmin() {
         CurrentUser me = currentUser.current();
         if (!me.is(Role.ADMIN)) {
-            throw new AccessDeniedException("This is for the Motor Movers team");
+            throw new AccessDeniedException("This is for the programme team");
         }
         return me;
     }

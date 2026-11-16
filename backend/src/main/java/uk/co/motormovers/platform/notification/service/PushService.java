@@ -35,7 +35,7 @@ public class PushService {
     @Transactional
     public void register(String token, String platform) {
         if (!token.startsWith("ExponentPushToken[") && !token.startsWith("ExpoPushToken[")) {
-            throw new IllegalArgumentException("That is not a push token from the Motor Movers app");
+            throw new IllegalArgumentException("That is not a push token from the parent app");
         }
         Long me = currentUser.current().id();
         tokens.findByToken(token).ifPresentOrElse(t -> t.moveTo(me),

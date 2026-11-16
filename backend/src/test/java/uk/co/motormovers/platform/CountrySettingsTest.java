@@ -137,11 +137,11 @@ class CountrySettingsTest {
     void anyValueCanBeOverriddenByAnEnvironmentVariable() {
         Map<Region, CountrySettings> countries = countries(Map.of(
                 "PLATFORM_COUNTRIES_IE_TAXPERCENT", "13.5",
-                "PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME", "Motor Movers Australia Pty Ltd",
+                "PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME", "Example Australia Pty Ltd",
                 "PLATFORM_COUNTRIES_UK_YEARNAMES", "Nursery, Reception, Year 1"));
         assertThat(countries.get(Region.IE).taxPercent()).isEqualByComparingTo("13.5");
         assertThat(countries.get(Region.IE).currency()).isEqualTo("EUR");
-        assertThat(countries.get(Region.AU).legalEntity().name()).isEqualTo("Motor Movers Australia Pty Ltd");
+        assertThat(countries.get(Region.AU).legalEntity().name()).isEqualTo("Example Australia Pty Ltd");
         assertThat(countries.get(Region.AU).legalEntity().email()).isEqualTo("To be confirmed");
         assertThat(countries.get(Region.UK).yearNames()).containsExactly("Nursery", "Reception", "Year 1");
     }

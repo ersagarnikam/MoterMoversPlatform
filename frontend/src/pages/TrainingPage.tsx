@@ -46,7 +46,7 @@ function InductionSection() {
   return (
     <section className="card">
       <div className="section-head">
-        <h3>Motor Movers induction</h3>
+        <h3>Induction</h3>
         {induction.completedOn ? (
           <span className="badge badge-ok">Completed {day(induction.completedOn)}</span>
         ) : (
@@ -85,7 +85,7 @@ export function Lessons({ lessons, onComplete }: { lessons: Induction['lessons']
               {l.done && <span className="badge badge-ok">Done</span>}
             </summary>
             {l.videoUrl && <video src={l.videoUrl} controls />}
-            {l.filmHeld && <p className="hint">This lesson's film is for staff at schools with a Motor Movers licence.</p>}
+            {l.filmHeld && <p className="hint">This lesson's film is for staff at schools with a programme licence.</p>}
             {l.paragraphs.map((p) => (
               <p key={p}>{p}</p>
             ))}
@@ -165,7 +165,7 @@ function YourLiveSessions() {
                 {s.courseTitle} · session {s.number} of {s.of}
               </strong>
               <p className="muted">
-                {sessionTime(s.startsAt)} · {s.durationMinutes} minutes on Zoom, here in Motor Movers
+                {sessionTime(s.startsAt)} · {s.durationMinutes} minutes on Zoom, here on the platform
               </p>
             </div>
             {s.open ? (

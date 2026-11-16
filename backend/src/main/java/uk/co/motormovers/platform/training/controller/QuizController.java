@@ -75,7 +75,7 @@ public class QuizController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment().filename("motor-movers-certificate.pdf").build().toString())
+                        ContentDisposition.attachment().filename("certificate.pdf").build().toString())
                 .body(certificates.download(enrolmentId));
     }
 }

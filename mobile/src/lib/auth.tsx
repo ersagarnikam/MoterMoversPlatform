@@ -6,7 +6,7 @@ import { clearLocal, getLocal, loadToken, saveToken, setLocal } from './storage'
 const USER_KEY = 'mm.user'
 
 const PARENTS_ONLY =
-  'This app is for parents and carers. School staff and practitioners can use the Motor Movers website.'
+  'This app is for parents and carers. School staff and practitioners can use the website.'
 
 interface Auth {
   user: CurrentUser | null

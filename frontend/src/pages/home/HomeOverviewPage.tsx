@@ -9,7 +9,7 @@ import { day } from '../../dates'
 import { ageLabel, toMonths } from '../../homeProgramme'
 
 /**
- * Motor Movers at Home on the website: the family's own children (not linked to a school), and adding one. Only a
+ * The Programme at Home on the website: the family's own children (not linked to a school), and adding one. Only a
  * first name or nickname and an age are asked for; no date of birth. The same as the parent app's Today screen.
  */
 export default function HomeOverviewPage() {
@@ -126,7 +126,7 @@ function AddChild({ first }: { first: boolean }) {
         </button>
       </div>
       <p className="fine">
-        {age !== null ? ageLabel(age) : 'Motor Movers is for children from 6 months to 8 years.'} We do not ask for a
+        {age !== null ? ageLabel(age) : 'The programme is for children from 6 months to 8 years.'} We do not ask for a
         date of birth.
       </p>
       {error && (

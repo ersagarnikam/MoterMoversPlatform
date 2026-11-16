@@ -9,7 +9,7 @@ export const GETTING_STARTED = {
     {
       title: 'Sign in',
       steps: [
-        'Go to the Motor Movers website and choose Sign in.',
+        'Go to the website and choose Sign in.',
         'Choose your role, then enter your email address and password.',
         'Choose Sign in. You go straight to your own home page.',
       ],
@@ -221,7 +221,7 @@ export const GUIDES = [
           'Choose Pay by card and pay on the payment provider’s secure page.',
           'You come back to the Payments page. The invoice shows as paid, by card, in a moment.',
         ],
-        tip: 'Your card details are entered on the payment provider’s page, never on Motor Movers. You can still pay by bank transfer, quoting the invoice reference.',
+        tip: 'Your card details are entered on the payment provider’s page, never on the platform. You can still pay by bank transfer, quoting the invoice reference.',
         shots: ['head-payments'],
         captions: ['The school’s invoices, with Pay by card.'],
       },
@@ -264,7 +264,7 @@ export const GUIDES = [
         captions: ['The trust or group page.'],
       },
     ],
-    faq: [{ q: 'A school’s renewal is due. What do I do?', a: 'Contact the Motor Movers team, who renew licences and send the invoice.' }],
+    faq: [{ q: 'A school’s renewal is due. What do I do?', a: 'Contact the programme team, who renew licences and send the invoice.' }],
   },
   {
     slug: 'practitioner',
@@ -284,7 +284,7 @@ export const GUIDES = [
           'Find the practitioner course and a cohort that suits you: each shows its start date, day and time, trainer and places left.',
           'Choose Book a place. It appears under Your courses.',
         ],
-        tip: 'Staff at a Motor Movers school ask their head for a place instead, as the school pays.',
+        tip: 'Staff at a school on the programme ask their head for a place instead, as the school pays.',
         shots: ['practitioner-training'],
         captions: ['The Training page and the practitioner course.'],
       },
@@ -322,7 +322,7 @@ export const GUIDES = [
       {
         title: 'Cancel a place',
         steps: ['Under Your courses, choose Cancel place and confirm.'],
-        tip: 'You can cancel until the first live session starts. After that, contact the Motor Movers team.',
+        tip: 'You can cancel until the first live session starts. After that, contact the programme team.',
       },
       {
         title: 'Pay what is due',
@@ -335,17 +335,17 @@ export const GUIDES = [
     faq: [
       { q: 'The Join button is not there.', a: 'It appears 15 minutes before the session starts. Refresh the page if you opened it earlier.' },
       { q: 'My quiz says it opens after a session.', a: 'Each quiz opens once its live session has started, or once your trainer has marked you present.' },
-      { q: 'Nobody can see or hear me in the session.', a: 'Allow the camera and microphone when your browser asks, or in your browser’s settings for the Motor Movers site.' },
+      { q: 'Nobody can see or hear me in the session.', a: 'Allow the camera and microphone when your browser asks, or in your browser’s settings for the site.' },
     ],
   },
   {
     slug: 'parent-or-carer',
     title: 'Parent or carer',
-    strap: 'Using the parent app at home, Motor Movers at Home if your child’s school is not on Motor Movers, the parent course and paying online.',
+    strap: 'Using the parent app at home, the Programme at Home if your child’s school is not on the programme, the parent course and paying online.',
     can: [
       'Link your child with a code from their school, and follow how they are getting on.',
       'Do a short activity or session at home most days.',
-      'No school on Motor Movers? Use Motor Movers at Home, in the app or on the website.',
+      'No school on the programme? Use the Programme at Home, in the app or on the website.',
       'Book and join the live parent course, and pay by card.',
     ],
     tasks: [
@@ -386,7 +386,7 @@ export const GUIDES = [
         phone: true,
       },
       {
-        title: 'Start Motor Movers at Home (no school needed)',
+        title: 'Start the Programme at Home (no school needed)',
         steps: [
           'Create a parent account in the app, or on the website: choose For families, then Create a parent account.',
           'Add your child: a first name or nickname and their age in years and months. In the app choose Add your child on Today; on the website, choose At home.',
@@ -425,7 +425,7 @@ export const GUIDES = [
         title: 'Link the school if it joins later',
         steps: [
           'Ask the school for a parent code.',
-          'Open your child’s page. In the app choose [name]’s school has joined Motor Movers; on the website it is under Settings.',
+          'Open your child’s page. In the app choose [name]’s school has joined the programme; on the website it is under Settings.',
           'Enter the code, agree to share what you recorded at home, and choose Link the school.',
         ],
         tip: 'The class teacher then sees what you recorded at home, and does the assessing from then on.',
@@ -456,9 +456,9 @@ export const GUIDES = [
     ],
     faq: [
       { q: 'My code does not work.', a: 'Each code works once and expires. Ask the teacher for a new one.' },
-      { q: 'I am not getting notifications.', a: 'Allow notifications for Motor Movers in your phone’s settings, then sign out and in again.' },
-      { q: 'Can I use a computer instead?', a: 'Yes: sign in on the Motor Movers website to book the course, join sessions and pay. Motor Movers at Home works there too, under At home.' },
-      { q: 'Does the school see what we do at home?', a: 'Not with Motor Movers at Home, unless you link the school. The home activities you record for a school child are yours too.' },
+      { q: 'I am not getting notifications.', a: 'Allow notifications for the app in your phone’s settings, then sign out and in again.' },
+      { q: 'Can I use a computer instead?', a: 'Yes: sign in on the website to book the course, join sessions and pay. The Programme at Home works there too, under At home.' },
+      { q: 'Does the school see what we do at home?', a: 'Not with the Programme at Home, unless you link the school. The home activities you record for a school child are yours too.' },
     ],
   },
   {
@@ -515,7 +515,7 @@ export const GUIDES = [
   },
   {
     slug: 'motor-movers-team',
-    title: 'Motor Movers team',
+    title: 'Programme team',
     strap: 'Publishing content, signing schools up, running courses, quizzes and trainers, and recording payments.',
     can: [
       'Write and approve every piece of content.',

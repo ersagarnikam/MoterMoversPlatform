@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.training.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,8 +44,8 @@ final class CertificatePdf {
             PDPage page = new PDPage(a4);
             doc.addPage(page);
             PDDocumentInformation info = doc.getDocumentInformation();
-            info.setTitle("Motor Movers certificate · " + e.getUser().getDisplayName());
-            info.setAuthor("Motor Movers");
+            info.setTitle(Brand.NAME + " certificate · " + e.getUser().getDisplayName());
+            info.setAuthor(Brand.NAME);
             float width = a4.getWidth();
             float height = a4.getHeight();
             try (PDPageContentStream c = new PDPageContentStream(doc, page)) {
@@ -55,7 +56,7 @@ final class CertificatePdf {
                     c.fill();
                 }
                 float y = height - 90;
-                centred(c, bold, 12, MUTED, "MOTOR MOVERS", width, y);
+                centred(c, bold, 12, MUTED, Brand.NAME.toUpperCase(Locale.ROOT), width, y);
                 centred(c, bold, 32, INK, "Certificate of completion", width, y -= 50);
                 centred(c, regular, 14, MUTED, "This certifies that", width, y -= 48);
                 centred(c, bold, 28, INK, e.getUser().getDisplayName(), width, y -= 42);
@@ -66,7 +67,7 @@ final class CertificatePdf {
                 centred(c, regular, 12, MUTED, cohort.getName(), width, y -= 24);
                 centred(c, regular, 13, INK, "Issued " + date(e.getCertificateIssuedOn()) + "    ·    Valid until "
                         + date(e.getCertificateExpiresOn()), width, y -= 52);
-                centred(c, regular, 10, MUTED, "Certificate MM-" + e.getId(), width, 48);
+                centred(c, regular, 10, MUTED, "Certificate " + Brand.REFERENCE_PREFIX + e.getId(), width, 48);
                 if (legalLine != null) {
                     centred(c, regular, 8, MUTED, legalLine, width, 32);
                 }

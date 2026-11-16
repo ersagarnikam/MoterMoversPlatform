@@ -1,4 +1,4 @@
-// Motor Movers at Home: sessions and ratings are saved on the phone first and sent when there is a connection. The
+// The Programme at Home: sessions and ratings are saved on the phone first and sent when there is a connection. The
 // server ignores a clientId it has already stored, so resending is safe.
 import { api, type ExerciseRating, type HomeSessionEntry } from './api'
 import { getLocal, setLocal } from './storage'

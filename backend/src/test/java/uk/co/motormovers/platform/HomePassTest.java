@@ -53,7 +53,7 @@ import uk.co.motormovers.platform.user.model.Role;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
- * The Motor Movers at Home pass (go-live task 26): on sale once priced, bought by card and marked paid only by Stripe's
+ * The Programme at Home pass (go-live task 26): on sale once priced, bought by card and marked paid only by Stripe's
  * signed webhook, twelve months for the whole family, the gate on sessions, the check and ratings, reminders, the
  * team's extension and a refund. Its own database with Stripe switched on.
  */

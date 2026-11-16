@@ -28,7 +28,7 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
  * The inductions. School staff work through the approved lessons of the one-hour induction at their own pace; once
- * the last one is done it is complete for good and the daily sessions unlock. Parents on Motor Movers at Home do the
+ * the last one is done it is complete for good and the daily sessions unlock. Parents on the Programme at Home do the
  * same with the short parent induction, through HomeService, before their first home session. Lessons added later
  * lock nobody out. The staff lessons' films are paid content, for the team and staff at licensed schools; everyone
  * else who takes the induction gets the same lessons without the film.
@@ -124,7 +124,7 @@ public class InductionService {
     public void requireComplete(CurrentUser user) {
         if (!isComplete(user)) {
             throw new IllegalStateException(
-                    "Complete the one-hour Motor Movers induction (under Training) before running sessions");
+                    "Complete the one-hour induction (under Training) before running sessions");
         }
     }
 

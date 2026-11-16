@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
 
-// Motor Movers at Home on the website: shared words and helpers. The parent app has the same in mobile/src/lib/ages.ts.
+// The Programme at Home on the website: shared words and helpers. The parent app has the same in mobile/src/lib/ages.ts.
 
 /** 44 -> "3 years 8 months", 11 -> "11 months". */
 export function ageLabel(months: number): string {
@@ -38,7 +38,7 @@ export function reviewName(point: string, stageName: string): string {
 
 let available: Promise<boolean> | null = null
 
-/** Whether Motor Movers at Home is switched on (asked once per page load); false until known or if the call fails. */
+/** Whether the Programme at Home is switched on (asked once per page load); false until known or if the call fails. */
 export function useHomeAvailable(): boolean {
   const [on, setOn] = useState(false)
   useEffect(() => {

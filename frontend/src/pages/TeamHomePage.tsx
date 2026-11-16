@@ -8,7 +8,7 @@ import { sessionTime, startsIn } from '../live'
 import { money } from '../money'
 
 /**
- * The Motor Movers team's home: what needs attention today, each with a link to where it is done. Things that need
+ * The programme team's home: what needs attention today, each with a link to where it is done. Things that need
  * doing come first; anything with nothing to do says so.
  */
 export default function TeamHomePage() {

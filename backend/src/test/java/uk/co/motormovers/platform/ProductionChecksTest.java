@@ -120,7 +120,7 @@ class ProductionChecksTest {
         return new PlatformProperties(Region.UK, 365, 0.7, seed,
                 new PlatformProperties.Jwt(secret, 480, 43200),
                 new PlatformProperties.Cors(List.of(webUrl)),
-                new PlatformProperties.Mail("Motor Movers <no-reply@example.org>", webUrl));
+                new PlatformProperties.Mail("Professor Pat Preedy Programme <no-reply@example.org>", webUrl));
     }
 
     private static void verify(PlatformProperties properties, MockEnvironment env) throws Throwable {

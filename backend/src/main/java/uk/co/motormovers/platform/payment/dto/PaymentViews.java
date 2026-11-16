@@ -79,7 +79,7 @@ public final class PaymentViews {
             long outstandingPence) {
     }
 
-    /** Everything, for the Motor Movers team. byMonth covers the last 12 months, oldest first. */
+    /** Everything, for the programme team. byMonth covers the last 12 months, oldest first. */
     public record AdminSummary(long paidPence, long outstandingPence, long paidLast12MonthsPence,
             List<GroupTotal> byPayerType, List<GroupTotal> byPurpose, List<MonthTotal> byMonth,
             List<SchoolTotal> bySchool, List<TrustTotal> byTrust, List<PersonTotal> byPerson) {

@@ -26,7 +26,7 @@ import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.security.service.RateLimiter;
 
 /**
- * Motor Movers at Home, for the parent app. Mapped under /api/home (PARENT only, see SecurityConfig). A home child's
+ * The Programme at Home, for the parent app. Mapped under /api/home (PARENT only, see SecurityConfig). A home child's
  * chart answers and exercise ratings also use the assessment endpoints, which check the family through AccessPolicy.
  */
 @RestController

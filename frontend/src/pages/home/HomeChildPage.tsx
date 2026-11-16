@@ -18,7 +18,7 @@ import { CHART_NAMES, ageLabel, reviewName, toMonths } from '../../homeProgramme
 import { STAGES } from '../../stages'
 
 /**
- * One child on Motor Movers at Home: today's session (Pat's exercises, or the colour's home activities while her grid
+ * One child on the Programme at Home: today's session (Pat's exercises, or the colour's home activities while her grid
  * for that colour is still to come), how they are getting on in the parent's words, and their settings.
  */
 export default function HomeChildPage() {
@@ -400,7 +400,7 @@ function Settings({ progress, onChange }: { progress: HomeProgress; onChange: ()
       )}
 
       <form className="card" onSubmit={linkSchool}>
-        <h3>{child.name}’s school has joined Motor Movers</h3>
+        <h3>{child.name}’s school has joined the programme</h3>
         <p className="muted">Ask the school for a parent code. It looks like ABCD-EFGH and works once. When you link:</p>
         <ul className="site-list">
           <li>The class teacher sees the movements and ratings you recorded at home.</li>

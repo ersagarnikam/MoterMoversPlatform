@@ -1,3 +1,4 @@
+import { HOME_PROGRAMME } from '../../brand'
 import { Link } from 'react-router-dom'
 import NotADiagnosis from '../../components/NotADiagnosis'
 import { useHomeAvailable } from '../../homeProgramme'
@@ -34,8 +35,8 @@ export default function ForFamiliesPage() {
           </div>
           <div className="card">
             <h3>The CD and book</h3>
-            <p>The Motor Movers CD and book are available to buy for families as well as schools.</p>
-            <a href={mailto('Motor Movers CD and book')}>Ask us about the CD and book</a>
+            <p>The CD and book are available to buy for families as well as schools.</p>
+            <a href={mailto('CD and book')}>Ask us about the CD and book</a>
           </div>
         </div>
       </section>
@@ -44,9 +45,9 @@ export default function ForFamiliesPage() {
         <section className="site-section">
           <div className="site-split">
             <div>
-              <h2>Your child’s school is not on Motor Movers?</h2>
+              <h2>Your child’s school is not on the programme?</h2>
               <p>
-                <strong>Motor Movers at Home</strong> brings the programme to you: a short check of what your child can
+                <strong>The {HOME_PROGRAMME}</strong> brings the programme to you: a short check of what your child can
                 do now, then a few minutes of the same exercises schools use, most days, and how your child is getting
                 on in plain words.
               </p>
@@ -78,7 +79,7 @@ export default function ForFamiliesPage() {
               talk to.
             </p>
           </div>
-          <NotADiagnosis text="Motor Movers shows readiness for the programme stages. It never diagnoses." />
+          <NotADiagnosis text="The programme shows readiness for its stages. It never diagnoses." />
         </div>
       </section>
     </>

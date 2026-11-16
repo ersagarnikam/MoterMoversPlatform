@@ -31,7 +31,7 @@ import uk.co.motormovers.platform.user.service.PasswordService;
 
 /**
  * The training team: who can run live sessions. Trainers see only the cohorts assigned to them; members of the
- * Motor Movers team can run any. Each can have their own Zoom login, so sessions can run at the same time.
+ * programme team can run any. Each can have their own Zoom login, so sessions can run at the same time.
  */
 @RestController
 @RequestMapping("/api/admin/trainers")
@@ -50,7 +50,7 @@ public class AdminTrainerController {
         this.currentUser = currentUser;
     }
 
-    /** {@code team} is true for members of the Motor Movers team, who can also run sessions. */
+    /** {@code team} is true for members of the programme team, who can also run sessions. */
     public record TrainerRow(Long id, String displayName, String email, String zoomEmail, boolean team,
             boolean enabled) {
 
@@ -114,7 +114,7 @@ public class AdminTrainerController {
     public TrainerRow setZoomEmail(@PathVariable Long userId, @Valid @RequestBody ZoomEmail request) {
         AppUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("Trainer", userId));
         if (user.getRole() != Role.TRAINER && user.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("Only trainers and the Motor Movers team run live sessions");
+            throw new IllegalArgumentException("Only trainers and the programme team run live sessions");
         }
         user.setZoomEmail(request.zoomEmail());
         return TrainerRow.of(user);

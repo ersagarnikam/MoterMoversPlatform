@@ -66,7 +66,7 @@ export default function TrustDashboardPage() {
   )
 }
 
-/** What the trust or group's schools have paid and owe Motor Movers, school by school. */
+/** What the trust or group's schools have paid and owe the programme, school by school. */
 function TrustSpending({ trustId }: { trustId: number }) {
   const [data, setData] = useState<Awaited<ReturnType<typeof api.trustPayments>> | null>(null)
   const [error, setError] = useState<string | null>(null)

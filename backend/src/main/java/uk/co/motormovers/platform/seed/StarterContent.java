@@ -72,12 +72,12 @@ public class StarterContent {
         parentInductionPlaceholders(approvedBy);
         Map<ColourStage, List<HomeActivity>> activities = homeActivities(approvedBy);
         guidance(approvedBy);
-        Course professional = courses.save(new Course(CourseTrack.PROFESSIONAL, "Motor Movers practitioner course",
+        Course professional = courses.save(new Course(CourseTrack.PROFESSIONAL, "Practitioner course",
                 "Four weekly live sessions of 90 minutes, recorded modules and short quizzes between sessions, "
-                        + "and an assessment. Leads to the Motor Movers practitioner certificate, renewed yearly.",
+                        + "and an assessment. Leads to the practitioner certificate, renewed yearly.",
                 4, 90, 18_000, 6_000, true));
         quizzes(professional);
-        Course parent = courses.save(new Course(CourseTrack.PARENT, "Motor Movers parent course",
+        Course parent = courses.save(new Course(CourseTrack.PARENT, "Parent course",
                 "Three weekly live sessions of 60 minutes with recorded home activities. Builds confidence to run "
                         + "the activities at home.",
                 3, 60, 4_500, null, false));
@@ -87,7 +87,7 @@ public class StarterContent {
     /** Three short quizzes, after each of the first three live sessions; 80% passes. */
     private void quizzes(Course course) {
         quiz(course, 1, "The daily session", List.of(
-                question("How long is the daily Motor Movers session?",
+                question("How long is the daily session?",
                         List.of("5 minutes", "10 minutes", "30 minutes", "An hour, once a week"), 1),
                 question("Who takes part in the daily session?",
                         List.of("Only the children who find movement hardest", "The whole class together",
@@ -168,11 +168,11 @@ public class StarterContent {
         }
 
         Object[][] files = {
-            {ResourceKind.BOOK, "Motor Movers rhyme book",
+            {ResourceKind.BOOK, "Rhyme book",
                 "Every rhyme from the Red, Orange and Yellow stages, illustrated, with the actions for each line."},
             {ResourceKind.PRINTABLE, "Getting the space ready",
                 "A one-page checklist: clear floor, shoes and socks off, jumpers and ties off, music ready."},
-            {ResourceKind.PRINTABLE, "Letter home: starting Motor Movers",
+            {ResourceKind.PRINTABLE, "Letter home: starting the programme",
                 "A letter for families explaining the daily sessions and how to join in with the parent app."},
         };
         for (Object[] d : files) {
@@ -195,7 +195,7 @@ public class StarterContent {
                         + "balance and body control a child later needs to sit still, look at a page and hold a "
                         + "pencil.\n\n"
                         + "Car seats, buggies, baby seats and screens mean many children have had far less of this "
-                        + "than they need. Motor Movers gives them a second chance at those movements, a little "
+                        + "than they need. The programme gives them a second chance at those movements, a little "
                         + "every day, as part of school life."},
             {"Early reflexes and learning", "Why some baby reflexes matter in Reception and Key Stage 1.",
                 "Babies are born with reflexes that help them survive, such as the grasp reflex, where the hand "
@@ -326,7 +326,7 @@ public class StarterContent {
                 "Steady sitting and a strong core make writing and drawing easier.", null, 3,
                 "Before a child can hold a pencil comfortably, they need a body that stays steady while their "
                         + "hand works. Crawling, rolling, climbing and balancing all build that steadiness.\n\n"
-                        + "The Motor Movers sessions at school follow the same order: big movements first, small "
+                        + "The sessions at school follow the same order: big movements first, small "
                         + "ones later. A few minutes of play at home each day helps the same skills grow.\n\n"
                         + "You do not need equipment. Cushions, socks, a hallway and some music are plenty."},
             {"Little and often",
@@ -343,7 +343,7 @@ public class StarterContent {
                         + "Bare feet are best for balance activities, as long as the floor is safe.\n\n"
                         + "Join in. Children copy what they see, and the activities are more fun together."},
             {"Getting the most from the parent course",
-                "Three live sessions with the Motor Movers team.", null, 2,
+                "Three live sessions with the programme team.", null, 2,
                 "The parent course runs as three live online sessions of an hour each. Only adults are on "
                         + "camera.\n\n"
                         + "The trainers show each activity and explain why it helps. Questions about one "

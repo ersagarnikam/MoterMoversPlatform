@@ -3,7 +3,7 @@ package uk.co.motormovers.platform.training.zoom;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Zoom, from apps in the Motor Movers Zoom account (see deploy/RUNBOOK.md, Live sessions on Zoom): a
+ * Zoom, from apps in the programme's Zoom account (see deploy/RUNBOOK.md, Live sessions on Zoom): a
  * Server-to-Server OAuth app ({@code accountId}, {@code clientId}, {@code clientSecret}) that creates meetings and
  * starts them as the host, which is enough to run sessions in Zoom; and optionally a separate Meeting SDK app
  * ({@code sdkKey}, {@code sdkSecret}, a General app with the Meeting SDK) that shows them inside the platform. {@code hostEmail} is the Zoom user who hosts every live session; when it is blank,

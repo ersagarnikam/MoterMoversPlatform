@@ -1,3 +1,4 @@
+import { BRAND } from '../../brand'
 import { Link } from 'react-router-dom'
 import { STAGES } from '../../stages'
 
@@ -47,13 +48,13 @@ export default function HomePage() {
           <p className="eyebrow eyebrow-light">From the Movement for Learning Project</p>
           <h1>Movement that gets children ready to learn</h1>
           <p className="site-lead">
-            Motor Movers is a daily movement programme that builds the balance, coordination and hand control children
+            The {BRAND} is a daily movement programme that builds the balance, coordination and hand control children
             need in the classroom. Seven colour stages cover children from 6 months to 8 years, and staff run it in
             class with everyday equipment.
           </p>
           <div className="site-cta">
             <Link to="/for-schools" className="btn btn-big btn-light">
-              Bring Motor Movers to your setting
+              Bring the programme to your setting
             </Link>
             <Link to="/sign-in" className="btn btn-big btn-ghost-dark">
               Sign in
@@ -84,8 +85,8 @@ export default function HomePage() {
             </p>
             <p>
               In the Movement for Learning pilot, more than half of the Reception children assessed had significant
-              movement difficulties that could affect their learning, in state and independent schools alike. Motor
-              Movers builds on that work.
+              movement difficulties that could affect their learning, in state and independent schools alike. The
+              programme builds on that work.
             </p>
             <Link to="/about">Read about the research</Link>
           </div>
@@ -168,7 +169,7 @@ export default function HomePage() {
 
       <section className="site-section">
         <p className="eyebrow">One platform for everyone involved</p>
-        <h2>Who Motor Movers is for</h2>
+        <h2>Who the programme is for</h2>
         <div className="site-cards">
           {AUDIENCES.map((a) => (
             <Link key={a.title} to={a.to} className="card site-card-link">
@@ -197,7 +198,7 @@ export default function HomePage() {
             How to join
           </Link>
           <Link to="/sign-in" className="btn btn-big btn-ghost-dark">
-            Already using Motor Movers? Sign in
+            Already using the programme? Sign in
           </Link>
         </div>
       </section>

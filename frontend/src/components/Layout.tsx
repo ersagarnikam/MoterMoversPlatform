@@ -2,7 +2,8 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { Role } from '../api'
 import { useAuth } from '../auth'
 import { useHomeAvailable } from '../homeProgramme'
-import StageStripe from './StageStripe'
+import { TEAM } from '../brand'
+import Logo from './Logo'
 import ThemeSwitch from './ThemeSwitch'
 
 const NAV: Record<Role, { to: string; label: string; end?: boolean; reload?: boolean }[]> = {
@@ -53,7 +54,7 @@ const ROLE_LABEL: Record<Role, string> = {
   TRUST_LEAD: 'Trust or group lead',
   PRACTITIONER: 'Practitioner',
   PARENT: 'Parent or carer',
-  ADMIN: 'Motor Movers team',
+  ADMIN: TEAM,
   TRAINER: 'Trainer',
 }
 
@@ -63,14 +64,13 @@ export default function Layout() {
   const { pathname } = useLocation()
   const home = useHomeAvailable()
   if (!user) return null
-  // Motor Movers at Home, for parents, only while it is switched on.
+  // The Programme at Home, for parents, only while it is switched on.
   const nav = user.role === 'PARENT' && home ? [{ to: '/home', label: 'At home' }, ...NAV.PARENT] : NAV[user.role]
   return (
     <div className="shell">
       <header className="topbar">
         <div className="brand">
-          <StageStripe />
-          <span>Motor Movers</span>
+          <Logo />
         </div>
         <div className="who">
           <ThemeSwitch />

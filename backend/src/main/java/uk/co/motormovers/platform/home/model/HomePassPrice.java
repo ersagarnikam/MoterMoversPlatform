@@ -9,7 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** The Motor Movers at Home pass price from a date, tax included, in the deployment's currency. */
+/** The Programme at Home pass price from a date, tax included, in the deployment's currency. */
 @Entity
 @Table(name = "home_pass_price")
 public class HomePassPrice {

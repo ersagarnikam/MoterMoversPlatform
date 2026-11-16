@@ -39,7 +39,7 @@ class AdminBootstrapTest {
         verify(users).save(saved.capture());
         assertThat(saved.getValue().getEmail()).isEqualTo("ops@example.org");
         assertThat(saved.getValue().getRole()).isEqualTo(Role.ADMIN);
-        verify(passwords).sendInvite(saved.getValue(), "Motor Movers");
+        verify(passwords).sendInvite(saved.getValue(), "Professor Pat Preedy Programme");
     }
 
     @Test
