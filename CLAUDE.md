@@ -486,8 +486,8 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
-**Task tested on its branch (updated by tester, 2026-11-16, `task-84` at 3feec55, before merge, the Project manager's brief): pull request #71 (task 84,
-the Professor Pat Preedy Programme) has one bug, handed back to the Developer.** Backend 288, web 78 unit tests, the build, the parent app typecheck (after `npm ci`) and all 71 browser tests pass (H2 with demo data, installed Chrome).
+**Task tested on its branch (updated by tester, 2026-11-16, `task-84` at 3feec55 and again at d228d9f, before merge, the Project manager's brief): pull request #71 (task 84,
+the Professor Pat Preedy Programme) has one bug, handed back to the Developer.** Backend 288 (289 at d228d9f), web 78 unit tests, the build, the parent app typecheck (after `npm ci`) and all 71 browser tests pass (at both commits) (H2 with demo data, installed Chrome).
 - **Bug (minor, but the brief's first rule): the website's home page still says "Motor Movers builds on that work."** (`frontend/src/pages/site/HomePage.tsx` lines 88 and 89), in the UK, Ireland and Australia. The name is split over two source lines, so neither `brand.test.ts` nor
   a plain search finds it; a test that joins lines would. `LiveSessionService.java` line 34 has the same split in a code comment (not shown to anyone).
 - **Everything else has the new name.** A crawl of the web app as twelve accounts (visitor, both teachers, head, trust or group lead, practitioner, three parents, trainer, the team and Pat; about 300 pages, with page titles, alt text, labels and meta tags):
@@ -499,7 +499,8 @@ the Professor Pat Preedy Programme) has one bug, handed back to the Developer.**
 - **Parent app:** the Expo config resolves with the store name "Professor Pat Preedy Programme", the icon and Android icons, and the `expo-splash-screen` plugin; the splash image is transparent, so no white square on the cream. Not seen: the splash itself (no build).
 - **Low, for the owner or the Developer:** (1) Under 520px "Professor" is hidden with `display: none`, so a screen reader also reads "Pat Preedy Programme" there; `Logo.tsx` says the name is read in full. (2) The app writes "the programme at home" in lower case in three places
   (`account.tsx` 76, `(tabs)/index.tsx` 195, `add-child.tsx` 60). (3) The splash has no dark-mode setting, so phones in dark mode see the cream background.
-- **Not tested here:** d228d9f (the PPP- prefix, pushed during the test at the owner's request); it is covered in the recheck. A store or development build, so the splash and app icons on a phone.
+- **The PPP- prefix (d228d9f, the owner's change):** the certificate PDF prints "Certificate PPP-2"; the demo's references are PPP-1001 to PPP-1033 with no MM- left (team API), and PPP- shows on the team's, the school's and the parents' Payments pages and the app's Payments screen, including a reference the team typed. The web certificate page shows no number, as before, and no email carries a payment reference (a payment due is a push with the amount only). Credit notes keep CN-.
+- **Not tested here:** a store or development build, so the splash and app icons on a phone.
 
 **Task tested on its branch (updated by tester, 2026-11-12, `task-82` at abefc0d, before merge, the Project manager's brief): pull request #65 (task 82,
 the home pass follow-ups to the tester's four notes on #64) passes, no bugs.** Backend 283 (the live-session tests pass here), web 72 unit tests, the build, the parent app typecheck and all 71 browser tests pass (H2 with demo data, installed Chrome).
