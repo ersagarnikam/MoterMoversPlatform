@@ -349,7 +349,8 @@ tfoot th { border-top: 1px solid var(--line); border-bottom: none; }
 .price-edit { display: flex; gap: 0.4rem; align-items: center; }
 .price-edit input { width: 7rem; }
 .plan-card { margin-bottom: 1rem; }
-.plan-retired { opacity: 0.75; }
+/* Marked by its border, not by fading it: faded text fails the contrast check. */
+.plan-retired { border-style: dashed; }
 .price-history { margin-top: 0.75rem; }
 .toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 0.35rem; cursor: pointer; }
 .profile .card + .card { margin-top: 1rem; }

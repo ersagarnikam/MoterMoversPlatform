@@ -357,9 +357,9 @@ function protoBusiness() {
     <table>
       <thead><tr><th>Source</th><th>Who pays</th><th>What it is</th></tr></thead>
       <tbody>
-        <tr><td>Early years plan</td><td>Early-years setting</td><td>Yearly programme licence</td></tr>
-        <tr><td>Primary plans</td><td>Primary school</td><td>Yearly programme licence, for some stages or all seven</td></tr>
-        <tr><td>Trust plan</td><td>Each school in a trust or group</td><td>Yearly licence at trust pricing</td></tr>
+        <tr><td>Childcare centre or kindergarten</td><td>Early-years setting</td><td>Yearly programme licence</td></tr>
+        <tr><td>School</td><td>Primary school</td><td>Yearly programme licence, for some stages or all seven</td></tr>
+        <tr><td>Group of schools</td><td>Each school in a trust or group</td><td>Yearly licence at a lower price</td></tr>
         <tr><td>Practitioner course</td><td>Practitioner or employer</td><td>Live sessions, assessment and a certificate renewed each year</td></tr>
         <tr><td>Parent course</td><td>Family</td><td>Live sessions and home activities</td></tr>
       </tbody>

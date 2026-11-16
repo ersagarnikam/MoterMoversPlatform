@@ -91,6 +91,19 @@ then `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up
 (an unknown currency or time zone, a month outside 1 to 12) stops the API at start-up with a message naming it. Keep a
 deployment's region once schools are signed up: schools are stored with it.
 
+### Launch prices
+
+Each country's launch prices are in its `launch-prices` block of `application.yml`, in the currency's main unit and tax
+included: `childcare`, `school` and `group` (the three yearly licences; a group pays 10% less than a school),
+`practitioner` and `practitioner-renewal`, `parent-course` and `home-pass`. Override one before the first start with,
+for example, `PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL=1300`.
+
+They are applied on start, once: a licence plan still at its original set-up price gets the launch price from that
+day (its history shows "launch prices"), the home pass gets its price if it has none, and the two starter courses are
+created at theirs (`SEED_STARTER_CONTENT=true`). **After the first start, change prices on Plans and prices (and a
+course's price on its page), not here:** a price the team has set is never overwritten, so editing `launch-prices`
+later changes nothing for a plan, pass or course that already has its price.
+
 ## Updating
 
 ```bash

@@ -401,7 +401,7 @@ function NewPaymentForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           maxLength={200}
-          placeholder="Primary core licence, 2026-27"
+          placeholder="School licence, 2026-27"
           required
         />
       </label>

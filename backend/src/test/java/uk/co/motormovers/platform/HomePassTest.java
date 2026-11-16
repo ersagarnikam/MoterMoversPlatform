@@ -123,13 +123,13 @@ class HomePassTest {
     void aPassIsBoughtByCardAndOnlyStripeMarksItPaidThenBuyingAgainCarriesOnFromTheEnd() throws Exception {
         Family f = family();
         pass(f.token).andExpect(jsonPath("$.hasFamily").value(true)).andExpect(jsonPath("$.onSale").value(true))
-                .andExpect(jsonPath("$.pricePence").value(3500)).andExpect(jsonPath("$.running").value(false))
+                .andExpect(jsonPath("$.pricePence").value(53000)).andExpect(jsonPath("$.running").value(false))
                 .andExpect(jsonPath("$.cardPayments").value(true));
         buy(f.token).andExpect(status().isOk())
                 .andExpect(jsonPath("$.url").value("https://checkout.stripe.com/c/pay/cs_pass"));
         // Pressing Buy twice makes one payment, sent back to the home page.
         buy(f.token).andExpect(status().isOk());
-        verify(stripe, times(2)).createCheckout(any(), eq(3500), eq(HomePassService.DESCRIPTION), eq(f.email),
+        verify(stripe, times(2)).createCheckout(any(), eq(53000), eq(HomePassService.DESCRIPTION), eq(f.email),
                 contains("/home?paid=1"), anyString());
         List<Integer> due = JsonPath.read(fetch(f.token, "/api/payments/mine"),
                 "$.payments[?(@.status == 'DUE')].id");
@@ -246,10 +246,10 @@ class HomePassTest {
         String admin = login("admin@motormovers.test");
         LocalDate today = LocalDate.now(clock);
         mvc.perform(get("/api/admin/home-pass/prices").header("Authorization", bearer(admin)))
-                .andExpect(jsonPath("$.currentPence").value(3500));
+                .andExpect(jsonPath("$.currentPence").value(53000));
         price(admin, 4000, today.minusDays(1)).andExpect(status().isBadRequest());
         price(admin, 4000, today.plusDays(30)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.currentPence").value(3500))
+                .andExpect(jsonPath("$.currentPence").value(53000))
                 .andExpect(jsonPath("$.prices[0].pricePence").value(4000));
         price(admin, 4200, today.plusDays(30)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.prices[0].pricePence").value(4200));
@@ -290,14 +290,14 @@ class HomePassTest {
         String body = mvc.perform(post("/api/admin/payments").header("Authorization", bearer(admin))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"payerEmail\":\"" + f.email + "\",\"purpose\":\"HOME_PASS\",\"description\":\"Pass\","
-                        + "\"amountPence\":3500,\"invoicedOn\":\"" + today + "\",\"paidOn\":\"" + today + "\"}"))
+                        + "\"amountPence\":53000,\"invoicedOn\":\"" + today + "\",\"paidOn\":\"" + today + "\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Integer payment = JsonPath.read(body, "$.id");
         pass(f.token).andExpect(jsonPath("$.endsOn").value(today.plusYears(1).minusDays(1).toString()));
 
         mvc.perform(post("/api/admin/payments/" + payment + "/refund").header("Authorization", bearer(admin))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"amountPence\":3500,\"reason\":\"Changed their mind\",\"clientId\":\"" + UUID.randomUUID()
+                .content("{\"amountPence\":53000,\"reason\":\"Changed their mind\",\"clientId\":\"" + UUID.randomUUID()
                         + "\"}"))
                 .andExpect(status().isOk());
         pass(f.token).andExpect(jsonPath("$.endsOn").value(today.toString()));
@@ -388,7 +388,7 @@ class HomePassTest {
         String body = mvc.perform(post("/api/admin/payments").header("Authorization", bearer(admin))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"payerEmail\":\"" + email + "\",\"purpose\":\"HOME_PASS\",\"description\":\"Pass\","
-                        + "\"amountPence\":3500,\"invoicedOn\":\"" + today + "\",\"paidOn\":\"" + today + "\"}"))
+                        + "\"amountPence\":53000,\"invoicedOn\":\"" + today + "\",\"paidOn\":\"" + today + "\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         return JsonPath.read(body, "$.id");
     }
@@ -396,7 +396,7 @@ class HomePassTest {
     private void refundInFull(String admin, Integer payment) throws Exception {
         mvc.perform(post("/api/admin/payments/" + payment + "/refund").header("Authorization", bearer(admin))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"amountPence\":3500,\"reason\":\"Changed their mind\",\"clientId\":\""
+                .content("{\"amountPence\":53000,\"reason\":\"Changed their mind\",\"clientId\":\""
                         + UUID.randomUUID() + "\"}"))
                 .andExpect(status().isOk());
     }

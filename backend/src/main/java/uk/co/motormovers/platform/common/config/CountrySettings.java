@@ -29,7 +29,57 @@ public record CountrySettings(
         String creditNoteTitle,
         String timeLabel,
         String dataHeldIn,
-        String termLabel) {
+        String termLabel,
+        LaunchPrices launchPrices) {
+
+    /**
+     * The prices this country launches with (go-live task 85), in its currency's main unit (750 or 571.50), tax
+     * included: the yearly licence for a childcare centre or kindergarten, for a school, and for a school in a group
+     * of schools (10% below the school's); the practitioner course and its yearly renewal; the parent course; and the
+     * home programme's 12-month pass. They are applied once, on start, where the team has not set a price
+     * (seed/LaunchPrices); after that, prices are changed on Plans and prices, not here.
+     */
+    public record LaunchPrices(BigDecimal childcare, BigDecimal school, BigDecimal group, BigDecimal practitioner,
+            BigDecimal practitionerRenewal, BigDecimal parentCourse, BigDecimal homePass) {
+
+        public int childcarePence() {
+            return minor(childcare);
+        }
+
+        public int schoolPence() {
+            return minor(school);
+        }
+
+        public int groupPence() {
+            return minor(group);
+        }
+
+        public int practitionerPence() {
+            return minor(practitioner);
+        }
+
+        public int practitionerRenewalPence() {
+            return minor(practitionerRenewal);
+        }
+
+        public int parentCoursePence() {
+            return minor(parentCourse);
+        }
+
+        public int homePassPence() {
+            return minor(homePass);
+        }
+
+        /** Every price, for checking them. */
+        Stream<BigDecimal> all() {
+            return Stream.of(childcare, school, group, practitioner, practitionerRenewal, parentCourse, homePass);
+        }
+
+        /** In the currency's minor unit (pence or cents), as amounts are held. */
+        private static int minor(BigDecimal amount) {
+            return amount.movePointRight(2).intValueExact();
+        }
+    }
 
     /**
      * The school year runs from {@code firstMonth} to {@code lastMonth} (1 = January). Its three assessment points start
@@ -131,6 +181,10 @@ public record CountrySettings(
         require(creditNoteTitle != null && !creditNoteTitle.isBlank(), where + "credit-note-title is missing");
         require(timeLabel != null && !timeLabel.isBlank(), where + "time-label is missing");
         require(termLabel != null && !termLabel.isBlank(), where + "term-label is missing");
+        require(launchPrices != null && launchPrices.all().noneMatch(java.util.Objects::isNull),
+                where + "launch-prices needs all seven prices");
+        require(launchPrices.all().allMatch(p -> p.signum() >= 0 && p.scale() <= 2 && p.precision() - p.scale() <= 6),
+                where + "launch-prices must be amounts of 0 or more, with at most two decimal places");
         return this;
     }
 

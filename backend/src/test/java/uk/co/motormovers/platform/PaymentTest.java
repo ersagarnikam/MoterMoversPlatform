@@ -27,7 +27,7 @@ import com.jayway.jsonpath.JsonPath;
 class PaymentTest {
 
     /** The demo trust licence (LicencePlan.TRUST), in pence. */
-    private static final int TRUST_LICENCE = 148_750;
+    private static final int TRUST_LICENCE = 57_150;
 
     @Autowired
     MockMvc mvc;
@@ -40,13 +40,13 @@ class PaymentTest {
         String summary = fetch(login("admin@motormovers.test"), "/api/admin/payments/summary");
         assertThat((List<?>) JsonPath.read(summary, "$.byMonth")).hasSize(12);
         assertThat((List<Integer>) JsonPath.read(summary, "$.byPerson[?(@.name == 'Jo Bennett')].paidPence"))
-                .containsExactly(4_500);
+                .containsExactly(5_500);
         assertThat((List<String>) JsonPath.read(summary, "$.byPerson[?(@.name == 'Jo Bennett')].payerType"))
                 .containsExactly("PARENT");
         assertThat((List<Integer>) JsonPath.read(summary, "$.byTrust[?(@.trustName == 'Northbridge Academy Trust')].schools"))
                 .containsExactly(4);
         assertThat((List<Integer>) JsonPath.read(summary, "$.byPurpose[?(@.key == 'COURSE')].paidPence"))
-                .containsExactly(22_500);
+                .containsExactly(16_000);
     }
 
     @Test
@@ -105,7 +105,7 @@ class PaymentTest {
         Integer oakfield = JsonPath.read(fetch(head, "/api/auth/me"), "$.schoolId");
         String own = fetch(head, "/api/schools/" + oakfield + "/payments");
         assertThat((List<String>) JsonPath.read(own, "$.payments[*].description"))
-                .contains("Trust licence, year 1", "Printed session cards")
+                .contains("Group licence, year 1", "Printed session cards")
                 .doesNotContain("Parent course");
         assertThat((Integer) JsonPath.read(own, "$.paidPence")).isEqualTo(TRUST_LICENCE + 6_000);
 
@@ -138,14 +138,14 @@ class PaymentTest {
     void peopleSeeOnlyWhatTheyPaidThemselves() throws Exception {
         String parent = login("parent@example.test");
         String mine = fetch(parent, "/api/payments/mine");
-        assertThat((Integer) JsonPath.read(mine, "$.paidPence")).isEqualTo(4_500);
+        assertThat((Integer) JsonPath.read(mine, "$.paidPence")).isEqualTo(5_500);
         assertThat((Integer) JsonPath.read(mine, "$.outstandingPence")).isEqualTo(1_500);
         assertThat((List<String>) JsonPath.read(mine, "$.payments[*].description"))
                 .containsExactly("Rhyme book and CD", "Parent course");
         assertThat((List<String>) JsonPath.read(mine, "$.payments[*].reference")).contains("PPP-1033");
 
         mvc.perform(get("/api/payments/mine").header("Authorization", bearer(login("practitioner@example.test"))))
-                .andExpect(jsonPath("$.paidPence").value(18_000));
+                .andExpect(jsonPath("$.paidPence").value(10_500));
         mvc.perform(get("/api/admin/payments").header("Authorization", bearer(parent)))
                 .andExpect(status().isForbidden());
     }

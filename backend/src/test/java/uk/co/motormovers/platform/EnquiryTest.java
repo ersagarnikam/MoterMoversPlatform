@@ -53,9 +53,9 @@ class EnquiryTest {
         // The free trial and the paid plans, in the team's order; the "Free" plan is the team's to give, so not shown.
         mvc.perform(get("/api/plans")).andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].code").value(contains("FREE_TRIAL", "EARLY_YEARS",
-                        "PRIMARY_CORE", "FULL_PROGRAMME", "TRUST")))
-                .andExpect(jsonPath("$[2].label").value("Primary core"))
-                .andExpect(jsonPath("$[2].annualPricePence").value(90000))
+                        "PRIMARY_CORE", "TRUST")))
+                .andExpect(jsonPath("$[2].label").value("School"))
+                .andExpect(jsonPath("$[2].annualPricePence").value(63500))
                 .andExpect(jsonPath("$[0].freeTrial").value(true));
     }
 

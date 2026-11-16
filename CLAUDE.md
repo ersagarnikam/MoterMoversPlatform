@@ -64,7 +64,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
   start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V23`, added by Dev 2026-11-12);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V24`, added by Dev 2026-11-16);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -80,7 +80,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 290 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 299 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-16) 79 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -215,8 +215,36 @@ refuses placeholders.
 
 ## Current state (2026-11-16)
 
-(added by Dev, 2026-11-16) **In progress: go-live task 84 (Dev, Sagar's team, branch `task-84`, pull request #71).** Built and waiting for the
+(added by Dev, 2026-11-16) **In progress: go-live task 85 (Dev, Sagar's team, branch `task-85`, pull request #72).** Built and waiting for the
 Tester. Remove this note once merged.
+
+(added by Dev, 2026-11-16) **Launch prices per country (go-live task 85; migration V24).** Kay's Australian prices and the owner's UK and
+Irish ones (task 4), tax included:
+
+| | UK | Ireland | Australia |
+|---|---|---|---|
+| Childcare centre or kindergarten licence, a year (`EARLY_YEARS`) | £395 | €465 | A$750 |
+| School licence, a year (`PRIMARY_CORE`) | £635 | €745 | A$1,200 |
+| Group of schools, a year (`TRUST`, 10% below a school) | £571.50 | €670.50 | A$1,080 |
+| Practitioner course, then renewal a year | £105 / £30 | €125 / €35 | A$200 / A$60 |
+| Parent course | £55 | €60 | A$100 |
+| Programme at Home, 12-month pass | £530 | €620 | A$1,000 |
+
+**Plans (V24):** the codes stay; `EARLY_YEARS` is labelled "Childcare centre or kindergarten", `PRIMARY_CORE` "School", `TRUST` "Group of
+schools", and `FULL_PROGRAMME` is retired (not on sale or on the price chart; a licence that holds it keeps working). **Where the prices
+live:** `launch-prices` in each country's block of application.yml (`CountrySettings.LaunchPrices`, main unit, overridable like
+`PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL`; a missing, negative or three-decimal price stops start-up). **Applying them:**
+`seed/LaunchPrices` runs on every start, before the demo and starter content: a plan whose price in force today is still V6's "platform
+setup" one gets the launch price from today, changed by "launch prices"; with no home pass price at all, the pass gets its price.
+It never touches a price the team set, and a second start changes nothing. `StarterContent` creates the two courses at their launch
+prices; a course that already exists keeps its price. After the first start, prices are changed on Plans and prices, not in the
+settings (RUNBOOK, Launch prices). **Groups and training:** there is no automatic 10% off courses for a group of schools; the team
+records the agreed price on the invoice, as now. **Demo:** licences, invoices, course fees and the home pass use the deployment's launch
+prices (the placeholder pass price of 35 is gone); the group's invoices read "Group licence". On Plans and prices the V6 row reads
+"Before launch", and a retired plan's card has a dashed border instead of being faded, which failed the contrast check once a plan was
+retired. An existing licence keeps its agreed price. Tests: `LaunchPricesTest` (UK, own database), the Irish and Australian prices in
+`RegionIrelandTest` and `RegionAustraliaTest`, `CountrySettingsTest`. **The guides need rebuilding** (task 41): the income table in
+`build.mjs` has the new plans and UK prices.
 
 (added by Dev, 2026-11-16) **Renamed to the Professor Pat Preedy Programme (go-live task 84; no migration).** Every screen, email, PDF and
 notification that said "Motor Movers" now uses the new names (the rule is under Rules the code relies on). **Logo:** the running child in
@@ -485,6 +513,20 @@ latest licence and `statusOn`, which ignores the start date (a licence starting 
 is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
+
+**Task tested on its branch (updated by tester, 2026-11-16, `task-85` at d00b37b, before merge, the Project manager's brief): pull request #72 (task 85,
+launch prices per country) passes, no bugs.** Backend 299, web 79 unit tests, the build, the parent app typecheck and all 71 browser tests pass (H2 with demo data, installed Chrome).
+- **Each country, started fresh (`PLATFORM_REGION` UK, IE and AU, 21 checks each):** `GET /api/settings` has the currency; the price chart (API and `/for-schools` on screen) lists Free trial, "Childcare centre or kindergarten", "School" and "Group of schools"
+  at £395/£635/£571.50, €465/€745/€670.50 and A$750/A$1,200/A$1,080, with no Full programme and no other currency. Plans and prices shows the new labels, Full programme marked Retired, and the pass price. The practitioner course (£105 + £30,
+  €125 + €35, A$200 + A$60), the parent course (£55, €60, A$100) and the home pass (£530, €620, A$1,000) on the API and the Training and payments pages. A new school on Full programme is refused ("no longer on sale"); one on School takes the launch price.
+- **Tax at these prices:** a licence invoice, a head's course booking (the school's invoice) and a home pass payment: VAT 20% in the UK (£635 includes £105.83), VAT 23% in Ireland, GST 10% in Australia (A$1,000 includes A$90.91).
+- **Upgrade and second start (a file H2 database; Docker's engine would not start here, so not PostgreSQL):** started on `main` (V23) with demo data in Australia, the team set Childcare to 51000 from today and School to 99000 from 26 Dec, and signed up a school on Full programme and one on School at an agreed 88000.
+  Then task 85 (V24): labels changed and Full programme retired; Childcare kept the team's price; School and Group got the launch prices from today (the team's later School price stays queued); every licence kept its plan and agreed price, the Full programme one included;
+  the existing courses (18000/6000, 4500) and pass price (3500) were left alone. A second start changed nothing (every row identical). Only sign-up checks that a plan is on sale; licences on a retired plan keep working.
+- **Overrides:** `PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL=1300` gives School A$1,300 on a first start; -5 and 1300.505 stop start-up with "Invalid country setting: platform.countries.au.launch-prices must be amounts of 0 or more, with at most two decimal places", and "abc" with a binding error naming the setting.
+- **Low, for the owner or the Developer:** (1) Overriding `school` does not move `group` (A$1,080 beside a A$1,300 School); the RUNBOOK could say to override both. (2) The retired Full programme still shows its old proposal price in the deployment's currency (A$1,750, €1,750) on Plans and prices.
+  (3) In the demo the pass price history lists the same price twice (from today, "launch prices", and from two years ago, the demo's). (4) An existing deployment keeps its courses' and pass's old prices on upgrade, as designed; there are none in production yet.
+- **Not tested:** PostgreSQL itself (the same SQL ran on H2 in PostgreSQL mode).
 
 **Fix verified (updated by tester, 2026-11-16, `task-84` at ebdb734, before merge): pull request #71 (task 84) now passes, no bugs.** Backend 290, web 79 unit tests, the build, the parent app typecheck and all 71 browser tests pass.
 - **The bug is fixed:** the website home page reads "The programme builds on that work." No "Motor Movers" on any website page, at 1280 and 390px; both brand tests (`BrandTest`, `brand.test.ts`) now also catch the name split over two lines, and fail on the old sentence.
@@ -1066,7 +1108,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-16): [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-16): (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
