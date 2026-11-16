@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import Film from '../../components/Film'
 import { api, type HomeToday } from '../../api'
 import RateExercises from '../../components/RateExercises'
 import Skeleton from '../../components/Skeleton'
@@ -158,7 +159,11 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
           <p className="pre-line">{today.coolDown!.text}</p>
         </section>
       )}
-      <p className="muted">Video coming soon. Read each step aloud and do it together.</p>
+      {today.videoUrl ? (
+        <Film src={today.videoUrl} credit={today.filmCredit} />
+      ) : (
+        <p className="muted">Video coming soon. Read each step aloud and do it together.</p>
+      )}
       {error && (
         <p className="error" role="alert">
           {error}

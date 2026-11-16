@@ -8,6 +8,7 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.model.LibraryResource;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
+import uk.co.motormovers.platform.content.service.UnitFilms;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 
@@ -31,18 +32,21 @@ public final class ClassroomViews {
     public record SessionStep(String title, String instructions) {
     }
 
-    /** coolDown is the module's, the last step after the exercises; null for rhyme colours, which end in the rhyme. */
+    /**
+     * coolDown is the module's, the last step after the exercises; null for rhyme colours, which end in the rhyme.
+     * videoUrl is the session's own film or its rhyme's or module's, and filmCredit the line to show under it.
+     */
     public record SessionCard(Long id, String label, String title, String focus, int durationMinutes,
             String videoUrl, List<String> activities, List<SessionStep> steps, HomeViews.CoolDown coolDown,
-            RhymeCard rhyme) {
+            RhymeCard rhyme, String filmCredit) {
 
-        /** Links are signed here, so call this only for a class whose school is licensed for the session. */
-        public static SessionCard of(ProgrammeSession s, FileLinks files, List<SessionStep> steps,
+        /** Links are signed here and in the film, so call this only for a class whose school is licensed. */
+        public static SessionCard of(ProgrammeSession s, FileLinks files, UnitFilms.Film film, List<SessionStep> steps,
                 HomeViews.CoolDown coolDown) {
             LibraryResource rhyme = s.getRhyme();
             return new SessionCard(s.getId(), s.label(), s.getTitle(), s.getFocus(), s.getDurationMinutes(),
-                    files.link(s.getVideoKey(), s.getVideoUrl()), List.copyOf(s.getActivities()), steps, coolDown,
-                    rhyme != null && rhyme.isApproved() ? RhymeCard.of(rhyme, files) : null);
+                    film.videoUrl(), List.copyOf(s.getActivities()), steps, coolDown,
+                    rhyme != null && rhyme.isApproved() ? RhymeCard.of(rhyme, files) : null, film.credit());
         }
     }
 

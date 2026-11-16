@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test'
 import { day } from '../src/dates'
 import { expect, expectAccessible, signIn, test } from './fixtures'
 
@@ -207,6 +208,88 @@ test('the team uploads a recording and a teacher plays it under the CSP', async 
       }),
   )
   expect(await audio.evaluate((el: HTMLAudioElement) => el.currentTime)).toBeCloseTo(2, 0)
+})
+
+/** Two seconds of flashing colour, recorded in the page: a film for the tests that is nobody's recording. */
+async function shortFilm(page: Page): Promise<Buffer> {
+  const encoded = await page.evaluate(async () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 160
+    canvas.height = 90
+    const pen = canvas.getContext('2d')!
+    const recorder = new MediaRecorder(canvas.captureStream(10), { mimeType: 'video/webm' })
+    const parts: Blob[] = []
+    recorder.ondataavailable = (e) => parts.push(e.data)
+    const stopped = new Promise((resolve) => (recorder.onstop = resolve))
+    recorder.start()
+    for (let frame = 0; frame < 20; frame++) {
+      pen.fillStyle = frame % 2 ? '#224466' : '#ffaa00'
+      pen.fillRect(0, 0, 160, 90)
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    recorder.stop()
+    await stopped
+    const bytes = new Uint8Array(await new Blob(parts).arrayBuffer())
+    let text = ''
+    bytes.forEach((b) => (text += String.fromCharCode(b)))
+    return btoa(text)
+  })
+  return Buffer.from(encoded, 'base64')
+}
+
+test('the team attaches a film to a rhyme and the class player plays it', async ({ page }) => {
+  // Which rhyme Ms Hardy's class is on today.
+  await signIn(page, 'teacher@oakfield.test')
+  await page.getByRole('button', { name: 'Start session' }).click()
+  const heading = page.getByRole('heading', { name: /Yellow Rhyme \d+, Day \d+/ })
+  await expect(heading).toBeVisible()
+  const rhyme = /Rhyme (\d+)/.exec(await heading.innerText())![1]
+  await expect(page.locator('.player-placeholder')).toBeVisible()
+  const film = await shortFilm(page)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'admin@motormovers.test')
+  await Promise.all([
+    page.waitForResponse((r) => r.request().isNavigationRequest() && r.url().endsWith('/admin/content')),
+    page.getByRole('link', { name: 'Content approval', exact: true }).click(),
+  ])
+  await page.getByRole('button', { name: /^All \(/ }).click()
+  await page.getByLabel('Show colour').selectOption('YELLOW')
+  await page.getByLabel('Show module').selectOption(rhyme)
+  const card = page.getByRole('region', { name: `Film for Yellow rhyme ${rhyme}` })
+  await card.getByLabel(/Or upload a file/).setInputFiles({ name: 'rhyme.webm', mimeType: 'video/webm', buffer: film })
+  await expect(page.getByText('“rhyme.webm” is uploaded. Attach it to keep it.')).toBeVisible()
+  await card.getByRole('button', { name: 'Attach to all 5 sessions' }).click()
+  await expect(card.getByRole('link', { name: 'Open the film' })).toBeVisible()
+  await expect(card.getByText('No credit line yet')).toBeVisible()
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await signIn(page, 'teacher@oakfield.test')
+  await page.getByRole('button', { name: 'Start session' }).click()
+  const video = page.locator('.player-video video')
+  await expect(video).toHaveAttribute('src', /^\/api\/files\/local\/uploads\/.+\.webm/)
+  await expect(page.getByText('Film credit to be confirmed.')).toBeVisible()
+  await expect(page.locator('.player-placeholder')).toHaveCount(0)
+  // Only the film's details load until it is played; then it plays under the strict policy.
+  await expect(video).toHaveAttribute('preload', 'metadata')
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThan(0)
+  await video.evaluate((el: HTMLVideoElement) => {
+    el.muted = true
+    return el.play()
+  })
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.currentTime)).toBeGreaterThan(0)
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  // Removed again, the rhyme's sessions go back to the timed plan.
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Content approval', exact: true }).click()
+  await page.getByLabel('Show colour').selectOption('YELLOW')
+  await page.getByLabel('Show module').selectOption(rhyme)
+  await card.getByRole('button', { name: 'Remove the film' }).click()
+  await page.getByRole('button', { name: 'Remove the film' }).last().click()
+  await expect(card.getByRole('button', { name: 'Attach to all 5 sessions' })).toBeVisible()
 })
 
 test('the team sets up a course and opens a cohort for booking', async ({ page }) => {

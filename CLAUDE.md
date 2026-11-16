@@ -64,7 +64,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
   start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V24`, added by Dev 2026-11-16);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V25`, added by Dev 2026-11-16);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -80,13 +80,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 299 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 304 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-16) 79 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
-cd frontend && npm run e2e          # (added by Dev, 2026-11-12) 71 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-16) 72 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 (added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
@@ -217,6 +217,32 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-16)
+
+(added by Dev, 2026-11-16) **In progress: go-live task 57, part 1 (Dev, Sagar's team, branch `task-57`, pull request #76).** Built and waiting for the
+Tester. Remove this note once merged.
+
+(added by Dev, 2026-11-16) **A film for a rhyme or module (go-live task 57, part 1; migration V25).** The team attaches one film to every
+session of a colour's rhyme or module, and can remove it: on Content approval, Class sessions, with a colour and a module chosen, the card
+"Film for Orange rhyme 4" takes an uploaded MP4 or WebM (the existing upload flow) or a pasted `https://` link, and an optional credit line.
+**Where it lives:** table `unit_film`, one row per colour and unit (`content/model/UnitFilm`, `content/service/UnitFilms`,
+`UnitFilmController` at `/api/admin/content/films`: GET, PUT and DELETE, all through `AccessPolicy.requireAdmin`). It is not copied onto the
+sessions, so sessions added to the unit later (`SessionPlans`) have it too and a reload never drops it. **A session's own film
+(`programme_session.video_key` or `video_url`) still wins** for that session. `UnsavedUploadRepository.uses` counts `unit_film.video_key`, so the
+clean-up never deletes an attached film. **Who gets the link (unchanged rules):** `UnitFilms.forSession` in the class's session card, only for
+a school licensed for the colour today (`SessionCard.videoUrl`, `filmCredit`); `UnitFilms.forUnit` in the home session's Today (`videoUrl`,
+`filmCredit`), only for a family with a running pass and the induction done, or a parent whose child is linked to a school; signed links
+through `FileLinks`, as before. **Screens:** `components/Film.tsx` (web: `preload="metadata"`, so only the film's details load until play, and
+the credit line under it) in the class player and the home session; the parent app's home session has **Watch the film**, which opens the link as
+home activities do (no player inside the app). **Credit line:** typed per film; with none, the API sends `UnitFilms.CREDIT_TO_CONFIRM`
+("Film credit to be confirmed."), a placeholder until the PM has the wording. No organisation names are in the code. **Tried with local storage
+only**, with Pat's Orange films from `F:\IHA\Pat\Films` (never committed or uploaded anywhere): they are 1280x720 at 8 Mbps, 200 to 440 MB for 3
+to 7 minutes, with the index (moov) at the end of the file. They stream in ranges and seek without loading the whole file, but need a steady
+8 Mbps: suggested target before the real upload, about 1.5 Mbps 720p with fast start, under 100 MB a film (RUNBOOK, A film for a rhyme or
+module). No transcoding is built. **Not in this part:** uploading the real films (the buckets, task 29, and the owner's consent and ownership
+question on the Orange recordings come first); Green (blocked on the files); a film per week within a module. **Known limits:** a removed or
+replaced film's file stays in the store; a film is one per rhyme or module, so a module's six weeks share one. Tests: `UnitFilmTest` (own
+database), and a browser test that attaches a film recorded in the test and plays it in the class player. **The guides need rebuilding** when
+films are attached for real (the player and Content approval changed).
 
 (added by Dev, 2026-11-16) **Launch prices per country (go-live task 85; migration V24).** Kay's Australian prices and the owner's UK and
 Irish ones (task 4), tax included:
@@ -1116,7 +1142,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-16): [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-16): (added by Dev, 2026-11-16) a film for a rhyme or module, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

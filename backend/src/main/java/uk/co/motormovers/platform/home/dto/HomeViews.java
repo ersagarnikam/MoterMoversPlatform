@@ -118,7 +118,8 @@ public final class HomeViews {
      * when there is none. {@code inductionDone}: this parent has finished the parent induction; sessions stay locked
      * until they have. {@code passRunning}: a child at home is covered by the family's pass (always true for a child
      * linked to a school), which ended or ends on {@code passEndsOn}. While a home child is locked by either, the
-     * session itself (exercises, ratings, review, cool-down) is not sent.
+     * session itself (exercises, ratings, review, cool-down, film) is not sent. {@code videoUrl} is the film of the
+     * child's rhyme or module, with {@code filmCredit} to show under it; both null where there is none.
      */
     public record Today(Long childId, String name, ColourStage stage, String stageName, boolean hasExercises,
             boolean rhymes, int module, int modules, int week, int weeks, int sessionInModule, int sessionsPerModule,
@@ -127,7 +128,7 @@ public final class HomeViews {
             boolean canRate, boolean doneToday, List<Boolean> counterGrid, int daysDone, int counterDays,
             long sessionsDone, Review review, boolean checkDue, Support support, List<Level> levels,
             String safetyNote, CoolDown coolDown, boolean inductionDone, boolean passRunning,
-            java.time.LocalDate passEndsOn) {
+            java.time.LocalDate passEndsOn, String videoUrl, String filmCredit) {
     }
 
     public record CoolDown(String title, String text) {

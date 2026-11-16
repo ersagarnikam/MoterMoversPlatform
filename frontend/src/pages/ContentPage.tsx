@@ -1,5 +1,13 @@
 import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { api, type ApprovedAll, type ColourStage, type ContentItem, type ContentKind, type UploadRules } from '../api'
+import {
+  api,
+  type ApprovedAll,
+  type ColourStage,
+  type ContentItem,
+  type ContentKind,
+  type UnitFilm,
+  type UploadRules,
+} from '../api'
 import StageBadge from '../components/StageBadge'
 import { STAGES } from '../stages'
 import { day } from '../dates'
@@ -146,11 +154,14 @@ function FileChoice({
   accept,
   onUploaded,
   onBusy,
+  then = 'Save the draft to keep it.',
 }: {
   rules: UploadRules
   accept: (type: string) => boolean
   onUploaded: (key: string) => void
   onBusy: (busy: boolean) => void
+  /** What to do next, said once the file is uploaded. */
+  then?: string
 }) {
   const [percent, setPercent] = useState<number | null>(null)
   const [uploaded, setUploaded] = useState<string | null>(null)
@@ -165,7 +176,7 @@ function FileChoice({
     try {
       onUploaded(await uploadFile(file, setPercent))
       setUploaded(file.name)
-      setNotice(`“${file.name}” is uploaded. Save the draft to keep it.`)
+      setNotice(`“${file.name}” is uploaded. ${then}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not upload the file')
     } finally {
@@ -309,6 +320,159 @@ function NewItemForm({
         </div>
       </form>
     </details>
+  )
+}
+
+const RHYME_COLOURS: ColourStage[] = ['RED', 'ORANGE', 'YELLOW']
+
+/**
+ * The film of one rhyme or module: attached once, played by every session of it, at school and at home, including
+ * sessions added later. Shown once a colour and a module are chosen.
+ */
+function UnitFilmCard({
+  stage,
+  unit,
+  sessions,
+  rules,
+}: {
+  stage: ColourStage
+  unit: number
+  sessions: number
+  rules: UploadRules | null
+}) {
+  // undefined while loading, null when the unit has no film.
+  const [film, setFilm] = useState<UnitFilm | null | undefined>(undefined)
+  const [link, setLink] = useState('')
+  const [key, setKey] = useState('')
+  const [credit, setCredit] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const setNotice = useToast()
+  const confirm = useConfirm()
+  const what = `${STAGES.find((s) => s.key === stage)?.label} ${RHYME_COLOURS.includes(stage) ? 'rhyme' : 'module'} ${unit}`
+
+  useEffect(() => {
+    let current = true
+    api
+      .unitFilms()
+      .then((all) => current && setFilm(all.find((f) => f.stage === stage && f.unit === unit) ?? null))
+      .catch((e) => current && setError(e.message))
+    return () => {
+      current = false
+    }
+  }, [stage, unit])
+
+  async function attach(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      setFilm(
+        await api.attachUnitFilm({
+          stage,
+          unit,
+          videoKey: key || null,
+          videoUrl: key ? null : link.trim() || null,
+          credit: credit.trim() || null,
+        }),
+      )
+      setLink('')
+      setKey('')
+      setCredit('')
+      setNotice(`The film is attached to all ${sessions} sessions of ${what}.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not attach the film')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove() {
+    const sure = await confirm({
+      title: `Remove the film from ${what}?`,
+      body: 'Its sessions go back to the timed session plan with no film, at school and at home.',
+      confirmLabel: 'Remove the film',
+    })
+    if (!sure) return
+    setBusy(true)
+    setError(null)
+    try {
+      await api.removeUnitFilm(stage, unit)
+      setFilm(null)
+      setNotice(`The film is removed from ${what}.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not remove the film')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="card unit-film" aria-label={`Film for ${what}`}>
+      <h3>Film for {what}</h3>
+      {film === undefined && !error && <p className="muted">Loading…</p>}
+      {film && (
+        <>
+          <p>
+            Every session of {what} plays this film, at school and at home. {film.uploaded ? 'An uploaded file' : 'A link'},
+            attached by {film.attachedBy} on {day(film.attachedAt)}.
+          </p>
+          <p className="muted">
+            {film.credit
+              ? `Credit line: “${film.credit}”`
+              : 'No credit line yet. To add one, remove the film and attach it again with the line.'}
+          </p>
+          <div className="actions">
+            <a className="btn" href={film.fileLink} target="_blank" rel="noreferrer">
+              Open the film
+            </a>
+            <button className="btn" disabled={busy} onClick={remove}>
+              Remove the film
+            </button>
+          </div>
+        </>
+      )}
+      {film === null && (
+        <form className="inline-form" onSubmit={attach}>
+          <p className="muted form-wide">
+            One film for all {sessions} sessions of {what}, and for any added later. Paste a link or upload the file.
+          </p>
+          <label className="form-wide">
+            Film link
+            <span className="hint">An https:// address</span>
+            <input
+              type="url"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              maxLength={500}
+              pattern="https://.*"
+              disabled={key !== ''}
+            />
+          </label>
+          {rules?.available && (
+            <FileChoice
+              rules={rules}
+              accept={(type) => type.startsWith('video/')}
+              onBusy={setUploading}
+              onUploaded={setKey}
+              then="Attach it to keep it."
+            />
+          )}
+          <label className="form-wide">
+            Credit line (optional)
+            <span className="hint">Shown under the film</span>
+            <input type="text" value={credit} onChange={(e) => setCredit(e.target.value)} maxLength={200} />
+          </label>
+          <div className="actions form-wide">
+            <button className="btn btn-primary" disabled={busy || uploading || (!key && !link.trim())}>
+              Attach to all {sessions} sessions
+            </button>
+          </div>
+        </form>
+      )}
+      {error && <p className="error">{error}</p>}
+    </section>
   )
 }
 
@@ -472,6 +636,15 @@ export default function ContentPage() {
             </div>
           )}
         </div>
+      )}
+      {kind === 'content' && stage && unit && (
+        <UnitFilmCard
+          key={`${stage}-${unit}`}
+          stage={stage}
+          unit={Number(unit)}
+          sessions={narrowed.length}
+          rules={rules}
+        />
       )}
       {error && <p className="error">{error}</p>}
       {left.length > 0 && (

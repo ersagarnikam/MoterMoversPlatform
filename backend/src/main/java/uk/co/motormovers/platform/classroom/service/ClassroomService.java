@@ -27,6 +27,7 @@ import uk.co.motormovers.platform.common.util.SchoolDays;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
+import uk.co.motormovers.platform.content.service.UnitFilms;
 import uk.co.motormovers.platform.home.service.CoolDowns;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
@@ -55,11 +56,13 @@ public class ClassroomService {
     private final FileLinks files;
     private final ExerciseRepository exercises;
     private final CoolDowns coolDowns;
+    private final UnitFilms films;
 
     public ClassroomService(SchoolClassRepository classes, ChildRepository children,
             ProgrammeSessionRepository content, DailySessionRecordRepository records, LicenceService licences,
             AccessPolicy access, CurrentUserResolver currentUser, InductionService induction, Clock clock,
-            FileLinks files, ExerciseRepository exercises, CoolDowns coolDowns) {
+            FileLinks files, ExerciseRepository exercises, CoolDowns coolDowns, UnitFilms films) {
+        this.films = films;
         this.classes = classes;
         this.children = children;
         this.content = content;
@@ -174,7 +177,7 @@ public class ClassroomService {
         List<ClassroomViews.SessionStep> steps = names.stream()
                 .map(name -> new ClassroomViews.SessionStep(name, instructions.get(name)))
                 .toList();
-        return ClassroomViews.SessionCard.of(session, files, steps,
+        return ClassroomViews.SessionCard.of(session, files, films.forSession(session), steps,
                 coolDowns.forModule(session.getStage(), session.getUnit()));
     }
 

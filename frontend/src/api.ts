@@ -29,7 +29,10 @@ export interface SessionCard {
   title: string
   focus: string
   durationMinutes: number
+  /** The session's own film, or its rhyme's or module's. */
   videoUrl: string | null
+  /** The line to show under the film; null for a film with none. */
+  filmCredit: string | null
   activities: string[]
   /** Each exercise with the grid's instructions; a step the team wrote has none. */
   steps: { title: string; instructions: string | null }[]
@@ -355,6 +358,19 @@ export interface ContentItem {
 }
 
 /** What approving a colour or module did: drafts that failed the wording check stay drafts and are named. */
+/** The film every session of one rhyme or module of a colour plays. */
+export interface UnitFilm {
+  stage: ColourStage
+  unit: number
+  fileLink: string
+  /** A file in the store, not a pasted link. */
+  uploaded: boolean
+  /** Null until the team types one; the screens then show a placeholder. */
+  credit: string | null
+  attachedBy: string
+  attachedAt: string
+}
+
 export interface ApprovedAll {
   approved: number
   left: { id: number; label: string; title: string; wordingIssues: { text: string; term: string }[] }[]
@@ -873,6 +889,9 @@ export interface HomeToday {
   passEndsOn: string | null
   /** Ends a session from Green to Indigo; a rhyme ends with its own, in its instructions. */
   coolDown: { title: string; text: string } | null
+  /** The film of the child's rhyme or module, and the line to show under it; null where there is none. */
+  videoUrl: string | null
+  filmCredit: string | null
 }
 
 /** Movements secure on one of Pat's charts, and those secured in the last few months. */
@@ -1181,6 +1200,11 @@ export const api = {
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/approve`),
   approveAllSessions: (stage: ColourStage, unit: number | null) =>
     request<ApprovedAll>('POST', '/api/admin/content/approve-all', { stage, unit }),
+  unitFilms: () => request<UnitFilm[]>('GET', '/api/admin/content/films'),
+  attachUnitFilm: (film: { stage: ColourStage; unit: number; videoKey: string | null; videoUrl: string | null; credit: string | null }) =>
+    request<UnitFilm>('PUT', '/api/admin/content/films', film),
+  removeUnitFilm: (stage: ColourStage, unit: number) =>
+    request<{ removed: boolean }>('DELETE', `/api/admin/content/films?stage=${stage}&unit=${unit}`),
   reject: (id: number, kind: ContentKind = 'content') =>
     request<ContentItem>('POST', `/api/admin/${kind}/${id}/reject`),
   payments: () => request<Payment[]>('GET', '/api/admin/payments'),

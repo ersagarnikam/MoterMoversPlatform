@@ -208,6 +208,11 @@ details summary::-webkit-details-marker { display: none; }
 /* Player */
 .player { display: grid; grid-template-columns: 1fr 280px; gap: 1rem; }
 .player-video video, .player-placeholder { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); background: var(--header); }
+/* A session's film and the credit line under it (the class player and the home session). */
+.film { margin: 0; }
+.film video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); background: var(--header); }
+.film-credit { color: var(--muted); font-size: 0.85rem; margin-top: 0.35rem; }
+.home-exercise + .film, .film + .row-end { margin-top: 1rem; }
 .player-placeholder { border: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; font: inherit; font-size: 1.3rem; cursor: pointer; }
 .player-placeholder .play { color: #fff; border-color: #fff; width: 64px; height: 64px; }
 

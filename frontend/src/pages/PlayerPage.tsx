@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
 import { useToast } from '../components/Feedback'
+import Film from '../components/Film'
 import { rosterChild } from '../components/RosterChild'
 import Skeleton from '../components/Skeleton'
 
 /**
  * The class player. The video fills the screen and can be cast to the whiteboard; the side list
- * ticks through the session plan. Until filmed sessions are uploaded, a timed placeholder runs.
+ * ticks through the session plan. A session with no film of its own, or of its rhyme or module, runs a timed placeholder.
  */
 export default function PlayerPage() {
   const { classId } = useParams()
@@ -91,7 +92,12 @@ export default function PlayerPage() {
       <div className="player">
         <div className="player-video">
           {session.videoUrl ? (
-            <video src={session.videoUrl} controls onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+            <Film
+              src={session.videoUrl}
+              credit={session.filmCredit}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+            />
           ) : (
             <button className="player-placeholder" onClick={() => setPlaying((p) => !p)}>
               <span className="play">{playing ? '❚❚' : '▶'}</span>

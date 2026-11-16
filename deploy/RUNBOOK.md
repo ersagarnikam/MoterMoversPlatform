@@ -271,7 +271,8 @@ security policy blocks the upload and the form says the file could not be sent.
 
 **First checks on a real bucket:** upload a small file and a film of a few hundred MB on Content approval; save the draft
 (the API checks the file is there, with a signed HEAD); open it from the draft; download a printable, which must save
-under its title; approve it, then play it as a teacher and drag the video's position bar (seeking); try a file that is too
+under its title; approve it, then play it as a teacher and drag the video's position bar (seeking); attach a film to a
+rhyme (below) and play it in the class player and a home session; try a file that is too
 large; open a link after `STORAGE_READ_HOURS`, which must fail; open the film in the parent app; and, for the clean-up, upload a
 file without saving the form, set `STORAGE_UNSAVED_DAYS=1`, and check after two nights that the file has gone and the API's
 log has no `Could not delete unsaved upload` line.
@@ -291,6 +292,29 @@ hours.
 lists the bucket. If a delete fails, it logs `Could not delete unsaved upload` with the key and tries again the next day. A
 form left open past that time is told to upload the file again when it is saved. **Known limits:** a file replaced, or left
 behind when a saved item is removed, stays in the bucket, as do files uploaded before this was added.
+
+### A film for a rhyme or module
+
+The team attaches one film to all the sessions of a colour's rhyme (Red, Orange, Yellow) or module (Green to Violet):
+
+1. Open **Content approval** from the menu (a full page load, or the upload is blocked), stay on **Class sessions**, and
+   choose the colour under **Show colour** and the rhyme or module under **Show module**.
+2. In the card **Film for <colour> rhyme <n>**, upload the MP4 (or paste an `https://` link), type the credit line if
+   there is one, and press **Attach to all n sessions**. Wait for the upload's progress bar to finish first.
+3. **Open the film** to check it. **Remove the film** takes it off again; attach another to replace it.
+
+Every session of that rhyme or module then plays it: in the class player for a school licensed for the colour, and in
+the home session for a family with a running pass (or a parent whose child is linked to a school), on the website and
+in the parent app. Sessions added to it later have it too, so reloading the session plans never drops a film. A film
+attached to one session itself (the session form's video field) still wins for that session. With no credit line typed,
+the screens show "Film credit to be confirmed." A removed or replaced film's file stays in the bucket.
+
+**Film size.** The player loads only a film's details until someone presses play, then fetches it in ranges, so a film
+is never downloaded whole and dragging the position bar works. A range can only play as fast as the connection: the
+first recordings received are 1280x720 at 8 Mbps (200 to 440 MB for 3 to 7 minutes), which needs a steady 8 Mbps and
+uses that much mobile data, and their index is at the end of the file, which costs one more request before playing.
+**Before uploading for real, re-save each film at about 1.5 Mbps (720p, H.264, AAC) with the index at the front ("fast
+start" or "web optimised"): about 12 MB a minute, so under 100 MB a film.** The platform does not convert films.
 
 ## Everyday operations
 

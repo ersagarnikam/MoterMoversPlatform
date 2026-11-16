@@ -20,6 +20,8 @@ public interface ProgrammeSessionRepository extends JpaRepository<ProgrammeSessi
 
     List<ProgrammeSession> findByStage(ColourStage stage);
 
+    long countByStageAndUnit(ColourStage stage, int unit);
+
     List<ProgrammeSession> findAllByOrderByStageAscUnitAscDayAsc();
 
     long countByStatus(ContentStatus status);
