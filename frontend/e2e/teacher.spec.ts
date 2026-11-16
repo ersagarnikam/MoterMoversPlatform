@@ -105,10 +105,10 @@ test('the profile shows both assessments and always says it is not a diagnosis',
 test('resources show the rhyme book and rhyme words', async ({ page }) => {
   await signIn(page, 'teacher@oakfield.test')
   await page.getByRole('link', { name: 'Resources', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Motor Movers rhyme book' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Rhyme book' })).toBeVisible()
   await page.getByRole('button', { name: 'Rhymes' }).click()
   await expect(page.getByRole('heading', { name: 'Humpty Dumpty' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Motor Movers rhyme book' })).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Rhyme book' })).toBeHidden()
   await expectAccessible(page)
 })
 
@@ -118,7 +118,7 @@ test('a new teacher must finish the induction before running sessions', async ({
   await expect(page.getByRole('button', { name: 'Start session' })).toHaveCount(0)
 
   await page.getByRole('link', { name: 'Go to the induction' }).click()
-  await expect(page.getByRole('heading', { name: 'Motor Movers induction' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Induction' })).toBeVisible()
   await expect(page.getByText('0 of 6 parts done · 60 minutes in all')).toBeVisible()
   await expectAccessible(page)
   for (let part = 1; part <= 6; part++) {

@@ -6,7 +6,7 @@ public enum PaymentPurpose {
     LICENCE("Licence"),
     /** A live course: the practitioner course, the parent course, or a renewal. */
     COURSE("Course"),
-    /** A family's 12-month Motor Movers at Home pass. */
+    /** A family's 12-month Programme at Home pass. */
     HOME_PASS("Home programme"),
     /** Anything else, such as printed materials or a training day. */
     OTHER("Other");

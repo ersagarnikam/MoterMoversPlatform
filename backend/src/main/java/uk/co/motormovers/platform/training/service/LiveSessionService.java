@@ -261,7 +261,7 @@ public class LiveSessionService {
     private CurrentUser requireHost(CohortSession session) {
         CurrentUser me = currentUser.current();
         if (!canHost(me, session.getCohort())) {
-            throw new AccessDeniedException("Only the session's trainer or the Motor Movers team keeps the register");
+            throw new AccessDeniedException("Only the session's trainer or the programme team keeps the register");
         }
         return me;
     }

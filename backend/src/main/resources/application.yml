@@ -106,7 +106,7 @@ platform:
   retention-days: 365
   # A class below this daily participation rate is flagged on the head teacher dashboard.
   participation-flag-threshold: 0.70
-  # Motor Movers at Home: families whose school is not on Motor Movers (docs/home-programme-design.md).
+  # The Programme at Home: families whose school is not on the programme (docs/home-programme-design.md).
   home-programme: ${HOME_PROGRAMME:true}
   jwt:
     # Override in every real environment (env var PLATFORM_JWT_SECRET). Must be at least 32 bytes.
@@ -119,10 +119,10 @@ platform:
     # browser (Expo web). The native apps do not need CORS.
     allowed-origins: http://localhost:5173,http://localhost:4173,http://localhost:8081
   mail:
-    from: ${PLATFORM_MAIL_FROM:Motor Movers <no-reply@localhost>}
+    from: ${PLATFORM_MAIL_FROM:Professor Pat Preedy Programme <no-reply@localhost>}
     # Where links in emails point (password reset, staff invites).
     web-url: ${PLATFORM_WEB_URL:http://localhost:5173}
-  # First Motor Movers team account on a new deployment, emailed a sign-in link (see AdminBootstrap).
+  # The first programme team account on a new deployment, emailed a sign-in link (see AdminBootstrap).
   admin-email: ${PLATFORM_ADMIN_EMAIL:}
   # Where the public website's enquiry form (price guide, applying) sends enquiries. The owner's address while the
   # form is tried out, so no test enquiry reaches Pat; set PLATFORM_ENQUIRY_EMAIL to the team's address for go-live.

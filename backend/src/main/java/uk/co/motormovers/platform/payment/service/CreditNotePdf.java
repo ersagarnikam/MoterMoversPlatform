@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.payment.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,10 +44,10 @@ final class CreditNotePdf {
             PDPage page = new PDPage(PDRectangle.A4);
             doc.addPage(page);
             doc.getDocumentInformation().setTitle(title + " " + refund.creditNoteLabel());
-            doc.getDocumentInformation().setAuthor("Motor Movers");
+            doc.getDocumentInformation().setAuthor(Brand.NAME);
             float y = PDRectangle.A4.getHeight() - 80;
             try (PDPageContentStream c = new PDPageContentStream(doc, page)) {
-                text(c, bold, 12, MUTED, "MOTOR MOVERS", y);
+                text(c, bold, 12, MUTED, Brand.NAME.toUpperCase(Locale.ROOT), y);
                 text(c, bold, 26, INK, title, y -= 40);
                 text(c, regular, 12, INK, refund.creditNoteLabel(), y -= 28);
                 text(c, regular, 12, MUTED, "Date: " + DATE.format(refund.getRefundedOn()), y -= 18);

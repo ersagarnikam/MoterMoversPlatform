@@ -225,7 +225,7 @@ public class TrainingService {
         }
         if (!team && started(e.getCohort())) {
             throw new IllegalStateException(
-                    "The course has started, so please ask the Motor Movers team to cancel this place");
+                    "The course has started, so please ask the programme team to cancel this place");
         }
         String note = "";
         Payment payment = e.getPayment();
@@ -233,7 +233,7 @@ public class TrainingService {
             payment.cancel();
             note = " The school's invoice for it is cancelled.";
         } else if (payment != null && payment.getStatus() == PaymentStatus.PAID) {
-            note = " It was paid already: the Motor Movers team will arrange any refund.";
+            note = " It was paid already: the programme team will arrange any refund.";
         }
         String what = describe(e.getCohort());
         enrolments.delete(e);
@@ -303,7 +303,7 @@ public class TrainingService {
 
     private void requireHost(Cohort cohort) {
         if (!LiveSessionService.canHost(currentUser.current(), cohort)) {
-            throw new AccessDeniedException("Only the cohort's trainer or the Motor Movers team can do this");
+            throw new AccessDeniedException("Only the cohort's trainer or the programme team can do this");
         }
     }
 

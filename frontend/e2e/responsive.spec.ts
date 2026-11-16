@@ -31,7 +31,7 @@ test('the website menu works on a phone', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Website' })
   for (const [link, heading] of [
     ['For families', 'Keep the movement going at home'],
-    ['For schools', 'Bring Motor Movers to your setting'],
+    ['For schools', 'Bring the programme to your setting'],
     ['About', 'Built on the Movement for Learning research'],
   ]) {
     await nav.getByRole('link', { name: link, exact: true }).click()

@@ -1,8 +1,9 @@
+import { TEAM } from '../brand'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { homeFor } from '../App'
 import { useAuth } from '../auth'
-import StageStripe from '../components/StageStripe'
+import Logo from '../components/Logo'
 import ThemeSwitch from '../components/ThemeSwitch'
 import { signInRole } from '../site'
 
@@ -13,7 +14,7 @@ const DEMO_ACCOUNTS = [
   ['trust@northbridge.test', 'Trust or group lead'],
   ['practitioner@example.test', 'Practitioner'],
   ['parent@example.test', 'Parent'],
-  ['admin@motormovers.test', 'Motor Movers team'],
+  ['admin@motormovers.test', TEAM],
   ['trainer@motormovers.test', 'Trainer'],
 ]
 
@@ -45,8 +46,9 @@ export default function LoginPage() {
   return (
     <div className="login">
       <div className="login-hero">
-        <StageStripe />
-        <h1>Motor Movers</h1>
+        <h1>
+          <Logo stacked />
+        </h1>
         <p>Assessment, daily sessions and progress for schools, practitioners and parents.</p>
         <div className="login-hero-links">
           <ThemeSwitch />

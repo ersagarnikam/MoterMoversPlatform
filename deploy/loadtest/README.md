@@ -19,7 +19,7 @@ data (below).
    DATABASE_USERNAME=motormovers
    DATABASE_PASSWORD=<any long random string>
    PLATFORM_JWT_SECRET=<any random string of 32 characters or more>
-   PLATFORM_MAIL_FROM=Motor Movers <no-reply@localhost>
+   PLATFORM_MAIL_FROM=Professor Pat Preedy Programme <no-reply@localhost>
    SPRING_MAIL_HOST=localhost
    ```
 

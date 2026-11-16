@@ -22,13 +22,13 @@ describe('Lessons', () => {
   it('plays a film the person may watch', () => {
     const html = render(lesson('https://films.test/a.mp4', false))
     expect(html).toContain('<video')
-    expect(html).not.toContain('Motor Movers licence')
+    expect(html).not.toContain('programme licence')
   })
 
   it('says who a held film is for and keeps the lesson', () => {
     const html = render(lesson(null, true))
     expect(html).not.toContain('<video')
-    expect(html).toContain('Motor Movers licence')
+    expect(html).toContain('programme licence')
     expect(html).toContain('Start slowly.')
     expect(html).toContain('Mark as done')
   })
@@ -36,6 +36,6 @@ describe('Lessons', () => {
   it('shows nothing where a lesson has no film', () => {
     const html = render(lesson(null, false))
     expect(html).not.toContain('<video')
-    expect(html).not.toContain('Motor Movers licence')
+    expect(html).not.toContain('programme licence')
   })
 })

@@ -75,7 +75,7 @@ class LogSafetyTest {
         assertThat(token).isNotBlank().doesNotContain(" ");
 
         assertThat(output.subSequence(start, output.length()).toString()).contains("Could not send an email", "MailSendException")
-                .doesNotContain(TEACHER, token, "550 mailbox", "Reset your Motor Movers password");
+                .doesNotContain(TEACHER, token, "550 mailbox", "Reset your Professor Pat Preedy Programme password");
     }
 
     @Test

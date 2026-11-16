@@ -15,6 +15,6 @@ public interface ChildRepository extends JpaRepository<Child, Long> {
 
     List<Child> findByLeftOnBefore(LocalDate cutoff);
 
-    /** A family's own children (Motor Movers at Home). */
+    /** A family's own children (the Programme at Home). */
     List<Child> findByFamilyIdOrderById(Long familyId);
 }

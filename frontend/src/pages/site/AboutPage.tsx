@@ -10,13 +10,13 @@ const PILOT_SCHOOLS = [
 const PEOPLE = [
   {
     name: 'Professor Pat Preedy',
-    role: 'Co-developer of Motor Movers, lead of the Movement for Learning Project',
+    role: 'Co-developer of the programme, lead of the Movement for Learning Project',
     text: 'Adjunct Professor at Curtin University and a member of the Institute for Neuro-Physiological Psychology (INPP).',
   },
   {
     name: 'Laura Preedy-Maher',
-    role: 'Co-developer of Motor Movers',
-    text: 'Developed Motor Movers with Professor Preedy, extending the Movement for Learning work to seven colour stages.',
+    role: 'Co-developer of the programme',
+    text: 'Developed the programme with Professor Preedy, extending the Movement for Learning work to seven colour stages.',
   },
   {
     name: 'Dr Rebecca Duncombe',
@@ -32,7 +32,7 @@ export default function AboutPage() {
         <p className="eyebrow eyebrow-light">About</p>
         <h1>Built on the Movement for Learning research</h1>
         <p className="site-lead">
-          Motor Movers grew out of the Movement for Learning Project, a daily movement programme for Reception and
+          The programme grew out of the Movement for Learning Project, a daily movement programme for Reception and
           Year 1 developed with Loughborough University and tested in schools across England.
         </p>
       </section>
@@ -45,7 +45,7 @@ export default function AboutPage() {
           sessions using everyday equipment such as bats, balls, hoops and bean bags.
         </p>
         <p>
-          Motor Movers takes what the project learned and extends it. Instead of a single year group, it covers
+          The programme takes what the project learned and extends it. Instead of a single year group, it covers
           children from 6 months to 8 years in seven colour stages that follow how movement develops. It works in
           nurseries, schools and other early years settings, and now comes with a platform that supports staff and
           parents along the way.
@@ -115,7 +115,7 @@ export default function AboutPage() {
       </section>
 
       <section className="site-section site-cta-band">
-        <h2>See how a day of Motor Movers works</h2>
+        <h2>See how a day of the programme works</h2>
         <div className="site-cta">
           <Link to="/programme" className="btn btn-big btn-light">
             The programme

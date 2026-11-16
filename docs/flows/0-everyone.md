@@ -88,7 +88,7 @@ sequenceDiagram
     API->>DB: save AppUser with random password
     API->>PS: sendInvite(user, invitedBy)
     PS->>DB: save one-time token (7 days)
-    PS->>M: Your Motor Movers account, link to /reset-password?token
+    PS->>M: Your Professor Pat Preedy Programme account, link to /reset-password?token
     API-->>W: StaffMember row
   end
   M-->>N: Invite email

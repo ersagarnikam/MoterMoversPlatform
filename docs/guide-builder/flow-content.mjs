@@ -9,7 +9,7 @@ export const ROLES = [
     slug: 'class-teacher',
     title: 'Class teacher',
     strap: 'Running the daily session, assessing children and seeing how each child is getting on.',
-    who: 'Class teachers and teaching assistants in primary schools and early-years settings that hold a Motor Movers licence.',
+    who: 'Class teachers and teaching assistants in primary schools and early-years settings that hold a programme licence.',
     does: [
       'Runs a guided 10-minute movement session with the class every school day.',
       'Assesses the class with Pat Preedy’s two assessments: the programme’s exercises scored 1 to 4, and the developmental movement charts.',
@@ -20,7 +20,7 @@ export const ROLES = [
     flow: ['Sign in', 'Induction (once)', 'Today’s session', 'Mark it done', 'Score exercises', 'Developmental charts', 'Assessment profile', 'Training'],
     steps: [
       {
-        title: 'Sign in from the Motor Movers website',
+        title: 'Sign in from the website',
         body: 'The public website explains the programme to schools and families. Staff choose “Sign in”, pick their role, and sign in with the email and password set up by their head teacher.',
         why: 'One front door for everyone: each person lands straight on the screen that matters to them.',
         shots: ['site-sign-in', 'site-login'],
@@ -29,7 +29,7 @@ export const ROLES = [
       {
         title: 'Complete the one-hour induction first',
         body: 'A new teacher cannot run sessions until they have finished the induction: six short parts, about an hour in total, covering why movement matters, how a session runs, assessment, and keeping children safe. Their class page explains this and links straight to it.',
-        why: 'Every adult running Motor Movers has had the same grounding, so sessions are delivered the way the programme intends.',
+        why: 'Every adult running the programme has had the same grounding, so sessions are delivered the way the programme intends.',
         shots: ['newteacher-locked', 'newteacher-induction'],
         captions: ['A new teacher sees that sessions unlock after the induction.', 'The induction, one part at a time, ticked off as it is done.'],
       },
@@ -84,7 +84,7 @@ export const ROLES = [
       },
       {
         title: 'Use the resource library',
-        body: 'The library holds the Motor Movers rhyme book, the nursery rhymes with their words, and printable sheets, filtered to the stages the school has licensed.',
+        body: 'The library holds the Rhyme book, the nursery rhymes with their words, and printable sheets, filtered to the stages the school has licensed.',
         why: 'Everything a teacher needs for the programme is in one place.',
         shots: ['teacher-resources'],
         captions: ['The resource library: the rhyme book, rhymes and printables.'],
@@ -95,7 +95,7 @@ export const ROLES = [
     slug: 'head-teacher',
     title: 'Head teacher and SENCo',
     strap: 'Seeing progress across the school, setting the school up, approving training and keeping track of payments.',
-    who: 'Head teachers, SENCos and other senior leaders responsible for Motor Movers in a school.',
+    who: 'Head teachers, SENCos and other senior leaders responsible for the programme in a school.',
     does: [
       'Sees both assessments, progress and daily participation for every class, with classes and children that may need support flagged.',
       'Sets the school up: invites staff, creates classes, adds children and records leavers.',
@@ -159,7 +159,7 @@ export const ROLES = [
     slug: 'trust-lead',
     title: 'Trust or group lead',
     strap: 'Summary results, licences and spending across every school in a trust or school group.',
-    who: 'The person in an academy trust or other group of schools, including independent groups, who oversees Motor Movers across its schools.',
+    who: 'The person in an academy trust or other group of schools, including independent groups, who oversees the programme across its schools.',
     does: [
       'Sees each school’s licence, renewal date and licensed stages.',
       'Compares assessment and daily participation across schools.',
@@ -187,8 +187,8 @@ export const ROLES = [
   {
     slug: 'practitioner',
     title: 'Practitioner',
-    strap: 'Booking the live Motor Movers course, joining its sessions, and earning the practitioner certificate.',
-    who: 'Teachers, teaching assistants, therapists and early-years staff training to deliver Motor Movers.',
+    strap: 'Booking the live course, joining its sessions, and earning the practitioner certificate.',
+    who: 'Teachers, teaching assistants, therapists and early-years staff training to deliver the programme.',
     does: [
       'Books a place on a cohort of the practitioner course.',
       'Joins the live sessions on Zoom from the platform, and takes a short quiz after each one.',
@@ -237,17 +237,17 @@ export const ROLES = [
   {
     slug: 'parent-or-carer',
     title: 'Parent or carer',
-    strap: 'Following a child’s progress at home with the parent app, Motor Movers at Home for families without a school, and the parent course.',
-    who: 'Parents and carers of children in Motor Movers schools, invited by the school; and, with Motor Movers at Home, any family.',
+    strap: 'Following a child’s progress at home with the parent app, the Programme at Home for families without a school, and the parent course.',
+    who: 'Parents and carers of children in schools on the programme, invited by the school; and, with the Programme at Home, any family.',
     does: [
       'Links their child in the parent app with a one-time code from the school, and sees how they are getting on, in plain words.',
       'Does a short home activity or session matched to the child’s stage, most days.',
-      'Without a school on Motor Movers: adds their child, does a short check and follows the daily sessions at home, in the app or on the website.',
+      'Without a school on the programme: adds their child, does a short check and follows the daily sessions at home, in the app or on the website.',
       'Takes the live parent course in Zoom, and pays online by card.',
     ],
     sees: 'Only the children the school has linked to them, or their own family’s children; progress in plain words, not scores.',
     cannot: 'Other children, assessment scores, the extra-support flag, or a school child once the school removes the link.',
-    flow: ['Code from school', 'Link child in the app', 'Today’s activity', 'Progress', 'Motor Movers at Home', 'Parent course', 'Payments'],
+    flow: ['Code from school', 'Link child in the app', 'Today’s activity', 'Progress', 'The Programme at Home', 'Parent course', 'Payments'],
     steps: [
       {
         title: 'Get a code from the school',
@@ -280,8 +280,8 @@ export const ROLES = [
         phone: true,
       },
       {
-        title: 'Motor Movers at Home: no school needed',
-        body: 'Families whose school is not on Motor Movers can still use the programme. They create a parent account in the app or on the website, add their child (a first name or nickname and an age; no date of birth), and do a short check of movements from Pat’s charts, which suggests a colour. Each day brings a ten-minute session of Pat’s exercises; parents rate each exercise the first time and at the end of each module, in plain words. A second parent or carer can share by code or email, and if the school joins later the record can be shared with the teacher. It is switched on once Pat and the owner agree.',
+        title: 'The Programme at Home: no school needed',
+        body: 'Families whose school is not on the programme can still use the programme. They create a parent account in the app or on the website, add their child (a first name or nickname and an age; no date of birth), and do a short check of movements from Pat’s charts, which suggests a colour. Each day brings a ten-minute session of Pat’s exercises; parents rate each exercise the first time and at the end of each module, in plain words. A second parent or carer can share by code or email, and if the school joins later the record can be shared with the teacher. It is switched on once Pat and the owner agree.',
         why: 'Any family can help their child at home, and the programme reaches children before their school signs up.',
         shots: ['app-home-today', 'home-web-child'],
         captions: ['Today’s session in the app.', 'The same child on the website.'],
@@ -290,7 +290,7 @@ export const ROLES = [
       {
         title: 'Take the parent course',
         body: 'The parent course is three weekly live sessions of 60 minutes, priced per family. Parents book in the app or on the website. When a session opens, the phone shows a notification and “Join in Zoom” opens the meeting in the Zoom app.',
-        why: 'Confidence and know-how for parents, from the Motor Movers team directly, in a few taps.',
+        why: 'Confidence and know-how for parents, from the programme team directly, in a few taps.',
         shots: ['app-course', 'app-payments'],
         captions: ['Live sessions in the app, with Join in Zoom.', 'Payments, with Pay by card.'],
         phone: true,
@@ -336,9 +336,9 @@ export const ROLES = [
   },
   {
     slug: 'motor-movers-team',
-    title: 'Motor Movers team',
+    title: 'Programme team',
     strap: 'Publishing content, signing schools up, running courses and trainers, and tracking income.',
-    who: 'The Motor Movers team who run the programme and the platform.',
+    who: 'The programme team who run the programme and the platform.',
     does: [
       'Writes and approves every session, activity, article, resource and induction part before anyone sees it.',
       'Signs schools up, sets their licences and stages, and adds trusts or school groups and their leads.',
@@ -365,7 +365,7 @@ export const ROLES = [
       {
         title: 'Approve it, with a built-in wording check',
         body: 'Nothing reaches teachers or parents until a member of the team approves it. The platform checks the wording first: anything that reads like a diagnosis or a medical label is highlighted, and the Approve button stays locked until it is reworded.',
-        why: 'Motor Movers assesses readiness to learn; it never diagnoses. The platform enforces that promise on every word.',
+        why: 'The programme assesses readiness to learn; it never diagnoses. The platform enforces that promise on every word.',
         shots: ['admin-content-wording'],
         captions: ['A draft mentioning “ADHD” and “diagnosis” is blocked until it is reworded.'],
       },
@@ -405,5 +405,5 @@ export const ROLES = [
 export const OVERVIEW = {
   slug: 'platform-overview',
   title: 'Platform overview',
-  strap: 'What the Motor Movers platform does, who uses it, how it keeps children safe, and where it stands.',
+  strap: 'What the platform does, who uses it, how it keeps children safe, and where it stands.',
 }

@@ -1,5 +1,8 @@
 # Motor Movers Platform: notes for Claude
 
+(added by Dev, 2026-11-16) The product is now the **Professor Pat Preedy Programme** (go-live task 84). "Motor Movers" remains only
+as a code name (this repository, the package, the demo domains) and in the dated notes below, which are left as written.
+
 Read this first. It records where the project stands so a new session can carry on. `README.md` has the
 full feature description and demo accounts; `deploy/RUNBOOK.md` has production operations.
 
@@ -20,7 +23,7 @@ does not wait for CI here (`main` has no required checks), so do not use it.
 
 ## What this is
 
-The platform for the Motor Movers programme (motor-skills programme for primary schools): teachers run a
+The platform for the Professor Pat Preedy Programme (motor-skills programme for primary schools): teachers run a
 daily 10-minute session and assess children, heads see progress, trusts and school groups see summaries, practitioners and
 parents take courses, and parents use a phone app. UK schools first; one data region per deployment.
 
@@ -45,6 +48,14 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   On screen it is always "assess" / "assessment", never "screen" / "screening" (Pat, 2026-10-20: screening
   sounds diagnostic). The old `screening` package (the 0 to 3 check) is gone since 2026-11-04. The `TRUST_LEAD` role is shown as "Trust or
   group lead", since it covers academy trusts, other school groups and independent groups.
+- (added by Dev, 2026-11-16) **The name is the Professor Pat Preedy Programme, never "Motor Movers"** (go-live task 84). On screens, in
+  emails, PDFs and notifications: the name in full in headers, titles, emails and the store listing; "the programme" inside a
+  sentence; "the Programme at Home" for the home programme; "Programme team" for the ADMIN role. Each app writes the names once:
+  `common/Brand.java` (API), `frontend/src/brand.ts` (web) and `mobile/src/lib/brand.ts` (parent app, with `name` in `app.json`).
+  Use those, never the words themselves. `BrandTest` (API and parent app) and `brand.test.ts` (web) fail on a "Motor Movers" or a
+  written-out name anywhere else. **Code names keep the old name** and are not renamed: the package `uk.co.motormovers`, the
+  repository, environment variables, the demo domains (`motormovers.test`), the app's slug, scheme and store ids, payment
+  references ("MM-1033") and applied migrations.
 - **Children are identified by initials** unless a school switches full names on. While it is off, the API
   refuses new full names and never sends saved ones (they are kept, hidden, until it is on again). Leavers are deleted
   365 days after leaving (`RetentionJob`).
@@ -69,8 +80,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-12) 284 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-12) 72 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 288 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-16) 78 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -203,6 +214,27 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-16)
+
+(added by Dev, 2026-11-16) **In progress: go-live task 84 (Dev, Sagar's team, branch `task-84`, pull request #71).** Built and waiting for the
+Tester. Remove this note once merged.
+
+(added by Dev, 2026-11-16) **Renamed to the Professor Pat Preedy Programme (go-live task 84; no migration).** Every screen, email, PDF and
+notification that said "Motor Movers" now uses the new names (the rule is under Rules the code relies on). **Logo:** the running child in
+the seven stage colours with the name as live text, `components/Logo.tsx` on the web (an inline SVG whose head takes the text colour;
+side by side in the website and app headers and the website footer, stacked on the login, register, forgot and reset pages; at phone
+width the headers drop "Professor"). `frontend/public/favicon.svg` is the child on a cream tile. **Parent app:** the store name in
+`app.json`, the icon, Android adaptive icon (foreground, background, monochrome), `splash-icon.png`, `favicon.png` and `logo-mark.png`
+in `mobile/assets`, made from the child by `F:\IHA\Pat\_work\task-84\icons.cjs` (Playwright; outside the repository), and `Logo` in
+`components/ui.tsx` on the sign-in and country screens. **API:** `Brand.NAME`, `Brand.HOME` and `Brand.TEAM` in email subjects, bodies and
+sign-offs, the certificate and credit note PDFs' properties, messages, and the default sender (`PLATFORM_MAIL_FROM`, also in
+`deploy/.env.example`). **Content names** lost the prefix in the starter and demo content: "Practitioner course", "Parent course", "Rhyme
+book", "Induction"; enquiry subjects are "Price guide" and "Apply for the programme"; the certificate downloads as `certificate.pdf`.
+A deployment that already holds the starter content keeps its old titles (the demo reloads on a fresh database; no real deployment exists).
+**Not changed:** code names; the certificate number ("Certificate MM-12") and payment references ("MM-1033"), for the owner to decide; the
+app has no `expo-splash-screen` set up, so `splash-icon.png` is replaced but not yet shown; the website's contact details and Movement
+for Learning credit (task 28, Rahul's team, whose branch touches the same website files); `docs/assessment-design.md` and
+`docs/home-programme-design.md`, which are dated notes. **The guides need rebuilding** (task 41): their wording files are renamed, the
+built PDFs are not, and their file names change to "Professor Pat Preedy Programme ...".
 
 [PM: Claude, 2026-11-16] **The platform is being renamed to the Professor Pat Preedy Programme (the owner, 2026-11-16).** Go-live task 84
 (Team Rahul, Spec ready) renames every user-facing "Motor Movers": screens, emails, PDFs, the logo and the parent app's store name ("the
@@ -1002,7 +1034,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-16): [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-16): (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

@@ -1,4 +1,6 @@
-# Motor Movers team (admin): sequence diagrams
+# Programme team (admin): sequence diagrams
+
+The ADMIN role, called the Motor Movers team until the rename of 2026-11-16 (go-live task 84); this file keeps its old name.
 
 Content, schools and licences, courses and trainers, plans, prices and payments.
 

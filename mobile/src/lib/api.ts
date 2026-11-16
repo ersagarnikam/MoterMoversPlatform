@@ -1,4 +1,4 @@
-// Client for the Motor Movers API, parent endpoints only.
+// Client for the API, parent endpoints only.
 
 export type ColourStage = 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'INDIGO' | 'VIOLET'
 export type Role = 'TEACHER' | 'HEAD' | 'TRUST_LEAD' | 'PRACTITIONER' | 'PARENT' | 'ADMIN'
@@ -86,7 +86,7 @@ export interface HomeEntry {
   doneOn: string
 }
 
-// --- Motor Movers at Home ------------------------------------------------------------------------------------------
+// --- the Programme at Home ------------------------------------------------------------------------------------------
 
 export interface HomeChild {
   id: number
@@ -212,7 +212,7 @@ export interface HomeToday {
   passEndsOn: string | null
 }
 
-/** The family's Motor Movers at Home pass: twelve months for the whole family, bought by card. Prices include tax. */
+/** The family's Programme at Home pass: twelve months for the whole family, bought by card. Prices include tax. */
 export interface HomePass {
   hasFamily: boolean
   onSale: boolean
@@ -387,7 +387,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
-    throw new ApiError(0, 'Could not reach Motor Movers. Check your connection and try again.')
+    throw new ApiError(0, 'Could not reach the server. Check your connection and try again.')
   }
   if (res.status === 401 && token && !path.startsWith('/api/auth/')) {
     onUnauthorized?.()
@@ -445,7 +445,7 @@ export const api = {
   onlinePayments: () => request<{ enabled: boolean }>('GET', '/api/payments/online'),
   /** The address of the payment provider's page to pay this payment by card. */
   checkout: (paymentId: number) => request<{ url: string }>('POST', `/api/payments/${paymentId}/checkout`),
-  // Motor Movers at Home: a family's own children, not linked to a school.
+  // The Programme at Home: a family's own children, not linked to a school.
   homeOverview: () => request<HomeOverview>('GET', '/api/home'),
   addHomeChild: (name: string, ageMonths: number) =>
     request<HomeChild>('POST', '/api/home/children', { name, ageMonths }),

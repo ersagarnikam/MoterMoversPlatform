@@ -99,7 +99,7 @@ class EnquiryTest {
         ArgumentCaptor<String> subject = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
         verify(mailer).send(eq("team@motormovers.test"), subject.capture(), body.capture());
-        assertThat(subject.getValue()).isEqualTo("Motor Movers price guide: Oak Primary");
+        assertThat(subject.getValue()).isEqualTo("Price guide: Oak Primary");
         assertThat(body.getValue()).contains("Name: Sam Lee", "Email: sam@school.test", "Number of classes: 4",
                 "Stages they are interested in: Green, Yellow", "Plan they are looking at: Primary core", "Two forms of entry.\nThanks");
     }
@@ -126,6 +126,6 @@ class EnquiryTest {
         send(json, "10.0.0.3").andExpect(status().isTooManyRequests());
         clearInvocations(mailer);
         send(json, "10.0.0.4").andExpect(status().isAccepted());
-        verify(mailer).send(eq("team@motormovers.test"), eq("Apply for Motor Movers: Oak"), anyString());
+        verify(mailer).send(eq("team@motormovers.test"), eq("Apply for the programme: Oak"), anyString());
     }
 }

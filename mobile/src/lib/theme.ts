@@ -1,4 +1,4 @@
-// Motor Movers: navy and teal, with the seven colour stages as the only bright colours. Follows the
+// Navy and teal, with the seven colour stages as the only bright colours. Follows the
 // phone's light or dark setting. Values match the web app (frontend/src/styles.css).
 import { useColorScheme } from 'react-native'
 import type { ColourStage } from './api'

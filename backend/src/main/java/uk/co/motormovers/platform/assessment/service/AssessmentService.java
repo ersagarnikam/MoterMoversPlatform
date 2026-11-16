@@ -489,7 +489,7 @@ public class AssessmentService {
 
     /**
      * Teachers (their own class), heads and the team record assessments; trust or group leads only look. For a home
-     * child (Motor Movers at Home), the child's family.
+     * child (the Programme at Home), the child's family.
      */
     private CurrentUser requireRecorder(Child child) {
         return requireRecorder(child, null);

@@ -6,7 +6,7 @@ import { api, formatDate, money, sessionTime, type LiveSession } from '@/lib/api
 import { space } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
-/** The parent course: live online sessions with the Motor Movers team, joined in the Zoom app. */
+/** The parent course: live online sessions with the programme team, joined in the Zoom app. */
 export default function CourseScreen() {
   const { data, error, refreshing, reload } = useLoad(async () => {
     const [catalogue, mine, live] = await Promise.all([api.courses(), api.myEnrolments(), api.liveSessions()])

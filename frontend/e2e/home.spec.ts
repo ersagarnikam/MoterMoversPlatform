@@ -1,10 +1,10 @@
 import { expect, expectAccessible, signIn, test } from './fixtures'
 
-/** Motor Movers at Home on the website: families whose child's school is not on Motor Movers. */
+/** The Programme at Home on the website: families whose child's school is not on the programme. */
 
 test('a family signs up on the website, does the check and the first session', async ({ page }) => {
   await page.goto('/for-families')
-  await expect(page.getByRole('heading', { name: 'Your child’s school is not on Motor Movers?' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your child’s school is not on the programme?' })).toBeVisible()
   await page.getByRole('link', { name: 'Create a parent account' }).click()
 
   await expect(page.getByRole('heading', { name: 'Create a parent account' })).toBeVisible()
@@ -44,7 +44,7 @@ test('a family signs up on the website, does the check and the first session', a
   await page.getByRole('button', { name: 'Sign out' }).click()
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Payments', exact: true }).click()
-  const support = page.locator('section', { has: page.getByRole('heading', { name: /Motor Movers at Home pass/ }) })
+  const support = page.locator('section', { has: page.getByRole('heading', { name: /Programme at Home pass/ }) })
   await support.getByLabel('Parent or carer’s email').fill(email)
   await support.getByRole('button', { name: 'Find the family' }).click()
   await expect(support).toContainText('No pass yet.')

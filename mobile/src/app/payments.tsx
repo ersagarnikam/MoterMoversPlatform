@@ -62,13 +62,13 @@ export default function PaymentsScreen() {
           ))}
           {payError && <Banner tone="error">{payError}</Banner>}
           <Muted>
-            {data.cards ? 'Or pay' : 'Pay'} as set out on your invoice, quoting the reference so the Motor Movers team can match your payment. It
+            {data.cards ? 'Or pay' : 'Pay'} as set out on your invoice, quoting the reference so the programme team can match your payment. It
             shows here as paid once they have received it.
           </Muted>
           <Button
             label="Email about a payment"
             variant="secondary"
-            onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('A Motor Movers payment')}`)}
+            onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('A payment')}`)}
           />
           <Muted>Or call {CONTACT_PHONE}.</Muted>
         </Card>

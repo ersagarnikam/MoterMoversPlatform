@@ -16,7 +16,7 @@ test('forgot password gives the same answer for any email', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible()
   await page.getByLabel('Email').fill('nobody@nowhere.test')
   await page.getByRole('button', { name: 'Email me a link' }).click()
-  await expect(page.getByText('If nobody@nowhere.test has a Motor Movers account')).toBeVisible()
+  await expect(page.getByText('If nobody@nowhere.test has a Professor Pat Preedy Programme account')).toBeVisible()
   await expectAccessible(page)
 })
 

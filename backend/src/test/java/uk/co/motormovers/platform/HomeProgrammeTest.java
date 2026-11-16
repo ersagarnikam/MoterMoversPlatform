@@ -50,7 +50,7 @@ import uk.co.motormovers.platform.home.dto.HomeViews;
 import uk.co.motormovers.platform.home.service.CoolDowns;
 
 /**
- * Motor Movers at Home against the demo data: Priya Shah's family (Ava on Green, Leo not checked yet), who sees a
+ * The Programme at Home against the demo data: Priya Shah's family (Ava on Green, Leo not checked yet), who sees a
  * home child (only the family), the starting check, the daily session and ratings, a second carer, and linking a
  * school later. Its own context with a raised sign-in limit, so its sign-ins do not use up the shared one.
  */
@@ -302,7 +302,7 @@ class HomeProgrammeTest {
                 .andReturn().getResponse().getContentAsString(), "$.code");
 
         ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
-        verify(mailer).send(eq("gran@example.test"), contains("invited you to Motor Movers at Home"), body.capture());
+        verify(mailer).send(eq("gran@example.test"), contains("invited you to the Programme at Home"), body.capture());
         assertThat(body.getValue()).contains(code).contains("Join a family").doesNotContain("Nell");
         // Without an address nothing is sent.
         mvc.perform(post("/api/home/invites").header("Authorization", bearer(owner)))
@@ -363,7 +363,7 @@ class HomeProgrammeTest {
                 .content("{\"answers\":[{\"milestoneId\":" + movement + ",\"answer\":\"YES\"}]}"))
                 .andExpect(status().isOk());
 
-        // The school (now on Motor Movers) gives a parent code for its own record of the child.
+        // The school (now on the programme) gives a parent code for its own record of the child.
         String teacher = login("teacher@oakfield.test");
         String classes = mvc.perform(get("/api/classes").header("Authorization", bearer(teacher)))
                 .andReturn().getResponse().getContentAsString();
@@ -499,7 +499,7 @@ class HomeProgrammeTest {
         return token;
     }
 
-    /** A running Motor Movers at Home pass for the child's family (go-live task 26), as the team would extend it. */
+    /** A running Programme at Home pass for the child's family (go-live task 26), as the team would extend it. */
     private void withPass(Integer childId) {
         Long familyId = children.findById(childId.longValue()).orElseThrow().getFamilyId();
         LocalDate today = LocalDate.now(clock);

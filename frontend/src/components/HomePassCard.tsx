@@ -3,7 +3,7 @@ import { api, type HomePass } from '../api'
 import { contactUs, passState } from '../homePass'
 
 /**
- * The family's Motor Movers at Home pass: when it ends, or Buy or Renew, which opens Stripe's own page. The pass runs
+ * The family's Programme at Home pass: when it ends, or Buy or Renew, which opens Stripe's own page. The pass runs
  * once Stripe confirms the payment to the server, usually within seconds of coming back. Hidden while the pass runs
  * unless `always`.
  */

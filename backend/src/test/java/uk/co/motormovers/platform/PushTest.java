@@ -69,7 +69,7 @@ class PushTest {
         assertThat(reminders.announceOpening()).isPositive();
         assertThat(sent()).filteredOn(m -> m.token().equals(JO_PHONE)).singleElement().satisfies(m -> {
             assertThat(m.title()).isEqualTo("Your live session is open");
-            assertThat(m.body()).contains("Motor Movers parent course, session 1", "Tap to join");
+            assertThat(m.body()).contains("Parent course, session 1", "Tap to join");
             assertThat(m.data()).containsEntry("url", "/course");
         });
         clearInvocations(sender);

@@ -5,11 +5,11 @@ import PriceChart from './PriceChart'
 
 const TITLES: Record<EnquiryKind, string> = {
   PRICE_GUIDE: 'Ask for the price guide',
-  APPLY: 'Apply for Motor Movers',
+  APPLY: 'Apply for the programme',
 }
 
 /**
- * The website's enquiry form: the platform emails it to the Motor Movers team, so it works without an email program
+ * The website's enquiry form: the platform emails it to the programme team, so it works without an email program
  * on the sender's computer. The email link stays as a second way in. Asking for the price guide shows the price chart
  * first, and the plan chosen there goes with the enquiry.
  */
@@ -125,7 +125,7 @@ export default function EnquiryForm({ kind, onClose }: { kind: EnquiryKind; onCl
       </div>
       <p className="fine">
         We use these details only to reply. You can also email{' '}
-        <a href={mailto(kind === 'PRICE_GUIDE' ? 'Motor Movers price guide' : 'Apply for Motor Movers', ENQUIRY_BODY)}>
+        <a href={mailto(kind === 'PRICE_GUIDE' ? 'Price guide' : 'Apply for the programme', ENQUIRY_BODY)}>
           {CONTACT_EMAIL}
         </a>{' '}
         or call {CONTACT_PHONE}.

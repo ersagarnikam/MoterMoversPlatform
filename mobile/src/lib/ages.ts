@@ -1,4 +1,4 @@
-// Ages for Motor Movers at Home. The app asks for years and months and keeps months; no date of birth is held.
+// Ages for the Programme at Home. The app asks for years and months and keeps months; no date of birth is held.
 
 /** 44 -> "3 years 8 months", 11 -> "11 months". */
 export function ageLabel(months: number): string {

@@ -10,7 +10,7 @@ import uk.co.motormovers.platform.assessment.dto.AssessmentViews;
 import uk.co.motormovers.platform.assessment.model.Chart;
 import uk.co.motormovers.platform.common.model.ColourStage;
 
-/** Motor Movers at Home: what the parent app receives and sends. */
+/** The Programme at Home: what the parent app receives and sends. */
 public final class HomeViews {
 
     /** Shown wherever a home child's check or progress is. */

@@ -6,7 +6,7 @@ import { relativeDay } from '../dates'
 import { sessionTime, startsIn } from '../live'
 
 /**
- * Upcoming live course sessions, to start on Zoom and keep the register: every session for the Motor Movers team,
+ * Upcoming live course sessions, to start on Zoom and keep the register: every session for the programme team,
  * and a trainer's own cohorts for a trainer. The next one stands out, with how soon it starts and how many are booked.
  */
 export default function LiveSessionsPage() {

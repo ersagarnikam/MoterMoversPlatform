@@ -22,8 +22,8 @@ public record EnquiryRequest(
         @Size(max = 200) String website) {
 
     public enum Kind {
-        PRICE_GUIDE("Motor Movers price guide"),
-        APPLY("Apply for Motor Movers");
+        PRICE_GUIDE("Price guide"),
+        APPLY("Apply for the programme");
 
         private final String subject;
 

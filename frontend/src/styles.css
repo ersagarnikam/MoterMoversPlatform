@@ -1,4 +1,4 @@
-/* Motor Movers: navy and teal, with the seven colour stages as the only bright colours. */
+/* Navy and teal, with the seven colour stages as the only bright colours. */
 :root {
   --navy: #1f2b3a;
   --navy-2: #2b3a4d;
@@ -108,6 +108,22 @@ code { background: var(--chip-bg); padding: 0 4px; border-radius: 4px; }
 .content { flex: 1; min-width: 0; padding: 1.5rem 2rem 3rem; max-width: 1150px; }
 .content > * + * { margin-top: 1rem; }
 
+/* The logo (components/Logo.tsx): the child, then the name as live text. Used on the dark header, sign-in panel and footer. */
+.logo { display: inline-flex; align-items: center; gap: 0.6rem; color: #fff; }
+.logo-child { height: 2.4rem; width: auto; flex-shrink: 0; }
+.logo-head { fill: currentColor; }
+.logo-words { display: flex; flex-direction: column; line-height: 1.1; }
+.logo-name { font-family: var(--serif); font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+.logo-word { font-family: var(--font); font-weight: 500; font-size: 0.62rem; letter-spacing: 0.34em; text-transform: uppercase; color: #8fd3c4; margin-top: 0.2rem; }
+.logo-stacked { flex-direction: column; align-items: flex-start; gap: 1rem; }
+.logo-stacked .logo-child { height: 6.5rem; }
+.logo-stacked .logo-name { font-size: 2.3rem; white-space: normal; }
+.logo-stacked .logo-word { font-size: 0.85rem; margin-top: 0.6rem; }
+@media (max-width: 520px) {
+  .brand .logo-title { display: none; }
+  .logo-stacked .logo-name { font-size: 1.8rem; }
+  .logo-stacked .logo-child { height: 5rem; }
+}
 .stage-stripe { display: inline-flex; gap: 3px; }
 .stage-stripe span { width: 14px; height: 5px; border-radius: 3px; }
 
@@ -145,7 +161,7 @@ code { background: var(--chip-bg); padding: 0 4px; border-radius: 4px; }
 /* Login */
 .login { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
 .login-hero { background: var(--header); color: #fff; padding: 4rem 3rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
-.login-hero h1 { font-size: 2.6rem; }
+.login-hero h1 { font-size: 1rem; margin: 0; }
 .login-hero p { color: #c8d3de; max-width: 28rem; }
 .login-card { margin: auto; width: min(400px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 0.75rem; }
 label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; font-size: 0.9rem; }
@@ -561,7 +577,7 @@ dialog.confirm .actions { justify-content: flex-end; margin-top: 1rem; }
 .level-counts { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.85rem; white-space: nowrap; }
 .level-num { display: inline-flex; align-items: center; justify-content: center; width: 1.2rem; height: 1.2rem; border-radius: 4px; border: 1px solid var(--border-strong); font-size: 0.75rem; font-weight: 600; }
 
-/* Motor Movers at Home on the website (pages/home) */
+/* The Programme at Home on the website (pages/home) */
 .home-kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 1rem; margin: 1rem 0; }
 .home-kid { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
 .home-kid h2 { margin: 0; }

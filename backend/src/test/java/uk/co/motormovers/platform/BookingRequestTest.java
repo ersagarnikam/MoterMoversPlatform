@@ -31,7 +31,7 @@ import uk.co.motormovers.platform.training.service.SessionReminderJob;
 @AutoConfigureMockMvc
 class BookingRequestTest {
 
-    private static final String COURSE = "Motor Movers practitioner course";
+    private static final String COURSE = "Practitioner course";
 
     @Autowired
     MockMvc mvc;

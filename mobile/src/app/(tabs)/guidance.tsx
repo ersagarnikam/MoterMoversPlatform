@@ -4,7 +4,7 @@ import { Body, Card, ErrorState, H2, Loading, Muted, Row, Screen, StageBadge } f
 import { api } from '@/lib/api'
 import { useLoad } from '@/lib/useLoad'
 
-/** Short reads approved by the Motor Movers team. */
+/** Short reads approved by the programme team. */
 export default function GuidanceScreen() {
   const { data: articles, error, refreshing, reload } = useLoad(() => api.guidance())
 

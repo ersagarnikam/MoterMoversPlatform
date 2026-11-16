@@ -1,7 +1,8 @@
+import { BRAND } from '../brand'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
-import StageStripe from '../components/StageStripe'
+import Logo from '../components/Logo'
 
 /** Asks for a reset link. The answer is the same whether or not the email has an account. */
 export default function ForgotPasswordPage() {
@@ -27,14 +28,15 @@ export default function ForgotPasswordPage() {
   return (
     <div className="login">
       <div className="login-hero">
-        <StageStripe />
-        <h1>Motor Movers</h1>
+        <h1>
+          <Logo stacked />
+        </h1>
       </div>
       <form className="card login-card" onSubmit={submit}>
         <h2>Reset your password</h2>
         {sent ? (
           <p>
-            If <strong>{email}</strong> has a Motor Movers account, we have emailed it a link to choose a new
+            If <strong>{email}</strong> has a {BRAND} account, we have emailed it a link to choose a new
             password. The link works for one hour.
           </p>
         ) : (

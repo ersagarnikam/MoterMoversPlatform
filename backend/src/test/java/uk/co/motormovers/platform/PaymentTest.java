@@ -106,7 +106,7 @@ class PaymentTest {
         String own = fetch(head, "/api/schools/" + oakfield + "/payments");
         assertThat((List<String>) JsonPath.read(own, "$.payments[*].description"))
                 .contains("Trust licence, year 1", "Printed session cards")
-                .doesNotContain("Motor Movers parent course");
+                .doesNotContain("Parent course");
         assertThat((Integer) JsonPath.read(own, "$.paidPence")).isEqualTo(TRUST_LICENCE + 6_000);
 
         Integer marlow = schoolId(login("admin@motormovers.test"), "Marlow Infants");
@@ -141,7 +141,7 @@ class PaymentTest {
         assertThat((Integer) JsonPath.read(mine, "$.paidPence")).isEqualTo(4_500);
         assertThat((Integer) JsonPath.read(mine, "$.outstandingPence")).isEqualTo(1_500);
         assertThat((List<String>) JsonPath.read(mine, "$.payments[*].description"))
-                .containsExactly("Motor Movers rhyme book and CD", "Motor Movers parent course");
+                .containsExactly("Rhyme book and CD", "Parent course");
         assertThat((List<String>) JsonPath.read(mine, "$.payments[*].reference")).contains("MM-1033");
 
         mvc.perform(get("/api/payments/mine").header("Authorization", bearer(login("practitioner@example.test"))))

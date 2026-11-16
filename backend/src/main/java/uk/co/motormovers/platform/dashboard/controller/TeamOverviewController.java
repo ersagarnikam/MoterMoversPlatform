@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import uk.co.motormovers.platform.dashboard.service.TeamOverviewService;
 
-/** The Motor Movers team's home page: what needs attention today. Under /api/admin (ADMIN only). */
+/** The programme team's home page: what needs attention today. Under /api/admin (ADMIN only). */
 @RestController
 public class TeamOverviewController {
 

@@ -532,7 +532,7 @@ export interface SessionSummary {
   durationMinutes: number
 }
 
-/** A live session as someone who may join it sees it. host is true for the Motor Movers team. */
+/** A live session as someone who may join it sees it. host is true for the programme team. */
 export interface LiveSession {
   id: number
   cohortId: number
@@ -678,7 +678,7 @@ export interface NewPayment {
   paidOn: string | null
 }
 
-// --- Motor Movers at Home (families without a school) -----------------------------------------------------------
+// --- The Programme at Home (families without a school) -----------------------------------------------------------
 
 export interface HomeChild {
   id: number
@@ -699,7 +699,7 @@ export interface FamilyMember {
 }
 
 export interface HomeOverview {
-  /** Motor Movers at Home is switched on for this deployment. */
+  /** The Programme at Home is switched on for this deployment. */
   enabled: boolean
   children: HomeChild[]
   members: FamilyMember[]
@@ -788,7 +788,7 @@ export interface CountrySettings {
   creditNoteTitle: string
 }
 
-/** The family's Motor Movers at Home pass (go-live task 26). Prices include tax. */
+/** The family's Programme at Home pass (go-live task 26). Prices include tax. */
 export interface HomePass {
   hasFamily: boolean
   onSale: boolean
@@ -989,7 +989,7 @@ async function downloadFile(path: string, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-/** An enquiry from the public website, emailed to the Motor Movers team. */
+/** An enquiry from the public website, emailed to the programme team. */
 export type EnquiryKind = 'PRICE_GUIDE' | 'APPLY'
 export interface Enquiry {
   kind: EnquiryKind
@@ -1144,7 +1144,7 @@ export const api = {
   submitQuiz: (enrolmentId: number, quizId: number, answers: number[]) =>
     request<QuizResult>('POST', `/api/training/enrolments/${enrolmentId}/quizzes/${quizId}/attempts`, { answers }),
   certificatePdf: (enrolmentId: number) =>
-    downloadFile(`/api/training/enrolments/${enrolmentId}/certificate.pdf`, 'motor-movers-certificate.pdf'),
+    downloadFile(`/api/training/enrolments/${enrolmentId}/certificate.pdf`, 'certificate.pdf'),
   induction: () => request<Induction>('GET', '/api/training/induction'),
   completeLesson: (lessonId: number) =>
     request<Induction>('POST', `/api/training/induction/lessons/${lessonId}/complete`),
@@ -1217,7 +1217,7 @@ export const api = {
   /** Parents and carers create their own account. */
   register: (email: string, password: string, displayName: string) =>
     request<{ token: string; user: CurrentUser }>('POST', '/api/auth/register', { email, password, displayName }),
-  /** Open to anyone: whether Motor Movers at Home is switched on. */
+  /** Open to anyone: whether the Programme at Home is switched on. */
   homeAvailable: () => request<{ enabled: boolean }>('GET', '/api/home/available'),
   /** Open to anyone: the deployment's country settings. */
   settings: () => request<CountrySettings>('GET', '/api/settings'),

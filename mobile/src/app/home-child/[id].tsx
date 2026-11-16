@@ -78,7 +78,7 @@ export default function HomeChildScreen() {
         onPress={() => router.push({ pathname: '/add-child', params: { id: childId } })}
       />
       <Button
-        label={`${child.name}'s school has joined Motor Movers`}
+        label={`${child.name}'s school has joined the programme`}
         variant="secondary"
         onPress={() => router.push({ pathname: '/join-school/[id]', params: { id: childId } })}
       />

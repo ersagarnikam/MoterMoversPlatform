@@ -13,7 +13,7 @@ import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.common.model.ColourStage;
 
 /**
- * The rules of Motor Movers at Home, from Pat's answers of 2026-11-03 and 2026-11-05 (docs/home-programme-design.md). Children move
+ * The rules of the Programme at Home, from Pat's answers of 2026-11-03 and 2026-11-05 (docs/home-programme-design.md). Children move
  * through the colours at their own pace, so the colour does not follow the age: young children start at Orange and
  * older ones at Green, the core programme, then go on through the colours. A rhyme colour (Red, Orange, Yellow) does
  * one rhyme a week, five times, in the order of its grid; a colour with modules (Green to Violet) builds each module up

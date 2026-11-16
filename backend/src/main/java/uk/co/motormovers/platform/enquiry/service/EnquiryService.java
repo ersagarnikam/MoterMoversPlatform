@@ -10,7 +10,7 @@ import uk.co.motormovers.platform.common.exception.EnquiryNotSentException;
 import uk.co.motormovers.platform.enquiry.dto.EnquiryRequest;
 
 /**
- * Passes website enquiries to the Motor Movers team by email ({@code platform.enquiry-email}). Nothing is stored,
+ * Passes website enquiries to the programme team by email ({@code platform.enquiry-email}). Nothing is stored,
  * and the sender is not emailed, so the form cannot be used to send mail to someone else.
  */
 @Service
@@ -32,7 +32,7 @@ public class EnquiryService {
             return;
         }
         String body = """
-                A new enquiry from the Motor Movers website.
+                A new enquiry from the website.
 
                 Name: %s
                 Email: %s

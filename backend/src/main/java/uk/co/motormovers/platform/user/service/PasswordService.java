@@ -1,5 +1,6 @@
 package uk.co.motormovers.platform.user.service;
 
+import uk.co.motormovers.platform.common.Brand;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -50,12 +51,12 @@ public class PasswordService {
     public void requestReset(String email) {
         users.findByEmailIgnoreCase(email.strip()).filter(AppUser::isEnabled).ifPresent(user -> {
             String token = issue(user, PasswordToken.Purpose.RESET, RESET_LIFETIME);
-            mailer.send(user.getEmail(), "Reset your Motor Movers password",
+            mailer.send(user.getEmail(), "Reset your " + Brand.NAME + " password",
                     "Hello " + user.getDisplayName() + ",\n\n"
                             + "Use this link to choose a new password. It works once, for one hour:\n\n"
                             + mailer.link("/reset-password?token=" + token) + "\n\n"
                             + "If you did not ask for this, you can ignore this email. Your password has not changed.\n\n"
-                            + "Motor Movers");
+                            + Brand.NAME);
         });
     }
 
@@ -63,13 +64,13 @@ public class PasswordService {
     @Transactional
     public void sendInvite(AppUser user, String invitedBy) {
         String token = issue(user, PasswordToken.Purpose.INVITE, INVITE_LIFETIME);
-        mailer.send(user.getEmail(), "Your Motor Movers account",
+        mailer.send(user.getEmail(), "Your " + Brand.NAME + " account",
                 "Hello " + user.getDisplayName() + ",\n\n"
-                        + invitedBy + " has set up a Motor Movers account for you. Use this link to choose your "
+                        + invitedBy + " has set up a " + Brand.NAME + " account for you. Use this link to choose your "
                         + "password. It works once, for seven days:\n\n"
                         + mailer.link("/reset-password?token=" + token) + "\n\n"
                         + "Then sign in at " + mailer.link("/login") + " with this email address.\n\n"
-                        + "Motor Movers");
+                        + Brand.NAME);
     }
 
     /** Sets the password for the link's account. Returns the account's email so the person can sign in. */

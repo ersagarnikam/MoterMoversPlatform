@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
-import StageStripe from '../components/StageStripe'
+import Logo from '../components/Logo'
 import ThemeSwitch from '../components/ThemeSwitch'
 import { useHomeAvailable } from '../homeProgramme'
 
 /**
- * Parents and carers create their own account (every other role is set up by a school or the Motor Movers team).
- * Then Motor Movers at Home if it is on, otherwise the parent course (see App's /join route).
+ * Parents and carers create their own account (every other role is set up by a school or the programme team).
+ * Then the Programme at Home if it is on, otherwise the parent course (see App's /join route).
  */
 export default function RegisterPage() {
   const { register } = useAuth()
@@ -34,12 +34,13 @@ export default function RegisterPage() {
   return (
     <div className="login">
       <div className="login-hero">
-        <StageStripe />
-        <h1>Motor Movers</h1>
+        <h1>
+          <Logo stacked />
+        </h1>
         <p>
           {home
             ? 'Short daily movement sessions at home, with the same exercises schools use.'
-            : 'The parent course and, if your child’s school does Motor Movers, the parent app.'}
+            : 'The parent course and, if your child’s school does the programme, the parent app.'}
         </p>
         <div className="login-hero-links">
           <ThemeSwitch />

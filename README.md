@@ -1,6 +1,9 @@
-# Motor Movers Platform
+# Professor Pat Preedy Programme: the platform
 
-The digital platform for the Motor Movers programme: one website and app that runs the programme for a
+The programme was called Motor Movers until 2026-11-16, and code names keep that name: this repository, the Java
+package `uk.co.motormovers`, environment variables and the demo domains (`motormovers.test`).
+
+The digital platform for the Professor Pat Preedy Programme: one website and app that runs the programme for a
 school, from assessing each child to showing the head teacher the results, plus live training for
 practitioners and parents.
 
@@ -49,10 +52,10 @@ password `password`:
 | `trust@northbridge.test` | Trust or group lead, Northbridge Academy Trust | Our schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
-| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on Motor Movers at Home, pass running) | Use the parent app |
+| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on the Programme at Home, pass running) | Use the parent app |
 | `lapsed@example.test` | Parent, no school (Tom Reid: Noah; the family's pass ended) | Renew on At home |
-| `admin@motormovers.test` | Motor Movers team | Content approval |
-| `pat@motormovers.test` | Motor Movers team (Pat, trainer) | Content approval; Live sessions to start a course session |
+| `admin@motormovers.test` | Programme team | Content approval |
+| `pat@motormovers.test` | Programme team (Pat, trainer) | Content approval; Live sessions to start a course session |
 | `trainer@motormovers.test` | Trainer in Pat's team (Amy Clarke) | Live sessions for her own cohorts only |
 
 Names, schools and figures in the demo data are examples only.
@@ -126,7 +129,7 @@ first deployment, updates, backups and restores.
 | Practitioner | Live course catalogue, booking and cancelling, joining live sessions, quizzes between sessions, the certificate (emailed as a PDF), a Payments page with Pay by card. Can also take the induction |
 | Parent | The parent course, a Payments page with Pay by card, and the parent app: home activities, progress, live sessions (Join in Zoom), payments and phone notifications |
 | Trainer | Only the cohorts the team gives them: Live sessions (start them on Zoom, keep the register) and My cohorts (attendance, quizzes, the end-of-course assessment) |
-| Motor Movers team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), courses, cohorts, quizzes and trainers, licence plans and prices, recording payments and spending summaries, schools and licences (with each school's agreed price), every class |
+| Programme team (admin) | Writing and approving content (sessions, home activities, guidance, resources, induction lessons), courses, cohorts, quizzes and trainers, licence plans and prices, recording payments and spending summaries, schools and licences (with each school's agreed price), every class |
 
 Access rules are enforced in the API (`security/service/AccessPolicy.java`), not just hidden in the UI.
 
@@ -227,7 +230,7 @@ backend/
     dashboard/    head teacher and trust dashboards, exports
     training/     staff induction, courses, cohorts, enrolments, live sessions (zoom/), quizzes, certificates
     family/       parent app: invite codes, parent links, progress, home activities, guidance
-    home/         Motor Movers at Home: family children, the starting check, daily sessions, sharing
+    home/         The Programme at Home: family children, the starting check, daily sessions, sharing
     payment/      invoices and payments, spending summaries, card payments (stripe/)
     notification/ phone notifications to the parent app (Expo push)
     seed/         demo data (dev profile only)
@@ -256,7 +259,7 @@ docs/             guides and design notes (see Documentation)
 | Flow diagrams | Developers and reviewers: a sequence diagram of every flow for each role, with its endpoints and the rules the code enforces | `docs/flows/` (one Markdown file per role; GitHub draws the Mermaid diagrams) |
 | Runbook | Whoever runs the server: deployment, updates, backups, Zoom, phone notifications, card payments | `deploy/RUNBOOK.md` |
 | Assessment design | The developmental and exercise assessments, Pat's answers and what is still open | `docs/assessment-design.md` |
-| Home programme design | Motor Movers at Home: what parents do, and the questions for Pat | `docs/home-programme-design.md` |
+| Home programme design | The Programme at Home: what parents do, and the questions for Pat | `docs/home-programme-design.md` |
 | Notes for developers | Where the project stands and the rules the code relies on | `CLAUDE.md` |
 
 The guides are built from the demo, so rebuild them when screens change: `docs/guide-builder/README.md`.
@@ -290,9 +293,9 @@ How a parent gets linked to a child:
 4. The head sees every link under *Parent app links* on the progress dashboard and can remove any of them.
    The parent can also remove the child from their app.
 
-### Motor Movers at Home (no school needed)
+### The Programme at Home (no school needed)
 
-For families whose child's school is not on Motor Movers (`docs/home-programme-design.md`, waiting for Pat's
+For families whose child's school is not on the programme (`docs/home-programme-design.md`, waiting for Pat's
 answers). Switched on with `HOME_PROGRAMME=true`; off in production by default, on in development.
 
 - The parent **adds their child** (a first name or nickname and an age in years and months; no date of birth). A

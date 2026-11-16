@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -12,6 +13,7 @@ import {
   type ViewStyle,
 } from 'react-native'
 import type { ColourStage } from '@/lib/api'
+import { BRAND, BRAND_PERSON, BRAND_WORD } from '@/lib/brand'
 import { radius, space, STAGES, stageInfo, usePalette } from '@/lib/theme'
 
 export function Screen({
@@ -182,7 +184,26 @@ export function StageBadge({ stage, label }: { stage: ColourStage | null | undef
   )
 }
 
-/** The seven stage colours as a thin band: the Motor Movers mark. */
+/**
+ * The logo: the running child on its cream tile (the app icon, so it shows on dark and light), then the name in two
+ * lines. onDark is for the navy panel on the sign-in screen.
+ */
+export function Logo({ onDark = false }: { onDark?: boolean }) {
+  const p = usePalette()
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }} accessible accessibilityRole="header" accessibilityLabel={BRAND}>
+      <Image source={require('../../assets/logo-mark.png')} style={{ width: 64, height: 64, borderRadius: 14 }} accessibilityIgnoresInvertColors />
+      <View style={{ flexShrink: 1 }}>
+        <Text style={{ color: onDark ? '#ffffff' : p.ink, fontSize: 22, lineHeight: 27, fontWeight: '800' }}>{BRAND_PERSON}</Text>
+        <Text style={{ color: onDark ? '#8fd3c4' : p.teal, fontSize: 12, fontWeight: '600', letterSpacing: 4, marginTop: 2 }}>
+          {BRAND_WORD.toUpperCase()}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+/** The seven stage colours as a thin band, as on the programme's materials. */
 export function StageStripe({ height = 6 }: { height?: number }) {
   return (
     <View style={{ flexDirection: 'row', height, borderRadius: height / 2, overflow: 'hidden' }}>

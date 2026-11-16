@@ -1,3 +1,4 @@
+import { HOME_PROGRAMME } from '../brand'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, type AdminFamilyPass, type HomePassPrices } from '../api'
 import { day } from '../dates'
@@ -10,7 +11,7 @@ function isoDate(d: Date): string {
 }
 
 /**
- * The Motor Movers at Home pass price on Plans and prices: dated like a licence plan's, from today or later, and a
+ * The Programme at Home pass price on Plans and prices: dated like a licence plan's, from today or later, and a
  * price in force is never rewritten. With no price the pass is not on sale.
  */
 export function HomePassPriceCard() {
@@ -42,7 +43,7 @@ export function HomePassPriceCard() {
 
   return (
     <section className="card">
-      <h3>Motor Movers at Home pass</h3>
+      <h3>{HOME_PROGRAMME} pass</h3>
       <p className="muted">
         Twelve months for a whole family, bought by card.{' '}
         {data?.currentPence != null ? `Today: ${money(data.currentPence)}.` : 'Not on sale until a price is set.'}
@@ -108,7 +109,7 @@ export function FamilyPassCard() {
 
   return (
     <section className="card">
-      <h3>A family’s Motor Movers at Home pass</h3>
+      <h3>A family’s {HOME_PROGRAMME} pass</h3>
       <form className="inline-form" onSubmit={find}>
         <label>
           Parent or carer’s email

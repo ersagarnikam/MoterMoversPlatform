@@ -77,7 +77,7 @@ class InductionAndResourcesTest {
         String hardy = login("teacher@oakfield.test");
         mvc.perform(get("/api/resources").header("Authorization", bearer(hardy)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.title == 'Motor Movers rhyme book')]").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.title == 'Rhyme book')]").isNotEmpty())
                 .andExpect(jsonPath("$[?(@.kind == 'RHYME')]").isNotEmpty())
                 .andExpect(jsonPath("$[?(@.title == 'Five little speckled frogs')]").isEmpty());
 

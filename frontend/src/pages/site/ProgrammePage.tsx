@@ -28,7 +28,7 @@ export default function ProgrammePage() {
         <p className="eyebrow eyebrow-light">The programme</p>
         <h1>A few minutes of the right movement, every day</h1>
         <p className="site-lead">
-          Motor Movers works through repetition. Children practise the same movements daily, and the quality of each
+          The programme works through repetition. Children practise the same movements daily, and the quality of each
           movement improves week by week.
         </p>
       </section>
@@ -70,7 +70,7 @@ export default function ProgrammePage() {
           ))}
         </ol>
         <p className="muted site-narrow">
-          Motor Movers supports the Physical Development area of the EYFS. It does not replace PE or other physical
+          The programme supports the Physical Development area of the EYFS. It does not replace PE or other physical
           activity.
         </p>
       </section>
@@ -117,7 +117,7 @@ export default function ProgrammePage() {
       </section>
 
       <section className="site-section site-cta-band">
-        <h2>Bring Motor Movers to your setting</h2>
+        <h2>Bring the programme to your setting</h2>
         <div className="site-cta">
           <Link to="/for-schools" className="btn btn-big btn-light">
             How to join

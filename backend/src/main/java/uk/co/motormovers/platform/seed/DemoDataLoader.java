@@ -225,10 +225,10 @@ public class DemoDataLoader implements ApplicationRunner {
         classWithHistory(ferrers, "Reception F", "Reception", null, ColourStage.RED, 24, 12, sessions, today);
 
         demoAssessments.seed(y2r, y3k, today);
-        // Motor Movers at Home: a family whose school is not on Motor Movers.
+        // The Programme at Home: a family whose school is not on the programme.
         demoHome.seed(users.save(new AppUser("home@example.test", "Priya Shah", hash, Role.PARENT, null, null)),
                 today);
-        // A family whose Motor Movers at Home pass has ended, so Renew shows.
+        // A family whose Programme at Home pass has ended, so Renew shows.
         demoHome.seedEnded(users.save(new AppUser("lapsed@example.test", "Tom Reid", hash, Role.PARENT, null, null)),
                 today);
         seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
@@ -338,12 +338,12 @@ public class DemoDataLoader implements ApplicationRunner {
                 today.minusMonths(2), "MM-1026", team, clock.instant()), today.minusMonths(2).plusDays(3)));
         list.add(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 2", trustLicence,
                 today.minusDays(7), "MM-1031", team, clock.instant()));
-        list.add(paid(Payment.byPerson(practitioner, PaymentPurpose.COURSE, "Motor Movers practitioner course",
+        list.add(paid(Payment.byPerson(practitioner, PaymentPurpose.COURSE, "Practitioner course",
                 18_000, today.minusMonths(4), null, team, clock.instant()), today.minusMonths(4)));
-        list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Motor Movers parent course", 4_500,
+        list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Parent course", 4_500,
                 today.minusMonths(1), null, team, clock.instant()), today.minusMonths(1)));
         // Still to pay, so the parent sees what is due.
-        list.add(Payment.byPerson(parent, PaymentPurpose.OTHER, "Motor Movers rhyme book and CD", 1_500,
+        list.add(Payment.byPerson(parent, PaymentPurpose.OTHER, "Rhyme book and CD", 1_500,
                 today.minusDays(5), "MM-1033", team, clock.instant()));
         payments.saveAll(list);
     }

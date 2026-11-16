@@ -10,7 +10,7 @@ import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
 
 /**
- * A head's view of what their school has been invoiced and has paid Motor Movers, with the course places staff
+ * A head's view of what their school has been invoiced and has paid the programme, with the course places staff
  * have asked for: approving one books the place and adds its invoice here.
  */
 export default function SchoolPaymentsPage() {
@@ -126,7 +126,7 @@ export default function SchoolPaymentsPage() {
         />
         <p className="fine">
           Staff who pay for their own courses see those payments on their Training page. Questions about an invoice go
-          to the Motor Movers team.
+          to the programme team.
         </p>
       </section>
       <LegalLine />

@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** Motor Movers at Home: the parents and carers who share a family's own children. */
+/** The Programme at Home: the parents and carers who share a family's own children. */
 @Entity
 @Table(name = "family")
 public class Family {

@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * Part of a family's Motor Movers at Home pass: twelve months bought by card ({@code paymentId}), or an extension by
+ * Part of a family's Programme at Home pass: twelve months bought by card ({@code paymentId}), or an extension by
  * the team (no payment). A row bought by card has no dates until the payment is paid. The family's pass runs on a day
  * one of its rows covers.
  */

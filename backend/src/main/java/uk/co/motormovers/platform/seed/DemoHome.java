@@ -38,7 +38,7 @@ import uk.co.motormovers.platform.payment.repository.PaymentRepository;
 import uk.co.motormovers.platform.user.model.AppUser;
 
 /**
- * A demo family on Motor Movers at Home, not linked to a school: Priya Shah (home@example.test) with Ava, 50 months
+ * A demo family on the Programme at Home, not linked to a school: Priya Shah (home@example.test) with Ava, 50 months
  * (started at Green, as children at school do), who did the starting check seven weeks ago and is in her second Green
  * module (module 1's review is due), and Leo, 20 months, who has not done the check yet.
  */

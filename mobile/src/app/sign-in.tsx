@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Banner, Button, Field, Muted, StageStripe } from '@/components/ui'
+import { Banner, Button, Field, Logo, Muted } from '@/components/ui'
 import { useAuth } from '@/lib/auth'
 import { space, usePalette } from '@/lib/theme'
 
@@ -30,8 +30,7 @@ export default function SignInScreen() {
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: p.page }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{ backgroundColor: p.navy, paddingTop: insets.top + space.xl, paddingHorizontal: space.xl, paddingBottom: space.xl, gap: space.md }}>
-          <StageStripe />
-          <Text style={{ color: '#ffffff', fontSize: 30, fontWeight: '800' }}>Motor Movers</Text>
+          <Logo onDark />
           <Text style={{ color: '#c8d3de', fontSize: 16, lineHeight: 23 }}>
             Short movement activities to do at home, and your child's progress on the programme.
           </Text>

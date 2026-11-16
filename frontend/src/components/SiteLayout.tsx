@@ -2,9 +2,10 @@ import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { homeFor } from '../App'
 import { useAuth } from '../auth'
+import { BRAND } from '../brand'
 import { useCountry } from '../country'
 import { CONTACT_EMAIL, CONTACT_PHONE } from '../site'
-import StageStripe from './StageStripe'
+import Logo from './Logo'
 import ThemeSwitch from './ThemeSwitch'
 
 const NAV = [
@@ -29,9 +30,8 @@ export default function SiteLayout() {
   return (
     <div className="site">
       <header className="site-header">
-        <Link to="/" className="brand site-brand">
-          <StageStripe />
-          <span>Motor Movers</span>
+        <Link to="/" className="brand site-brand" aria-label={BRAND}>
+          <Logo />
         </Link>
         <nav className="site-nav" aria-label="Website">
           {NAV.map((item) => (
@@ -44,7 +44,7 @@ export default function SiteLayout() {
           <ThemeSwitch />
           {user ? (
             <Link to={homeFor(user.role)} className="btn btn-light">
-              Open Motor Movers
+              Open the programme
             </Link>
           ) : (
             <Link to="/sign-in" className="btn btn-light">
@@ -60,7 +60,7 @@ export default function SiteLayout() {
         <div className="site-footer-inner">
           <div>
             <p className="site-footer-brand">
-              <StageStripe /> Motor Movers
+              <Logo />
             </p>
             <p className="muted-on-dark">A programme from the Movement for Learning Project.</p>
           </div>

@@ -82,7 +82,7 @@ if present) as `PLATFORM_COUNTRIES_<REGION>_<NAME>`, with the name's dashes and 
 
 ```bash
 PLATFORM_COUNTRIES_IE_TAXPERCENT=23
-PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME=Motor Movers Australia Pty Ltd
+PLATFORM_COUNTRIES_AU_LEGALENTITY_NAME=Example Australia Pty Ltd
 PLATFORM_COUNTRIES_AU_YEARNAMES=Preschool/Kindergarten,Prep,Year 1,Year 2,Year 3
 PLATFORM_COUNTRIES_IE_TERMLABEL=This term
 ```
@@ -154,7 +154,7 @@ Live course sessions run as Zoom meetings shown inside the platform (Zoom's Meet
 session from **Live sessions**; learners booked on the cohort join from their Training page, from 15 minutes before
 the start, without a Zoom account. Without the keys below, sessions still run (register, rules) without video.
 
-In the Motor Movers Zoom account (a paid plan, since sessions are longer than 40 minutes), at
+In the programme's Zoom account (a paid plan, since sessions are longer than 40 minutes), at
 [marketplace.zoom.us](https://marketplace.zoom.us) > Develop > Build App:
 
 1. **Server-to-Server OAuth app.** Note the Account ID, Client ID and Client Secret into `ZOOM_ACCOUNT_ID`,
@@ -222,7 +222,7 @@ Pay by card is hidden and the team marks payments paid by hand, as before.
 taken by card goes back through Stripe; nothing is saved unless Stripe accepts it. Anything else is recorded, and the
 team returns the money by hand. A refund made directly in the Stripe dashboard arrives by the webhook and is recorded
 the same way, once. Each refund has a credit note, numbered with no gaps per deployment, emailed to the payer (a school's
-heads). When a refund applies is the team's decision, under Motor Movers' refund policy; the platform does not decide it.
+heads). When a refund applies is the team's decision, under the programme's refund policy; the platform does not decide it.
 
 Two cases to watch for in the API log: "Stripe could not return refund ..." (`refund.failed`: the refund stops counting,
 and the money has to go back another way), and "more than is left to refund" (a dashboard refund on a payment already

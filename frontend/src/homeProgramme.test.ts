@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ageLabel, reviewName, toMonths } from './homeProgramme'
 
-describe('ages for Motor Movers at Home', () => {
+describe('ages for the home programme', () => {
   it('reads months as years and months', () => {
     expect(ageLabel(44)).toBe('3 years 8 months')
     expect(ageLabel(11)).toBe('11 months')

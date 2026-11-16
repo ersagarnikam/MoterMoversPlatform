@@ -83,7 +83,7 @@ function loadZoom() {
 }
 
 /**
- * A live course session: the Zoom meeting inside the page, the session rules, and for the Motor Movers team the
+ * A live course session: the Zoom meeting inside the page, the session rules, and for the programme team the
  * register. Reached with a full page load, because this page alone allows Zoom's scripts (see vite.config.ts).
  */
 export default function LiveRoomPage() {
@@ -261,7 +261,7 @@ export default function LiveRoomPage() {
             <div className="zoom-offline">
               <strong>Zoom is not connected yet</strong>
               <p className="muted">
-                When the Motor Movers Zoom keys are set, the meeting appears here. Everything else on this page works
+                When the programme's Zoom keys are set, the meeting appears here. Everything else on this page works
                 already{s.host ? ', including the register' : ''}.
               </p>
             </div>
