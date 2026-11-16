@@ -237,7 +237,7 @@ async function shortFilm(page: Page): Promise<Buffer> {
   return Buffer.from(encoded, 'base64')
 }
 
-test('the team attaches a film to a rhyme and the class player plays it', async ({ page }) => {
+test('the team attaches a film to a rhyme and the class player plays it, and to an exercise', async ({ page }) => {
   // Which rhyme Ms Hardy's class is on today.
   await signIn(page, 'teacher@oakfield.test')
   await page.getByRole('button', { name: 'Start session' }).click()
@@ -259,9 +259,10 @@ test('the team attaches a film to a rhyme and the class player plays it', async 
   const card = page.getByRole('region', { name: `Film for Yellow rhyme ${rhyme}` })
   await card.getByLabel(/Or upload a file/).setInputFiles({ name: 'rhyme.webm', mimeType: 'video/webm', buffer: film })
   await expect(page.getByText('“rhyme.webm” is uploaded. Attach it to keep it.')).toBeVisible()
-  await card.getByRole('button', { name: 'Attach to all 5 sessions' }).click()
+  await expect(card.getByText('One film for all 5 sessions of Yellow rhyme')).toBeVisible()
+  await card.getByRole('button', { name: 'Attach the film' }).click()
   await expect(card.getByRole('link', { name: 'Open the film' })).toBeVisible()
-  await expect(card.getByText('No credit line yet')).toBeVisible()
+  await expect(card.getByText('Credit line: “Film: Professor Pat Preedy Programme” (the usual one)')).toBeVisible()
   await expectAccessible(page)
   await page.getByRole('button', { name: 'Sign out' }).click()
 
@@ -269,7 +270,7 @@ test('the team attaches a film to a rhyme and the class player plays it', async 
   await page.getByRole('button', { name: 'Start session' }).click()
   const video = page.locator('.player-video video')
   await expect(video).toHaveAttribute('src', /^\/api\/files\/local\/uploads\/.+\.webm/)
-  await expect(page.getByText('Film credit to be confirmed.')).toBeVisible()
+  await expect(page.locator('.film-credit')).toHaveText('Film: Professor Pat Preedy Programme')
   await expect(page.locator('.player-placeholder')).toHaveCount(0)
   // Only the film's details load until it is played; then it plays under the strict policy.
   await expect(video).toHaveAttribute('preload', 'metadata')
@@ -289,7 +290,22 @@ test('the team attaches a film to a rhyme and the class player plays it', async 
   await page.getByLabel('Show module').selectOption(rhyme)
   await card.getByRole('button', { name: 'Remove the film' }).click()
   await page.getByRole('button', { name: 'Remove the film' }).last().click()
-  await expect(card.getByRole('button', { name: 'Attach to all 5 sessions' })).toBeVisible()
+  await expect(card.getByRole('button', { name: 'Attach the film' })).toBeVisible()
+
+  // From Green to Violet each exercise of the grid can have its own film.
+  await page.getByLabel('Show colour').selectOption('GREEN')
+  await page.getByText('Films for Green exercises (0 of 27 have one)').click()
+  const exercise = page.locator('.film-exercise').first()
+  await exercise.locator('summary').click()
+  await exercise.getByLabel('Film link').fill('https://films.example.test/green-1.mp4')
+  await exercise.getByLabel(/Credit line/).fill('Filmed for the programme')
+  await exercise.getByRole('button', { name: 'Attach the film' }).click()
+  await expect(page.getByText('Films for Green exercises (1 of 27 have one)')).toBeVisible()
+  await expect(exercise.getByText('Credit line: “Filmed for the programme”.')).toBeVisible()
+  await expectAccessible(page)
+  await exercise.getByRole('button', { name: 'Remove the film' }).click()
+  await page.getByRole('button', { name: 'Remove the film' }).last().click()
+  await expect(page.getByText('Films for Green exercises (0 of 27 have one)')).toBeVisible()
 })
 
 test('the team sets up a course and opens a cohort for booking', async ({ page }) => {

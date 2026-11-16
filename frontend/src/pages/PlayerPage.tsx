@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, type Today } from '../api'
 import { useToast } from '../components/Feedback'
@@ -8,7 +8,8 @@ import Skeleton from '../components/Skeleton'
 
 /**
  * The class player. The video fills the screen and can be cast to the whiteboard; the side list
- * ticks through the session plan. A session with no film of its own, or of its rhyme or module, runs a timed placeholder.
+ * ticks through the session plan. From Green to Violet each step plays its exercise's own film, moving on when it ends;
+ * otherwise the session's film (its own, or its rhyme's or module's) plays, or a timed placeholder with no film at all.
  */
 export default function PlayerPage() {
   const { classId } = useParams()
@@ -18,6 +19,10 @@ export default function PlayerPage() {
   const [playing, setPlaying] = useState(false)
   const [absent, setAbsent] = useState<Set<number>>(new Set())
   const [saving, setSaving] = useState(false)
+  // The step's own film has just ended, so the next step's starts by itself.
+  const [following, setFollowing] = useState(false)
+  // While a step plays its own film the clock waits: the film's end moves the plan on, not the timer.
+  const ownFilm = useRef(false)
   const [error, setError] = useState<string | null>(null)
   const toast = useToast()
 
@@ -27,7 +32,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     if (!playing) return
-    const t = setInterval(() => setElapsed((s) => s + 1), 1000)
+    const t = setInterval(() => setElapsed((s) => (ownFilm.current ? s : s + 1)), 1000)
     return () => clearInterval(t)
   }, [playing])
 
@@ -61,6 +66,13 @@ export default function PlayerPage() {
   const step = Math.min(steps.length - 1, Math.floor(elapsed / perStep))
   const how = steps[step]?.how
   const finished = elapsed >= total
+  // The step's exercise film first; the cool-down and any step without one fall back to the session's film.
+  const own = session.steps[step]?.videoUrl ? session.steps[step] : null
+  ownFilm.current = own !== null
+  const go = (to: number, follow: boolean) => {
+    setFollowing(follow)
+    setElapsed(Math.min(total, perStep * to))
+  }
 
   function toggleAbsent(id: number) {
     setAbsent((prev) => {
@@ -91,7 +103,15 @@ export default function PlayerPage() {
       <h1>{session.title}</h1>
       <div className="player">
         <div className="player-video">
-          {session.videoUrl ? (
+          {own ? (
+            <Film
+              key={step}
+              src={own.videoUrl!}
+              credit={own.filmCredit}
+              autoPlay={following}
+              onEnded={() => go(step + 1, true)}
+            />
+          ) : session.videoUrl ? (
             <Film
               src={session.videoUrl}
               credit={session.filmCredit}
@@ -120,7 +140,7 @@ export default function PlayerPage() {
                   type="button"
                   className="plan-step"
                   aria-current={i === step ? 'step' : undefined}
-                  onClick={() => setElapsed(perStep * i)}
+                  onClick={() => go(i, false)}
                 >
                   {s.title}
                 </button>

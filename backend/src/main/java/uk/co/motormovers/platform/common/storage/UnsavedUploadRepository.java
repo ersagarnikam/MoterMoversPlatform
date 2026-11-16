@@ -29,7 +29,7 @@ public interface UnsavedUploadRepository extends JpaRepository<UnsavedUpload, St
     @Query(value = """
             SELECT COUNT(*) FROM (
                 SELECT 1 AS found FROM programme_session WHERE video_key = :key
-                UNION ALL SELECT 1 FROM unit_film WHERE video_key = :key
+                UNION ALL SELECT 1 FROM programme_film WHERE video_key = :key
                 UNION ALL SELECT 1 FROM home_activity WHERE video_key = :key
                 UNION ALL SELECT 1 FROM induction_lesson WHERE video_key = :key
                 UNION ALL SELECT 1 FROM library_resource WHERE file_key = :key

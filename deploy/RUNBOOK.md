@@ -293,28 +293,35 @@ lists the bucket. If a delete fails, it logs `Could not delete unsaved upload` w
 form left open past that time is told to upload the file again when it is saved. **Known limits:** a file replaced, or left
 behind when a saved item is removed, stays in the bucket, as do files uploaded before this was added.
 
-### A film for a rhyme or module
+### Films for sessions
 
-The team attaches one film to all the sessions of a colour's rhyme (Red, Orange, Yellow) or module (Green to Violet):
+Open **Content approval** from the menu (a full page load, or the upload is blocked), stay on **Class sessions**, and
+choose the colour under **Show colour**. There are two kinds of film:
 
-1. Open **Content approval** from the menu (a full page load, or the upload is blocked), stay on **Class sessions**, and
-   choose the colour under **Show colour** and the rhyme or module under **Show module**.
-2. In the card **Film for <colour> rhyme <n>**, upload the MP4 (or paste an `https://` link), type the credit line if
-   there is one, and press **Attach to all n sessions**. Wait for the upload's progress bar to finish first.
-3. **Open the film** to check it. **Remove the film** takes it off again; attach another to replace it.
+- **A rhyme or module** (Red, Orange and Yellow are filmed a rhyme at a time). Choose the rhyme or module under **Show
+  module**. In the card **Film for <colour> rhyme <n>**, upload the MP4 (or paste an `https://` link) and press **Attach
+  the film**. Every session of that rhyme or module then plays it.
+- **An exercise** (Green to Violet are filmed an exercise at a time). Open **Films for <colour> exercises**, then the
+  exercise, and attach its film the same way. Each step of a session then plays the film of its own exercise, the plan
+  moves on when a film ends, and the next one starts by itself.
 
-Every session of that rhyme or module then plays it: in the class player for a school licensed for the colour, and in
-the home session for a family with a running pass (or a parent whose child is linked to a school), on the website and
-in the parent app. Sessions added to it later have it too, so reloading the session plans never drops a film. A film
-attached to one session itself (the session form's video field) still wins for that session. With no credit line typed,
-the screens show "Film credit to be confirmed." A removed or replaced film's file stays in the bucket.
+Wait for the upload's progress bar to finish before attaching. **Open the film** checks it. **Remove the film** takes it
+off again; attach another to replace it.
+
+Films play in the class player for a school licensed for the colour, and in the home session for a family with a
+running pass (or a parent whose child is linked to a school), on the website and in the parent app. Sessions added later
+have them too, so reloading the session plans never drops a film. Where a step has no film of its own, the session's
+own film (the session form's video field) plays, then its rhyme's or module's, then the timed plan. The line under a
+film is "Film: " and the programme's name unless a credit line is typed for that film; to change it, remove the film and
+attach it again. A removed or replaced film's file stays in the bucket.
 
 **Film size.** The player loads only a film's details until someone presses play, then fetches it in ranges, so a film
 is never downloaded whole and dragging the position bar works. A range can only play as fast as the connection: the
 first recordings received are 1280x720 at 8 Mbps (200 to 440 MB for 3 to 7 minutes), which needs a steady 8 Mbps and
 uses that much mobile data, and their index is at the end of the file, which costs one more request before playing.
 **Before uploading for real, re-save each film at about 1.5 Mbps (720p, H.264, AAC) with the index at the front ("fast
-start" or "web optimised"): about 12 MB a minute, so under 100 MB a film.** The platform does not convert films.
+start" or "web optimised"): about 12 MB a minute, so under 100 MB a film.** The platform does not convert films,
+and does not embed or fetch films from video sites.
 
 ## Everyday operations
 

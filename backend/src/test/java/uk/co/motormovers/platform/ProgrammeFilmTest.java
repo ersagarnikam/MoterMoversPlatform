@@ -29,14 +29,16 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
 
+import uk.co.motormovers.platform.assessment.model.Exercise;
+import uk.co.motormovers.platform.assessment.repository.ExerciseRepository;
 import uk.co.motormovers.platform.assessment.service.SessionPlans;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.model.Region;
 import uk.co.motormovers.platform.common.storage.UnsavedUploadRepository;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
 import uk.co.motormovers.platform.content.repository.ProgrammeSessionRepository;
-import uk.co.motormovers.platform.content.repository.UnitFilmRepository;
-import uk.co.motormovers.platform.content.service.UnitFilms;
+import uk.co.motormovers.platform.content.repository.ProgrammeFilmRepository;
+import uk.co.motormovers.platform.content.service.ProgrammeFilms;
 import uk.co.motormovers.platform.school.model.Licence;
 import uk.co.motormovers.platform.school.model.School;
 import uk.co.motormovers.platform.school.model.SchoolClass;
@@ -47,13 +49,14 @@ import uk.co.motormovers.platform.school.service.PlanService;
 
 /**
  * Go-live task 57: the team attaches one film to a colour's rhyme or module, and every session of it plays the film, at
- * school with a licence and at home with a pass, and still after the session plans load again. Its own database, as it
+ * school with a licence and at home with a pass, and still after the session plans load again. From Green to Violet an
+ * exercise has its own film, which each step plays. Its own database, as it
  * leaves films on the demo's sessions.
  */
 @SpringBootTest(properties = {"platform.login-limit-per-ip=500",
-        "spring.datasource.url=jdbc:h2:mem:unitfilm;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"})
+        "spring.datasource.url=jdbc:h2:mem:programmefilm;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"})
 @AutoConfigureMockMvc
-class UnitFilmTest {
+class ProgrammeFilmTest {
 
     private static final byte[] FILE = "not really a film".getBytes(StandardCharsets.UTF_8);
     private static final String LOCAL = "/api/files/local/uploads/";
@@ -81,7 +84,7 @@ class UnitFilmTest {
     ProgrammeSessionRepository sessions;
 
     @Autowired
-    UnitFilmRepository films;
+    ProgrammeFilmRepository films;
 
     @Autowired
     UnsavedUploadRepository unsaved;
@@ -162,7 +165,7 @@ class UnitFilmTest {
         String card = today(licensed);
         assertThat((String) JsonPath.read(card, "$.nextSession.label")).contains("Module 1 · Day 1");
         assertThat((String) JsonPath.read(card, "$.nextSession.videoUrl")).startsWith(LOCAL);
-        assertThat((String) JsonPath.read(card, "$.nextSession.filmCredit")).isEqualTo(UnitFilms.CREDIT_TO_CONFIRM);
+        assertThat((String) JsonPath.read(card, "$.nextSession.filmCredit")).isEqualTo(ProgrammeFilms.DEFAULT_CREDIT);
         assertThat(today(expired)).doesNotContain(LOCAL);
         // The link plays without a sign-in, as a video element needs, and seeks with ranges.
         String link = JsonPath.read(card, "$.nextSession.videoUrl");
@@ -175,9 +178,9 @@ class UnitFilmTest {
         assertThat((String) JsonPath.read(card, "$.nextSession.filmCredit")).isEqualTo("Filmed by a class teacher");
 
         // Every session of the rhyme has it, the next rhyme's have none, and a session's own film wins.
-        UnitFilms.Film none = new UnitFilms.Film(null, null);
+        ProgrammeFilms.Film none = new ProgrammeFilms.Film(null, null);
         assertThat(sessions.findByStage(ColourStage.ORANGE)).allSatisfy(s -> assertThat(filmOf(s))
-                .isEqualTo(s.getUnit() == 1 ? new UnitFilms.Film("https://example.org/orange-1.mp4",
+                .isEqualTo(s.getUnit() == 1 ? new ProgrammeFilms.Film("https://example.org/orange-1.mp4",
                         "Filmed by a class teacher") : none));
         ProgrammeSession first = session(ColourStage.ORANGE, 1, 1);
         first.setVideoKey(upload("video/mp4"));
@@ -244,12 +247,86 @@ class UnitFilmTest {
                 .andExpect(status().isForbidden());
     }
 
-    private UnitFilms.Film filmOf(ProgrammeSession session) {
-        return unitFilms.forSession(session);
+    @Test
+    void anExerciseHasItsOwnFilmFromGreenToVioletAndEachStepPlaysIt() throws Exception {
+        LocalDate today = LocalDate.now(clock);
+        SchoolClass licensed = classWith(ColourStage.GREEN, today.minusMonths(1), today.plusMonths(1));
+        SchoolClass expired = classWith(ColourStage.GREEN, today.minusYears(1), today.minusDays(1));
+        List<String> titles = JsonPath.read(today(licensed), "$.nextSession.steps[*].title");
+        Exercise first = exercises.findByStageAndTitleIn(ColourStage.GREEN, List.of(titles.getFirst())).getFirst();
+
+        // Only the team, one target at a time, and a rhyme colour's film goes on the rhyme.
+        String teacher = login("teacher@oakfield.test");
+        mvc.perform(get(FILMS + "/exercises?stage=GREEN").header("Authorization", bearer(teacher)))
+                .andExpect(status().isForbidden());
+        mvc.perform(put(FILMS).header("Authorization", bearer(teacher)).contentType(MediaType.APPLICATION_JSON)
+                .content(exerciseFilm(first.getId(), "https://example.org/x.mp4"))).andExpect(status().isForbidden());
+        mvc.perform(get(FILMS + "/exercises?stage=GREEN").header("Authorization", bearer(admin())))
+                .andExpect(jsonPath("$.length()").value(27))
+                .andExpect(jsonPath("$[0].number").value(1));
+        attachJson("{\"stage\":\"GREEN\",\"unit\":1,\"exerciseId\":" + first.getId()
+                + ",\"videoUrl\":\"https://example.org/x.mp4\"}").andExpect(status().isBadRequest());
+        attachJson("{\"videoUrl\":\"https://example.org/x.mp4\"}").andExpect(status().isBadRequest());
+        Exercise rhyme = exercises.findByStageOrderByNumber(ColourStage.ORANGE).getFirst();
+        attachJson(exerciseFilm(rhyme.getId(), "https://example.org/x.mp4")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Orange has one film for each rhyme. Attach it to the rhyme."));
+        attachJson(exerciseFilm(999_999L, "https://example.org/x.mp4")).andExpect(status().isNotFound());
+
+        String key = upload("video/mp4");
+        attachJson("{\"exerciseId\":" + first.getId() + ",\"videoKey\":\"" + key + "\"}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.stage").value("GREEN"))
+                .andExpect(jsonPath("$.exerciseId").value(first.getId()))
+                .andExpect(jsonPath("$.unit").doesNotExist())
+                .andExpect(jsonPath("$.creditShown").value(ProgrammeFilms.DEFAULT_CREDIT));
+        assertThat(unsaved.uses(key)).isEqualTo(1);
+
+        // The step for that exercise plays it; the other steps and the session as a whole have none.
+        String card = today(licensed);
+        assertThat((String) JsonPath.read(card, "$.nextSession.steps[0].videoUrl")).startsWith(LOCAL);
+        assertThat((String) JsonPath.read(card, "$.nextSession.steps[0].filmCredit"))
+                .isEqualTo(ProgrammeFilms.DEFAULT_CREDIT);
+        assertThat((Object) JsonPath.read(card, "$.nextSession.steps[1].videoUrl")).isNull();
+        assertThat((Object) JsonPath.read(card, "$.nextSession.videoUrl")).isNull();
+        assertThat(today(expired)).doesNotContain(LOCAL);
+
+        // At home, Ava's Green session carries it for that exercise if it is in her session; Tom's locked one never.
+        String priya = login("home@example.test");
+        Integer ava = homeChild(priya, "Ava");
+        String hers = homeToday(priya, ava).andReturn().getResponse().getContentAsString();
+        Integer inSession = JsonPath.<List<Integer>>read(hers, "$.exercises[*].id").getFirst();
+        attachJson(exerciseFilm(inSession.longValue(), "https://example.org/home.mp4")).andExpect(status().isOk());
+        homeToday(priya, ava)
+                .andExpect(jsonPath("$.exerciseFilms[?(@.exerciseId == " + inSession + ")].videoUrl")
+                        .value("https://example.org/home.mp4"))
+                .andExpect(jsonPath("$.exerciseFilms[?(@.exerciseId == " + inSession + ")].filmCredit")
+                        .value(ProgrammeFilms.DEFAULT_CREDIT));
+        String tom = login("lapsed@example.test");
+        homeToday(tom, homeChild(tom, "Noah")).andExpect(jsonPath("$.exerciseFilms.length()").value(0));
+
+        mvc.perform(delete(FILMS + "?exerciseId=" + first.getId()).header("Authorization", bearer(admin())))
+                .andExpect(jsonPath("$.removed").value(true));
+        assertThat(today(licensed)).doesNotContain(LOCAL);
+        mvc.perform(delete(FILMS).header("Authorization", bearer(admin()))).andExpect(status().isBadRequest());
+    }
+
+    private ResultActions attachJson(String body) throws Exception {
+        return mvc.perform(put(FILMS).header("Authorization", bearer(admin())).contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    private static String exerciseFilm(Long exerciseId, String link) {
+        return "{\"exerciseId\":" + exerciseId + ",\"videoUrl\":\"" + link + "\"}";
     }
 
     @Autowired
-    UnitFilms unitFilms;
+    ExerciseRepository exercises;
+
+    private ProgrammeFilms.Film filmOf(ProgrammeSession session) {
+        return programmeFilms.forSession(session);
+    }
+
+    @Autowired
+    ProgrammeFilms programmeFilms;
 
     private ProgrammeSession session(ColourStage stage, int unit, int day) {
         return sessions.findByStage(stage).stream().filter(s -> s.getUnit() == unit && s.getDay() == day).findFirst()

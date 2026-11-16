@@ -38,7 +38,7 @@ import uk.co.motormovers.platform.child.repository.ChildRepository;
 import uk.co.motormovers.platform.common.config.Mailer;
 import uk.co.motormovers.platform.common.exception.NotFoundException;
 import uk.co.motormovers.platform.common.model.ColourStage;
-import uk.co.motormovers.platform.content.service.UnitFilms;
+import uk.co.motormovers.platform.content.service.ProgrammeFilms;
 import uk.co.motormovers.platform.family.dto.FamilyViews;
 import uk.co.motormovers.platform.family.service.FamilyService;
 import uk.co.motormovers.platform.family.util.InviteCodes;
@@ -110,7 +110,7 @@ public class HomeService {
     private final Mailer mailer;
     private final ParentProgress parentProgress;
     private final CoolDowns coolDowns;
-    private final UnitFilms films;
+    private final ProgrammeFilms films;
     private final InductionService induction;
     private final HomePassService passes;
 
@@ -120,7 +120,7 @@ public class HomeService {
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
             Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns, SchoolYear schoolYear,
-            InductionService induction, HomePassService passes, UnitFilms films) {
+            InductionService induction, HomePassService passes, ProgrammeFilms films) {
         this.films = films;
         this.enabled = enabled;
         this.families = families;
@@ -450,7 +450,7 @@ public class HomeService {
                     0, 0, 0, 0, 0, false, "", "", List.of(), List.of(), List.of(), canRate, days.contains(today), grid,
                     days.size(), COUNTER_DAYS, sessions.countByChildId(childId), null, checkDue,
                     new HomeViews.Support(false, null), levels, HomeViews.SAFETY_NOTE, null, inductionDone,
-                    passRunning, passEndsOn, null, null);
+                    passRunning, passEndsOn, null, null, List.of());
         }
         List<ExerciseScore> theirs = scores.findByChildIdAndExerciseStage(childId, stage);
         Set<String> rated = theirs.stream().map(s -> s.getExercise().getId() + ":" + s.getPoint())
@@ -459,7 +459,12 @@ public class HomeService {
         HomeRules.Review due = canRate && !locked ? HomeRules.reviewDue(list, plan, rated) : null;
         List<Exercise> session = locked ? List.of() : plan.today();
         // The film of the rhyme or module the child is in, only once the pass and induction checks above are met.
-        UnitFilms.Film film = locked ? UnitFilms.Film.NONE : films.forUnit(stage, plan.module());
+        ProgrammeFilms.Film film = locked ? ProgrammeFilms.Film.NONE : films.forUnit(stage, plan.module());
+        // A locked session has no exercises, so no exercise's film is signed either.
+        List<HomeViews.ExerciseFilm> exerciseFilms = films.forExercises(session.stream().map(Exercise::getId).toList())
+                .entrySet().stream()
+                .map(e -> new HomeViews.ExerciseFilm(e.getKey(), e.getValue().videoUrl(), e.getValue().credit()))
+                .sorted(java.util.Comparator.comparing(HomeViews.ExerciseFilm::exerciseId)).toList();
         List<Long> firstTime = canRate ? session.stream()
                 .filter(e -> e.getPoints().contains(ExercisePoints.START)
                         && !rated.contains(e.getId() + ":" + ExercisePoints.START))
@@ -475,7 +480,8 @@ public class HomeService {
                         due.exercises().stream().map(AssessmentViews.ExerciseView::of).toList()),
                 checkDue, canRate ? support(stage, theirs) : new HomeViews.Support(false, null), levels,
                 HomeViews.SAFETY_NOTE, plan.rhymes() || locked ? null : coolDowns.forModule(stage, plan.module()),
-                inductionDone, passRunning, passEndsOn, film.videoUrl(), film.credit());
+                inductionDone, passRunning, passEndsOn, film.videoUrl(), film.credit(),
+                exerciseFilms);
     }
 
     /** Accepts a batch of home sessions, typically saved on the phone while offline. Safe to resend. */

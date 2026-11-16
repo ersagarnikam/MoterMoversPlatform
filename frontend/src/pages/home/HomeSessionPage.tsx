@@ -125,6 +125,13 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
   const coolingDown = step === today.exercises.length
   const exercise = coolingDown ? null : today.exercises[step]
   const last = step === steps - 1
+  // The exercise's own film if it has one, else the film of the rhyme or module.
+  const own = exercise ? today.exerciseFilms.find((f) => f.exerciseId === exercise.id) : undefined
+  const film = own
+    ? { src: own.videoUrl, credit: own.filmCredit }
+    : today.videoUrl
+      ? { src: today.videoUrl, credit: today.filmCredit }
+      : null
 
   return (
     <>
@@ -159,8 +166,8 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
           <p className="pre-line">{today.coolDown!.text}</p>
         </section>
       )}
-      {today.videoUrl ? (
-        <Film src={today.videoUrl} credit={today.filmCredit} />
+      {film ? (
+        <Film key={film.src} src={film.src} credit={film.credit} />
       ) : (
         <p className="muted">Video coming soon. Read each step aloud and do it together.</p>
       )}

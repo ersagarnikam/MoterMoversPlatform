@@ -13,12 +13,14 @@ import jakarta.persistence.Table;
 import uk.co.motormovers.platform.common.model.ColourStage;
 
 /**
- * The film for every session of one rhyme or module of a colour: an uploaded file's key, or a pasted link. It is kept
- * apart from the sessions so that sessions of the unit added later have it too.
+ * One of the programme's films: an uploaded file's key, or a pasted link. It belongs either to a rhyme or module of a
+ * colour ({@code unit}), where every session of it plays the film, or to one exercise of a colour's grid
+ * ({@code exerciseId}), where each step of a session plays its own. It is kept apart from the sessions so that sessions
+ * added later have it too.
  */
 @Entity
-@Table(name = "unit_film")
-public class UnitFilm {
+@Table(name = "programme_film")
+public class ProgrammeFilm {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,25 +29,38 @@ public class UnitFilm {
     @Enumerated(EnumType.STRING)
     private ColourStage stage;
 
-    private int unit;
+    /** The rhyme or module; null for an exercise's film. */
+    private Integer unit;
+
+    /** The grid exercise; null for a rhyme's or module's film. */
+    private Long exerciseId;
 
     private String videoUrl;
 
     private String videoKey;
 
-    /** The credit line shown under the film; null until the team has typed one. */
+    /** The credit line shown under the film; null for the default. */
     private String credit;
 
     private String attachedBy;
 
     private Instant attachedAt;
 
-    protected UnitFilm() {
+    protected ProgrammeFilm() {
     }
 
-    public UnitFilm(ColourStage stage, int unit) {
-        this.stage = stage;
-        this.unit = unit;
+    public static ProgrammeFilm forUnit(ColourStage stage, int unit) {
+        ProgrammeFilm film = new ProgrammeFilm();
+        film.stage = stage;
+        film.unit = unit;
+        return film;
+    }
+
+    public static ProgrammeFilm forExercise(ColourStage stage, Long exerciseId) {
+        ProgrammeFilm film = new ProgrammeFilm();
+        film.stage = stage;
+        film.exerciseId = exerciseId;
+        return film;
     }
 
     public void attach(String videoKey, String videoUrl, String credit, String by, Instant at) {
@@ -64,8 +79,12 @@ public class UnitFilm {
         return stage;
     }
 
-    public int getUnit() {
+    public Integer getUnit() {
         return unit;
+    }
+
+    public Long getExerciseId() {
+        return exerciseId;
     }
 
     public String getVideoUrl() {

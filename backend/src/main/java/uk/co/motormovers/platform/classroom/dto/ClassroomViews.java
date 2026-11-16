@@ -8,7 +8,7 @@ import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.common.storage.FileLinks;
 import uk.co.motormovers.platform.content.model.LibraryResource;
 import uk.co.motormovers.platform.content.model.ProgrammeSession;
-import uk.co.motormovers.platform.content.service.UnitFilms;
+import uk.co.motormovers.platform.content.service.ProgrammeFilms;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 import uk.co.motormovers.platform.school.model.SchoolClass;
 
@@ -28,8 +28,11 @@ public final class ClassroomViews {
         }
     }
 
-    /** One step of a session: instructions come from the colour's grid, and are null for a step the team wrote. */
-    public record SessionStep(String title, String instructions) {
+    /**
+     * One step of a session: instructions come from the colour's grid, and are null for a step the team wrote.
+     * videoUrl is the exercise's own film, with filmCredit to show under it; both null where it has none.
+     */
+    public record SessionStep(String title, String instructions, String videoUrl, String filmCredit) {
     }
 
     /**
@@ -41,7 +44,7 @@ public final class ClassroomViews {
             RhymeCard rhyme, String filmCredit) {
 
         /** Links are signed here and in the film, so call this only for a class whose school is licensed. */
-        public static SessionCard of(ProgrammeSession s, FileLinks files, UnitFilms.Film film, List<SessionStep> steps,
+        public static SessionCard of(ProgrammeSession s, FileLinks files, ProgrammeFilms.Film film, List<SessionStep> steps,
                 HomeViews.CoolDown coolDown) {
             LibraryResource rhyme = s.getRhyme();
             return new SessionCard(s.getId(), s.label(), s.getTitle(), s.getFocus(), s.getDurationMinutes(),

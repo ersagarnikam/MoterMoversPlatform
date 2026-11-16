@@ -78,6 +78,13 @@ export default function HomeSessionScreen() {
   const coolingDown = step === today.exercises.length
   const exercise = coolingDown ? null : today.exercises[step]
   const last = step === steps - 1
+  // The exercise's own film if it has one, else the film of the rhyme or module.
+  const own = exercise ? today.exerciseFilms.find((f) => f.exerciseId === exercise.id) : undefined
+  const film = own
+    ? { url: own.videoUrl, credit: own.filmCredit }
+    : today.videoUrl
+      ? { url: today.videoUrl, credit: today.filmCredit }
+      : null
 
   return (
     <Screen>
@@ -107,14 +114,14 @@ export default function HomeSessionScreen() {
           </>
         )}
       </Card>
-      {today.videoUrl ? (
+      {film ? (
         <>
           <Button
             label="Watch the film"
             variant="secondary"
-            onPress={() => Linking.openURL(fullUrl(today.videoUrl!))}
+            onPress={() => Linking.openURL(fullUrl(film.url))}
           />
-          {today.filmCredit && <Muted>{today.filmCredit}</Muted>}
+          {film.credit && <Muted>{film.credit}</Muted>}
         </>
       ) : (
         <Muted>Video coming soon. Read each step aloud and do it together.</Muted>

@@ -7,15 +7,29 @@ export default function Film({
   credit,
   onPlay,
   onPause,
+  onEnded,
+  autoPlay = false,
 }: {
   src: string
   credit: string | null
   onPlay?: () => void
   onPause?: () => void
+  onEnded?: () => void
+  /** Start at once: for the next step's film, when the one before it has just ended. */
+  autoPlay?: boolean
 }) {
   return (
     <figure className="film">
-      <video src={src} controls preload="metadata" playsInline onPlay={onPlay} onPause={onPause} />
+      <video
+        src={src}
+        controls
+        preload="metadata"
+        playsInline
+        autoPlay={autoPlay}
+        onPlay={onPlay}
+        onPause={onPause}
+        onEnded={onEnded}
+      />
       {credit && <figcaption className="film-credit">{credit}</figcaption>}
     </figure>
   )
