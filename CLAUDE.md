@@ -563,6 +563,14 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Fix verified (updated by tester, 2026-11-16, `task-57` at 4157161, before merge): pull request #76 (task 57 part 1) now passes, no bugs.** Web 87 unit tests (the new `playerClock.test.ts` included), the build and all 72 browser
+tests pass; the backend was not rerun (only web files changed; 305 passed at 0e6bc0f). In Chrome on Year 3 K with real Orange films on local storage, standing in for Green: Yes and No, Flying Machines and Motor Spin with their own films.
+- **(a)** When Flying Machines' film ends, the module film starts by itself on Starfish and the bar counts. With no module film, the timed plan runs on by itself there instead.
+- **(b)** During a step film the bar holds still (Yes and No, Flying Machines, Motor Spin, reached by the clock). After Motor Spin's film the module film carries on from where it was (88 s) and the bar counts.
+- **(c)** Paused, nothing counts: a step film, the module film (6 s) and the timed plan (5 s).
+- **(d)** A step with no film (the timed plan) and the cool-down count while running; Skip to end fills the bar. **(e)** Orange rhyme 4 (one film, at 390px): the bar counts only while the film plays, holds while paused, resumes with it.
+- **Low note 1 fixed:** the film card's upload hint names video only. **New, low:** after Skip to end the module film keeps playing; it only stops when paused by hand. No console or content policy errors.
+
 **Task tested on its branch (updated by tester, 2026-11-16, `task-57` at 0e6bc0f, before merge, the Project manager's brief): pull request #76 (task 57 part 1,
 films in sessions) has one bug, handed back to the Developer.** Backend 305, web 79 unit tests, the build, the parent app typecheck and all 72 browser tests pass (H2 with demo data, installed Chrome).
 - **Bug (minor): the class player's clock and the film get out of step when a session mixes steps with their own film and steps without one** (`PlayerPage.tsx`). Tried on Year 3 K with Orange films standing in for
