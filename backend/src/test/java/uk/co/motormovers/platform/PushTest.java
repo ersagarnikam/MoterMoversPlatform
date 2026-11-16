@@ -14,6 +14,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,6 +36,8 @@ import com.jayway.jsonpath.JsonPath;
 import uk.co.motormovers.platform.notification.repository.PushTokenRepository;
 import uk.co.motormovers.platform.notification.service.ExpoPushSender;
 import uk.co.motormovers.platform.notification.service.PushSender;
+import uk.co.motormovers.platform.training.repository.CohortRepository;
+import uk.co.motormovers.platform.training.repository.CohortSessionRepository;
 import uk.co.motormovers.platform.training.service.SessionReminderJob;
 
 /** Phone notifications to the parent app: registering a phone, and what is sent when. Expo itself is stubbed. */
@@ -56,6 +60,18 @@ class PushTest {
     @Autowired
     SessionReminderJob reminders;
 
+    @Autowired
+    CohortRepository cohorts;
+
+    @Autowired
+    CohortSessionRepository cohortSessions;
+
+    @Autowired
+    JdbcTemplate jdbc;
+
+    @Autowired
+    Clock clock;
+
     @Test
     void aPhoneHearsWhenItsSessionOpensAndWhenAPaymentIsDue() throws Exception {
         when(sender.send(anyList())).thenReturn(List.of());
@@ -65,7 +81,9 @@ class PushTest {
         send(jo, "/api/me/push-tokens", "{\"token\":\"" + JO_PHONE + "\",\"platform\":\"ios\"}")
                 .andExpect(status().isNoContent());
 
-        // Jo's demo session starts ten minutes after start-up: it is open, so her phone hears, once.
+        // Jo's demo session, put five minutes from now whenever the demo was loaded (task 86): it is open, so her
+        // phone hears, once.
+        OpeningSession.inFiveMinutes(cohorts, cohortSessions, jdbc, clock);
         assertThat(reminders.announceOpening()).isPositive();
         assertThat(sent()).filteredOn(m -> m.token().equals(JO_PHONE)).singleElement().satisfies(m -> {
             assertThat(m.title()).isEqualTo("Your live session is open");

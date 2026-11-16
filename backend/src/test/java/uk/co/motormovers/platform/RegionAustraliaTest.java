@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.co.motormovers.platform.assessment.model.YearPoint;
 import uk.co.motormovers.platform.assessment.util.SchoolYear;
 import uk.co.motormovers.platform.notification.service.PushService;
+import uk.co.motormovers.platform.training.repository.CohortRepository;
+import uk.co.motormovers.platform.training.repository.CohortSessionRepository;
 import uk.co.motormovers.platform.training.service.SessionReminderJob;
 
 /** A deployment started with PLATFORM_REGION=AU: Australia's settings, on Queensland time. */
@@ -52,9 +54,16 @@ class RegionAustraliaTest {
     @MockitoBean
     PushService push;
 
+    @Autowired
+    CohortRepository cohorts;
+
+    @Autowired
+    CohortSessionRepository cohortSessions;
+
     @Test
     void aSessionNoticeSaysQueenslandTimeNotUkTime() {
-        jdbc.update("UPDATE cohort_session SET opening_push_sent_at = NULL");
+        // Its own session in the next 15 minutes, whenever the demo was loaded (task 86).
+        OpeningSession.inFiveMinutes(cohorts, cohortSessions, jdbc, clock);
         job.announceOpening();
         ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);
         verify(push, atLeastOnce()).notify(any(), anyString(), body.capture(), anyString());
