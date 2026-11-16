@@ -161,24 +161,40 @@ class CountrySettingsTest {
     void aValueThatCannotWorkStopsStartUp() {
         CountrySettings uk = countries(Map.of()).get(Region.UK);
         assertThatThrownBy(() -> new CountrySettings(uk.name(), "POUNDS", uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term").validated("uk"))
+                uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", uk.launchPrices()).validated("uk"))
                 .hasMessageContaining("platform.countries.uk.currency");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term")
+                BigDecimal.valueOf(120), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", uk.launchPrices())
                 .validated("uk"))
                 .hasMessageContaining("tax-percent");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
-                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term")
+                uk.taxPercent(), "Europe/Atlantis", uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", uk.launchPrices())
                 .validated("uk"))
                 .hasMessageContaining("time-zone");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), new CountrySettings.SchoolYear(9, 8, 3, 13, 1, 5), uk.yearNames(),
-                uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term").validated("uk"))
+                uk.legalEntity(), "Credit note", "UK time", "the UK", "This half-term", uk.launchPrices()).validated("uk"))
                 .hasMessageContaining("school-year");
         assertThatThrownBy(() -> new CountrySettings(uk.name(), uk.currency(), uk.locale(), uk.taxLabel(),
                 uk.taxPercent(), uk.timeZone(), uk.schoolYear(), uk.yearNames(), uk.legalEntity(), "Credit note",
-                "UK time", "the UK", " ").validated("uk"))
+                "UK time", "the UK", " ", uk.launchPrices()).validated("uk"))
                 .hasMessageContaining("term-label");
+    }
+
+    @Test
+    void launchPricesComeFromTheCountryAndCanBeOverridden() {
+        Map<Region, CountrySettings> countries = countries(Map.of("PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL", "1300",
+                "PLATFORM_COUNTRIES_AU_LAUNCHPRICES_GROUP", "1170.50"));
+        CountrySettings.LaunchPrices au = countries.get(Region.AU).validated("au").launchPrices();
+        assertThat(au.schoolPence()).isEqualTo(130_000);
+        assertThat(au.groupPence()).isEqualTo(117_050);
+        assertThat(au.childcarePence()).isEqualTo(75_000);
+        assertThat(countries.get(Region.UK).validated("uk").launchPrices().homePassPence()).isEqualTo(53_000);
+        assertThat(countries.get(Region.IE).validated("ie").launchPrices().practitionerRenewalPence()).isEqualTo(3_500);
+        assertThatThrownBy(() -> countries(Map.of("PLATFORM_COUNTRIES_UK_LAUNCHPRICES_SCHOOL", "-1")).get(Region.UK)
+                .validated("uk")).hasMessageContaining("launch-prices");
+        assertThatThrownBy(() -> countries(Map.of("PLATFORM_COUNTRIES_UK_LAUNCHPRICES_SCHOOL", "635.505")).get(Region.UK)
+                .validated("uk")).hasMessageContaining("launch-prices");
     }
 
     /** application.yml's countries, bound as Spring binds them, with these environment variables on top. */

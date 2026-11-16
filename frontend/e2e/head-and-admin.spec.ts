@@ -543,7 +543,7 @@ test('a head sees their school’s payments and a trust or group lead sees spend
   await page.getByRole('button', { name: 'Sign out' }).click()
   await signIn(page, 'trust@northbridge.test')
   const spending = page.locator('section', { has: page.getByRole('heading', { name: 'Spending' }) })
-  await expect(spending.getByRole('row', { name: /Brookhouse/ })).toContainText('£1,487.50')
+  await expect(spending.getByRole('row', { name: /Brookhouse/ })).toContainText('£571.50')
   await expect(spending.getByRole('row', { name: /All schools/ })).toBeVisible()
 })
 
@@ -553,7 +553,7 @@ test('a parent sees what is due, how to pay it, and what they have paid', async 
   await page.getByRole('link', { name: 'See what it is for and how to pay' }).click()
 
   await expect(page.getByRole('heading', { name: 'Payments', level: 1 })).toBeVisible()
-  await expect(page.locator('.kpi', { hasText: 'Paid in total' })).toContainText('£45')
+  await expect(page.locator('.kpi', { hasText: 'Paid in total' })).toContainText('£55')
   await expect(page.locator('.kpi', { hasText: 'Due now' })).toContainText('£15')
   const toPay = page.locator('section', { has: page.getByRole('heading', { name: 'To pay' }) })
   await expect(toPay.getByText('Rhyme book and CD')).toBeVisible()
@@ -569,17 +569,17 @@ test('the team schedules a price rise, and past prices stay in the history', asy
   await expect(page.getByRole('heading', { name: 'Plans and prices' })).toBeVisible()
   await expectAccessible(page)
 
-  const plan = page.locator('.plan-card', { has: page.getByRole('heading', { name: /^Primary core/ }) })
+  const plan = page.locator('.plan-card', { has: page.getByRole('heading', { name: /^School/ }) })
   const from = new Date(Date.now() + 40 * 86_400_000).toISOString().slice(0, 10)
   await plan.getByLabel('New yearly price (£)').fill('950')
   await plan.getByLabel('From').fill(from)
   await plan.getByRole('button', { name: 'Set price' }).click()
-  await expect(page.getByText(`Primary core: £950 a year from ${day(from)}`)).toBeVisible()
+  await expect(page.getByText(`School: £950 a year from ${day(from)}`)).toBeVisible()
   await expect(plan.getByText(`changes to £950 from ${day(from)}`)).toBeVisible()
   // Today's price is unchanged until then.
-  await expect(plan.getByText('£900 a year', { exact: true })).toBeVisible()
+  await expect(plan.getByText('£635 a year', { exact: true })).toBeVisible()
   await plan.getByText('Price history').click()
-  await expect(plan.getByRole('cell', { name: 'Launch' })).toBeVisible()
+  await expect(plan.getByRole('cell', { name: 'Before launch' })).toBeVisible()
 })
 
 test('the team signs a school up at an agreed price and changes it', async ({ page }) => {
@@ -588,18 +588,18 @@ test('the team signs a school up at an agreed price and changes it', async ({ pa
   const name = `Discount Nursery ${Date.now()}`
   const form = page.locator('section', { has: page.getByRole('heading', { name: 'Sign a school up' }) })
   await form.getByLabel('School name').fill(name)
-  await form.getByLabel('Plan').selectOption({ label: 'Early years (£450)' })
-  await form.getByLabel('Agreed yearly price (£, optional)').fill('400')
+  await form.getByLabel('Plan').selectOption({ label: 'Childcare centre or kindergarten (£395)' })
+  await form.getByLabel('Agreed yearly price (£, optional)').fill('350')
   await form.getByRole('button', { name: 'Sign up school' }).click()
   await expect(page.getByText(`${name} signed up`)).toBeVisible()
 
   const row = page.getByRole('row', { name: new RegExp(name) })
-  await expect(row).toContainText('£400 (plan £450)')
+  await expect(row).toContainText('£350 (plan £395)')
   await row.getByRole('button', { name: `Change the yearly price for ${name}` }).click()
-  await row.getByLabel(`Yearly price for ${name} (£)`).fill('380')
+  await row.getByLabel(`Yearly price for ${name} (£)`).fill('330')
   await row.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText(`${name} now pays £380 a year`)).toBeVisible()
-  await expect(row).toContainText('£380 (plan £450)')
+  await expect(page.getByText(`${name} now pays £330 a year`)).toBeVisible()
+  await expect(row).toContainText('£330 (plan £395)')
 })
 
 test('recording a payment fills in the licence or course price', async ({ page }) => {
@@ -607,12 +607,12 @@ test('recording a payment fills in the licence or course price', async ({ page }
   await page.getByRole('link', { name: 'Payments', exact: true }).click()
   const form = page.locator('section', { has: page.getByRole('heading', { name: 'Record a payment' }) })
   await form.getByRole('combobox', { name: /^School/ }).selectOption({ label: 'Oakfield Primary' })
-  await expect(form.getByLabel('Amount (£)')).toHaveValue('1487.5')
-  await expect(form.getByLabel('Description')).toHaveValue('Trust licence')
+  await expect(form.getByLabel('Amount (£)')).toHaveValue('571.5')
+  await expect(form.getByLabel('Description')).toHaveValue('Group of schools licence')
 
   await form.getByLabel(/A parent, practitioner or member of staff/).check()
   await form.getByRole('combobox', { name: /^For/ }).selectOption('COURSE')
-  await form.getByRole('combobox', { name: /^Course/ }).selectOption({ label: 'Practitioner course, yearly renewal (£60)' })
-  await expect(form.getByLabel('Amount (£)')).toHaveValue('60')
+  await form.getByRole('combobox', { name: /^Course/ }).selectOption({ label: 'Practitioner course, yearly renewal (£30)' })
+  await expect(form.getByLabel('Amount (£)')).toHaveValue('30')
   await expect(form.getByLabel('Description')).toHaveValue('Practitioner course, yearly renewal')
 })

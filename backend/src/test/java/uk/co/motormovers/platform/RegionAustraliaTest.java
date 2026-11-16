@@ -82,4 +82,19 @@ class RegionAustraliaTest {
         assertThat(schoolYear.pointOn(LocalDate.of(2027, 1, 27))).isEqualTo(YearPoint.START);
         assertThat(schoolYear.yearOf(LocalDate.of(2027, 12, 31))).isEqualTo(2027);
     }
+
+    @Autowired
+    uk.co.motormovers.platform.school.service.PlanService launchPlans;
+
+    @Autowired
+    uk.co.motormovers.platform.training.repository.CourseRepository launchCourses;
+
+    @Autowired
+    uk.co.motormovers.platform.home.repository.HomePassPriceRepository launchPassPrices;
+
+    /** Go-live task 85: this country's launch prices, in cents. */
+    @Test
+    void anAustralianDeploymentStartsWithKaysPrices() {
+        LaunchPricesTest.assertPrices(launchPlans, launchCourses, launchPassPrices, LocalDate.now(clock), 75_000, 120_000, 108_000, 20_000, 6_000, 10_000, 100_000);
+    }
 }

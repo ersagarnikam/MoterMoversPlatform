@@ -38,7 +38,7 @@ class PlanTest {
         LocalDate later = today().plusDays(30);
         send(admin, post("/api/admin/plans/PRIMARY_CORE/prices"), price(95_000, later))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.currentPricePence").value(90_000))
+                .andExpect(jsonPath("$.currentPricePence").value(63_500))
                 .andExpect(jsonPath("$.nextPrice.pricePence").value(95_000))
                 .andExpect(jsonPath("$.nextPrice.effectiveFrom").value(later.toString()))
                 .andExpect(jsonPath("$.nextPrice.changedBy").value("admin@motormovers.test"));
@@ -47,7 +47,7 @@ class PlanTest {
         send(admin, post("/api/admin/plans/PRIMARY_CORE/prices"), price(96_000, later))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nextPrice.pricePence").value(96_000))
-                .andExpect(jsonPath("$.history.length()").value(2));
+                .andExpect(jsonPath("$.history.length()").value(3));
 
         send(admin, post("/api/admin/plans/PRIMARY_CORE/prices"), price(80_000, today().minusDays(1)))
                 .andExpect(status().isBadRequest())
@@ -62,7 +62,7 @@ class PlanTest {
 
         send(admin, post("/api/admin/schools"), school("Starts Now Nursery", "EARLY_YEARS", null, today()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.agreedPricePence").value(45_000));
+                .andExpect(jsonPath("$.agreedPricePence").value(39_500));
         send(admin, post("/api/admin/schools"), school("Starts Later Nursery", "EARLY_YEARS", null, today().plusDays(20)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.agreedPricePence").value(50_000));
@@ -71,14 +71,14 @@ class PlanTest {
     @Test
     void theTeamAgreesADiscountAndCanChangeItLater() throws Exception {
         String admin = login("admin@motormovers.test");
-        String row = send(admin, post("/api/admin/schools"), school("Discount Primary", "FULL_PROGRAMME", 150_000, today()))
+        String row = send(admin, post("/api/admin/schools"), school("Discount Primary", "PRIMARY_CORE", 60_000, today()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.agreedPricePence").value(150_000))
-                .andExpect(jsonPath("$.listPricePence").value(175_000))
+                .andExpect(jsonPath("$.agreedPricePence").value(60_000))
+                .andExpect(jsonPath("$.listPricePence").value(63_500))
                 .andReturn().getResponse().getContentAsString();
-        send(admin, post("/api/admin/schools/" + JsonPath.read(row, "$.id") + "/agreed-price"), "{\"pricePence\":140000}")
+        send(admin, post("/api/admin/schools/" + JsonPath.read(row, "$.id") + "/agreed-price"), "{\"pricePence\":55000}")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.agreedPricePence").value(140_000));
+                .andExpect(jsonPath("$.agreedPricePence").value(55_000));
 
         String trial = send(admin, post("/api/admin/schools"), school("Trial Infants", "FREE_TRIAL", null, today()))
                 .andExpect(status().isOk())

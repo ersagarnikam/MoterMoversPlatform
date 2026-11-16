@@ -305,15 +305,14 @@ function overviewBody() {
     <table>
       <thead><tr><th>Source</th><th>Who pays</th><th>What it is</th><th class="num">Price</th></tr></thead>
       <tbody>
-        <tr><td>Early years plan</td><td>Early-years setting</td><td>Yearly programme licence</td><td class="num">£450 / year</td></tr>
-        <tr><td>Primary core plan</td><td>Primary school</td><td>Yearly programme licence</td><td class="num">£900 / year</td></tr>
-        <tr><td>Full programme plan</td><td>Primary school</td><td>Yearly programme licence</td><td class="num">£1,750 / year</td></tr>
-        <tr><td>Trust plan</td><td>Each school in a trust or group</td><td>Yearly licence at trust pricing</td><td class="num">£1,487.50 / year</td></tr>
-        <tr><td>Practitioner course</td><td>Practitioner or employer</td><td>4 live sessions, assessment, certificate</td><td class="num">£180, then £60 / year</td></tr>
-        <tr><td>Parent course</td><td>Family</td><td>3 live sessions and home activities</td><td class="num">£45 per family</td></tr>
+        <tr><td>Childcare centre or kindergarten</td><td>Early-years setting</td><td>Yearly programme licence</td><td class="num">£395 / year</td></tr>
+        <tr><td>School</td><td>Primary school</td><td>Yearly programme licence</td><td class="num">£635 / year</td></tr>
+        <tr><td>Group of schools</td><td>Each school in a trust or group</td><td>Yearly licence at 10% less</td><td class="num">£571.50 / year</td></tr>
+        <tr><td>Practitioner course</td><td>Practitioner or employer</td><td>4 live sessions, assessment, certificate</td><td class="num">£105, then £30 / year</td></tr>
+        <tr><td>Parent course</td><td>Family</td><td>3 live sessions and home activities</td><td class="num">£55 per family</td></tr>
       </tbody>
     </table>
-    <p class="muted">Licence prices are the proposed plans built into the platform, and each licence covers the stages the team sets for that school. Course prices are those in the demonstration; the team can change them in the platform at any time. A free trial lets a school start before it buys.</p>
+    <p class="muted">These are the UK launch prices; Ireland and Australia have their own, in euros and Australian dollars. Each licence covers the stages the team sets for that school, and the team can change any price in the platform at any time. A free trial lets a school start before it buys.</p>
     <figure><img src="${shot('admin-payments')}" alt="" style="max-height:88mm"><figcaption>The team’s Payments page: money received, outstanding invoices and income month by month.</figcaption></figure>
   </section>`}
 
@@ -357,9 +356,9 @@ function protoBusiness() {
     <table>
       <thead><tr><th>Source</th><th>Who pays</th><th>What it is</th></tr></thead>
       <tbody>
-        <tr><td>Early years plan</td><td>Early-years setting</td><td>Yearly programme licence</td></tr>
-        <tr><td>Primary plans</td><td>Primary school</td><td>Yearly programme licence, for some stages or all seven</td></tr>
-        <tr><td>Trust plan</td><td>Each school in a trust or group</td><td>Yearly licence at trust pricing</td></tr>
+        <tr><td>Childcare centre or kindergarten</td><td>Early-years setting</td><td>Yearly programme licence</td></tr>
+        <tr><td>School</td><td>Primary school</td><td>Yearly programme licence, for some stages or all seven</td></tr>
+        <tr><td>Group of schools</td><td>Each school in a trust or group</td><td>Yearly licence at a lower price</td></tr>
         <tr><td>Practitioner course</td><td>Practitioner or employer</td><td>Live sessions, assessment and a certificate renewed each year</td></tr>
         <tr><td>Parent course</td><td>Family</td><td>Live sessions and home activities</td></tr>
       </tbody>

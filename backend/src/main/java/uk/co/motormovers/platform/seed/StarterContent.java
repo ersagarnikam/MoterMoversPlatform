@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.model.ColourStage;
 import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.content.model.GuidanceArticle;
@@ -50,11 +51,13 @@ public class StarterContent {
     private final CourseRepository courses;
     private final CourseQuizRepository quizzes;
     private final QuizQuestionRepository quizQuestions;
+    private final CountrySettings country;
 
     public StarterContent(LibraryResourceRepository resources,
             InductionLessonRepository inductionLessons, HomeActivityRepository homeActivities,
             GuidanceArticleRepository guidance, CourseRepository courses, CourseQuizRepository quizzes,
-            QuizQuestionRepository quizQuestions) {
+            QuizQuestionRepository quizQuestions, CountrySettings country) {
+        this.country = country;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.homeActivities = homeActivities;
@@ -75,12 +78,13 @@ public class StarterContent {
         Course professional = courses.save(new Course(CourseTrack.PROFESSIONAL, "Practitioner course",
                 "Four weekly live sessions of 90 minutes, recorded modules and short quizzes between sessions, "
                         + "and an assessment. Leads to the practitioner certificate, renewed yearly.",
-                4, 90, 18_000, 6_000, true));
+                4, 90, country.launchPrices().practitionerPence(), country.launchPrices().practitionerRenewalPence(),
+                true));
         quizzes(professional);
         Course parent = courses.save(new Course(CourseTrack.PARENT, "Parent course",
                 "Three weekly live sessions of 60 minutes with recorded home activities. Builds confidence to run "
                         + "the activities at home.",
-                3, 60, 4_500, null, false));
+                3, 60, country.launchPrices().parentCoursePence(), null, false));
         return new Loaded(rhymes, induction, activities, professional, parent);
     }
 

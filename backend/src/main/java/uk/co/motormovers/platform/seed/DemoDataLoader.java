@@ -234,14 +234,15 @@ public class DemoDataLoader implements ApplicationRunner {
                 today);
         seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
-        seedPayments(oakfield, marlow, brookhouse, sam, jo, today);
+        seedPayments(oakfield, marlow, brookhouse, sam, jo, today, starter.professional(), starter.parent());
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);
     }
 
     private School school(String name, Trust trust, String plan, EnumSet<ColourStage> stages, LocalDate from,
             LocalDate to) {
         School school = schools.save(new School(name, trust, properties.region()));
-        licences.save(new Licence(school, plans.find(plan), plans.priceOn(plan, from), from, to, stages));
+        // At today's price (the country's launch price), though the licence began earlier.
+        licences.save(new Licence(school, plans.find(plan), plans.priceOn(plan, LocalDate.now(clock)), from, to, stages));
         return school;
     }
 
@@ -325,23 +326,23 @@ public class DemoDataLoader implements ApplicationRunner {
 
     /** Licence invoices for the trust's schools (Brookhouse's renewal still due), two course fees and a book. */
     private void seedPayments(School oakfield, School marlow, School brookhouse, AppUser practitioner,
-            AppUser parent, LocalDate today) {
+            AppUser parent, LocalDate today, Course practitionerCourse, Course parentCourse) {
         String team = "admin@motormovers.test";
         int trustLicence = plans.priceOn("TRUST", today);
         List<Payment> list = new ArrayList<>();
-        list.add(paid(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
+        list.add(paid(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Group licence, year 1", trustLicence,
                 today.minusMonths(11), Brand.REFERENCE_PREFIX + "1001", team, clock.instant()), today.minusMonths(11).plusDays(12)));
-        list.add(paid(Payment.bySchool(marlow, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
+        list.add(paid(Payment.bySchool(marlow, PaymentPurpose.LICENCE, "Group licence, year 1", trustLicence,
                 today.minusMonths(5), Brand.REFERENCE_PREFIX + "1014", team, clock.instant()), today.minusMonths(5).plusDays(20)));
-        list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.LICENCE, "Trust licence, year 1", trustLicence,
+        list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.LICENCE, "Group licence, year 1", trustLicence,
                 today.minusMonths(3), Brand.REFERENCE_PREFIX + "1020", team, clock.instant()), today.minusMonths(3).plusDays(9)));
         list.add(paid(Payment.bySchool(oakfield, PaymentPurpose.OTHER, "Printed session cards", 6_000,
                 today.minusMonths(2), Brand.REFERENCE_PREFIX + "1026", team, clock.instant()), today.minusMonths(2).plusDays(3)));
-        list.add(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Trust licence, year 2", trustLicence,
+        list.add(Payment.bySchool(brookhouse, PaymentPurpose.LICENCE, "Group licence, year 2", trustLicence,
                 today.minusDays(7), Brand.REFERENCE_PREFIX + "1031", team, clock.instant()));
         list.add(paid(Payment.byPerson(practitioner, PaymentPurpose.COURSE, "Practitioner course",
-                18_000, today.minusMonths(4), null, team, clock.instant()), today.minusMonths(4)));
-        list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Parent course", 4_500,
+                practitionerCourse.getPricePence(), today.minusMonths(4), null, team, clock.instant()), today.minusMonths(4)));
+        list.add(paid(Payment.byPerson(parent, PaymentPurpose.COURSE, "Parent course", parentCourse.getPricePence(),
                 today.minusMonths(1), null, team, clock.instant()), today.minusMonths(1)));
         // Still to pay, so the parent sees what is due.
         list.add(Payment.byPerson(parent, PaymentPurpose.OTHER, "Rhyme book and CD", 1_500,

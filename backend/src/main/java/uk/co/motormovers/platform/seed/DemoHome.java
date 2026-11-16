@@ -65,9 +65,6 @@ class DemoHome {
     private final PaymentRepository payments;
     private final CountrySettings country;
 
-    /** A placeholder price for the demo until Kay's is set (go-live decision 3). */
-    static final int DEMO_PASS_PENCE = 3500;
-
     DemoHome(AssessmentContent content, FamilyRepository families, FamilyMemberRepository members,
             ChildRepository children, MilestoneRepository milestones, MilestoneAchievementRepository achievements,
             ExerciseRepository exercises, ExerciseScoreRepository scores, HomeProgrammeSessionRepository sessions,
@@ -95,7 +92,8 @@ class DemoHome {
         members.save(new FamilyMember(family.getId(), parent.getId(), FamilyMember.Role.OWNER));
 
         LocalDate checked = today.minusDays(49);
-        passPrices.save(new HomePassPrice(DEMO_PASS_PENCE, today.minusYears(2), "admin@motormovers.test",
+        // The country's launch price, in force when the demo's families bought their passes.
+        passPrices.save(new HomePassPrice(country.launchPrices().homePassPence(), today.minusYears(2), "admin@motormovers.test",
                 Instant.now()));
         // Priya bought the family's pass by card the day she did Ava's check.
         pass(parent, family, checked);
@@ -144,7 +142,7 @@ class DemoHome {
     /** A pass paid by card on a day: twelve months from it. */
     private void pass(AppUser parent, Family family, LocalDate paidOn) {
         Payment payment = Payment.byPerson(parent, PaymentPurpose.HOME_PASS, HomePassService.DESCRIPTION,
-                DEMO_PASS_PENCE, paidOn, null, parent.getEmail(), Instant.now());
+                country.launchPrices().homePassPence(), paidOn, null, parent.getEmail(), Instant.now());
         payment.includesTaxAt(country.taxRateBp());
         payment.paidOnline(paidOn, "pi_demo_" + parent.getId());
         payment = payments.save(payment);

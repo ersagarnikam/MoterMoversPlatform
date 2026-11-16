@@ -98,7 +98,7 @@ class ProductionChecksTest {
 
     private static CountrySettings country(CountrySettings.LegalEntity entity) {
         return new CountrySettings("United Kingdom", "GBP", "en-GB", "VAT", BigDecimal.valueOf(20), "Europe/London",
-                new CountrySettings.SchoolYear(9, 8, 3, 9, 1, 5), List.of("Reception"), entity, "Credit note", "UK time", "the UK", "This half-term");
+                new CountrySettings.SchoolYear(9, 8, 3, 9, 1, 5), List.of("Reception"), entity, "Credit note", "UK time", "the UK", "This half-term", null);
     }
 
     /** Runs the checks with a given legal entity. */

@@ -91,4 +91,19 @@ class RegionIrelandTest {
         School saved = schools.save(new School("Scoil Bhríde", null, Region.IE));
         assertThat(schools.findById(saved.getId()).orElseThrow().getRegion()).isEqualTo(Region.IE);
     }
+
+    @Autowired
+    uk.co.motormovers.platform.school.service.PlanService launchPlans;
+
+    @Autowired
+    uk.co.motormovers.platform.training.repository.CourseRepository launchCourses;
+
+    @Autowired
+    uk.co.motormovers.platform.home.repository.HomePassPriceRepository launchPassPrices;
+
+    /** Go-live task 85: this country's launch prices, in cents. */
+    @Test
+    void anIrishDeploymentStartsWithTheIrishPrices() {
+        LaunchPricesTest.assertPrices(launchPlans, launchCourses, launchPassPrices, LocalDate.now(clock), 46_500, 74_500, 67_050, 12_500, 3_500, 6_000, 62_000);
+    }
 }

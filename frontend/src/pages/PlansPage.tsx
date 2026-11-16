@@ -149,7 +149,7 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
           <tbody>
             {p.history.map((h) => (
               <tr key={h.effectiveFrom}>
-                <td>{h.effectiveFrom === '2000-01-01' ? 'Launch' : day(h.effectiveFrom)}</td>
+                <td>{h.effectiveFrom === '2000-01-01' ? 'Before launch' : day(h.effectiveFrom)}</td>
                 <td className="num">{money(h.pricePence)}</td>
                 <td>
                   {h.changedBy} <span className="muted">· {day(h.changedAt)}</span>
