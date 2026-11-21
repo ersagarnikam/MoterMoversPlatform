@@ -623,6 +623,25 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-21, `task-68` at c0973bc, before merge, the Project manager's brief): pull request #79 (task 68, monthly billing for
+the Programme at Home) passes, no bugs.** Backend 322, web 92 unit tests, the build, the parent app typecheck and all 72 browser tests pass (with `STRIPE_FAKE=true`; H2 with demo data, installed Chrome).
+- **Through the API, 76 checks in each of the UK, Ireland and Australia** (the stand-in for Stripe, plus webhook events signed by the tester with a local test secret): not on sale and checkout refused with no monthly price; a price in the past, of 0,
+  or a second one on the same day refused. Subscribing twice gives the same page; nothing opens until it is paid; then sessions, the check and a rating open, and the team sees ACTIVE with the paid-to day. Each month is a PAID payment
+  with the tax (£25 includes VAT £4.17; €29 with 23% VAT; A$45 includes GST $4.09). A repeated `invoice.paid` records nothing; an unsigned or wrongly signed one is refused. The next month follows on (each month's row shares its last day with
+  the next one's first, decision 1). A refused card: PAST_DUE, the payer emailed once per invoice, cover ends with the month already paid. The team's cancel needs a reason; after a failed payment it ends at once, otherwise CANCELLING,
+  with who and why; access stays to the paid day. The payer's cancel, change of mind and end on the stand-in page behave the same. A month refunded in full ends only that month's cover and leaves the subscription running.
+  One subscription per family: a carer is told while the payer's page is open and once it runs, and only the payer opens Manage. Priya (pass to 2 Oct 2027) cannot subscribe and is told the day; a pass ending tomorrow cannot, one ending today can (decision 2).
+  The payer leaving cancels at the end of the paid month and the carer keeps it; the last member leaving ends it at once at the stand-in (decision 4). Signed events of the tester's own: a month that ended yesterday gives no access today
+  (yesterday's session is accepted), a month ending today covers today (decision 1), another currency is not recorded, and a failure gives no extra days. The old pass checkout is gone (404); Priya's pass runs and the team's Extend works.
+- **Access:** teacher, head, trust or group lead, trainer, practitioner and both parents get 403 on the four team endpoints; the staff roles get 403 on the parent ones; signed out 401; nothing changed. A parent with no family is told there is nothing to manage.
+- **Screens (Australia, Chrome, 1280 and 390px, no overflow):** Plans and prices has the monthly price card (with the new-subscriptions-only note) and no pass price card. At home: "Subscribe for $45 a month", then the state with the next payment day and Manage,
+  which opens the stand-in page. My payments and the team's Payments show each month with "includes GST $4.09"; the team's family card shows the subscription. Priya is told when she can subscribe. **Parent app (web preview):** Today shows the state only
+  ("Your family's subscription is running", "Subscriptions are managed on the website, not in this app"), with no price, no button and no payment link (decision 5); the pass checkout link is gone.
+- **Logs:** no email, name or Stripe id outside the development Mailer's whole-email lines; the service logs ids and dates only.
+- **Low, for the owner or the Developer:** (1) Cancel, change of mind and cancel again sends the last-day email twice (the spec says one email). (2) When the last member leaves, the family's subscription row goes with it, so the team's
+  family search no longer shows it (its payments stay). (3) A refunded month reads "21 Dec to 20 Dec" in the team's history, as for passes (task 82). (4) The stand-in's pages need no sign-in: anyone who knows a customer id can act on a development server (production refuses `STRIPE_FAKE`).
+- **Not tested:** a real Stripe account (no keys; the tester does not read `backend/.env`), phone notifications (push off here, no phone), PostgreSQL.
+
 **Fix verified (updated by tester, 2026-11-16, `task-57` at 4157161, before merge): pull request #76 (task 57 part 1) now passes, no bugs.** Web 87 unit tests (the new `playerClock.test.ts` included), the build and all 72 browser
 tests pass; the backend was not rerun (only web files changed; 305 passed at 0e6bc0f). In Chrome on Year 3 K with real Orange films on local storage, standing in for Green: Yes and No, Flying Machines and Motor Spin with their own films.
 - **(a)** When Flying Machines' film ends, the module film starts by itself on Starfish and the bar counts. With no module film, the timed plan runs on by itself there instead.
