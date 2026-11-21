@@ -53,9 +53,9 @@ import uk.co.motormovers.platform.user.model.Role;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
- * The Programme at Home pass (go-live task 26): on sale once priced, bought by card and marked paid only by Stripe's
- * signed webhook, twelve months for the whole family, the gate on sessions, the check and ratings, reminders, the
- * team's extension and a refund. Its own database with Stripe switched on.
+ * A family's cover on the Programme at Home, as it was for the 12-month pass (go-live task 26), which is no longer
+ * sold (task 68, HomeSubscriptionTest): the gate on sessions, the check and ratings, reminders, the team's extension
+ * and a refund. Its own database with Stripe switched on.
  */
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:homepass;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
@@ -104,52 +104,27 @@ class HomePassTest {
     }
 
     @Test
-    void withNoPriceThePassIsNotOnSale() throws Exception {
-        List<HomePassPrice> saved = prices.findAll();
-        prices.deleteAll();
-        try {
-            Family f = family();
-            pass(f.token).andExpect(jsonPath("$.onSale").value(false))
-                    .andExpect(jsonPath("$.pricePence").doesNotExist());
-            buy(f.token).andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detail").value(containsString("not on sale")));
-        } finally {
-            saved.forEach(p -> prices.save(new HomePassPrice(p.getPricePence(), p.getEffectiveFrom(),
-                    p.getChangedBy(), p.getChangedAt())));
-        }
-    }
-
-    @Test
-    void aPassIsBoughtByCardAndOnlyStripeMarksItPaidThenBuyingAgainCarriesOnFromTheEnd() throws Exception {
+    void thePassIsNoLongerSoldButOneBoughtBeforeStillRunsTwelveMonthsOnceStripeSaysPaid() throws Exception {
         Family f = family();
-        pass(f.token).andExpect(jsonPath("$.hasFamily").value(true)).andExpect(jsonPath("$.onSale").value(true))
-                .andExpect(jsonPath("$.pricePence").value(53000)).andExpect(jsonPath("$.running").value(false))
-                .andExpect(jsonPath("$.cardPayments").value(true));
-        buy(f.token).andExpect(status().isOk())
-                .andExpect(jsonPath("$.url").value("https://checkout.stripe.com/c/pay/cs_pass"));
-        // Pressing Buy twice makes one payment, sent back to the home page.
-        buy(f.token).andExpect(status().isOk());
-        verify(stripe, times(2)).createCheckout(any(), eq(53000), eq(HomePassService.DESCRIPTION), eq(f.email),
-                contains("/home?paid=1"), anyString());
-        List<Integer> due = JsonPath.read(fetch(f.token, "/api/payments/mine"),
-                "$.payments[?(@.status == 'DUE')].id");
-        assertThat(due).hasSize(1);
-        assertThat(JsonPath.<List<String>>read(fetch(f.token, "/api/payments/mine"),
-                "$.payments[*].purposeLabel")).containsExactly("Home programme");
+        // Monthly billing replaced it (task 68): there is nothing to buy a pass with.
+        mvc.perform(post("/api/home/pass/checkout").header("Authorization", bearer(f.token)))
+                .andExpect(status().is4xxClientError());
+        verify(stripe, never()).createCheckout(any(), anyInt(), anyString(), any(), anyString(), anyString());
 
-        // Coming back from Stripe proves nothing: only the signed webhook does.
-        pass(f.token).andExpect(jsonPath("$.running").value(false));
-        paid(due.getFirst());
+        // A pass whose card payment was still on its way when monthly billing came in: Stripe's signed message
+        // starts it, twelve months from today.
+        String admin = login("admin@motormovers.test");
         LocalDate today = LocalDate.now(clock);
-        LocalDate end = today.plusYears(1).minusDays(1);
-        pass(f.token).andExpect(jsonPath("$.running").value(true)).andExpect(jsonPath("$.endsOn").value(end.toString()));
-
-        // Bought again while it runs: twelve more months from its end, not from today.
-        buy(f.token).andExpect(status().isOk());
-        List<Integer> second = JsonPath.read(fetch(f.token, "/api/payments/mine"),
-                "$.payments[?(@.status == 'DUE')].id");
-        paid(second.getFirst());
-        pass(f.token).andExpect(jsonPath("$.endsOn").value(end.plusYears(1).toString()));
+        String body = mvc.perform(post("/api/admin/payments").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"payerEmail\":\"" + f.email + "\",\"purpose\":\"HOME_PASS\",\"description\":\"Pass\","
+                        + "\"amountPence\":53000,\"invoicedOn\":\"" + today + "\",\"paidOn\":null}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        pass(f.token).andExpect(jsonPath("$.running").value(false));
+        paid(JsonPath.read(body, "$.id"));
+        pass(f.token).andExpect(jsonPath("$.running").value(true))
+                .andExpect(jsonPath("$.endsOn").value(today.plusYears(1).minusDays(1).toString()))
+                .andExpect(jsonPath("$.subscription").value("NONE"));
     }
 
     @Test
@@ -170,11 +145,11 @@ class HomePassTest {
         // The induction but no pass.
         inductionDone(f.email);
         check(f.token, child).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value(containsString("pass")));
+                .andExpect(jsonPath("$.detail").value(containsString("subscri")));
         session(f.token, child).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value(containsString("pass")));
+                .andExpect(jsonPath("$.detail").value(containsString("subscri")));
         rate(f.token, child, exercise).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value(containsString("pass")));
+                .andExpect(jsonPath("$.detail").value(containsString("subscri")));
         mvc.perform(get("/api/home/children/" + child + "/today").header("Authorization", bearer(f.token)))
                 .andExpect(jsonPath("$.exercises.length()").value(0));
 
@@ -349,7 +324,7 @@ class HomePassTest {
         rate(f.token, f.child, exercise, today.minusDays(10)).andExpect(status().isOk());
         // Before the first pass, after it ended, today or tomorrow: refused.
         session(f.token, f.child, today.minusDays(25)).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value(containsString("pass")));
+                .andExpect(jsonPath("$.detail").value(containsString("subscri")));
         session(f.token, f.child, today.minusDays(3)).andExpect(status().isBadRequest());
         session(f.token, f.child, today).andExpect(status().isBadRequest());
         session(f.token, f.child, today.plusDays(1)).andExpect(status().isBadRequest());
@@ -442,10 +417,6 @@ class HomePassTest {
 
     private ResultActions pass(String token) throws Exception {
         return mvc.perform(get("/api/home/pass").header("Authorization", bearer(token))).andExpect(status().isOk());
-    }
-
-    private ResultActions buy(String token) throws Exception {
-        return mvc.perform(post("/api/home/pass/checkout").header("Authorization", bearer(token)));
     }
 
     private ResultActions check(String token, Integer child) throws Exception {

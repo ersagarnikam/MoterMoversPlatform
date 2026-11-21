@@ -29,29 +29,32 @@ import uk.co.motormovers.platform.home.dto.HomePassViews;
 import uk.co.motormovers.platform.home.model.FamilyMember;
 import uk.co.motormovers.platform.home.model.HomePass;
 import uk.co.motormovers.platform.home.model.HomePassPrice;
+import uk.co.motormovers.platform.home.model.HomeMonthlyPrice;
 import uk.co.motormovers.platform.home.model.HomePassReminder;
+import uk.co.motormovers.platform.home.model.HomeSubscription;
 import uk.co.motormovers.platform.home.repository.FamilyMemberRepository;
+import uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository;
 import uk.co.motormovers.platform.home.repository.HomePassPriceRepository;
 import uk.co.motormovers.platform.home.repository.HomePassReminderRepository;
 import uk.co.motormovers.platform.home.repository.HomePassRepository;
+import uk.co.motormovers.platform.home.repository.HomeSubscriptionRepository;
 import uk.co.motormovers.platform.notification.service.PushService;
 import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.payment.model.PaymentEvents;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
-import uk.co.motormovers.platform.payment.model.PaymentStatus;
 import uk.co.motormovers.platform.payment.repository.PaymentRepository;
-import uk.co.motormovers.platform.payment.service.OnlinePaymentService;
 import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.AccessPolicy;
-import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.service.InductionService;
 import uk.co.motormovers.platform.user.model.AppUser;
 import uk.co.motormovers.platform.user.repository.AppUserRepository;
 
 /**
- * The Programme at Home pass (go-live task 26): twelve months for the whole family, bought by card. It runs from
- * the day it is paid; bought again while it runs, it carries on from its end. The one place that decides whether a
- * family may do sessions: a running pass and, for each carer, the parent induction.
+ * A family's cover on the Programme at Home, and the one place that decides whether it may do sessions: cover today
+ * and, for each carer, the parent induction. Cover is the family's {@link HomePass} rows: a month for each payment of
+ * its subscription (go-live task 68, {@link HomeSubscriptionService}), a 12-month pass bought before monthly billing
+ * (task 26; no longer sold, but a pass the team records by hand still runs twelve months), or an extension by the
+ * team.
  */
 @Service
 public class HomePassService {
@@ -71,9 +74,9 @@ public class HomePassService {
     private final FamilyMemberRepository members;
     private final AppUserRepository users;
     private final PaymentRepository payments;
-    private final OnlinePaymentService onlinePayments;
+    private final HomeSubscriptionRepository subscriptions;
+    private final HomeMonthlyPriceRepository monthlyPrices;
     private final InductionService induction;
-    private final CurrentUserResolver currentUser;
     private final AccessPolicy access;
     private final CountrySettings country;
     private final Mailer mailer;
@@ -83,18 +86,18 @@ public class HomePassService {
 
     public HomePassService(HomePassRepository passes, HomePassPriceRepository prices,
             HomePassReminderRepository reminders, FamilyMemberRepository members, AppUserRepository users,
-            PaymentRepository payments, OnlinePaymentService onlinePayments, InductionService induction,
-            CurrentUserResolver currentUser, AccessPolicy access, CountrySettings country, Mailer mailer,
-            PushService push, Money money, Clock clock) {
+            PaymentRepository payments, HomeSubscriptionRepository subscriptions,
+            HomeMonthlyPriceRepository monthlyPrices, InductionService induction, AccessPolicy access,
+            CountrySettings country, Mailer mailer, PushService push, Money money, Clock clock) {
         this.passes = passes;
         this.prices = prices;
         this.reminders = reminders;
         this.members = members;
         this.users = users;
         this.payments = payments;
-        this.onlinePayments = onlinePayments;
+        this.subscriptions = subscriptions;
+        this.monthlyPrices = monthlyPrices;
         this.induction = induction;
-        this.currentUser = currentUser;
         this.access = access;
         this.country = country;
         this.mailer = mailer;
@@ -145,8 +148,10 @@ public class HomePassService {
         if (child != null && child.isAtHome() && !running(child.getFamilyId())) {
             LocalDate ended = endsOn(child.getFamilyId());
             throw new IllegalStateException(ended == null
-                    ? "Sessions need a " + Brand.HOME + " pass. Please buy one for your family first."
-                    : "Your family's pass ended on " + DAY.format(ended) + ". Please renew it to carry on.");
+                    ? "Sessions need your family's subscription to the " + Brand.HOME
+                            + ". Please subscribe on the website first."
+                    : "Your family's subscription or pass ended on " + DAY.format(ended)
+                            + ". Please subscribe on the website to carry on.");
         }
     }
 
@@ -155,58 +160,13 @@ public class HomePassService {
         return members.findByUserId(parent.id()).map(m -> running(m.getFamilyId())).orElse(false);
     }
 
-    // --- The family's pass, and buying it ------------------------------------------------------------------------------
-
-    @Transactional(readOnly = true)
-    public HomePassViews.Pass mine() {
-        CurrentUser me = currentUser.current();
-        Optional<Long> family = members.findByUserId(me.id()).map(FamilyMember::getFamilyId);
-        Integer price = priceToday();
-        LocalDate end = family.map(this::endsOn).orElse(null);
-        boolean running = family.map(this::running).orElse(false);
-        // A family's passes leave no gap (see refunded), so one that has had a pass and has none today has one that
-        // ended.
-        return new HomePassViews.Pass(family.isPresent(), price != null, price, onlinePayments.enabled(), running, end,
-                !running && end != null, induction.isComplete(me), country.legalEntity().contactEmail(),
-                country.legalEntity().contactPhone());
-    }
+    // --- Twelve-month passes (no longer sold, task 68) and refunds ---------------------------------------------------
 
     /**
-     * Opens a Stripe page for a 12-month pass for the parent's family, at today's price. A pass started but not paid
-     * is reused, so pressing Buy twice never makes two payments.
-     */
-    @Transactional
-    public HomePassViews.Checkout checkout() {
-        CurrentUser me = currentUser.current();
-        FamilyMember member = members.findByUserId(me.id())
-                .orElseThrow(() -> new IllegalStateException("Add a child first, then buy the pass for your family"));
-        Integer price = priceToday();
-        if (price == null) {
-            throw new IllegalStateException("The " + Brand.HOME + " pass is not on sale yet");
-        }
-        Payment payment = passes.findByFamilyIdOrderById(member.getFamilyId()).stream()
-                .filter(p -> !p.started() && p.getPaymentId() != null)
-                .map(p -> payments.findById(p.getPaymentId()).orElse(null))
-                .filter(p -> p != null && p.getStatus() == PaymentStatus.DUE && p.getPayer() != null
-                        && p.getPayer().getId().equals(me.id()) && p.getAmountPence() == price)
-                .findFirst()
-                .orElseGet(() -> newPayment(me, member.getFamilyId(), price));
-        return new HomePassViews.Checkout(onlinePayments.checkout(payment.getId()));
-    }
-
-    private Payment newPayment(CurrentUser me, Long familyId, int price) {
-        AppUser payer = users.findById(me.id()).orElseThrow();
-        Payment payment = Payment.byPerson(payer, PaymentPurpose.HOME_PASS, DESCRIPTION, price, today(), null,
-                me.email(), clock.instant());
-        payment.includesTaxAt(country.taxRateBp());
-        payment = payments.save(payment);
-        passes.save(new HomePass(familyId, payment.getId(), me.email(), clock.instant(), null));
-        return payment;
-    }
-
-    /**
-     * A pass payment is paid (Stripe's webhook, or the team by hand): twelve months from the day it was paid, or from
-     * the end of the pass running then. A pass payment the team recorded for a parent counts for their family.
+     * A pass payment is paid (the team by hand, or Stripe's webhook for a pass bought before monthly billing): twelve
+     * months from the day it was paid, or from the end of the cover running then. A pass payment the team recorded
+     * for a parent counts for their family. A month of a subscription never comes this way: it is recorded already
+     * paid, with its own dates (HomeSubscriptionService).
      */
     @EventListener
     public void paid(PaymentEvents.Paid event) {
@@ -234,7 +194,8 @@ public class HomePassService {
     }
 
     /**
-     * A pass refunded in full ends on the day of the refund; a partial refund leaves it running. Parts of the family's
+     * A pass, or a month of a subscription, refunded in full ends on the day of the refund (the subscription itself
+     * is not cancelled by a refund); a partial refund leaves it running. Parts of the family's
      * pass queued after it (a renewal bought early, or an extension) move forward to follow on with no gap, each
      * keeping its length (task 82), so the family is never left without a pass between the refund and a renewal.
      */
@@ -289,7 +250,7 @@ public class HomePassService {
         return view(familyOf(email));
     }
 
-    /** Extends a family's pass to a later date by hand (support), recorded with who did it. */
+    /** Extends a family's cover to a later date by hand (support), recorded with who did it. */
     @Transactional
     public HomePassViews.FamilyPass extend(HomePassViews.Extend request) {
         CurrentUser me = access.requireAdmin();
@@ -342,17 +303,20 @@ public class HomePassService {
     // --- Reminders ----------------------------------------------------------------------------------------------------
 
     /**
-     * Daily: each family whose pass ends within 30 days, within 7 days, or today hears once for each, by email and
-     * (when push is on) on their phones. A pass renewed meanwhile has a new end date, so the reminders start again.
-     * Returns the number of families reminded.
+     * Daily: each family whose pass or extension ends within 30 days, within 7 days, or today hears once for each, by
+     * email and (when push is on) on their phones. Cover that ends later has a new end date, so the reminders start
+     * again. A family whose last cover is a month of a subscription hears nothing here: the subscription renews by
+     * itself, and when it is cancelled the family is told the last day at once (task 68). Returns the number of
+     * families reminded.
      */
     @Scheduled(cron = "0 15 8 * * *")
     @Transactional
     public int remindEnding() {
         LocalDate today = today();
         Map<Long, LocalDate> ends = passes.findByStartsOnIsNotNull().stream()
-                .collect(Collectors.groupingBy(HomePass::getFamilyId,
-                        Collectors.collectingAndThen(Collectors.toList(), HomePassService::latestEnd)));
+                .collect(Collectors.groupingBy(HomePass::getFamilyId)).entrySet().stream()
+                .filter(family -> !lastIsSubscription(family.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, family -> latestEnd(family.getValue())));
         int reminded = 0;
         for (Map.Entry<Long, LocalDate> family : ends.entrySet()) {
             LocalDate end = family.getValue();
@@ -373,22 +337,24 @@ public class HomePassService {
     private void remind(Long familyId, LocalDate end, long left) {
         String when = left == 0 ? "ends today" : "ends on " + DAY.format(end);
         String subject = "Your " + Brand.HOME + " pass " + when;
-        Integer price = priceToday();
+        Integer price = monthlyPrices.findFirstByEffectiveFromLessThanEqualOrderByEffectiveFromDesc(today())
+                .map(HomeMonthlyPrice::getPricePence).orElse(null);
         String body = "Your family's " + Brand.HOME + " pass " + when + ". After that, your children's records stay "
-                + "safe, but sessions stop until the pass is renewed.\n\n"
-                + (price == null ? "" : "Renewing costs " + money.format(price) + " for another 12 months. ")
-                + "Renew from your children's page: " + mailer.link("/home") + "\n";
+                + "safe, but sessions stop until your family subscribes.\n\n"
+                + (price == null ? "" : "The " + Brand.HOME + " is now paid monthly: " + money.format(price)
+                        + " a month, and you can cancel at any time. ")
+                + "Subscribe from your children's page, from the day your pass ends: " + mailer.link("/home") + "\n";
         List<FamilyMember> family = members.findByFamilyIdOrderByJoinedAt(familyId);
         for (FamilyMember m : family) {
             users.findById(m.getUserId()).ifPresent(u -> mailer.send(u.getEmail(), subject, body));
         }
         push.notify(family.stream().map(FamilyMember::getUserId).toList(), subject,
-                "Renew it to carry on with your sessions.", "/");
+                "Sign in on the website to carry on with your sessions.", "/");
     }
 
     // --- Helpers ------------------------------------------------------------------------------------------------------
 
-    /** The pass price today, or null while it is not on sale. */
+    /** The 12-month pass price today (what a pass the team records by hand costs), or null with none. */
     public Integer priceToday() {
         return prices.findFirstByEffectiveFromLessThanEqualOrderByEffectiveFromDesc(today())
                 .map(HomePassPrice::getPricePence).orElse(null);
@@ -414,19 +380,25 @@ public class HomePassService {
         return to;
     }
 
+    /** Whether the part of a family's cover that ends last is a month of a subscription. */
+    private static boolean lastIsSubscription(List<HomePass> list) {
+        return list.stream().filter(HomePass::started).max(Comparator.comparing(HomePass::getEndsOn))
+                .map(p -> p.getSubscriptionId() != null).orElse(false);
+    }
+
     private static LocalDate latestEnd(List<HomePass> list) {
         return list.stream().filter(HomePass::started).map(HomePass::getEndsOn).filter(Objects::nonNull)
                 .max(Comparator.naturalOrder()).orElse(null);
     }
 
-    private Long familyOf(String email) {
+    Long familyOf(String email) {
         AppUser user = users.findByEmailIgnoreCase(email == null ? "" : email.strip())
                 .orElseThrow(() -> new NotFoundException("Account", email));
         return members.findByUserId(user.getId()).map(FamilyMember::getFamilyId)
                 .orElseThrow(() -> new IllegalArgumentException("That account has no family on the " + Brand.HOME));
     }
 
-    private HomePassViews.FamilyPass view(Long familyId) {
+    HomePassViews.FamilyPass view(Long familyId) {
         List<HomePassViews.Member> people = members.findByFamilyIdOrderByJoinedAt(familyId).stream()
                 .map(m -> users.findById(m.getUserId())
                         .map(u -> new HomePassViews.Member(u.getDisplayName(), u.getEmail(),
@@ -436,10 +408,26 @@ public class HomePassService {
         List<HomePassViews.Entry> history = passes.findByFamilyIdOrderById(familyId).stream()
                 .filter(HomePass::started)
                 .map(p -> new HomePassViews.Entry(p.getStartsOn(), p.getEndsOn(), p.getPaymentId(),
-                        p.getPaymentId() == null ? "Extended by the team" : "Paid", p.getAddedBy(), p.getAddedAt(),
-                        p.getNote()))
+                        p.getSubscriptionId() != null ? "Monthly payment"
+                                : p.getPaymentId() == null ? "Extended by the team" : "Paid",
+                        p.getAddedBy(), p.getAddedAt(), p.getNote()))
                 .toList();
-        return new HomePassViews.FamilyPass(familyId, people, running(familyId), endsOn(familyId), history);
+        // The subscription the team would act on: the one running at Stripe, else the last that ran.
+        List<HomeSubscription> started = subscriptions.findByFamilyIdOrderById(familyId).stream()
+                .filter(s -> s.getStatus() != HomeSubscription.Status.PENDING).toList();
+        HomeSubscription shown = started.stream().filter(s -> s.getStatus().live()).reduce((first, second) -> second)
+                .orElse(started.isEmpty() ? null : started.getLast());
+        HomePassViews.Subscription subscription = shown == null ? null
+                : new HomePassViews.Subscription(
+                        shown.getStatus().live() ? HomeSubscriptionService.state(shown) : "ENDED",
+                        shown.getPricePence(),
+                        users.findById(shown.getPayerId()).map(AppUser::getEmail).orElse(null),
+                        passes.findByFamilyIdOrderById(familyId).stream()
+                                .filter(p -> shown.getId().equals(p.getSubscriptionId()) && p.started())
+                                .map(HomePass::getEndsOn).max(Comparator.naturalOrder()).orElse(null),
+                        shown.getCreatedAt(), shown.getEndedAt(), shown.getCancelledBy(), shown.getCancelNote());
+        return new HomePassViews.FamilyPass(familyId, people, running(familyId), endsOn(familyId), history,
+                subscription);
     }
 
     private LocalDate today() {

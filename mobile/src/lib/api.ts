@@ -217,7 +217,10 @@ export interface HomeToday {
   exerciseFilms: { exerciseId: number; videoUrl: string; filmCredit: string }[]
 }
 
-/** The family's Programme at Home pass: twelve months for the whole family, bought by card. Prices include tax. */
+/**
+ * The family's cover on the Programme at Home: its monthly subscription (task 68), or a 12-month pass bought before.
+ * The app only shows where it stands: subscribing and managing are on the website.
+ */
 export interface HomePass {
   hasFamily: boolean
   onSale: boolean
@@ -228,9 +231,11 @@ export interface HomePass {
   ended: boolean
   /** This parent has finished the parent induction (sessions and the check need it and a running pass). */
   inductionDone: boolean
-  /** Whom to ask about the pass; null until the country's legal entity gives one. */
   contactEmail: string | null
   contactPhone: string | null
+  /** ACTIVE renews; CANCELLING ends with the paid month, on endsOn; PAST_DUE: a payment failed. */
+  subscription: 'NONE' | 'ACTIVE' | 'CANCELLING' | 'PAST_DUE'
+  renewsOn: string | null
 }
 
 export interface HomeSessionEntry {
@@ -464,7 +469,6 @@ export const api = {
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
   homePass: () => request<HomePass>('GET', '/api/home/pass'),
-  homePassCheckout: () => request<{ url: string }>('POST', '/api/home/pass/checkout'),
   homeToday: (id: number) => request<HomeToday>('GET', `/api/home/children/${id}/today`),
   homeInduction: () => request<HomeInduction>('GET', '/api/home/induction'),
   completeHomeInductionLesson: (lessonId: number) =>

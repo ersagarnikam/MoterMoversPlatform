@@ -68,6 +68,9 @@ public class SecurityConfig {
                                 "/api/auth/password-reset", "/api/auth/password").permitAll()
                         // Stripe's payment confirmations: checked by their signature in OnlinePaymentService.
                         .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
+                        // The stand-in for Stripe's pages, which a browser opens like Stripe's, with no sign-in. They
+                        // exist only with STRIPE_FAKE=true (development; production refuses it): otherwise a 404.
+                        .requestMatchers(HttpMethod.GET, "/api/dev/stripe/**").permitAll()
                         // Whether the Programme at Home is switched on, for the public website's sign-up.
                         .requestMatchers(HttpMethod.GET, "/api/home/available").permitAll()
                         // The deployment's country settings (currency, tax, year names), for the website and app.

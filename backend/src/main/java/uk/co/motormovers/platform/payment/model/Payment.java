@@ -58,6 +58,9 @@ public class Payment {
     /** Stripe's id for a payment made by card online; null when marked paid by hand. */
     private String paidOnlineRef;
 
+    /** Stripe's invoice for a month of a family's subscription (task 68); null on every other payment. */
+    private String stripeInvoiceId;
+
     /** The tax rate included in the amount, in basis points (2000 = 20%); null on payments from before it was kept. */
     private Integer taxRateBp;
 
@@ -187,6 +190,16 @@ public class Payment {
 
     public String getPaidOnlineRef() {
         return paidOnlineRef;
+    }
+
+    /** A month of a subscription, paid by card when Stripe took it: paid on {@code on}, never due. */
+    public void paidByStripeInvoice(String invoiceId, LocalDate on, String stripeRef) {
+        this.stripeInvoiceId = invoiceId;
+        paidOnline(on, stripeRef);
+    }
+
+    public String getStripeInvoiceId() {
+        return stripeInvoiceId;
     }
 
     public void cancel() {

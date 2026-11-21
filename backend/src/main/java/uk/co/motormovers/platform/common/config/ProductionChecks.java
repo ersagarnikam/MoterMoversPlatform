@@ -58,6 +58,10 @@ public class ProductionChecks {
             // With only one, card payments would be taken but never marked paid, or never offered.
             problems.add("STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET must be set together (or both left blank)");
         }
+        if (env.getProperty("platform.stripe.fake", Boolean.class, false)) {
+            // It would mark payments paid, and start subscriptions, without any money.
+            problems.add("STRIPE_FAKE is for development only: leave it unset");
+        }
         if (env.getProperty("platform.login-limit-per-ip", Integer.class, 50) > 50) {
             problems.add("LOGIN_LIMIT_PER_IP is for load tests only: leave it unset");
         }

@@ -15,7 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.co.motormovers.platform.common.config.CountrySettings;
+import uk.co.motormovers.platform.home.model.HomeMonthlyPrice;
 import uk.co.motormovers.platform.home.model.HomePassPrice;
+import uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository;
 import uk.co.motormovers.platform.home.repository.HomePassPriceRepository;
 import uk.co.motormovers.platform.school.model.LicencePlan;
 import uk.co.motormovers.platform.school.model.LicencePlanPrice;
@@ -28,7 +30,9 @@ import uk.co.motormovers.platform.school.repository.LicencePlanRepository;
  * <ul>
  * <li>a licence plan whose price in force today is still the "platform setup" one (the proposal's, in pounds, from
  * migration V6) gets the launch price from today;</li>
- * <li>with no home pass price at all, the launch price is set from today.</li>
+ * <li>with no home pass price at all, the launch price is set from today;</li>
+ * <li>with no monthly price for the home programme at all, and one in the settings ({@code home-monthly}, blank
+ * until it is decided), that price is set from today (task 68).</li>
  * </ul>
  * A price the team set on Plans and prices is never touched, and once applied a second start changes nothing: the
  * price in force is then this class's or the team's. Later changes are made on Plans and prices, not here. Courses
@@ -51,14 +55,16 @@ public class LaunchPrices implements ApplicationRunner {
     private final LicencePlanRepository plans;
     private final LicencePlanPriceRepository planPrices;
     private final HomePassPriceRepository passPrices;
+    private final HomeMonthlyPriceRepository monthlyPrices;
     private final Clock clock;
 
     public LaunchPrices(CountrySettings country, LicencePlanRepository plans, LicencePlanPriceRepository planPrices,
-            HomePassPriceRepository passPrices, Clock clock) {
+            HomePassPriceRepository passPrices, HomeMonthlyPriceRepository monthlyPrices, Clock clock) {
         this.country = country;
         this.plans = plans;
         this.planPrices = planPrices;
         this.passPrices = passPrices;
+        this.monthlyPrices = monthlyPrices;
         this.clock = clock;
     }
 
@@ -91,6 +97,10 @@ public class LaunchPrices implements ApplicationRunner {
         }
         if (passPrices.count() == 0) {
             passPrices.save(new HomePassPrice(launch.homePassPence(), today, CHANGED_BY, clock.instant()));
+            set++;
+        }
+        if (launch.homeMonthlyPence() != null && monthlyPrices.count() == 0) {
+            monthlyPrices.save(new HomeMonthlyPrice(launch.homeMonthlyPence(), today, CHANGED_BY, clock.instant()));
             set++;
         }
         if (set > 0) {

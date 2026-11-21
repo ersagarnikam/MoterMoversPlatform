@@ -26,6 +26,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     List<Payment> findByPayerIdOrderByInvoicedOnDescIdDesc(Long payerId);
 
+    boolean existsByStripeInvoiceId(String stripeInvoiceId);
+
     /** Held until the transaction ends: a team refund and Stripe's webhook for it take turns. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Payment p where p.id = :id")

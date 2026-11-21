@@ -81,6 +81,16 @@ class LaunchPricesTest {
         return courses.findAll().stream().filter(c -> c.getTitle().equals(title)).findFirst().orElseThrow();
     }
 
+    @Autowired
+    uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository monthlyPrices;
+
+    /** Task 68: no country has a monthly price yet, so none is applied and monthly is not on sale. */
+    @Test
+    void theHomeProgrammesMonthlyPriceWaitsForTheTeam() throws Exception {
+        assertThat(launchPrices.apply()).isZero();
+        assertThat(monthlyPrices.count()).isZero();
+    }
+
     @Test
     void aUkDeploymentStartsWithTheUkPrices() {
         assertPrices(plans, courses, passPrices, today(), 39_500, 63_500, 57_150, 10_500, 3_000, 5_500, 53_000);

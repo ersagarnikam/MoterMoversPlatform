@@ -113,6 +113,7 @@ public class HomeService {
     private final ProgrammeFilms films;
     private final InductionService induction;
     private final HomePassService passes;
+    private final HomeSubscriptionService subscriptions;
 
     public HomeService(@Value("${platform.home-programme:false}") boolean enabled, FamilyRepository families,
             FamilyMemberRepository members, FamilyInviteRepository invites, HomeProgrammeSessionRepository sessions,
@@ -120,8 +121,10 @@ public class HomeService {
             ExerciseRepository exercises, ExerciseScoreRepository scores, FamilyService familyService,
             AppUserRepository users, AccessPolicy access, CurrentUserResolver currentUser, Clock clock,
             Mailer mailer, ParentProgress parentProgress, CoolDowns coolDowns, SchoolYear schoolYear,
-            InductionService induction, HomePassService passes, ProgrammeFilms films) {
+            InductionService induction, HomePassService passes, ProgrammeFilms films,
+            HomeSubscriptionService subscriptions) {
         this.films = films;
+        this.subscriptions = subscriptions;
         this.enabled = enabled;
         this.families = families;
         this.members = members;
@@ -296,6 +299,8 @@ public class HomeService {
         members.delete(member);
         members.flush();
         List<FamilyMember> rest = members.findByFamilyIdOrderByJoinedAt(familyId);
+        // Before anything is deleted: nobody is charged for a family they have left, or one that is gone (task 68).
+        subscriptions.memberLeft(familyId, member.getUserId(), rest.isEmpty());
         if (rest.isEmpty()) {
             families.deleteById(familyId);
         } else if (member.getRole() == FamilyMember.Role.OWNER) {
