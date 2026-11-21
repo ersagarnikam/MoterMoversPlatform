@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +38,7 @@ import uk.co.motormovers.platform.training.service.SessionReminderJob;
 // context with another clock or time zone must not share the default one (task 83).
 @SpringBootTest(properties = { "PLATFORM_REGION=IE", "spring.datasource.url=jdbc:h2:mem:regionie;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH" })
 @AutoConfigureMockMvc
+@Import(MonthlyInRegion.class)
 class RegionIrelandTest {
 
     @Autowired
@@ -56,6 +58,15 @@ class RegionIrelandTest {
 
     @MockitoBean
     PushService push;
+
+    @Autowired
+    MonthlyInRegion monthly;
+
+    /** Go-live task 68: a month of the home programme, in this country's currency with its tax. */
+    @Test
+    void aMonthOfASubscriptionIsInEurosWithIrishVat() {
+        monthly.aMonthIsPaidWithTax("eur", "gbp", 1_750, 327);
+    }
 
     @Autowired
     CohortRepository cohorts;

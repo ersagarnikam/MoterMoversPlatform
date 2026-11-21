@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import uk.co.motormovers.platform.common.config.PlatformProperties;
@@ -20,6 +21,7 @@ import uk.co.motormovers.platform.payment.model.Payment;
 import uk.co.motormovers.platform.payment.model.PaymentEvents;
 import uk.co.motormovers.platform.payment.model.PaymentPurpose;
 import uk.co.motormovers.platform.payment.model.PaymentStatus;
+import uk.co.motormovers.platform.payment.model.StripeEvents;
 import uk.co.motormovers.platform.payment.repository.PaymentRepository;
 import uk.co.motormovers.platform.payment.stripe.StripeClient;
 import uk.co.motormovers.platform.payment.stripe.StripeProperties;
@@ -39,6 +41,13 @@ public class OnlinePaymentService {
 
     /** Checked against Stripe's documentation, 2026-11-06. Each carries the refund itself, with its status. */
     private static final Set<String> REFUND_EVENTS = Set.of("refund.created", "refund.updated", "refund.failed");
+
+    /**
+     * About a family's monthly subscription (task 68; names checked against Stripe's documentation, 2026-11-21). A
+     * Checkout page finished in subscription mode is one too. The Programme at Home acts on them (StripeEvents).
+     */
+    private static final Set<String> SUBSCRIPTION_EVENTS = Set.of("invoice.paid", "invoice.payment_failed",
+            "customer.subscription.updated", "customer.subscription.deleted");
 
     /** The parts of a Stripe event the platform reads. */
     record Event(String type, EventData data) {
@@ -107,15 +116,32 @@ public class OnlinePaymentService {
 
     /**
      * Stripe says a Checkout page was paid, and the payment is marked paid today with Stripe's reference; or it reports
-     * a refund, which RefundService records. A call that is not signed by Stripe is refused. Returns whether anything
-     * changed.
+     * a refund, which RefundService records; or it is about a family's subscription. A call that is not signed by
+     * Stripe is refused. Returns whether anything changed.
      */
     @Transactional
     public boolean webhook(String payload, String signature) {
         if (!enabled() || !StripeSignature.valid(signature, payload, properties.webhookSecret(), clock.instant())) {
             throw new IllegalArgumentException("This call is not signed by Stripe");
         }
+        return receive(payload);
+    }
+
+    /**
+     * Acts on one of Stripe's messages. Only for a caller that knows where it came from: the webhook above, once the
+     * signature is checked, and the development stand-in for Stripe (FakeStripe).
+     */
+    @Transactional
+    public boolean receive(String payload) {
         Event event = json.readValue(payload, Event.class);
+        JsonNode object = json.readTree(payload).path("data").path("object");
+        boolean subscriptionCheckout = "checkout.session.completed".equals(event.type())
+                && "subscription".equals(object.path("mode").asString(""));
+        if (event.type() != null && (SUBSCRIPTION_EVENTS.contains(event.type()) || subscriptionCheckout)) {
+            StripeEvents.Received received = new StripeEvents.Received(event.type(), object);
+            events.publishEvent(received);
+            return received.wasChanged();
+        }
         if (REFUND_EVENTS.contains(event.type()) && event.data() != null && event.data().object() != null) {
             EventObject refund = event.data().object();
             return refunds.fromStripe(refund.id(), refund.payment_intent(), RefundService.paymentIdIn(refund.metadata()),

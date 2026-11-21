@@ -52,8 +52,8 @@ password `password`:
 | `trust@northbridge.test` | Trust or group lead, Northbridge Academy Trust | Our schools |
 | `practitioner@example.test` | Practitioner | Practitioner course |
 | `parent@example.test` | Parent or carer (Jo Bennett, linked to a child in Year 2 R) | Parent course; use the parent app |
-| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on the Programme at Home, pass running) | Use the parent app |
-| `lapsed@example.test` | Parent, no school (Tom Reid: Noah; the family's pass ended) | Renew on At home |
+| `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on the Programme at Home, covered by a 12-month pass from before monthly billing) | Use the parent app |
+| `lapsed@example.test` | Parent, no school (Tom Reid: Noah; the family's pass ended) | Subscribe monthly on At home (once the team has set a monthly price; with `STRIPE_FAKE=true` no Stripe keys are needed) |
 | `admin@motormovers.test` | Programme team | Content approval |
 | `pat@motormovers.test` | Programme team (Pat, trainer) | Content approval; Live sessions to start a course session |
 | `trainer@motormovers.test` | Trainer in Pat's team (Amy Clarke) | Live sessions for her own cohorts only |

@@ -36,11 +36,12 @@ public record CountrySettings(
      * The prices this country launches with (go-live task 85), in its currency's main unit (750 or 571.50), tax
      * included: the yearly licence for a childcare centre or kindergarten, for a school, and for a school in a group
      * of schools (10% below the school's); the practitioner course and its yearly renewal; the parent course; and the
-     * home programme's 12-month pass. They are applied once, on start, where the team has not set a price
+     * home programme's 12-month pass (no longer sold, task 68) and its monthly price ({@code home-monthly}, the only
+     * one that may be left blank: monthly is then not on sale until the team sets a price). They are applied once, on start, where the team has not set a price
      * (seed/LaunchPrices); after that, prices are changed on Plans and prices, not here.
      */
     public record LaunchPrices(BigDecimal childcare, BigDecimal school, BigDecimal group, BigDecimal practitioner,
-            BigDecimal practitionerRenewal, BigDecimal parentCourse, BigDecimal homePass) {
+            BigDecimal practitionerRenewal, BigDecimal parentCourse, BigDecimal homePass, BigDecimal homeMonthly) {
 
         public int childcarePence() {
             return minor(childcare);
@@ -70,9 +71,19 @@ public record CountrySettings(
             return minor(homePass);
         }
 
-        /** Every price, for checking them. */
+        /** The monthly price in the minor unit, or null while it is not decided. */
+        public Integer homeMonthlyPence() {
+            return homeMonthly == null ? null : minor(homeMonthly);
+        }
+
+        /** Every price that must be set, for checking them. */
         Stream<BigDecimal> all() {
             return Stream.of(childcare, school, group, practitioner, practitionerRenewal, parentCourse, homePass);
+        }
+
+        /** Every price that is set, the optional monthly one included. */
+        Stream<BigDecimal> set() {
+            return Stream.concat(all(), Stream.ofNullable(homeMonthly));
         }
 
         /** In the currency's minor unit (pence or cents), as amounts are held. */
@@ -183,7 +194,7 @@ public record CountrySettings(
         require(termLabel != null && !termLabel.isBlank(), where + "term-label is missing");
         require(launchPrices != null && launchPrices.all().noneMatch(java.util.Objects::isNull),
                 where + "launch-prices needs all seven prices");
-        require(launchPrices.all().allMatch(p -> p.signum() >= 0 && p.scale() <= 2 && p.precision() - p.scale() <= 6),
+        require(launchPrices.set().allMatch(p -> p.signum() >= 0 && p.scale() <= 2 && p.precision() - p.scale() <= 6),
                 where + "launch-prices must be amounts of 0 or more, with at most two decimal places");
         return this;
     }

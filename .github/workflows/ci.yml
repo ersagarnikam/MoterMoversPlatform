@@ -69,6 +69,8 @@ jobs:
         env:
           # The browser tests sign in more than the 50 times in 15 minutes one address is allowed; tests only.
           LOGIN_LIMIT_PER_IP: '500'
+          # A stand-in for Stripe on the API itself, so a family can subscribe in the tests; tests and demos only.
+          STRIPE_FAKE: 'true'
         run: |
           ./mvnw -B -q package -DskipTests
           nohup java -jar target/motor-movers-platform-*.jar > api.log 2>&1 &

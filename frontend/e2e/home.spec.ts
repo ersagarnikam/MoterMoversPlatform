@@ -29,34 +29,65 @@ test('a family signs up on the website, does the check and the first session', a
   await expect(page.getByText('Placeholder lesson 1')).toBeVisible()
   await expectAccessible(page)
   for (const title of ['Placeholder lesson 1', 'Placeholder lesson 2']) {
-    await page.getByText(title).click()
-    await page.getByRole('button', { name: 'Mark as done' }).click()
+    // Each part by itself: a part just marked keeps its button for a moment while the page refreshes.
+    const part = page.getByRole('group').filter({ hasText: title })
+    await part.getByText(title).click()
+    await part.getByRole('button', { name: 'Mark as done' }).click()
+    await expect(part.getByRole('button', { name: 'Mark as done' })).toHaveCount(0)
   }
   await expect(page.getByText('You have finished the induction.')).toBeVisible()
   await page.getByRole('link', { name: 'Back to At home' }).click()
 
-  // Then the family's 12-month pass (go-live task 26), offered at the price the team set. Card payments are off in
-  // these tests, so the team extends the pass by hand, as it would for support.
+  // Then the family's monthly subscription (go-live task 68). No country has a monthly price yet, so the team sets
+  // one on Plans and prices first (once: a second run against the same API finds it set).
   const pass = page.locator('.home-pass')
-  await expect(pass.getByRole('heading', { name: 'The 12-month pass' })).toBeVisible()
-  await expect(pass).toContainText('Sessions need a 12-month pass for your family')
+  await expect(pass).toBeVisible()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Plans and prices', exact: true }).click()
+  const monthly = page.locator('section', { has: page.getByRole('heading', { name: /monthly price/ }) })
+  await expect(monthly).toContainText(/Not on sale until a price is set|Today: /)
+  if (await monthly.getByText('Not on sale until a price is set').isVisible()) {
+    await monthly.getByLabel(/Price a month/).fill('14.50')
+    await monthly.getByRole('button', { name: 'Set the monthly price' }).click()
+  }
+  await expect(monthly).toContainText('Today: £14.50 a month.')
+  await expect(monthly).toContainText('a family that already subscribes keeps its price')
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  // The family subscribes. These tests run with the stand-in for Stripe (STRIPE_FAKE=true on the API), whose page
+  // "pays" at once and comes back as Stripe does; the platform hears of it as it would from Stripe.
+  await signIn(page, email, 'a-long-test-password')
+  await page.getByRole('link', { name: 'At home', exact: true }).click()
+  await expect(pass.getByRole('heading', { name: 'Monthly subscription' })).toBeVisible()
+  await expect(pass).toContainText('Sessions need a subscription for your family: £14.50 a month')
   await expectAccessible(page)
+  await pass.getByRole('button', { name: 'Subscribe for £14.50 a month' }).click()
+  await expect(pass.getByRole('heading', { name: 'Your subscription', exact: true })).toBeVisible()
+  await expect(pass).toContainText('£14.50 a month. The next payment is taken on')
+  await expectAccessible(page)
+
+  // Manage opens the payment provider's own page, where the payer cancels: the family keeps the month it paid for.
+  await pass.getByRole('button', { name: 'Manage' }).click()
+  await expect(page.getByRole('heading', { name: 'Stand-in for Stripe' })).toBeVisible()
+  await page.getByRole('link', { name: 'Cancel at the end of the paid month' }).click()
+  await expect(page.locator('#state')).toContainText('cancels at the end of the month')
+  await page.getByRole('link', { name: 'Back to the platform' }).click()
+  await expect(pass.getByRole('heading', { name: 'Your subscription is ending' })).toBeVisible()
+  await expect(pass).toContainText('Sessions stay open until')
+
+  // The team sees the month as a payment with its tax, and the subscription on the family's card.
   await page.getByRole('button', { name: 'Sign out' }).click()
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Payments', exact: true }).click()
-  const support = page.locator('section', { has: page.getByRole('heading', { name: /Programme at Home pass/ }) })
+  const support = page.locator('section', { has: page.getByRole('heading', { name: /Programme at Home subscription/ }) })
   await support.getByLabel('Parent or carer’s email').fill(email)
   await support.getByRole('button', { name: 'Find the family' }).click()
-  await expect(support).toContainText('No pass yet.')
-  const nextYear = new Date()
-  nextYear.setFullYear(nextYear.getFullYear() + 1)
-  await support.getByLabel('Extend to').fill(nextYear.toISOString().slice(0, 10))
-  await support.getByRole('button', { name: 'Extend the pass' }).click()
-  await expect(support).toContainText('Extended by the team')
+  await expect(support).toContainText('Subscription: cancelled, ending with the paid month. £14.50 a month')
+  await expect(support).toContainText('Monthly payment')
   await page.getByRole('button', { name: 'Sign out' }).click()
   await signIn(page, email, 'a-long-test-password')
   await page.getByRole('link', { name: 'At home', exact: true }).click()
-  await expect(pass.getByRole('heading', { name: 'Your pass' })).toBeVisible()
   await page.getByRole('link', { name: /^Mo 4 years/ }).click()
   await page.getByRole('link', { name: 'Start the check' }).first().click()
 
@@ -123,14 +154,15 @@ test('a parent rates the end of a module and emails a family code', async ({ pag
   await expect(page.getByText(/^Emailed to gran@example\.test\. Works once/)).toBeVisible()
 })
 
-test('a family whose pass has ended is offered Renew, not the check (task 82)', async ({ page }) => {
+test('a family whose pass has ended is told to subscribe, and is not offered the check (tasks 82 and 68)', async ({ page }) => {
   await signIn(page, 'lapsed@example.test')
   await page.getByRole('link', { name: 'At home', exact: true }).click()
-  await expect(page.locator('.home-pass').getByRole('heading', { name: 'Your pass has ended' })).toBeVisible()
+  // The 12-month pass is no longer sold: the card is about the monthly subscription.
+  await expect(page.locator('.home-pass')).toBeVisible()
   await page.getByRole('link', { name: /^Noah / }).click()
   await expect(page.getByRole('heading', { name: 'Noah', level: 1 })).toBeVisible()
-  // Noah's check is due again, but the API would refuse it without a running pass, so it is not offered.
-  await expect(page.getByRole('link', { name: 'Renew the pass' })).toBeVisible()
+  // Noah's check is due again, but the API would refuse it while the family is not covered, so it is not offered.
+  await expect(page.getByRole('link', { name: 'Subscribe to carry on' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Start the check' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Start', exact: true })).toHaveCount(0)
 })

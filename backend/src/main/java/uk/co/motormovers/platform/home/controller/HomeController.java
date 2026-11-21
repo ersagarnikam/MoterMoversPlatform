@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.motormovers.platform.family.dto.FamilyViews;
 import uk.co.motormovers.platform.home.dto.HomeViews;
 import uk.co.motormovers.platform.home.dto.HomePassViews;
-import uk.co.motormovers.platform.home.service.HomePassService;
+import uk.co.motormovers.platform.home.service.HomeSubscriptionService;
 import uk.co.motormovers.platform.home.service.HomeService;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
@@ -34,13 +34,13 @@ import uk.co.motormovers.platform.security.service.RateLimiter;
 public class HomeController {
 
     private final HomeService home;
-    private final HomePassService passes;
+    private final HomeSubscriptionService subscriptions;
     private final RateLimiter rateLimiter;
     private final CurrentUserResolver currentUser;
 
     public HomeController(HomeService home, RateLimiter rateLimiter, CurrentUserResolver currentUser,
-            HomePassService passes) {
-        this.passes = passes;
+            HomeSubscriptionService subscriptions) {
+        this.subscriptions = subscriptions;
         this.home = home;
         this.rateLimiter = rateLimiter;
         this.currentUser = currentUser;
@@ -110,18 +110,28 @@ public class HomeController {
         return home.today(childId);
     }
 
-    /** The family's pass: whether it runs, when it ends, and whether it is on sale and at what price. */
+    /**
+     * The family's cover: whether it runs and to when, its monthly subscription's state, and whether monthly is on
+     * sale and at what price.
+     */
     @GetMapping("/pass")
     public HomePassViews.Pass pass() {
         home.requireAvailable();
-        return passes.mine();
+        return subscriptions.mine();
     }
 
-    /** A Stripe page to buy (or renew) the family's 12-month pass. Only Stripe's webhook marks it paid. */
-    @PostMapping("/pass/checkout")
-    public HomePassViews.Checkout buyPass() {
+    /** A Stripe page to subscribe the family monthly (task 68). Only Stripe's webhook opens the sessions. */
+    @PostMapping("/subscription/checkout")
+    public HomePassViews.Checkout subscribe() {
         home.requireAvailable();
-        return passes.checkout();
+        return subscriptions.checkout();
+    }
+
+    /** Stripe's own page where the payer cancels the subscription or changes the card. */
+    @PostMapping("/subscription/portal")
+    public HomePassViews.Checkout manageSubscription() {
+        home.requireAvailable();
+        return subscriptions.portal();
     }
 
     @PostMapping("/sessions")

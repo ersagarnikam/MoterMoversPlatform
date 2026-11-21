@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { api, type AdminFamilyPass, type HomePassPrices } from '../api'
 import { day } from '../dates'
 import { currencySymbol, money } from '../money'
-import { useToast } from './Feedback'
+import { useConfirm, useToast } from './Feedback'
 
 /** Today in the browser, as YYYY-MM-DD. */
 function isoDate(d: Date): string {
@@ -11,10 +11,11 @@ function isoDate(d: Date): string {
 }
 
 /**
- * The Programme at Home pass price on Plans and prices: dated like a licence plan's, from today or later, and a
- * price in force is never rewritten. With no price the pass is not on sale.
+ * The Programme at Home's monthly price on Plans and prices (go-live task 68): dated like a licence plan's, from
+ * today or later, and a price in force is never rewritten. With no price, monthly is not on sale. A change applies to
+ * new subscriptions only.
  */
-export function HomePassPriceCard() {
+export function HomeMonthlyPriceCard() {
   const [data, setData] = useState<HomePassPrices | null>(null)
   const [pounds, setPounds] = useState('')
   const [from, setFrom] = useState(isoDate(new Date()))
@@ -23,7 +24,7 @@ export function HomePassPriceCard() {
 
   useEffect(() => {
     api
-      .homePassPrices()
+      .homeMonthlyPrices()
       .then(setData)
       .catch((e) => setError(e.message))
   }, [])
@@ -33,8 +34,8 @@ export function HomePassPriceCard() {
     setError(null)
     try {
       const pence = Math.round(Number(pounds) * 100)
-      setData(await api.changeHomePassPrice(pence, from))
-      toast(`The pass costs ${money(pence)} from ${day(from)}`)
+      setData(await api.changeHomeMonthlyPrice(pence, from))
+      toast(`New subscriptions cost ${money(pence)} a month from ${day(from)}`)
       setPounds('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the price')
@@ -43,23 +44,27 @@ export function HomePassPriceCard() {
 
   return (
     <section className="card">
-      <h3>{HOME_PROGRAMME} pass</h3>
+      <h3>{HOME_PROGRAMME}: monthly price</h3>
       <p className="muted">
-        Twelve months for a whole family, bought by card.{' '}
-        {data?.currentPence != null ? `Today: ${money(data.currentPence)}.` : 'Not on sale until a price is set.'}
+        A family subscribes by card, and pays each month until it cancels.{' '}
+        {data?.currentPence != null
+          ? `Today: ${money(data.currentPence)} a month.`
+          : 'Not on sale until a price is set.'}{' '}
+        A change applies to new subscriptions only: a family that already subscribes keeps its price.
       </p>
       {data && data.prices.length > 0 && (
         <ul className="due-list">
           {data.prices.map((p) => (
             <li key={p.effectiveFrom}>
-              {money(p.pricePence)} from {day(p.effectiveFrom)} <span className="muted">· set by {p.changedBy}</span>
+              {money(p.pricePence)} a month from {day(p.effectiveFrom)}{' '}
+              <span className="muted">· set by {p.changedBy}</span>
             </li>
           ))}
         </ul>
       )}
       <form className="inline-form" onSubmit={save}>
         <label>
-          Price ({currencySymbol()}, tax included)
+          Price a month ({currencySymbol()}, tax included)
           <input type="number" min="0.01" step="0.01" required value={pounds} onChange={(e) => setPounds(e.target.value)} />
         </label>
         <label>
@@ -67,7 +72,7 @@ export function HomePassPriceCard() {
           <input type="date" required min={isoDate(new Date())} value={from} onChange={(e) => setFrom(e.target.value)} />
         </label>
         <div className="actions">
-          <button className="btn btn-primary">Set the pass price</button>
+          <button className="btn btn-primary">Set the monthly price</button>
         </div>
       </form>
       {error && <p className="error">{error}</p>}
@@ -75,14 +80,26 @@ export function HomePassPriceCard() {
   )
 }
 
-/** For support: a family's pass, found by any parent's or carer's email, and extending it by hand (recorded). */
+const SUBSCRIPTION_STATE: Record<string, string> = {
+  ACTIVE: 'running',
+  CANCELLING: 'cancelled, ending with the paid month',
+  PAST_DUE: 'a payment has failed',
+  ENDED: 'ended',
+}
+
+/**
+ * For support: a family's cover and subscription, found by any parent's or carer's email; extending the cover by
+ * hand, and cancelling the subscription for the family (both recorded).
+ */
 export function FamilyPassCard() {
   const [email, setEmail] = useState('')
   const [family, setFamily] = useState<AdminFamilyPass | null>(null)
   const [endsOn, setEndsOn] = useState('')
   const [note, setNote] = useState('')
+  const [why, setWhy] = useState('')
   const [error, setError] = useState<string | null>(null)
   const toast = useToast()
+  const confirm = useConfirm()
 
   async function find(e: FormEvent) {
     e.preventDefault()
@@ -100,16 +117,42 @@ export function FamilyPassCard() {
     setError(null)
     try {
       setFamily(await api.extendFamilyPass(email.trim(), endsOn, note))
-      toast(`The pass now runs to ${day(endsOn)}`)
+      toast(`The family is now covered to ${day(endsOn)}`)
       setNote('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not extend the pass')
+      setError(err instanceof Error ? err.message : 'Could not extend the cover')
     }
   }
 
+  async function cancel(e: FormEvent) {
+    e.preventDefault()
+    const sub = family?.subscription
+    if (!sub) return
+    const ok = await confirm({
+      title: 'Cancel this family’s subscription?',
+      body:
+        sub.state === 'PAST_DUE'
+          ? 'Its payment has failed, so it ends now. No more payments are tried.'
+          : `No more payments are taken. The family keeps the month it has paid for${sub.paidTo ? `, to ${day(sub.paidTo)}` : ''}, and is emailed.`,
+      confirmLabel: 'Cancel the subscription',
+      cancelLabel: 'Keep it',
+      danger: true,
+    })
+    if (!ok) return
+    setError(null)
+    try {
+      setFamily(await api.cancelFamilySubscription(email.trim(), why))
+      toast('The subscription is cancelled')
+      setWhy('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not cancel the subscription')
+    }
+  }
+
+  const sub = family?.subscription ?? null
   return (
     <section className="card">
-      <h3>A family’s {HOME_PROGRAMME} pass</h3>
+      <h3>A family’s {HOME_PROGRAMME} subscription</h3>
       <form className="inline-form" onSubmit={find}>
         <label>
           Parent or carer’s email
@@ -125,9 +168,15 @@ export function FamilyPassCard() {
             {family.members.map((m) => `${m.name} (${m.role.toLowerCase()})`).join(', ')}.{' '}
             {family.endsOn
               ? family.running
-                ? `The pass runs to ${day(family.endsOn)}.`
-                : `The pass ended on ${day(family.endsOn)}.`
-              : 'No pass yet.'}
+                ? `Covered to ${day(family.endsOn)}.`
+                : `Cover ended on ${day(family.endsOn)}.`
+              : 'No cover yet.'}
+          </p>
+          <p>
+            {sub
+              ? `Subscription: ${SUBSCRIPTION_STATE[sub.state] ?? sub.state}. ${money(sub.pricePence)} a month, paid by ${sub.payerEmail ?? 'someone no longer here'}${sub.paidTo ? `, paid to ${day(sub.paidTo)}` : ''}.`
+              : 'No subscription.'}
+            {sub?.cancelledBy ? ` Cancelled by ${sub.cancelledBy}${sub.cancelNote ? `: ${sub.cancelNote}` : ''}.` : ''}
           </p>
           {family.history.length > 0 && (
             <ul className="due-list">
@@ -143,7 +192,18 @@ export function FamilyPassCard() {
               ))}
             </ul>
           )}
-          <form className="inline-form" onSubmit={extend}>
+          {sub && (sub.state === 'ACTIVE' || sub.state === 'PAST_DUE') && (
+            <form className="inline-form" onSubmit={cancel} aria-label="Cancel the subscription">
+              <label>
+                Why it is being cancelled
+                <input required maxLength={300} value={why} onChange={(e) => setWhy(e.target.value)} />
+              </label>
+              <div className="actions">
+                <button className="btn btn-danger">Cancel the subscription</button>
+              </div>
+            </form>
+          )}
+          <form className="inline-form" onSubmit={extend} aria-label="Extend the cover">
             <label>
               Extend to
               <input type="date" required value={endsOn} onChange={(e) => setEndsOn(e.target.value)} />
@@ -153,7 +213,7 @@ export function FamilyPassCard() {
               <input maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} />
             </label>
             <div className="actions">
-              <button className="btn btn-primary">Extend the pass</button>
+              <button className="btn btn-primary">Extend the cover</button>
             </div>
           </form>
         </>

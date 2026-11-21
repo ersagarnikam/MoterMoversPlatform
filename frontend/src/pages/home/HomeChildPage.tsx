@@ -170,7 +170,7 @@ export default function HomeChildPage() {
   )
 }
 
-/** In place of "Start the check" while the API would refuse it: the pass card, or the induction. */
+/** In place of "Start the check" while the API would refuse it: the subscription card, or the induction. */
 function CheckLocked({ pass }: { pass: HomePass | null }) {
   if (pass && !pass.running) return <HomePassCard />
   return (
@@ -191,8 +191,8 @@ function SessionCard({ today }: { today: HomeToday }) {
       <h2>{today.doneToday ? 'Done today' : `Today’s session for ${today.name}`}</h2>
       {!today.passRunning && (
         <p>
-          {today.passEndsOn ? 'Your family’s pass has ended. ' : 'Sessions need your family’s 12-month pass. '}
-          <Link to="/home">{today.passEndsOn ? 'Renew the pass' : 'Buy the pass'}</Link>
+          {today.passEndsOn ? 'Sessions have stopped: your family is no longer covered. ' : 'Sessions need your family’s monthly subscription. '}
+          <Link to="/home">{today.passEndsOn ? 'Subscribe to carry on' : 'See the subscription'}</Link>
         </p>
       )}
       {!today.inductionDone && (
