@@ -95,8 +95,12 @@ deployment's region once schools are signed up: schools are stored with it.
 
 Each country's launch prices are in its `launch-prices` block of `application.yml`, in the currency's main unit and tax
 included: `childcare`, `school` and `group` (the three yearly licences; a group pays 10% less than a school),
-`practitioner` and `practitioner-renewal`, `parent-course` and `home-pass`. Override one before the first start with,
-for example, `PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL=1300`.
+`practitioner` and `practitioner-renewal`, `parent-course` and `home-pass` (the old 12-month pass, no longer sold).
+Override one before the first start with, for example, `PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL=1300`.
+
+`home-monthly`, the home programme's monthly price, is the one price that may be left out, and it is left out in all
+three countries until it is decided. With none, monthly is **not on sale**: set it before the first start
+(`PLATFORM_COUNTRIES_UK_LAUNCHPRICES_HOMEMONTHLY=14.50`), or afterwards on Plans and prices.
 
 They are applied on start, once: a licence plan still at its original set-up price gets the launch price from that
 day (its history shows "launch prices"), the home pass gets its price if it has none, and the two starter courses are
@@ -224,12 +228,38 @@ Pay by card is hidden and the team marks payments paid by hand, as before.
 
 1. In the Stripe dashboard (start in test mode): Developers > API keys, copy the secret key (`sk_test_...`).
 2. Developers > Webhooks > Add endpoint: `https://<APP_DOMAIN>/api/stripe/webhook`, events
-   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `refund.created`, `refund.updated` and
-   `refund.failed`. Copy its signing secret (`whsec_...`). An endpoint made before refunds were built needs the three
-   `refund.*` events adding.
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `refund.created`, `refund.updated`,
+   `refund.failed`, and for the home programme's monthly subscriptions `invoice.paid`, `invoice.payment_failed`,
+   `customer.subscription.updated` and `customer.subscription.deleted`. Copy its signing secret (`whsec_...`). An
+   endpoint made earlier needs the missing events adding: without the four subscription events a family would pay
+   and never be let in.
 3. Put both in `deploy/.env` as `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (the API refuses to start with only
    one), then restart the API. Pay a due payment with Stripe's test card 4242 4242 4242 4242 and check it shows paid.
 4. To go live, repeat with the live keys and a live-mode webhook.
+
+**Monthly subscriptions (the Programme at Home).** A family subscribes on Stripe's page and Stripe takes each month.
+Each month arrives by the webhook (`invoice.paid`) and becomes a paid payment with its tax, and the days it covers.
+
+1. Settings > Billing > **Customer portal**: switch it on, allow customers to **cancel subscriptions at the end of
+   the billing period** (not immediately) and to **update payment methods**, and switch off changing plans or
+   quantities. Add the platform's address as the default return link. Without a saved portal configuration, Manage
+   fails with "not available just now".
+2. Settings > Billing > Subscriptions and emails: choose how often a failed payment is retried (Smart Retries), and
+   what happens when the retries run out: **cancel the subscription**. The platform tells the payer when a payment
+   fails (once for each invoice); cover ends with the month already paid for, with no extra days.
+3. Set the monthly price on Plans and prices (or `home-monthly`, above). A change applies to new subscriptions only.
+4. Try it in test mode: subscribe with card 4242 4242 4242 4242 and check that the month shows on Payments with its
+   tax and that sessions open; cancel under Manage; and subscribe with 4000 0000 0000 0341, which attaches but fails
+   when charged, to see a failed payment. **Not yet tried with a real Stripe account.**
+
+The team can cancel a family's subscription on Payments (under the family's subscription), with a reason. A refund of
+a month does not cancel the subscription: cancel it as well if that is meant. In the API log, watch for "paid for a
+second home subscription" and "which no longer exists": the platform has cancelled that subscription at Stripe, and
+its month is for the team to refund.
+
+For development and demos without Stripe keys, `STRIPE_FAKE=true` swaps Stripe for a stand-in on the API (no card, no
+money): Subscribe and Pay by card "pay" at once, and Manage opens a plain page with what Stripe would do next (cancel,
+the next month, a refused card). **Production refuses to start with it.**
 
 **Refunds.** The team refunds on Payments (Refund, on a paid payment), in whole or in part, with a reason. A payment
 taken by card goes back through Stripe; nothing is saved unless Stripe accepts it. Anything else is recorded, and the

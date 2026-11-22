@@ -63,6 +63,13 @@ export default function RefundForm({
       <p className="muted">
         {money(left)} left to refund of {money(payment.amountPence)}.
       </p>
+      {payment.subscriptionMonth && (
+        <p className="banner-info">
+          This is one month of a subscription. A refund in full ends that month’s cover today, but does not cancel the
+          subscription: the next month is still taken. To stop it too, cancel the subscription under the family’s
+          subscription on this page.
+        </p>
+      )}
       <label>
         Amount ({currencySymbol()})
         <input

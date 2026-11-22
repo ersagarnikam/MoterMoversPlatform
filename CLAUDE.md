@@ -64,7 +64,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
   start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V25`, added by Dev 2026-11-16);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V26`, added by Dev 2026-11-21);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -80,12 +80,13 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-16) 305 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-16) 87 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-21) 322 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-21) 92 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock, the home subscription card
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
+# (added by Dev, 2026-11-21) and with STRIPE_FAKE=true, the stand-in for Stripe that the subscription test pays with (task 68).
 cd frontend && npm run e2e          # (added by Dev, 2026-11-16) 72 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
@@ -125,10 +126,11 @@ UK (Wokingham) back 4 Jan, Ireland 6 Jan, Queensland school year starts 27 Jan.
 **Release 1 (ready 31 Dec).** Schools: licences signed up by the team, session player, both of Pat's assessments for all
 seven colours, head and trust dashboards, induction, resources. Live practitioner and parent courses with card payment.
 Motor Movers at Home sold as a 12-month pass (card payment that already works), gated by payment and Pat's parent
-induction; `HOME_PROGRAMME` on in production. Parent app in both stores, asking for the country at first launch. Text
+induction; `HOME_PROGRAMME` on in production. (added by Dev, 2026-11-21: the owner decided on 2026-11-21 that it is billed monthly from
+launch, in place of the pass; built as task 68, see Current state.) Parent app in both stores, asking for the country at first launch. Text
 session plans, plus the Green and Orange films if Pat agrees. **Release 2 (26 Feb):** SENCo interventions, inspection
-evidence pack PDF, self-service school sign-up, free introductory course, calendar invites, session recordings, monthly
-billing, filmed sessions. Out of both: movement analysis from video and at-risk prediction (medical-device rules).
+evidence pack PDF, self-service school sign-up, free introductory course, calendar invites, session recordings, filmed
+sessions (monthly billing moved into Release 1 on 2026-11-21, task 68). Out of both: movement analysis from video and at-risk prediction (medical-device rules).
 
 **Three deployments, one build.** UK (London, GBP, VAT 20%, Europe/London, school year Sep-Aug), Ireland (EU region, EUR,
 VAT 23%, Europe/Dublin, Sep-Jun, Junior/Senior Infants), Australia (Sydney, AUD, GST 10%, Australia/Brisbane for
@@ -216,7 +218,56 @@ Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. Its 
 to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_...`, `deploy/country.env`); production
 refuses placeholders.
 
-## Current state (2026-11-17)
+## Current state (2026-11-21)
+
+(added by Dev, 2026-11-21) **In progress: go-live task 68, monthly billing for the Programme at Home.** Developer, branch `task-68`, with its
+pull request open for the Tester. Built as the note below says; nothing is left to build. Remove this line once it is merged.
+
+(added by Dev, 2026-11-21) **The Programme at Home is billed monthly (go-live task 68; migration V26; the owner's decision of 2026-11-21).** A
+family subscribes on Stripe's own page and Stripe takes each month; the 12-month pass (task 26) is no longer sold.
+- **The gate is unchanged.** Each month Stripe takes arrives by the signed webhook (`invoice.paid`) and becomes a payment (the payer's,
+  PAID, purpose `HOME_PASS`, with the country's tax, `payment.stripe_invoice_id` unique so an invoice is recorded once) and a `home_pass` row
+  (`subscription_id`) for the invoice's period. So `HomePassService.requireReady`, Today, offline dates and refunds work as before.
+  **A month's cover runs from the day Stripe's period starts to the day it ends, both included**, not to the day before as the spec said:
+  Stripe takes the next month about an hour after the period ends, so without that day every family would be locked out on the morning of
+  each renewal. A failed payment gives no days beyond that.
+- **Where it lives:** `home/service/HomeSubscriptionService` (subscribe, manage, Stripe's messages, the team's cancel, the monthly price);
+  `home_subscription` (family, payer, the price subscribed at, PENDING, ACTIVE, PAST_DUE or ENDED, Stripe's ids, cancelling) and
+  `home_monthly_price`. `OnlinePaymentService` checks the signature and publishes `StripeEvents.Received`; the home code listens, as with
+  `PaymentEvents`. `HomePassService` keeps the gate, extensions, refunds and reminders.
+- **API:** `GET /api/home/pass` now carries `subscription` (NONE, ACTIVE, CANCELLING, PAST_DUE), `renewsOn`, `canSubscribe`, `canManage`,
+  and `onSale` and `pricePence` are the monthly price. `POST /api/home/subscription/checkout` (Stripe Checkout in subscription mode, an
+  inline monthly price, the row's id in the subscription's metadata) and `/portal` (Stripe's customer portal). `/api/home/pass/checkout`
+  is gone. The team: `/api/admin/home-pass/monthly-prices` and `/cancel-subscription`, through `AccessPolicy.requireAdmin`.
+- **Rules:** one subscription per family (the family's row is locked; Subscribe twice opens the same page; a second carer is refused).
+  A family still covered by a pass subscribes from the pass's last day. Only the payer manages it. A change of the monthly price applies to
+  new subscriptions only. A payer who leaves a family has it cancelled at the end of the paid month; a family that is deleted has it ended
+  at once (`HomeService.leave`). A month refunded in full ends that cover on the refund day and does not cancel the subscription (the
+  refund form says so). The team's cancel is at the end of the paid month, or at once if a payment has failed, with who and why.
+- **Emails and phone notices:** a failed payment (the payer, once for each invoice); a cancellation (the family, once, with the last day).
+  The 30, 7 and 0 day reminders go only to a family whose last cover is a pass or an extension.
+- **Stripe's two shapes.** Checked against Stripe's documentation on 2026-11-21: since its 2025-03-31 version an invoice names its
+  subscription under `parent.subscription_details` and no payment intent (asked for with `GET /v1/invoice_payments`, so a month can be
+  refunded through Stripe), and a cancellation may come as `cancel_at`. The older shape is read too. The month is the invoice line's
+  `period`, never the invoice's own `period_start` and `period_end`.
+- **Price:** `home-monthly` in a country's `launch-prices` is the one price that may be left out, and is in all three countries until Kay
+  answers. With no monthly price, monthly is not on sale. The team sets it on Plans and prices (the pass price card is gone from there).
+- **Web:** the At home card (`HomePassCard`, `homePass.ts`): the monthly price and Subscribe, then the state, with Manage for the payer.
+  Payments: the family's subscription, Cancel the subscription and Extend. **Parent app:** the state only, with no price, no button and no
+  link to a payment page (the app stores' rules; the owner and the adviser are to confirm this for each store).
+- **A stand-in for Stripe, `STRIPE_FAKE=true`** (`payment/stripe/FakeStripe`, `FakeStripeController` under `/api/dev/stripe`; development,
+  demos and the browser tests only, and `ProductionChecks` refuses it). No card and no money: Subscribe and Pay by card "pay" at once, and
+  Manage opens a plain page with what Stripe would do next (cancel, the next month, a refused card, end it). Its messages go through the
+  same code as the webhook. **The browser tests need it**, and CI's e2e job sets it.
+- **Demo:** Priya's and Tom's 12-month passes are as before (Priya covered, Tom's ended); no monthly price is set, so set one on Plans and
+  prices to try subscribing.
+- **Known limits:** not tried with a real Stripe account (RUNBOOK, Card payments, lists the webhook events and the Customer Portal settings
+  to set first). A family that already subscribes is not moved to a new price. A family whose children have all moved to a school keeps
+  paying until it cancels. A Stripe page left open and paid after the family subscribed another way makes a second subscription, which the
+  platform cancels at once and logs, for the team to refund. No free first month, minimum term or cooling-off rule is built (Kay and the
+  adviser, open). **The guides need rebuilding** (task 41): the At home card, Plans and prices and Payments changed.
+- **Tests:** `HomeSubscriptionTest` (12, own database), `FakeStripeTest`, a month in euros and in dollars with its tax in
+  `RegionIrelandTest` and `RegionAustraliaTest`, `homePass.test.ts`, and the browser test, which subscribes and cancels with the stand-in.
 
 [PM: Claude, 2026-11-17] **Films merged (go-live task 57, part 1, pull request #76, main 60c88dc).** Still open on task 57: the Green files from
 Neuroway (and films for Quick March and Roundabout), Orange rhyme 6, the rest of Pat's Yellow films, the buckets (task 29) for the real
@@ -571,6 +622,25 @@ latest licence and `statusOn`, which ignores the start date (a licence starting 
 is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
+
+**Task tested on its branch (updated by tester, 2026-11-21, `task-68` at c0973bc, before merge, the Project manager's brief): pull request #79 (task 68, monthly billing for
+the Programme at Home) passes, no bugs.** Backend 322, web 92 unit tests, the build, the parent app typecheck and all 72 browser tests pass (with `STRIPE_FAKE=true`; H2 with demo data, installed Chrome).
+- **Through the API, 76 checks in each of the UK, Ireland and Australia** (the stand-in for Stripe, plus webhook events signed by the tester with a local test secret): not on sale and checkout refused with no monthly price; a price in the past, of 0,
+  or a second one on the same day refused. Subscribing twice gives the same page; nothing opens until it is paid; then sessions, the check and a rating open, and the team sees ACTIVE with the paid-to day. Each month is a PAID payment
+  with the tax (£25 includes VAT £4.17; €29 with 23% VAT; A$45 includes GST $4.09). A repeated `invoice.paid` records nothing; an unsigned or wrongly signed one is refused. The next month follows on (each month's row shares its last day with
+  the next one's first, decision 1). A refused card: PAST_DUE, the payer emailed once per invoice, cover ends with the month already paid. The team's cancel needs a reason; after a failed payment it ends at once, otherwise CANCELLING,
+  with who and why; access stays to the paid day. The payer's cancel, change of mind and end on the stand-in page behave the same. A month refunded in full ends only that month's cover and leaves the subscription running.
+  One subscription per family: a carer is told while the payer's page is open and once it runs, and only the payer opens Manage. Priya (pass to 2 Oct 2027) cannot subscribe and is told the day; a pass ending tomorrow cannot, one ending today can (decision 2).
+  The payer leaving cancels at the end of the paid month and the carer keeps it; the last member leaving ends it at once at the stand-in (decision 4). Signed events of the tester's own: a month that ended yesterday gives no access today
+  (yesterday's session is accepted), a month ending today covers today (decision 1), another currency is not recorded, and a failure gives no extra days. The old pass checkout is gone (404); Priya's pass runs and the team's Extend works.
+- **Access:** teacher, head, trust or group lead, trainer, practitioner and both parents get 403 on the four team endpoints; the staff roles get 403 on the parent ones; signed out 401; nothing changed. A parent with no family is told there is nothing to manage.
+- **Screens (Australia, Chrome, 1280 and 390px, no overflow):** Plans and prices has the monthly price card (with the new-subscriptions-only note) and no pass price card. At home: "Subscribe for $45 a month", then the state with the next payment day and Manage,
+  which opens the stand-in page. My payments and the team's Payments show each month with "includes GST $4.09"; the team's family card shows the subscription. Priya is told when she can subscribe. **Parent app (web preview):** Today shows the state only
+  ("Your family's subscription is running", "Subscriptions are managed on the website, not in this app"), with no price, no button and no payment link (decision 5); the pass checkout link is gone.
+- **Logs:** no email, name or Stripe id outside the development Mailer's whole-email lines; the service logs ids and dates only.
+- **Low, for the owner or the Developer:** (1) Cancel, change of mind and cancel again sends the last-day email twice (the spec says one email). (2) When the last member leaves, the family's subscription row goes with it, so the team's
+  family search no longer shows it (its payments stay). (3) A refunded month reads "21 Dec to 20 Dec" in the team's history, as for passes (task 82). (4) The stand-in's pages need no sign-in: anyone who knows a customer id can act on a development server (production refuses `STRIPE_FAKE`).
+- **Not tested:** a real Stripe account (no keys; the tester does not read `backend/.env`), phone notifications (push off here, no phone), PostgreSQL.
 
 **Fix verified (updated by tester, 2026-11-16, `task-57` at 4157161, before merge): pull request #76 (task 57 part 1) now passes, no bugs.** Web 87 unit tests (the new `playerClock.test.ts` included), the build and all 72 browser
 tests pass; the backend was not rerun (only web files changed; 305 passed at 0e6bc0f). In Chrome on Year 3 K with real Orange films on local storage, standing in for Green: Yes and No, Flying Machines and Motor Spin with their own films.
@@ -1197,7 +1267,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-17): (added by Dev, 2026-11-17) session-notice tests put their own session in the window; [PM: Claude, 2026-11-17] task 57 merged in the notes; (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-21): (added by Dev, 2026-11-21) monthly billing for the Programme at Home, with a stand-in for Stripe; (added by Dev, 2026-11-17) session-notice tests put their own session in the window; [PM: Claude, 2026-11-17] task 57 merged in the notes; (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -1269,7 +1339,7 @@ Not started unless noted. Confirm priorities with the owner.
    the parent induction she asked for (content from her; then a gate before the first session), the
    other points under Still to settle in `docs/home-programme-design.md`, a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions. (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
+   subscriptions. (added by Dev, 2026-11-21) Monthly subscriptions are built (task 68, Current state); the monthly price is still to come from Kay. (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
    2026-11-05, and the cool-down ends a session from Green to Indigo (pull request #25).
 13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
    its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the

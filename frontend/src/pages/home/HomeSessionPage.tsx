@@ -42,10 +42,10 @@ export default function HomeSessionPage({ review = false }: { review?: boolean }
       <>
         {back}
         <section className="card home-today">
-          <h1>{today.passEndsOn ? 'Your family’s pass has ended' : 'Sessions need a pass'}</h1>
-          <p>Your children’s records are kept. Sessions open again with your family’s 12-month pass.</p>
+          <h1>{today.passEndsOn ? 'Sessions have stopped' : 'Sessions need a subscription'}</h1>
+          <p>Your children’s records are kept. Sessions open again with your family’s monthly subscription.</p>
           <Link to="/home" className="btn btn-primary">
-            {today.passEndsOn ? 'Renew the pass' : 'Buy the pass'}
+            {today.passEndsOn ? 'Subscribe to carry on' : 'See the subscription'}
           </Link>
         </section>
       </>

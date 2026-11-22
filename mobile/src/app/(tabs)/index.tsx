@@ -1,9 +1,9 @@
 import { HOME_PROGRAMME } from '@/lib/brand'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Linking, Pressable, View } from 'react-native'
+import { Pressable, View } from 'react-native'
 import { Banner, Body, Button, Card, Chip, CounterGrid, ErrorState, H1, H2, Loading, Muted, Row, Screen, StageBadge } from '@/components/ui'
-import { api, money, type ColourStage, type Home, type HomeChild, type HomeToday, type LinkedChild } from '@/lib/api'
+import { api, formatDate, money, type ColourStage, type Home, type HomeChild, type HomePass, type HomeToday, type LinkedChild } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { flushHome, homeRatings, homeSessions, unsentWords } from '@/lib/homeOutbox'
 import { useNicknames } from '@/lib/nicknames'
@@ -13,12 +13,6 @@ import { space, STAGES, stageInfo, usePalette } from '@/lib/theme'
 import { useLoad } from '@/lib/useLoad'
 
 const STAGE_KEY = 'mm.home.stage'
-
-/** "Please contact us at … or … to buy the pass", leaving out details not yet confirmed (task 82). */
-function contactUs(p: { contactEmail: string | null; contactPhone: string | null }): string {
-  const ways = [p.contactEmail, p.contactPhone].filter((v): v is string => !!v)
-  return `Please contact us${ways.length ? ` at ${ways.join(' or ')}` : ''} to buy the pass.`
-}
 
 /**
  * Who today is for: a child linked through their school (their stage), a family's own child on the Programme at Home
@@ -136,7 +130,7 @@ export default function TodayScreen() {
         checkOpen ? (
           <CheckCard kid={kid} />
         ) : pass && !pass.running ? (
-          <PassCard ended={pass.ended} />
+          <SubscriptionCard ended={pass.ended} />
         ) : (
           <InductionCard />
         )
@@ -151,6 +145,7 @@ export default function TodayScreen() {
             </Pressable>
           )}
           <HomeSessionCard today={exercisesToday} />
+          <SubscriptionNote pass={pass} />
           <Counter grid={exercisesToday.counterGrid} done={exercisesToday.daysDone} days={exercisesToday.counterDays} />
         </>
       ) : (
@@ -279,45 +274,67 @@ function CheckCard({ kid }: { kid: HomeChild }) {
 }
 
 /**
- * The family's 12-month pass, needed for sessions (go-live task 26): Buy, or Renew once it has ended, on Stripe's own
- * page in the browser. The pass runs once Stripe confirms the payment; pull down to refresh after paying.
+ * What a home family's subscription says in the app (go-live task 68): where it stands, and nothing else. The app
+ * sells nothing: no price, no button and no link to a payment page, because the app stores do not allow a digital
+ * subscription to be sold outside their own payments. Subscribing, cancelling and changing the card are on the website.
  */
-function PassCard({ ended }: { ended: boolean }) {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const pass = useLoad(() => api.homePass(), [])
-  const p = pass.data
-  async function buy() {
-    setBusy(true)
-    setError(null)
-    try {
-      await Linking.openURL((await api.homePassCheckout()).url)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Card payments are not available just now')
-    } finally {
-      setBusy(false)
+function subscriptionWords(p: HomePass): { text: string; warn: boolean } | null {
+  if (!p.hasFamily) return null
+  if (p.subscription === 'PAST_DUE') {
+    return {
+      warn: true,
+      text:
+        'This month’s payment for your family’s subscription did not go through. ' +
+        (p.running && p.endsOn
+          ? `Sessions stay open until ${formatDate(p.endsOn)}. `
+          : 'Sessions have stopped until a payment goes through. ') +
+        'The parent or carer who subscribed can sort it out by signing in on the website.',
     }
   }
-  const price = p?.pricePence != null ? money(p.pricePence) : null
+  if (p.subscription === 'CANCELLING' && p.endsOn) {
+    return {
+      warn: false,
+      text: `Your family’s subscription has been cancelled. Sessions stay open until ${formatDate(p.endsOn)}, and your children’s records are kept.`,
+    }
+  }
+  if (p.subscription === 'ACTIVE') {
+    return { warn: false, text: 'Your family’s subscription is running.' }
+  }
+  if (p.running && p.endsOn) {
+    return { warn: false, text: `Your family is covered until ${formatDate(p.endsOn)}.` }
+  }
+  return null
+}
+
+/** In place of a session while the family is not covered: why, with nothing to buy here. */
+function SubscriptionCard({ ended }: { ended: boolean }) {
+  const pass = useLoad(() => api.homePass(), [])
+  const p = pass.data
+  const failed = p?.subscription === 'PAST_DUE' ? subscriptionWords(p) : null
   return (
     <Card>
-      <H2>{ended ? 'Your pass has ended' : 'The 12-month pass'}</H2>
+      <H2>{failed ? 'A payment did not go through' : ended ? 'Sessions have stopped' : 'Sessions are not open yet'}</H2>
       <Body>
-        {!p
-          ? 'Sessions need your family’s pass.'
-          : !p.onSale || !price
-            ? `The ${HOME_PROGRAMME} pass is not on sale yet. Your children’s details are safe here until it is.`
+        {failed
+          ? failed.text
+          : p && !p.onSale
+            ? `The ${HOME_PROGRAMME} is not open to new families yet. Your children’s details are safe here until it is.`
             : ended
-              ? `Your children’s records are kept. Renew for ${price} to carry on with the sessions.`
-              : `Sessions need a 12-month pass for your family: ${price}, for all your children and anyone you share with.`}
+              ? `Your family is no longer covered${p?.endsOn ? ` (it was until ${formatDate(p.endsOn)})` : ''}. Your children’s records are kept.`
+              : `Sessions need your family’s subscription to the ${HOME_PROGRAMME}.`}
       </Body>
-      {p?.onSale && price && p.cardPayments && (
-        <Button label={busy ? 'Opening…' : ended ? `Renew for ${price}` : `Buy the pass for ${price}`} onPress={buy} disabled={busy} />
+      {!failed && (!p || p.onSale) && (
+        <Muted>Subscriptions are managed on the website, not in this app. Once your family is covered, pull down here to refresh.</Muted>
       )}
-      {p?.onSale && !p.cardPayments && <Muted>Paying by card is not switched on yet. {contactUs(p)}</Muted>}
-      {error && <Banner tone="warn">{error}</Banner>}
     </Card>
   )
+}
+
+/** A line about the subscription for a family that is covered: running, ending, or a payment that failed. */
+function SubscriptionNote({ pass }: { pass: HomePass | null }) {
+  const words = pass && pass.running ? subscriptionWords(pass) : null
+  if (!words) return null
+  return words.warn ? <Banner>{words.text}</Banner> : <Muted>{words.text}</Muted>
 }
 
 /** Before the first session or the check: the parent induction. */
@@ -335,7 +352,7 @@ function InductionCard() {
 function HomeSessionCard({ today }: { today: HomeToday }) {
   const open = () => router.push({ pathname: '/home-session/[id]', params: { id: today.childId } })
   if (!today.passRunning) {
-    return <PassCard ended={today.passEndsOn != null} />
+    return <SubscriptionCard ended={today.passEndsOn != null} />
   }
   if (!today.inductionDone) {
     return <InductionCard />

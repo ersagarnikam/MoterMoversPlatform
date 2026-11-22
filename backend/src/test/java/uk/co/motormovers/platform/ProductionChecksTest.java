@@ -58,6 +58,10 @@ class ProductionChecksTest {
         assertThatThrownBy(() -> verify(prod, new MockEnvironment().withProperty("spring.mail.host", "smtp.example.org")
                 .withProperty("platform.stripe.secret-key", "sk_live_x")))
                 .hasMessageContaining("STRIPE_WEBHOOK_SECRET");
+        // The stand-in for Stripe would start subscriptions and mark payments paid with no money (task 68).
+        assertThatThrownBy(() -> verify(prod, new MockEnvironment().withProperty("spring.mail.host", "smtp.example.org")
+                .withProperty("platform.stripe.fake", "true")))
+                .hasMessageContaining("STRIPE_FAKE");
     }
 
     @Test

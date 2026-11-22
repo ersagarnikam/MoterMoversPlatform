@@ -12,7 +12,7 @@ The app asks which country the parent is in at first launch: see [First launch](
 1. [Add a child and do the starting check](#home-add-check)
 2. [Today's home session and ratings](#home-today)
 3. [Share with another carer, or move to a school](#home-family)
-4. [Buy or renew the family's pass](#home-pass)
+4. [Subscribe monthly, and manage the subscription](#home-pass)
 
 <a id="home-add-check"></a>
 
@@ -115,57 +115,85 @@ sequenceDiagram
 - The safety note shows before the first session.
 - From Green to Violet the session ends with the module's cool-down (the colour's last one past module 6); a rhyme
   ends with its own, in its words (Pat, 2026-11-05).
-- Sessions, the check and ratings need a running family pass as well as the induction (flow 4).
+- Sessions, the check and ratings need the family to be covered today (its subscription) as well as the induction (flow 4).
 - Parents rate with the same 1 to 4 scale. A flag shows only the gentle prompt (nursery or health visitor).
 
 <a id="home-pass"></a>
 
-## Buy or renew the family's pass
+## Subscribe monthly, and manage the subscription
 
-Sessions, the starting check and ratings need the family's 12-month pass (go-live task 26). Only Stripe's signed
-webhook marks it paid; coming back from Stripe proves nothing.
+Sessions, the starting check and ratings need the family to be covered today. Since go-live task 68 a family is
+covered by a monthly subscription, which Stripe bills; each month Stripe takes becomes a payment (with its tax) and
+the days it covers. Only Stripe's signed webhook does this; coming back from Stripe proves nothing. The 12-month pass
+(task 26) is no longer sold, but one that still runs, and the team's extensions, cover a family in the same way.
 
-**Endpoints:** `GET /api/home/pass` · `POST /api/home/pass/checkout` · `POST /api/stripe/webhook` · `GET /api/admin/home-pass/prices` · `POST /api/admin/home-pass/prices` · `GET /api/admin/home-pass/family` · `POST /api/admin/home-pass/extend`
+**Endpoints:** `GET /api/home/pass` · `POST /api/home/subscription/checkout` · `POST /api/home/subscription/portal` · `POST /api/stripe/webhook` · `GET /api/admin/home-pass/monthly-prices` · `POST /api/admin/home-pass/monthly-prices` · `GET /api/admin/home-pass/family` · `POST /api/admin/home-pass/extend` · `POST /api/admin/home-pass/cancel-subscription`
 
 ```mermaid
 sequenceDiagram
   autonumber
   actor P as Parent
-  participant W as Website or app
-  participant API as HomePassService
+  participant W as Website
+  participant API as HomeSubscriptionService
   participant S as Stripe
   participant DB as PostgreSQL
-  P->>W: At home (or Today in the app)
+  P->>W: At home
   W->>API: GET /api/home/pass
-  API->>DB: price today, family's pass rows
-  API-->>W: onSale, price, running, endsOn, ended
-  P->>W: Buy the pass (or Renew)
-  W->>API: POST /api/home/pass/checkout
-  API->>DB: HOME_PASS payment DUE (tax included) and a pass row without dates; reused if pressed again
-  API->>S: Checkout page, back to /home?paid=1
+  API->>DB: monthly price today, the family's cover and subscription
+  API-->>W: onSale, pricePence, running, endsOn, subscription, renewsOn, canSubscribe, canManage
+  P->>W: Subscribe
+  W->>API: POST /api/home/subscription/checkout
+  API->>DB: lock the family, a home_subscription row PENDING (its page is reused if pressed again)
+  API->>S: Checkout page in subscription mode, the row's id in the subscription's metadata
   API-->>W: url
-  W->>S: pay by card
-  S->>API: POST /api/stripe/webhook (signed)
-  API->>DB: payment PAID, event Paid
-  API->>DB: pass runs from today, or from the day after the running pass ends, for 12 months
-  Note over API,DB: Daily 08:15: reminders 30 and 7 days before the end and on the day, once each (home_pass_reminder)
+  W->>S: card details, on Stripe's page
+  S->>API: checkout.session.completed (signed)
+  API->>DB: Stripe's subscription and customer ids
+  S->>API: invoice.paid (signed), each month
+  API->>DB: a payment PAID with tax (once per invoice), a home_pass row for the invoice's period, subscription ACTIVE
+  P->>W: Manage
+  W->>API: POST /api/home/subscription/portal
+  API->>S: customer portal page
+  W->>S: cancel at the end of the month, or change the card
+  S->>API: customer.subscription.updated (signed)
+  API->>DB: cancelling, and one email with the last day
+  S->>API: invoice.payment_failed (signed)
+  API->>DB: PAST_DUE, and the payer is told by email and phone, once per invoice
+  S->>API: customer.subscription.deleted (signed)
+  API->>DB: ENDED; the days already paid for stay
 ```
 
 **Rules in the code**
 
-- A running pass covers the whole family: every child at home and every carer. A child linked to a school needs none.
-- The parent induction is checked first, then the pass; the API refuses with a problem detail saying which is missing.
+- Cover is for the whole family: every child at home and every carer. A child linked to a school needs none.
+- One subscription per family. Pressing Subscribe twice opens the same Stripe page; a second carer is told the family
+  already subscribes, or that another carer has started. A family still covered by a pass can subscribe from the
+  pass's last day.
+- A month's cover runs from the day Stripe's period starts to the day it ends, both included: Stripe takes the next
+  month about an hour after the period ends, so the renewal day itself must be covered.
+- A month is recorded once, however often Stripe sends the message (`payment.stripe_invoice_id` is unique). An invoice
+  in another currency, or with no period, is not recorded.
+- Stripe's messages are read in both of its shapes: an invoice's subscription under `parent.subscription_details`
+  (since its 2025-03-31 version) or at the top, and a cancellation as `cancel_at_period_end` or `cancel_at`.
+- A failed payment gives no extra days: cover ends with the month paid for. Stripe retries by itself.
+- Only the parent who subscribed opens Stripe's page to cancel or change the card. The team can cancel for a family,
+  recorded with who and why: at the end of the paid month, or at once if a payment has failed.
+- A parent who pays and leaves the family has the subscription cancelled at the end of the paid month; when the last
+  member leaves (the family is deleted), it ends at once.
+- A month refunded in full ends that month's cover on the day of the refund. It does not cancel the subscription.
+- A change of the monthly price applies to new subscriptions; a family keeps the price it subscribed at.
+- The parent induction is checked first, then the cover; the API refuses with a problem detail saying which is missing.
 - While locked, Today sends no session (no exercises, review or cool-down); the family's own data stays open to it.
-- A pass refunded in full ends on the day of the refund; a partial refund leaves it. A renewal or extension queued
-  after it moves forward to follow on the next day, keeping its length, so no day is left without a pass.
-- A pass bought or extended while one runs follows on from the end of the unbroken run; with none running, from today.
-- A session or rating saved offline is accepted if a pass covered its date (`doneOn`, `assessedOn`), even after
-  the pass ends; today's and tomorrow's need a pass running today. The induction is always needed.
-- The website and app offer the check only when the pass runs and the induction is done (`GET /api/home/pass`
-  `running`, `inductionDone`); otherwise they show the pass card or the induction.
-- Without card payments, "please contact us" gives the country's contact email and phone (`contactEmail`,
-  `contactPhone`, also in `GET /api/settings`), each left out while it is a placeholder.
-- The team extends a pass by hand (recorded with who and why), and sets the price from today or later only.
+- A session or rating saved offline is accepted if the family was covered on its date (`doneOn`, `assessedOn`), even
+  after cover ends; today's and tomorrow's need cover today. The induction is always needed.
+- The ending reminders (30 and 7 days before and on the day, daily at 08:15) go only to a family whose last cover is a
+  pass or an extension. A subscription renews by itself and gets none.
+- The parent app shows where the subscription stands and nothing else: no price, no button and no link to a payment
+  page (the app stores' rules on selling subscriptions). Subscribing and managing are on the website.
+- With no monthly price in force, monthly is not on sale. Without card payments, "please contact us" gives the
+  country's contact email and phone, each left out while it is a placeholder.
+- `STRIPE_FAKE=true` (development, demos and the browser tests; production refuses it) swaps Stripe for a stand-in on
+  the API, whose pages say what Stripe would say next through the same code as the webhook.
 
 <a id="home-family"></a>
 

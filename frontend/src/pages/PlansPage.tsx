@@ -4,7 +4,7 @@ import { currencySymbol, money } from '../money'
 import { day } from '../dates'
 import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
-import { HomePassPriceCard } from '../components/HomePassAdmin'
+import { HomeMonthlyPriceCard } from '../components/HomePassAdmin'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const pence = (pounds: string) => Math.round(Number(pounds) * 100)
@@ -56,7 +56,7 @@ export default function PlansPage() {
         <PlanCard key={p.code} plan={p} run={run} />
       ))}
 
-      <HomePassPriceCard />
+      <HomeMonthlyPriceCard />
 
       <section className="card">
         <h3>Add a plan</h3>

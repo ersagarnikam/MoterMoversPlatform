@@ -35,7 +35,7 @@ export default function HomeCheckPage() {
 
   if (!check) {
     if (!error) return <Skeleton />
-    // The check needs the parent induction and the family's pass, as sessions do: say which, and where to go.
+    // The check needs the parent induction and the family's subscription, as sessions do: say which, and where to go.
     return (
       <section className="card home-today">
         <h1>Before the check</h1>
@@ -44,9 +44,9 @@ export default function HomeCheckPage() {
           <Link to="/home/induction" className="btn btn-primary">
             Start the induction
           </Link>
-        ) : /pass/i.test(error) ? (
+        ) : /subscri|pass/i.test(error) ? (
           <Link to="/home" className="btn btn-primary">
-            See the pass
+            See the subscription
           </Link>
         ) : null}
       </section>

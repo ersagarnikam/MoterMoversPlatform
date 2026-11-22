@@ -10,9 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * Part of a family's Programme at Home pass: twelve months bought by card ({@code paymentId}), or an extension by
- * the team (no payment). A row bought by card has no dates until the payment is paid. The family's pass runs on a day
- * one of its rows covers.
+ * Part of a family's cover on the Programme at Home: a month of its subscription ({@code subscriptionId}, with the
+ * payment Stripe took), twelve months bought by card before monthly billing ({@code paymentId} alone), or an extension
+ * by the team (neither). A 12-month row has no dates until its payment is paid. The family is covered on a day one of
+ * its rows covers.
  */
 @Entity
 @Table(name = "home_pass")
@@ -36,6 +37,9 @@ public class HomePass {
 
     private String note;
 
+    /** The subscription this month belongs to; null for a 12-month pass or an extension. */
+    private Long subscriptionId;
+
     protected HomePass() {
     }
 
@@ -45,6 +49,17 @@ public class HomePass {
         this.addedBy = addedBy;
         this.addedAt = addedAt;
         this.note = note;
+    }
+
+    /** A month of a subscription, paid by {@code paymentId} (null when Stripe charged nothing for it). */
+    public static HomePass monthOf(Long subscriptionId, Long familyId, Long paymentId, String addedBy, Instant addedAt) {
+        HomePass month = new HomePass(familyId, paymentId, addedBy, addedAt, null);
+        month.subscriptionId = subscriptionId;
+        return month;
+    }
+
+    public Long getSubscriptionId() {
+        return subscriptionId;
     }
 
     /** From and to, both included. An end before the start covers no day (a pass refunded before it began). */

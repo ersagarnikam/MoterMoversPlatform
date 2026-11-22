@@ -29,11 +29,12 @@ public final class PaymentViews {
      * One payment. payerEmail is null when a school pays; paidOnline when it was paid by card on the platform.
      * taxPence is the tax included in the amount; null on payments from before it was kept, which show no tax line.
      * refundedPence is what has gone back, and refundLabel "Refunded" or "Part refunded" (null with nothing refunded).
+     * subscriptionMonth: a month of a family's subscription; refunding it does not cancel the subscription.
      */
     public record PaymentView(Long id, PayerType payerType, String payerName, String payerEmail, Long schoolId,
             PaymentPurpose purpose, String purposeLabel, String description, int amountPence, PaymentStatus status,
             LocalDate invoicedOn, LocalDate paidOn, String reference, boolean paidOnline, Integer taxPence,
-            int refundedPence, String refundLabel, List<RefundView> refunds) {
+            int refundedPence, String refundLabel, List<RefundView> refunds, boolean subscriptionMonth) {
 
         public static PaymentView of(Payment p) {
             boolean school = p.getSchool() != null;
@@ -42,7 +43,8 @@ public final class PaymentViews {
                     school ? null : p.getPayer().getEmail(), school ? p.getSchool().getId() : null, p.getPurpose(),
                     p.getPurpose().label(), p.getDescription(), p.getAmountPence(), p.getStatus(), p.getInvoicedOn(),
                     p.getPaidOn(), p.getReference(), p.getPaidOnlineRef() != null, p.taxPence(), p.refundedPence(),
-                    p.refundLabel(), p.getRefunds().stream().map(RefundView::of).toList());
+                    p.refundLabel(), p.getRefunds().stream().map(RefundView::of).toList(),
+                    p.getStripeInvoiceId() != null);
         }
     }
 

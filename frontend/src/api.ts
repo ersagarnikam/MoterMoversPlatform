@@ -654,6 +654,8 @@ export interface Payment {
   /** "Refunded" or "Part refunded"; null with nothing refunded. */
   refundLabel: string | null
   refunds: PaymentRefund[]
+  /** A month of a family's subscription: refunding it does not cancel the subscription. */
+  subscriptionMonth: boolean
 }
 
 /** "Paid" is money received, net of refunds; "outstanding" is invoiced and not yet paid. */
@@ -820,10 +822,15 @@ export interface CountrySettings {
   creditNoteTitle: string
 }
 
-/** The family's Programme at Home pass (go-live task 26). Prices include tax. */
+/**
+ * The family's cover on the Programme at Home: its monthly subscription (go-live task 68), or a 12-month pass bought
+ * before (task 26). Prices include tax.
+ */
 export interface HomePass {
   hasFamily: boolean
+  /** A monthly price is set today. */
   onSale: boolean
+  /** The monthly price: today's, or for a family that subscribes the one it subscribed at. */
   pricePence: number | null
   cardPayments: boolean
   running: boolean
@@ -831,9 +838,16 @@ export interface HomePass {
   ended: boolean
   /** This parent has finished the parent induction (sessions and the check need it and a running pass). */
   inductionDone: boolean
-  /** Whom to ask about the pass; null until the country's legal entity gives one. */
+  /** Whom to ask about subscribing; null until the country's legal entity gives one. */
   contactEmail: string | null
   contactPhone: string | null
+  /** ACTIVE renews on renewsOn; CANCELLING ends with the paid month, on endsOn; PAST_DUE: a payment failed. */
+  subscription: 'NONE' | 'ACTIVE' | 'CANCELLING' | 'PAST_DUE'
+  renewsOn: string | null
+  /** Subscribe can be offered: on sale, no subscription, and no cover beyond today. */
+  canSubscribe: boolean
+  /** This parent pays for the subscription, so may open Stripe's page to cancel or change the card. */
+  canManage: boolean
 }
 
 /** A family's pass as the team sees it, found by any member's email. */
@@ -851,6 +865,17 @@ export interface AdminFamilyPass {
     addedAt: string
     note: string | null
   }[]
+  /** The family's subscription: the one running, else the last that ran; null with none. */
+  subscription: {
+    state: 'ACTIVE' | 'CANCELLING' | 'PAST_DUE' | 'ENDED'
+    pricePence: number
+    payerEmail: string | null
+    paidTo: string | null
+    startedAt: string
+    endedAt: string | null
+    cancelledBy: string | null
+    cancelNote: string | null
+  } | null
 }
 
 export interface HomePassPrices {
@@ -1290,10 +1315,15 @@ export const api = {
   setHomeStage: (id: number, stage: ColourStage) =>
     request<HomeChild>('PUT', `/api/home/children/${id}/stage`, { stage }),
   homePass: () => request<HomePass>('GET', '/api/home/pass'),
-  homePassCheckout: () => request<{ url: string }>('POST', '/api/home/pass/checkout'),
-  homePassPrices: () => request<HomePassPrices>('GET', '/api/admin/home-pass/prices'),
-  changeHomePassPrice: (pricePence: number, effectiveFrom: string) =>
-    request<HomePassPrices>('POST', '/api/admin/home-pass/prices', { pricePence, effectiveFrom }),
+  /** Stripe's page to subscribe the family monthly. */
+  homeSubscribe: () => request<{ url: string }>('POST', '/api/home/subscription/checkout'),
+  /** Stripe's own page where the payer cancels or changes the card. */
+  homeManageSubscription: () => request<{ url: string }>('POST', '/api/home/subscription/portal'),
+  homeMonthlyPrices: () => request<HomePassPrices>('GET', '/api/admin/home-pass/monthly-prices'),
+  changeHomeMonthlyPrice: (pricePence: number, effectiveFrom: string) =>
+    request<HomePassPrices>('POST', '/api/admin/home-pass/monthly-prices', { pricePence, effectiveFrom }),
+  cancelFamilySubscription: (email: string, note: string) =>
+    request<AdminFamilyPass>('POST', '/api/admin/home-pass/cancel-subscription', { email, note }),
   familyPass: (email: string) =>
     request<AdminFamilyPass>('GET', `/api/admin/home-pass/family?email=${encodeURIComponent(email)}`),
   extendFamilyPass: (email: string, endsOn: string, note: string) =>
