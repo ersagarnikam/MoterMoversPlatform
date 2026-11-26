@@ -31,8 +31,8 @@ import uk.co.motormovers.platform.school.repository.LicencePlanRepository;
  * <li>a licence plan whose price in force today is still the "platform setup" one (the proposal's, in pounds, from
  * migration V6) gets the launch price from today;</li>
  * <li>with no home pass price at all, the launch price is set from today;</li>
- * <li>with no monthly price for the home programme at all, and one in the settings ({@code home-monthly}, blank
- * until it is decided), that price is set from today (task 68).</li>
+ * <li>with no monthly price for the home programme at all, and one in the settings ({@code home-monthly}, set in
+ * all three countries since task 87; it may be left blank), that price is set from today (task 68).</li>
  * </ul>
  * A price the team set on Plans and prices is never touched, and once applied a second start changes nothing: the
  * price in force is then this class's or the team's. Later changes are made on Plans and prices, not here. Courses

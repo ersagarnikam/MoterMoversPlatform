@@ -62,7 +62,8 @@ class RegionAustraliaTest {
     /** Go-live task 68: a month of the home programme, in this country's currency with its tax. */
     @Test
     void aMonthOfASubscriptionIsInDollarsWithGst() {
-        monthly.aMonthIsPaidWithTax("aud", "gbp", 2_750, 250);
+        // Australia's launch price, 26.99 dollars (task 87): the GST in it is 2.45.
+        monthly.aMonthIsPaidWithTax("aud", "gbp", 2_699, 245);
     }
 
     @Autowired
@@ -112,9 +113,13 @@ class RegionAustraliaTest {
     @Autowired
     uk.co.motormovers.platform.home.repository.HomePassPriceRepository launchPassPrices;
 
+    @Autowired
+    uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository launchMonthlyPrices;
+
     /** Go-live task 85: this country's launch prices, in cents. */
     @Test
     void anAustralianDeploymentStartsWithKaysPrices() {
-        LaunchPricesTest.assertPrices(launchPlans, launchCourses, launchPassPrices, LocalDate.now(clock), 75_000, 120_000, 108_000, 20_000, 6_000, 10_000, 100_000);
+        LaunchPricesTest.assertPrices(launchPlans, launchCourses, launchPassPrices, launchMonthlyPrices, LocalDate.now(clock),
+                75_000, 120_000, 108_000, 20_000, 6_000, 10_000, 100_000, 2_699);
     }
 }

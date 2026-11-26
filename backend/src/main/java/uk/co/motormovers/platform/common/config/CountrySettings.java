@@ -37,7 +37,8 @@ public record CountrySettings(
      * included: the yearly licence for a childcare centre or kindergarten, for a school, and for a school in a group
      * of schools (10% below the school's); the practitioner course and its yearly renewal; the parent course; and the
      * home programme's 12-month pass (no longer sold, task 68) and its monthly price ({@code home-monthly}, the only
-     * one that may be left blank: monthly is then not on sale until the team sets a price). They are applied once, on start, where the team has not set a price
+     * one that may be left blank: monthly is then not on sale until the team sets a price). They are applied once, on
+     * start, where the team has not set a price
      * (seed/LaunchPrices); after that, prices are changed on Plans and prices, not here.
      */
     public record LaunchPrices(BigDecimal childcare, BigDecimal school, BigDecimal group, BigDecimal practitioner,

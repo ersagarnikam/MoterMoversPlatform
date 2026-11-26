@@ -57,10 +57,11 @@ platform:
       credit-note-title: Credit note
       # Launch prices (go-live task 85; the owner, 2026-11-16, to match Kay's Australian ones), tax included. Applied once on
       # start where the team has not set a price; after that, change prices on Plans and prices. group is 10% below school.
-      # home-monthly (the home programme's monthly price, task 68) is left out in all three countries until it is
-      # decided: monthly is then not on sale until the team sets a price on Plans and prices. home-pass is the old
-      # 12-month pass, no longer sold.
-      launch-prices: { childcare: 395, school: 635, group: 571.50, practitioner: 105, practitioner-renewal: 30, parent-course: 55, home-pass: 530 }
+      # home-monthly is the home programme's monthly price (the owner, 2026-11-26, task 87: monthly only, 14.99, 16.99 and
+      # 26.99, tax included). It is the one price that may be left blank (PLATFORM_COUNTRIES_<REGION>_LAUNCHPRICES_HOMEMONTHLY=):
+      # monthly is then not on sale until the team sets a price on Plans and prices. home-pass is the old 12-month pass,
+      # no longer sold.
+      launch-prices: { childcare: 395, school: 635, group: 571.50, practitioner: 105, practitioner-renewal: 30, parent-course: 55, home-pass: 530, home-monthly: 14.99 }
       legal-entity: &placeholder-entity
         # To confirm (Kay): suggested Neuroway for the UK and Ireland. A production deployment refuses to start until
         # every value is set (PLATFORM_COUNTRIES_<REGION>_LEGALENTITY_<NAME>); leave one blank if it does not apply.
@@ -87,7 +88,7 @@ platform:
       # No season names (Pat, 2026-11-10).
       term-label: This term
       credit-note-title: Credit note
-      launch-prices: { childcare: 465, school: 745, group: 670.50, practitioner: 125, practitioner-renewal: 35, parent-course: 60, home-pass: 620 }
+      launch-prices: { childcare: 465, school: 745, group: 670.50, practitioner: 125, practitioner-renewal: 35, parent-course: 60, home-pass: 620, home-monthly: 16.99 }
       legal-entity: *placeholder-entity
     au:
       name: Australia
@@ -105,8 +106,8 @@ platform:
       year-names: Preschool/Kindergarten, Prep, Year 1, Year 2, Year 3
       term-label: This term
       credit-note-title: Adjustment note
-      # Kay's prices (2026-11-16).
-      launch-prices: { childcare: 750, school: 1200, group: 1080, practitioner: 200, practitioner-renewal: 60, parent-course: 100, home-pass: 1000 }
+      # Kay's prices (2026-11-16); home-monthly is the owner's (2026-11-26).
+      launch-prices: { childcare: 750, school: 1200, group: 1080, practitioner: 200, practitioner-renewal: 60, parent-course: 100, home-pass: 1000, home-monthly: 26.99 }
       # To confirm (Kay): suggested one of our Australian companies.
       legal-entity:
         <<: *placeholder-entity
