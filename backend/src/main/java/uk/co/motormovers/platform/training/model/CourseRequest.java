@@ -30,6 +30,10 @@ public class CourseRequest {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Course course;
+
+    /** The cohort asked for on a live course; null for a recorded course (task 89). */
+    @ManyToOne(fetch = FetchType.LAZY)
     private Cohort cohort;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -50,7 +54,17 @@ public class CourseRequest {
     protected CourseRequest() {
     }
 
+    /** A place on a recorded course. */
+    public CourseRequest(Course course, AppUser user, School school, Instant at) {
+        this.course = course;
+        this.user = user;
+        this.school = school;
+        this.status = Status.REQUESTED;
+        this.requestedAt = at;
+    }
+
     public CourseRequest(Cohort cohort, AppUser user, School school, Instant at) {
+        this.course = cohort.getCourse();
         this.cohort = cohort;
         this.user = user;
         this.school = school;
@@ -72,6 +86,11 @@ public class CourseRequest {
         return id;
     }
 
+    public Course getCourse() {
+        return course;
+    }
+
+    /** Null for a recorded course. */
     public Cohort getCohort() {
         return cohort;
     }

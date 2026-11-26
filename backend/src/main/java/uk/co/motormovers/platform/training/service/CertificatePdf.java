@@ -60,11 +60,14 @@ final class CertificatePdf {
                 centred(c, bold, 32, INK, "Certificate of completion", width, y -= 50);
                 centred(c, regular, 14, MUTED, "This certifies that", width, y -= 48);
                 centred(c, bold, 28, INK, e.getUser().getDisplayName(), width, y -= 42);
-                centred(c, regular, 14, MUTED, "has attended all " + cohort.getCourse().getLiveSessions()
-                        + " live sessions" + (withQuizzes ? ", passed the quizzes" : "")
-                        + " and passed the assessment for the", width, y -= 40);
-                centred(c, bold, 20, INK, cohort.getCourse().getTitle(), width, y -= 36);
-                centred(c, regular, 12, MUTED, cohort.getName(), width, y -= 24);
+                // A recorded course: its lessons and its test. A live one: its sessions and the trainer's assessment.
+                centred(c, regular, 14, MUTED, cohort == null
+                        ? "has completed every lesson" + (withQuizzes ? " and passed the test" : "") + " of the"
+                        : "has attended all " + e.getCourse().getLiveSessions() + " live sessions"
+                                + (withQuizzes ? ", passed the quizzes" : "") + " and passed the assessment for the",
+                        width, y -= 40);
+                centred(c, bold, 20, INK, e.getCourse().getTitle(), width, y -= 36);
+                centred(c, regular, 12, MUTED, cohort == null ? "Recorded course" : cohort.getName(), width, y -= 24);
                 centred(c, regular, 13, INK, "Issued " + date(e.getCertificateIssuedOn()) + "    ·    Valid until "
                         + date(e.getCertificateExpiresOn()), width, y -= 52);
                 centred(c, regular, 10, MUTED, "Certificate " + Brand.REFERENCE_PREFIX + e.getId(), width, 48);

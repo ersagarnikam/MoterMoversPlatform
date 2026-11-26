@@ -114,7 +114,7 @@ public class QuizService {
         Enrolment e = findEnrolment(enrolmentId);
         requireLearnerOrHost(e);
         List<QuizAttempt> taken = attempts.findByEnrolmentId(enrolmentId);
-        return quizzes.findByCourseIdOrderByAfterSessionAscIdAsc(e.getCohort().getCourse().getId()).stream()
+        return quizzes.findByCourseIdOrderByAfterSessionAscIdAsc(e.getCourse().getId()).stream()
                 .map(q -> {
                     List<QuizAttempt> mine = taken.stream().filter(a -> a.getQuizId().equals(q.getId())).toList();
                     Integer best = mine.stream().map(QuizAttempt::getScorePercent).max(Integer::compare).orElse(null);
@@ -161,8 +161,14 @@ public class QuizService {
         return new QuizViews.AttemptResult(score, passed, correct, list.size(), wrong, issued);
     }
 
-    /** Once the session it follows has started, or the learner has been marked present at it. */
+    /**
+     * On a recorded course: once every lesson is done. On a live one: once the session it follows has started, or
+     * the learner has been marked present at it.
+     */
     private boolean isOpen(Enrolment e, CourseQuiz quiz) {
+        if (e.isRecorded()) {
+            return certificates.lessonsDone(e);
+        }
         if (attendance.attendedNumbers(e.getId()).contains(quiz.getAfterSession())) {
             return true;
         }
@@ -176,17 +182,19 @@ public class QuizService {
 
     private CourseQuiz quizFor(Enrolment e, Long quizId) {
         CourseQuiz quiz = findQuiz(quizId);
-        if (!quiz.getCourse().getId().equals(e.getCohort().getCourse().getId())) {
+        if (!quiz.getCourse().getId().equals(e.getCourse().getId())) {
             throw new NotFoundException("Quiz", quizId);
         }
         if (!isOpen(e, quiz)) {
-            throw new IllegalStateException("This quiz opens when live session " + quiz.getAfterSession() + " starts");
+            throw new IllegalStateException(e.isRecorded() ? "This test opens once you have done every lesson"
+                    : "This quiz opens when live session " + quiz.getAfterSession() + " starts");
         }
         return quiz;
     }
 
     private void check(Course course, QuizViews.QuizInput input) {
-        if (input.afterSession() > course.getLiveSessions()) {
+        // A recorded course has no live sessions: its quizzes all open after the last lesson.
+        if (course.getLiveSessions() > 0 && input.afterSession() > course.getLiveSessions()) {
             throw new IllegalArgumentException("This course has " + course.getLiveSessions() + " live sessions");
         }
         for (QuizViews.QuestionInput q : input.questions()) {
@@ -224,7 +232,7 @@ public class QuizService {
 
     private void requireLearnerOrHost(Enrolment e) {
         CurrentUser me = currentUser.current();
-        if (!e.getUser().getId().equals(me.id()) && !LiveSessionService.canHost(me, e.getCohort())) {
+        if (!e.getUser().getId().equals(me.id()) && !CertificateService.mayManage(me, e)) {
             throw new AccessDeniedException("You do not have access to this learner's quizzes");
         }
     }

@@ -286,16 +286,48 @@ export interface Course {
   sessionMinutes: number
   pricePence: number
   awardsCertificate: boolean
+  /** Live cohorts: empty unless live courses are switched on. */
   cohorts: { id: number; name: string; startsOn: string; timeSlot: string; trainerName: string; seatsLeft: number; recordingAgreed: boolean }[]
+  /** The recorded lessons, their minutes in all, and where the parent stands on the course. */
+  lessons: number
+  lessonMinutes: number
+  place: 'NONE' | 'BOOKED' | 'REQUESTED'
+}
+
+/** A lesson of a recorded course. videoUrl and slidesUrl come only for an open lesson. */
+export interface CourseLesson {
+  id: number
+  position: number
+  title: string
+  paragraphs: string[]
+  minutes: number
+  hasFilm: boolean
+  videoUrl: string | null
+  slidesUrl: string | null
+  open: boolean
+  done: boolean
+}
+
+/** A place on a recorded course, with its lessons in order. */
+export interface CoursePlayer {
+  enrolmentId: number
+  courseTitle: string
+  lessons: CourseLesson[]
+  lessonsDone: number
+  quizzes: number
+  quizzesPassed: number
 }
 
 export interface Enrolment {
   id: number
-  cohortId: number
+  /** Null, with the cohort's name, date and time slot, for a place on a recorded course. */
+  cohortId: number | null
   courseTitle: string
-  cohortName: string
-  startsOn: string
-  timeSlot: string
+  cohortName: string | null
+  startsOn: string | null
+  timeSlot: string | null
+  /** A place on a recorded course: its lessons come from coursePlayer. */
+  recorded: boolean
   sessionsAttended: number
   liveSessions: number
 }
@@ -445,6 +477,8 @@ export const api = {
 
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
+  enrolOnCourse: (courseId: number) => request<Enrolment>('POST', `/api/training/courses/${courseId}/enrol`),
+  coursePlayer: (enrolmentId: number) => request<CoursePlayer>('GET', `/api/training/enrolments/${enrolmentId}/lessons`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
   liveSessions: () => request<LiveSession[]>('GET', '/api/training/live'),
   /** Records that the learner joined, for the trainer's register. */
@@ -492,7 +526,14 @@ export const api = {
 
   /** Open to anyone: the server's country settings (currency, tax, year names). */
   settings: () =>
-    request<{ currency: string; taxLabel: string; legalLine: string | null; creditNoteTitle: string }>(
+    request<{
+      currency: string
+      taxLabel: string
+      legalLine: string | null
+      creditNoteTitle: string
+      /** Live courses on Zoom are switched on; off, courses are recorded. */
+      liveCourses: boolean
+    }>(
       'GET',
       '/api/settings',
     ),

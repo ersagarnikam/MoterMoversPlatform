@@ -11,6 +11,7 @@ import {
   type Trainer,
 } from '../api'
 import CourseQuizzes from '../components/CourseQuizzes'
+import { CourseLearners, CourseLessonsSummary } from '../components/CourseRecorded'
 import { sessionTime } from '../live'
 import { useCountry } from '../country'
 import { currencySymbol, money } from '../money'
@@ -33,17 +34,23 @@ function useCourses() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [error, setError] = useState<string | null>(null)
   const setNotice = useToast()
+  const live = useCountry()?.liveCourses ?? false
 
   useEffect(() => {
     api
       .adminCourses()
       .then(setCourses)
       .catch((e) => setError(e.message))
+  }, [])
+
+  useEffect(() => {
+    // Trainers belong to live courses, which a deployment may have switched off.
+    if (!live) return
     api
       .trainers()
       .then(setTrainers)
       .catch((e) => setError(e.message))
-  }, [])
+  }, [live])
 
   async function run(action: () => Promise<AdminCourse>, done: string): Promise<AdminCourse | null> {
     setError(null)
@@ -60,7 +67,7 @@ function useCourses() {
     }
   }
 
-  return { courses, trainers, setTrainers, error, run }
+  return { courses, trainers, setTrainers, error, run, live }
 }
 
 /**
@@ -68,7 +75,7 @@ function useCourses() {
  * course's own page. A new course is set up here.
  */
 export default function CoursesPage() {
-  const { courses, error, run } = useCourses()
+  const { courses, error, run, live } = useCourses()
   const navigate = useNavigate()
 
   if (!courses) return error ? <p className="error">{error}</p> : <Skeleton />
@@ -99,9 +106,15 @@ export default function CoursesPage() {
                 <span className="price">{money(c.pricePence)}</span>
               </div>
               <p className="muted">
-                {c.track === 'PARENT' ? 'Parents and carers' : 'Professionals'} · {c.liveSessions} live sessions
+                {c.track === 'PARENT' ? 'Parents and carers' : 'Professionals'}
+                {live ? ` · ${c.liveSessions} live sessions` : ''}
               </p>
               <p>
+                {c.lessons} {c.lessons === 1 ? 'lesson' : 'lessons'} approved
+                {c.lessonDrafts > 0 ? `, ${c.lessonDrafts} to approve` : ''} · {c.learners}{' '}
+                {c.learners === 1 ? 'learner' : 'learners'}
+              </p>
+              <p hidden={!live}>
                 {upcoming.length === 0
                   ? 'No cohorts coming up'
                   : `${upcoming.length} ${upcoming.length === 1 ? 'cohort' : 'cohorts'} coming up · ${booked} of ${places} places booked`}
@@ -121,7 +134,7 @@ export default function CoursesPage() {
       <section className="card">
         <h3>Set up a course</h3>
         <p className="muted">
-          A course shows in the catalogue as soon as it is saved. Learners can book once it has a cohort.
+          A course shows in the catalogue as soon as it is saved. Learners can book once it has an approved lesson.
         </p>
         <CourseForm
           submitLabel="Set up course"
@@ -173,6 +186,7 @@ export function TrainersPage() {
 type Run = (action: () => Promise<AdminCourse>, done: string) => Promise<boolean>
 
 function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: Trainer[]; run: Run }) {
+  const live = useCountry()?.liveCourses ?? false
   const [editing, setEditing] = useState(false)
   const [editingCohort, setEditingCohort] = useState<number | null>(null)
   const [showingBookings, setShowingBookings] = useState<number | null>(null)
@@ -188,8 +202,9 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
         </span>
       </div>
       <p className="muted">
-        {course.track === 'PARENT' ? 'Parents and carers' : 'Professionals'} · {course.liveSessions} live sessions of{' '}
-        {course.sessionMinutes} minutes · {course.awardsCertificate ? 'certificate' : 'no certificate'}
+        {course.track === 'PARENT' ? 'Parents and carers' : 'Professionals'} ·{' '}
+        {live ? `${course.liveSessions} live sessions of ${course.sessionMinutes} minutes · ` : 'recorded lessons · '}
+        {course.awardsCertificate ? 'certificate' : 'no certificate'}
       </p>
       {editing ? (
         <CourseForm
@@ -213,8 +228,12 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
         </>
       )}
 
+      <CourseLessonsSummary course={course} />
       <CourseQuizzes course={course} />
+      <CourseLearners course={course} />
 
+      {live && (
+        <>
       <h4>Cohorts</h4>
       {course.cohorts.length === 0 && <p className="muted">No cohorts yet.</p>}
       <div className="cohorts">
@@ -294,6 +313,8 @@ function CourseCard({ course, trainers, run }: { course: AdminCourse; trainers: 
           }}
         />
       </details>
+        </>
+      )}
     </section>
   )
 }
@@ -499,6 +520,7 @@ function CourseForm({
   const [track, setTrack] = useState<CourseTrack>(initial?.track ?? 'PROFESSIONAL')
   const [title, setTitle] = useState(initial?.title ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
+  const live = useCountry()?.liveCourses ?? false
   const [liveSessions, setLiveSessions] = useState(String(initial?.liveSessions ?? 6))
   const [sessionMinutes, setSessionMinutes] = useState(String(initial?.sessionMinutes ?? 60))
   const [price, setPrice] = useState(initial ? pounds(initial.pricePence) : '')
@@ -511,8 +533,9 @@ function CourseForm({
       track,
       title: title.trim(),
       description: description.trim(),
-      liveSessions: Number(liveSessions),
-      sessionMinutes: Number(sessionMinutes),
+      // A recorded course has no live sessions; one set up while live courses were on keeps what it had.
+      liveSessions: live ? Number(liveSessions) : (initial?.liveSessions ?? 0),
+      sessionMinutes: live ? Number(sessionMinutes) : (initial?.sessionMinutes ?? 0),
       pricePence: pence(price),
       renewalPence: renewal.trim() === '' ? null : pence(renewal),
       // Parent courses never award a certificate.
@@ -547,6 +570,8 @@ function CourseForm({
         Description
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={1000} rows={3} required />
       </label>
+      {live && (
+        <>
       <label>
         Live sessions
         <input type="number" min={1} max={52} value={liveSessions} onChange={(e) => setLiveSessions(e.target.value)} required />
@@ -562,6 +587,8 @@ function CourseForm({
           required
         />
       </label>
+        </>
+      )}
       <label>
         Price ({currencySymbol()})
         <input type="number" min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} required />

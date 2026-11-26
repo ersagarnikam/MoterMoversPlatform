@@ -55,8 +55,8 @@ password `password`:
 | `home@example.test` | Parent, no school (Priya Shah: Ava and Leo on the Programme at Home, covered by a 12-month pass from before monthly billing) | Use the parent app |
 | `lapsed@example.test` | Parent, no school (Tom Reid: Noah; the family's pass ended) | Subscribe monthly on At home, at the country's launch price (£14.99 in the UK; with `STRIPE_FAKE=true` no Stripe keys are needed) |
 | `admin@motormovers.test` | Programme team | Content approval |
-| `pat@motormovers.test` | Programme team (Pat, trainer) | Content approval; Live sessions to start a course session |
-| `trainer@motormovers.test` | Trainer in Pat's team (Amy Clarke) | Live sessions for her own cohorts only |
+| `pat@motormovers.test` | Programme team (Pat) | Content approval, with Course lessons for the recorded courses |
+| `trainer@motormovers.test` | Trainer (Amy Clarke) | Nothing while courses are recorded: the page says so. With `LIVE_COURSES=true`, live sessions for her own cohorts |
 
 Names, schools and figures in the demo data are examples only.
 

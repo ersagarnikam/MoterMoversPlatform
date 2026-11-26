@@ -4,6 +4,8 @@ import { useAuth } from '../auth'
 import Skeleton from '../components/Skeleton'
 import { relativeDay } from '../dates'
 import { sessionTime, startsIn } from '../live'
+import { useCountry } from '../country'
+import LiveCoursesOff from '../components/LiveCoursesOff'
 
 /**
  * Upcoming live course sessions, to start on Zoom and keep the register: every session for the programme team,
@@ -14,8 +16,11 @@ export default function LiveSessionsPage() {
   const [sessions, setSessions] = useState<LiveSession[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [now, setNow] = useState(() => new Date())
+  const country = useCountry()
+  const live = country?.liveCourses
 
   useEffect(() => {
+    if (!live) return
     api
       .liveSessions()
       .then(setSessions)
@@ -23,8 +28,9 @@ export default function LiveSessionsPage() {
     // Keeps "Starts in 10 minutes" true while the page stays open.
     const tick = setInterval(() => setNow(new Date()), 30_000)
     return () => clearInterval(tick)
-  }, [])
+  }, [live])
 
+  if (country && !live) return <LiveCoursesOff />
   if (error) return <p className="error">{error}</p>
   if (!sessions) return <Skeleton lines={4} />
 

@@ -141,6 +141,9 @@ platform:
   # how many extra parent accounts the demo data books on its live cohort. Production refuses a raised limit.
   login-limit-per-ip: ${LOGIN_LIMIT_PER_IP:50}
   load-test-learners: ${LOAD_TEST_LEARNERS:0}
+  # Courses are recorded (go-live task 89). Live cohorts on Zoom, their reminders and trainers are kept behind this
+  # setting, which is off unless a deployment switches it on (LIVE_COURSES=true); the load test needs it on.
+  live-courses: ${LIVE_COURSES:false}
   # Live course sessions on Zoom (training/zoom/ZoomProperties). Without every key, sessions run without video.
   zoom:
     account-id: ${ZOOM_ACCOUNT_ID:}

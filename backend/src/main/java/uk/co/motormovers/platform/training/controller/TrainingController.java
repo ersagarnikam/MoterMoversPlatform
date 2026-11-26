@@ -33,6 +33,24 @@ public class TrainingController {
         return Map.of("rules", TrainingViews.LIVE_SESSION_RULES, "courses", training.catalogue());
     }
 
+    /** A place on a recorded course: the learner starts its lessons at once. */
+    @PostMapping("/api/training/courses/{courseId}/enrol")
+    public TrainingViews.EnrolmentView enrolOnCourse(@PathVariable Long courseId) {
+        return training.enrolOnCourse(courseId);
+    }
+
+    /** Staff whose school pays ask their head for a place on a recorded course. */
+    @PostMapping("/api/training/courses/{courseId}/request")
+    public TrainingViews.CourseRequestView requestCourse(@PathVariable Long courseId) {
+        return training.requestCourse(courseId);
+    }
+
+    /** Everyone with a place on a recorded course, for the team. */
+    @GetMapping("/api/admin/courses/{courseId}/enrolments")
+    public List<TrainingViews.EnrolmentView> courseEnrolments(@PathVariable Long courseId) {
+        return training.courseEnrolments(courseId);
+    }
+
     @PostMapping("/api/training/cohorts/{cohortId}/enrol")
     public TrainingViews.EnrolmentView enrol(@PathVariable Long cohortId) {
         return training.enrol(cohortId);

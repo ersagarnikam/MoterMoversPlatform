@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { Role } from '../api'
 import { useAuth } from '../auth'
 import { useHomeAvailable } from '../homeProgramme'
+import { useCountry } from '../country'
 import { TEAM } from '../brand'
 import Logo from './Logo'
 import ThemeSwitch from './ThemeSwitch'
@@ -48,6 +49,9 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean; reload?: boo
   ],
 }
 
+/** Menu items that exist only for live courses. */
+const LIVE_ONLY = ['/live', '/trainer/cohorts', '/admin/trainers']
+
 const ROLE_LABEL: Record<Role, string> = {
   TEACHER: 'Class teacher',
   HEAD: 'Head teacher / SENCo',
@@ -63,9 +67,13 @@ export default function Layout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const home = useHomeAvailable()
+  const country = useCountry()
   if (!user) return null
   // The Programme at Home, for parents, only while it is switched on.
-  const nav = user.role === 'PARENT' && home ? [{ to: '/home', label: 'At home' }, ...NAV.PARENT] : NAV[user.role]
+  const byRole = user.role === 'PARENT' && home ? [{ to: '/home', label: 'At home' }, ...NAV.PARENT] : NAV[user.role]
+  // Live sessions, cohorts and trainers show only where live courses are switched on (go-live task 89). Until the
+  // settings arrive they are left out, so they never flash up in a deployment that has them off.
+  const nav = country?.liveCourses ? byRole : byRole.filter((item) => !LIVE_ONLY.includes(item.to))
   return (
     <div className="shell">
       <header className="topbar">

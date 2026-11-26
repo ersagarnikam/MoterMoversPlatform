@@ -62,11 +62,12 @@ export default function CertificatePage() {
         <p>This certifies that</p>
         <p className="certificate-name">{enrolment.learnerName}</p>
         <p>
-          has attended all {enrolment.liveSessions} live sessions
-          {enrolment.quizzes > 0 ? ', passed the quizzes' : ''} and passed the assessment for the
+          {enrolment.recorded
+            ? `has completed every lesson${enrolment.quizzes > 0 ? ' and passed the test' : ''} of the`
+            : `has attended all ${enrolment.liveSessions} live sessions${enrolment.quizzes > 0 ? ', passed the quizzes' : ''} and passed the assessment for the`}
         </p>
         <p className="certificate-course">{enrolment.courseTitle}</p>
-        <p className="muted">{enrolment.cohortName}</p>
+        <p className="muted">{enrolment.recorded ? 'Recorded course' : enrolment.cohortName}</p>
         <dl className="certificate-dates">
           <div>
             <dt>Issued</dt>

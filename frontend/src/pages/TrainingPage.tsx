@@ -18,6 +18,8 @@ import { money } from '../money'
 import { day } from '../dates'
 import { useConfirm, useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
+import { useCountry } from '../country'
+import { courseSummary, placeAction, placeProgress, testLabel } from '../courseLessons'
 
 
 /**
@@ -123,7 +125,7 @@ function CourseQuizzes({ enrolment }: { enrolment: Enrolment }) {
       {quizzes.map((q) => (
         <li key={q.id}>
           <span>
-            Quiz after session {q.afterSession}: {q.title}
+            {testLabel(q, enrolment.recorded)}
             <span className="muted">
               {' '}
               · {q.questions} questions · pass mark {q.passPercent}%
@@ -133,10 +135,12 @@ function CourseQuizzes({ enrolment }: { enrolment: Enrolment }) {
             <span className="badge badge-ok">Passed · {q.bestScore}%</span>
           ) : q.open ? (
             <Link className="btn btn-small" to={`/training/quiz/${enrolment.id}/${q.id}`}>
-              {q.bestScore === null ? 'Take quiz' : `Try again (best ${q.bestScore}%)`}
+              {q.bestScore === null ? (enrolment.recorded ? 'Take the test' : 'Take quiz') : `Try again (best ${q.bestScore}%)`}
             </Link>
           ) : (
-            <span className="muted">Opens after session {q.afterSession}</span>
+            <span className="muted">
+              {enrolment.recorded ? 'Opens once every lesson is done' : `Opens after session ${q.afterSession}`}
+            </span>
           )}
         </li>
       ))}
@@ -225,9 +229,13 @@ function YourPayments() {
   )
 }
 
-/** Live courses for professionals and parents. */
+/**
+ * Courses for professionals and parents. They are recorded (go-live task 89): a place is on the course itself, and
+ * the learner does its lessons in order. Live cohorts show only where live courses are switched on.
+ */
 export default function TrainingPage() {
   const { user } = useAuth()
+  const live = useCountry()?.liveCourses ?? false
   const [courses, setCourses] = useState<Course[]>([])
   const [rules, setRules] = useState('')
   const [mine, setMine] = useState<Enrolment[]>([])
@@ -265,7 +273,7 @@ export default function TrainingPage() {
   const confirm = useConfirm()
 
   async function cancel(e: Enrolment) {
-    if (!(await confirm({ title: 'Cancel your place?', body: `On ${e.courseTitle} (${e.cohortName}).`, confirmLabel: 'Cancel place', cancelLabel: 'Keep my place', danger: true }))) return
+    if (!(await confirm({ title: 'Cancel your place?', body: e.recorded ? `On ${e.courseTitle}.` : `On ${e.courseTitle} (${e.cohortName}).`, confirmLabel: 'Cancel place', cancelLabel: 'Keep my place', danger: true }))) return
     act(() => api.cancelPlace(e.id), (r) => (r as { message: string }).message)
   }
 
@@ -273,7 +281,7 @@ export default function TrainingPage() {
   const enrolledCohorts = new Set(mine.map((m) => m.cohortId))
   const waiting = new Map(requests.filter((r) => r.status === 'REQUESTED').map((r) => [r.cohortId, r]))
   // A school pays for its staff's places, so staff other than heads ask their head first.
-  const needsApproval = (c: Course) => user?.schoolId != null && user.role !== 'HEAD' && c.pricePence > 0
+  const needsApproval = (c: Course) => c.needsApproval
   const undecided = requests.filter((r) => r.status === 'REQUESTED' || r.status === 'DECLINED')
 
   return (
@@ -281,7 +289,7 @@ export default function TrainingPage() {
       <h1>Training</h1>
       {error && <p className="error">{error}</p>}
       {user && OWN_PAYMENTS_PAGE.includes(user.role) && <PaymentDue />}
-      {user?.role !== 'ADMIN' && <YourLiveSessions />}
+      {live && user?.role !== 'ADMIN' && <YourLiveSessions />}
       {user && ['TEACHER', 'HEAD', 'PRACTITIONER'].includes(user.role) && <InductionSection />}
 
       {mine.length > 0 && (
@@ -293,13 +301,22 @@ export default function TrainingPage() {
               <div>
                 <strong>{e.courseTitle}</strong>
                 <p className="muted">
-                  {e.cohortName} · starts {day(e.startsOn)} · {e.timeSlot}
+                  {e.recorded ? 'Recorded lessons, in your own time' : `${e.cohortName} · starts ${day(e.startsOn!)} · ${e.timeSlot}`}
                 </p>
               </div>
               <div className="enrolment-status">
-                <span>
-                  {e.sessionsAttended} of {e.liveSessions} live sessions attended
-                </span>
+                {e.recorded ? (
+                  <>
+                    <span>{placeProgress(e)}</span>
+                    <Link className="btn btn-primary" to={`/training/course/${e.id}`}>
+                      {placeAction(e)}
+                    </Link>
+                  </>
+                ) : (
+                  <span>
+                    {e.sessionsAttended} of {e.liveSessions} live sessions attended
+                  </span>
+                )}
                 {e.certificateIssuedOn ? (
                   <>
                     <span className="badge badge-ok">Certified until {day(e.certificateExpiresOn)}</span>
@@ -309,10 +326,12 @@ export default function TrainingPage() {
                   </>
                 ) : e.track === 'PROFESSIONAL' ? (
                   <span className="muted">
-                    Certificate after all sessions{e.quizzes > 0 ? ', the quizzes' : ''} and the assessment
+                    {e.recorded
+                      ? `Certificate after every lesson${e.quizzes > 0 ? ' and the test' : ''}`
+                      : `Certificate after all sessions${e.quizzes > 0 ? ', the quizzes' : ''} and the assessment`}
                   </span>
                 ) : null}
-                {!e.certificateIssuedOn && e.sessionsAttended === 0 && (
+                {(e.recorded ? e.canCancel : !e.certificateIssuedOn && e.sessionsAttended === 0) && (
                   <button className="btn" onClick={() => cancel(e)}>
                     Cancel place
                   </button>
@@ -333,7 +352,7 @@ export default function TrainingPage() {
               <div>
                 <strong>{r.courseTitle}</strong>
                 <p className="muted">
-                  {r.cohortName} · starts {day(r.startsOn)} · {r.timeSlot}
+                  {r.cohortId === null ? 'Recorded lessons' : `${r.cohortName} · starts ${day(r.startsOn!)} · ${r.timeSlot}`}
                 </p>
               </div>
               <div className="enrolment-status">
@@ -374,8 +393,34 @@ export default function TrainingPage() {
             </span>
           </div>
           <p>{c.description}</p>
+          <div className="cohort">
+            <p className="muted">{courseSummary(c)}</p>
+            {c.place === 'BOOKED' ? (
+              <span className="badge badge-ok">Booked</span>
+            ) : c.place === 'REQUESTED' ? (
+              <span className="badge">Waiting for approval</span>
+            ) : user?.role === 'ADMIN' || c.lessons === 0 ? null : needsApproval(c) ? (
+              <button
+                className="btn btn-primary"
+                onClick={() =>
+                  act(() => api.requestCourse(c.id), 'Request sent. Your head has been emailed to approve it.')
+                }
+              >
+                Ask for a place
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary"
+                onClick={() => act(() => api.enrolOnCourse(c.id), `Booked: ${c.title}. You can start at once.`)}
+              >
+                Book a place
+              </button>
+            )}
+          </div>
+          {live && (
+          <>
           <p className="muted">
-            {c.liveSessions} weekly live sessions of {c.sessionMinutes} minutes · join from a browser, nothing to install
+            Live: {c.liveSessions} weekly live sessions of {c.sessionMinutes} minutes · join from a browser, nothing to install
           </p>
           <div className="cohorts">
             {c.cohorts.map((h) => (
@@ -416,9 +461,11 @@ export default function TrainingPage() {
             ))}
             {c.cohorts.length === 0 && <p className="muted">No upcoming cohorts.</p>}
           </div>
+          </>
+          )}
         </section>
       ))}
-      {rules && (
+      {live && rules && (
         <p className="banner-teal">
           <strong>Rules for every live session:</strong> {rules}
         </p>

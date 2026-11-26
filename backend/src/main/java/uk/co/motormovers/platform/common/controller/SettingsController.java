@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.motormovers.platform.common.config.CountrySettings;
 import uk.co.motormovers.platform.common.config.PlatformProperties;
 import uk.co.motormovers.platform.common.model.Region;
+import uk.co.motormovers.platform.training.config.LiveCourses;
 
 /**
  * The deployment's country settings, open to anyone (like {@code /api/home/available}): the website and the parent
@@ -29,17 +30,19 @@ public class SettingsController {
     public record Settings(Region region, String country, String currency, String locale, String taxLabel,
             BigDecimal taxPercent, String timeZone, CountrySettings.SchoolYear schoolYear, List<String> yearNames,
             CountrySettings.LegalEntity legalEntity, String legalLine, String timeLabel, String dataHeldIn,
-            String creditNoteTitle, String termLabel, String contactEmail, String contactPhone) {
+            String creditNoteTitle, String termLabel, String contactEmail, String contactPhone,
+            boolean liveCourses) {
     }
 
     private final Settings settings;
 
-    public SettingsController(PlatformProperties properties, CountrySettings country) {
+    public SettingsController(PlatformProperties properties, CountrySettings country, LiveCourses live) {
         this.settings = new Settings(properties.region(), country.name(), country.currency(), country.locale(),
                 country.taxLabel(), country.taxPercent(), country.timeZone(), country.schoolYear(),
                 List.copyOf(country.yearNames()), country.legalEntity(), country.legalEntity().line(),
                 country.timeLabel(), country.dataHeldIn(), country.creditNoteTitle(),
-                country.termLabel(), country.legalEntity().contactEmail(), country.legalEntity().contactPhone());
+                country.termLabel(), country.legalEntity().contactEmail(), country.legalEntity().contactPhone(),
+                live.on());
     }
 
     @GetMapping

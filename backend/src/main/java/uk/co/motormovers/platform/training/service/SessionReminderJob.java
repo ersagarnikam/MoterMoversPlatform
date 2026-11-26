@@ -10,6 +10,7 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import uk.co.motormovers.platform.training.config.LiveCourses;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,21 +43,26 @@ public class SessionReminderJob {
     private final PushService push;
     private final CountrySettings country;
     private final Clock clock;
+    private final LiveCourses live;
 
     public SessionReminderJob(CohortSessionRepository sessions, EnrolmentRepository enrolments, Mailer mailer,
-            PushService push, CountrySettings country, Clock clock) {
+            PushService push, CountrySettings country, Clock clock, LiveCourses live) {
         this.sessions = sessions;
         this.enrolments = enrolments;
         this.mailer = mailer;
         this.push = push;
         this.country = country;
         this.clock = clock;
+        this.live = live;
     }
 
     /** Every ten minutes. Returns how many emails were sent. */
     @Scheduled(cron = "0 */10 * * * *")
     @Transactional
     public int remind() {
+        if (!live.on()) {
+            return 0;
+        }
         Instant now = clock.instant();
         List<CohortSession> due = sessions.findByStartsAtBetweenAndReminderSentAtIsNullOrderByStartsAt(now,
                 now.plus(AHEAD));
@@ -96,6 +102,9 @@ public class SessionReminderJob {
     @Scheduled(cron = "30 */2 * * * *")
     @Transactional
     public int announceOpening() {
+        if (!live.on()) {
+            return 0;
+        }
         Instant now = clock.instant();
         int phones = 0;
         for (CohortSession s : sessions.findByStartsAtBetweenAndOpeningPushSentAtIsNullOrderByStartsAt(now,

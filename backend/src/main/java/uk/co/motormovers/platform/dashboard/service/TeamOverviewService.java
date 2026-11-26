@@ -137,7 +137,7 @@ public class TeamOverviewService {
                 .findByCertificateExpiresOnBetweenOrderByCertificateExpiresOn(today, today.plusDays(CERTIFICATE_DAYS))
                 .stream()
                 .map(e -> new ExpiringCertificate(e.getId(), e.getUser().getDisplayName(),
-                        e.getCohort().getCourse().getTitle(), e.getCertificateExpiresOn()))
+                        e.getCourse().getTitle(), e.getCertificateExpiresOn()))
                 .toList();
 
         return new TeamOverview(drafts, sessionsToday, overdue, due.stream().mapToLong(Payment::getAmountPence).sum(),

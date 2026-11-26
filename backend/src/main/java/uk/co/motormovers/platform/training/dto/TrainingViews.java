@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import uk.co.motormovers.platform.training.model.Cohort;
+import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseRequest;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.model.Enrolment;
@@ -24,9 +25,15 @@ public final class TrainingViews {
             int seatsLeft, boolean recordingAgreed) {
     }
 
+    /**
+     * A course as someone who may book it sees it. {@code lessons} and {@code lessonMinutes} are its recorded
+     * lessons; {@code cohorts} is empty unless live courses are switched on. {@code place} says where the person
+     * stands: NONE, BOOKED or REQUESTED (asked of their head); {@code needsApproval}: their school pays, so they ask.
+     */
     public record CourseView(Long id, CourseTrack track, String title, String description, int liveSessions,
             int sessionMinutes, int pricePence, Integer renewalPence, boolean awardsCertificate,
-            List<CohortView> cohorts) {
+            List<CohortView> cohorts, int lessons, int lessonMinutes, int quizzes, String place,
+            boolean needsApproval) {
     }
 
     /**
@@ -41,13 +48,16 @@ public final class TrainingViews {
     /** A member of staff's request for a course place their school pays for, as they and their head see it. */
     public record CourseRequestView(Long id, Long cohortId, String courseTitle, String cohortName, LocalDate startsOn,
             String timeSlot, int pricePence, String learnerName, String learnerEmail, CourseRequest.Status status,
-            Instant requestedAt, String decidedBy, Instant decidedAt) {
+            Instant requestedAt, String decidedBy, Instant decidedAt, Long courseId) {
 
+        /** The cohort's fields are null for a recorded course. */
         public static CourseRequestView of(CourseRequest r) {
             Cohort c = r.getCohort();
-            return new CourseRequestView(r.getId(), c.getId(), c.getCourse().getTitle(), c.getName(), c.getStartsOn(),
-                    c.getTimeSlot(), c.getCourse().getPricePence(), r.getUser().getDisplayName(),
-                    r.getUser().getEmail(), r.getStatus(), r.getRequestedAt(), r.getDecidedBy(), r.getDecidedAt());
+            return new CourseRequestView(r.getId(), c == null ? null : c.getId(), r.getCourse().getTitle(),
+                    c == null ? null : c.getName(), c == null ? null : c.getStartsOn(),
+                    c == null ? null : c.getTimeSlot(), r.getCourse().getPricePence(), r.getUser().getDisplayName(),
+                    r.getUser().getEmail(), r.getStatus(), r.getRequestedAt(), r.getDecidedBy(), r.getDecidedAt(),
+                    r.getCourse().getId());
         }
     }
 
@@ -89,7 +99,7 @@ public final class TrainingViews {
 
     public record AdminCourseView(Long id, CourseTrack track, String title, String description, int liveSessions,
             int sessionMinutes, int pricePence, Integer renewalPence, boolean awardsCertificate,
-            List<AdminCohortView> cohorts) {
+            List<AdminCohortView> cohorts, int lessons, int lessonDrafts, int learners) {
     }
 
     /** filmHeld: the lesson has a film this person may not watch, so videoUrl is null. */
@@ -109,16 +119,29 @@ public final class TrainingViews {
     public record EnrolmentView(Long id, Long cohortId, String courseTitle, CourseTrack track, String cohortName,
             LocalDate startsOn, String timeSlot, int sessionsAttended, int liveSessions, boolean assessmentPassed,
             LocalDate certificateIssuedOn, LocalDate certificateExpiresOn, String learnerName, String learnerEmail,
-            List<Integer> attendedSessions, int quizzesPassed, int quizzes) {
+            List<Integer> attendedSessions, int quizzesPassed, int quizzes, Long courseId, boolean recorded,
+            int lessonsDone, int lessons, boolean canCancel) {
 
-        public static EnrolmentView of(Enrolment e, List<Integer> attendedSessions, QuizProgress quizProgress) {
+        /**
+         * {@code recorded}: a place on a recorded course, whose cohort fields are null and whose progress is
+         * {@code lessonsDone} of {@code lessons}. {@code canCancel}: the learner may still cancel it themself.
+         */
+        public static EnrolmentView of(Enrolment e, List<Integer> attendedSessions, QuizProgress quizProgress,
+                LessonProgress lessonProgress, boolean canCancel) {
             Cohort c = e.getCohort();
-            return new EnrolmentView(e.getId(), c.getId(), c.getCourse().getTitle(), c.getCourse().getTrack(),
-                    c.getName(), c.getStartsOn(), c.getTimeSlot(), e.getSessionsAttended(),
-                    c.getCourse().getLiveSessions(), e.isAssessmentPassed(), e.getCertificateIssuedOn(),
-                    e.getCertificateExpiresOn(), e.getUser().getDisplayName(), e.getUser().getEmail(), attendedSessions,
-                    quizProgress.passed(), quizProgress.total());
+            Course course = e.getCourse();
+            return new EnrolmentView(e.getId(), c == null ? null : c.getId(), course.getTitle(), course.getTrack(),
+                    c == null ? null : c.getName(), c == null ? null : c.getStartsOn(),
+                    c == null ? null : c.getTimeSlot(), e.getSessionsAttended(), course.getLiveSessions(),
+                    e.isAssessmentPassed(), e.getCertificateIssuedOn(), e.getCertificateExpiresOn(),
+                    e.getUser().getDisplayName(), e.getUser().getEmail(), attendedSessions, quizProgress.passed(),
+                    quizProgress.total(), course.getId(), e.isRecorded(), lessonProgress.done(),
+                    lessonProgress.total(), canCancel);
         }
+    }
+
+    /** How many of a recorded course's lessons a learner has done, of how many. */
+    public record LessonProgress(int done, int total) {
     }
 
     /** How many of a course's quizzes a learner has passed, of how many. */

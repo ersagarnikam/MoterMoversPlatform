@@ -20,7 +20,12 @@ public class Enrolment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** The course the place is on. */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Course course;
+
+    /** The cohort of a live course; null for a place on a recorded course, which has none (task 89). */
+    @ManyToOne(fetch = FetchType.LAZY)
     private Cohort cohort;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -46,7 +51,16 @@ public class Enrolment {
     protected Enrolment() {
     }
 
+    /** A place on a recorded course: the learner starts its lessons at once. */
+    public Enrolment(Course course, AppUser user) {
+        this.course = course;
+        this.user = user;
+        this.enrolledAt = Instant.now();
+    }
+
+    /** A place on a cohort of a live course. */
     public Enrolment(Cohort cohort, AppUser user) {
+        this.course = cohort.getCourse();
         this.cohort = cohort;
         this.user = user;
         this.enrolledAt = Instant.now();
@@ -68,15 +82,21 @@ public class Enrolment {
     }
 
     /**
-     * Issues the yearly practitioner certificate once every live session is attended, every quiz of the course
-     * passed ({@code quizzesPassed}, true for a course without quizzes) and the assessment passed.
+     * Issues the yearly certificate. On a recorded course: once every lesson is done ({@code lessonsDone}) and every
+     * quiz of the course is passed ({@code quizzesPassed}, true for a course without quizzes). On a live course:
+     * once every live session is attended, every quiz passed and the trainer's assessment passed.
      */
     public boolean issueCertificateIfEligible(LocalDate today, boolean quizzesPassed) {
-        Course course = cohort.getCourse();
+        return issueCertificateIfEligible(today, quizzesPassed, false);
+    }
+
+    public boolean issueCertificateIfEligible(LocalDate today, boolean quizzesPassed, boolean lessonsDone) {
         if (!course.isAwardsCertificate() || certificateIssuedOn != null) {
             return false;
         }
-        if (sessionsAttended >= course.getLiveSessions() && assessmentPassed && quizzesPassed) {
+        boolean complete = isRecorded() ? lessonsDone
+                : sessionsAttended >= course.getLiveSessions() && assessmentPassed;
+        if (complete && quizzesPassed) {
             certificateIssuedOn = today;
             certificateExpiresOn = today.plusYears(1);
             return true;
@@ -88,8 +108,18 @@ public class Enrolment {
         return id;
     }
 
+    public Course getCourse() {
+        return course;
+    }
+
+    /** Null for a place on a recorded course. */
     public Cohort getCohort() {
         return cohort;
+    }
+
+    /** A place on the course itself, with no cohort: the learner does its recorded lessons. */
+    public boolean isRecorded() {
+        return cohort == null;
     }
 
     public AppUser getUser() {
