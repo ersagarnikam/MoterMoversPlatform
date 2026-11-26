@@ -67,6 +67,8 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
     "spring.datasource.url=jdbc:h2:mem:homesubscription;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
     "platform.stripe.secret-key=sk_test_platform", "platform.stripe.webhook-secret=whsec_monthly",
     "platform.login-limit-per-ip=500",
+    // No launch price for monthly (task 87 gave every country one): these tests set their own prices and dates.
+    "platform.countries.uk.launch-prices.home-monthly=",
 })
 @AutoConfigureMockMvc
 class HomeSubscriptionTest {

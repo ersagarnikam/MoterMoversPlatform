@@ -65,7 +65,8 @@ class RegionIrelandTest {
     /** Go-live task 68: a month of the home programme, in this country's currency with its tax. */
     @Test
     void aMonthOfASubscriptionIsInEurosWithIrishVat() {
-        monthly.aMonthIsPaidWithTax("eur", "gbp", 1_750, 327);
+        // Ireland's launch price, 16.99 euros (task 87): the 23% VAT in it is 3.18.
+        monthly.aMonthIsPaidWithTax("eur", "gbp", 1_699, 318);
     }
 
     @Autowired
@@ -121,9 +122,13 @@ class RegionIrelandTest {
     @Autowired
     uk.co.motormovers.platform.home.repository.HomePassPriceRepository launchPassPrices;
 
+    @Autowired
+    uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository launchMonthlyPrices;
+
     /** Go-live task 85: this country's launch prices, in cents. */
     @Test
     void anIrishDeploymentStartsWithTheIrishPrices() {
-        LaunchPricesTest.assertPrices(launchPlans, launchCourses, launchPassPrices, LocalDate.now(clock), 46_500, 74_500, 67_050, 12_500, 3_500, 6_000, 62_000);
+        LaunchPricesTest.assertPrices(launchPlans, launchCourses, launchPassPrices, launchMonthlyPrices, LocalDate.now(clock),
+                46_500, 74_500, 67_050, 12_500, 3_500, 6_000, 62_000, 1_699);
     }
 }
