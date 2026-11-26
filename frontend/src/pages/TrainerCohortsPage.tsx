@@ -3,6 +3,8 @@ import { api, type AdminCourse } from '../api'
 import { CohortBookings } from './CoursesPage'
 import { day } from '../dates'
 import Skeleton from '../components/Skeleton'
+import { useCountry } from '../country'
+import LiveCoursesOff from '../components/LiveCoursesOff'
 
 /**
  * A trainer's own cohorts: who has booked, attendance at each live session, and the end-of-course assessment, which
@@ -11,14 +13,18 @@ import Skeleton from '../components/Skeleton'
 export default function TrainerCohortsPage() {
   const [courses, setCourses] = useState<AdminCourse[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const country = useCountry()
+  const live = country?.liveCourses
 
   useEffect(() => {
+    if (!live) return
     api
       .trainerCohorts()
       .then(setCourses)
       .catch((e) => setError(e.message))
-  }, [])
+  }, [live])
 
+  if (country && !live) return <LiveCoursesOff />
   if (error) return <p className="error">{error}</p>
   if (!courses) return <Skeleton />
 

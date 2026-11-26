@@ -18,8 +18,8 @@ public final class CourseInputs {
     }
 
     public record CourseInput(@NotNull CourseTrack track, @NotBlank @Size(max = 200) String title,
-            @NotBlank @Size(max = 1000) String description, @Min(1) @Max(52) int liveSessions,
-            @Min(5) @Max(480) int sessionMinutes, @Min(0) @Max(10_000_000) int pricePence,
+            @NotBlank @Size(max = 1000) String description, @Min(0) @Max(52) int liveSessions,
+            @Min(0) @Max(480) int sessionMinutes, @Min(0) @Max(10_000_000) int pricePence,
             @Min(0) @Max(10_000_000) Integer renewalPence, boolean awardsCertificate) {
     }
 

@@ -174,7 +174,24 @@ deploy/restore-test.sh /path/to/motormovers-YYYYMMDD.sql.gz   # e.g. one downloa
 It ends with "Restore test passed." and exits non-zero if the dump will not load. Tested 2026-10-21 against a
 dump of the demo data on PostgreSQL 17: schema V6, every table restored.
 
+## Courses: recorded lessons
+
+Courses are recorded (go-live task 89). There is nothing to configure: a course's lessons are written and approved on
+**Content approval > Course lessons** (a film by upload or `https` link, optional text and slides), its test under
+Quizzes on the course's page, and learners book and take it on their Training page. Films use the file store like
+session films (File storage, above): upload them on that page, which is the only one that may send files to the store.
+The starter content sets up the practitioner and parent courses with **placeholder lessons** (drafts, with
+`SEED_STARTER_CONTENT=true`) and a placeholder final test of ten questions at 80%: replace both with Pat's recordings
+and questions before a course is sold. A course with no approved lesson cannot be booked.
+
 ## Live sessions on Zoom
+
+**Switched off by default since go-live task 89.** Live cohorts, their Zoom sessions, registers, reminders and trainers
+are kept in the code and the database behind `LIVE_COURSES` (false unless set). With it off, none of the Zoom keys
+below is needed, every live and trainer endpoint answers 404, the reminder jobs send nothing, and the screens hide
+them; a trainer account signs in to a page saying there is nothing for it to do. Set `LIVE_COURSES=true` in
+`deploy/.env` only if live cohorts are wanted again; the rest of this section then applies. The load test
+(`deploy/loadtest/live-session.js`) needs it on.
 
 Live course sessions run as Zoom meetings shown inside the platform (Zoom's Meeting SDK). The team starts a
 session from **Live sessions**; learners booked on the cohort join from their Training page, from 15 minutes before

@@ -61,7 +61,13 @@ export default function CourseQuizzes({ course }: { course: AdminCourse }) {
           {error}
         </p>
       )}
-      {quizzes.length === 0 && <p className="muted">No quizzes. Add one to check learning between sessions.</p>}
+      {quizzes.length === 0 && (
+        <p className="muted">
+          {course.liveSessions === 0
+            ? 'No test. Add one for learners to take once every lesson is done.'
+            : 'No quizzes. Add one to check learning between sessions.'}
+        </p>
+      )}
       <ul className="quiz-list">
         {quizzes.map((q) =>
           editing === q.id ? (
@@ -76,7 +82,8 @@ export default function CourseQuizzes({ course }: { course: AdminCourse }) {
           ) : (
             <li key={q.id}>
               <span>
-                After session {q.afterSession}: <strong>{q.title}</strong>
+                {course.liveSessions === 0 ? 'After the last lesson' : `After session ${q.afterSession}`}:{' '}
+                <strong>{q.title}</strong>
                 <span className="muted">
                   {' '}
                   · {q.questions.length} questions · pass mark {q.passPercent}% · taken {q.attempts} times
@@ -159,16 +166,19 @@ function QuizForm({
           Quiz title
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} required />
         </label>
-        <label>
-          After live session
-          <select value={afterSession} onChange={(e) => setAfterSession(e.target.value)}>
-            {Array.from({ length: liveSessions }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-        </label>
+        {/* A recorded course has no live sessions: its tests all open after the last lesson. */}
+        {liveSessions > 0 && (
+          <label>
+            After live session
+            <select value={afterSession} onChange={(e) => setAfterSession(e.target.value)}>
+              {Array.from({ length: liveSessions }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {i + 1}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
           Pass mark (%)
           <input

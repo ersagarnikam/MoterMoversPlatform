@@ -18,12 +18,15 @@ import uk.co.motormovers.platform.content.model.ResourceKind;
 import uk.co.motormovers.platform.content.repository.GuidanceArticleRepository;
 import uk.co.motormovers.platform.content.repository.HomeActivityRepository;
 import uk.co.motormovers.platform.content.repository.LibraryResourceRepository;
+import uk.co.motormovers.platform.training.config.LiveCourses;
 import uk.co.motormovers.platform.training.model.Course;
+import uk.co.motormovers.platform.training.model.CourseLesson;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.model.CourseQuiz;
 import uk.co.motormovers.platform.training.model.InductionAudience;
 import uk.co.motormovers.platform.training.model.InductionLesson;
 import uk.co.motormovers.platform.training.model.QuizQuestion;
+import uk.co.motormovers.platform.training.repository.CourseLessonRepository;
 import uk.co.motormovers.platform.training.repository.CourseQuizRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.InductionLessonRepository;
@@ -52,12 +55,17 @@ public class StarterContent {
     private final CourseQuizRepository quizzes;
     private final QuizQuestionRepository quizQuestions;
     private final CountrySettings country;
+    private final CourseLessonRepository courseLessons;
+    private final LiveCourses liveCourses;
 
     public StarterContent(LibraryResourceRepository resources,
             InductionLessonRepository inductionLessons, HomeActivityRepository homeActivities,
             GuidanceArticleRepository guidance, CourseRepository courses, CourseQuizRepository quizzes,
-            QuizQuestionRepository quizQuestions, CountrySettings country) {
+            QuizQuestionRepository quizQuestions, CountrySettings country, CourseLessonRepository courseLessons,
+            LiveCourses liveCourses) {
         this.country = country;
+        this.courseLessons = courseLessons;
+        this.liveCourses = liveCourses;
         this.resources = resources;
         this.inductionLessons = inductionLessons;
         this.homeActivities = homeActivities;
@@ -75,6 +83,11 @@ public class StarterContent {
         parentInductionPlaceholders(approvedBy);
         Map<ColourStage, List<HomeActivity>> activities = homeActivities(approvedBy);
         guidance(approvedBy);
+        if (!liveCourses.on()) {
+            return new Loaded(rhymes, induction, activities, recordedProfessional(approvedBy),
+                    recordedParent(approvedBy));
+        }
+        // Live courses, kept behind a setting (task 89): cohorts of weekly sessions on Zoom.
         Course professional = courses.save(new Course(CourseTrack.PROFESSIONAL, "Practitioner course",
                 "Four weekly live sessions of 90 minutes, recorded modules and short quizzes between sessions, "
                         + "and an assessment. Leads to the practitioner certificate, renewed yearly.",
@@ -86,6 +99,58 @@ public class StarterContent {
                         + "the activities at home.",
                 3, 60, country.launchPrices().parentCoursePence(), null, false));
         return new Loaded(rhymes, induction, activities, professional, parent);
+    }
+
+    /** How many questions the placeholder final test has, and its pass mark: 8 of 10 (Pat, 2026-11-26). */
+    static final int FINAL_TEST_QUESTIONS = 10;
+    static final int FINAL_TEST_PASS_PERCENT = 80;
+
+    /**
+     * The recorded practitioner course (go-live task 89; Pat, 2026-11-26): three recorded lessons, then one final
+     * test of ten questions, eight right for the certificate. The lessons and the questions are placeholders, marked
+     * as such on screen, until Pat's recordings and questions are entered by the team.
+     */
+    private Course recordedProfessional(String approvedBy) {
+        Course course = courses.save(new Course(CourseTrack.PROFESSIONAL, "Practitioner course",
+                "Three recorded lessons to take in your own time, then a final test of ten questions. Eight right "
+                        + "answers lead to the practitioner certificate, renewed yearly.",
+                0, 0, country.launchPrices().practitionerPence(), country.launchPrices().practitionerRenewalPence(),
+                true));
+        placeholderLessons(course, 3, approvedBy);
+        List<Question> questions = new ArrayList<>();
+        for (int i = 1; i <= FINAL_TEST_QUESTIONS; i++) {
+            questions.add(question("Placeholder question " + i + ": choose the first answer.",
+                    List.of("Placeholder answer A (the right one)", "Placeholder answer B", "Placeholder answer C"),
+                    0));
+        }
+        CourseQuiz test = quizzes.save(new CourseQuiz(course, 1, "Final test (placeholder questions)",
+                FINAL_TEST_PASS_PERCENT));
+        for (int i = 0; i < questions.size(); i++) {
+            Question q = questions.get(i);
+            quizQuestions.save(new QuizQuestion(test, i + 1, q.text(), q.options(), q.correct()));
+        }
+        return course;
+    }
+
+    private Course recordedParent(String approvedBy) {
+        Course course = courses.save(new Course(CourseTrack.PARENT, "Parent course",
+                "Two recorded lessons to take in your own time. Builds confidence to run the activities at home.",
+                0, 0, country.launchPrices().parentCoursePence(), null, false));
+        placeholderLessons(course, 2, approvedBy);
+        return course;
+    }
+
+    private void placeholderLessons(Course course, int howMany, String approvedBy) {
+        for (int i = 1; i <= howMany; i++) {
+            CourseLesson lesson = new CourseLesson(course, i, "Placeholder lesson " + i,
+                    "This is a placeholder. The recording, its script and its slides for this lesson are on their "
+                            + "way, and will replace this text.",
+                    20);
+            if (approvedBy != null) {
+                lesson.review(ContentStatus.APPROVED, approvedBy, java.time.Instant.now());
+            }
+            courseLessons.save(lesson);
+        }
     }
 
     /** Three short quizzes, after each of the first three live sessions; 80% passes. */

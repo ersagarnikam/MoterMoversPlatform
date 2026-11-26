@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   api,
+  type AdminCourse,
+  type AdminLesson,
   type ApprovedAll,
   type ColourStage,
   type ContentItem,
@@ -566,7 +568,287 @@ function FilmsPanel({
 }
 
 /** Nothing reaches the library without Pat or Laura’s sign-off, and nothing diagnostic gets signed off. */
+const EMPTY_LESSON = { position: '1', title: '', minutes: '20', body: '', videoUrl: '', videoKey: '', slidesUrl: '', slidesKey: '' }
+
+/**
+ * The lessons of a recorded course (go-live task 89): each a film with optional text and slides, saved as a draft and
+ * approved with the wording check, like an induction lesson. A lesson that is changed goes back to a draft. They are
+ * written here, not on the course's page, because only this page can send a file to the store.
+ */
+function CourseLessonsPanel({ rules }: { rules: UploadRules | null }) {
+  const [courses, setCourses] = useState<AdminCourse[]>([])
+  const [courseId, setCourseId] = useState<number | null>(() => {
+    const asked = Number(new URLSearchParams(window.location.search).get('course'))
+    return asked > 0 ? asked : null
+  })
+  const [lessons, setLessons] = useState<AdminLesson[]>([])
+  const [editing, setEditing] = useState<number | 'new' | null>(null)
+  const [values, setValues] = useState(EMPTY_LESSON)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const toast = useToast()
+  const confirm = useConfirm()
+
+  useEffect(() => {
+    api
+      .adminCourses()
+      .then((all) => {
+        setCourses(all)
+        setCourseId((current) => current ?? all[0]?.id ?? null)
+      })
+      .catch((e) => setError(e.message))
+  }, [])
+
+  useEffect(() => {
+    if (courseId === null) return
+    let current = true
+    setLessons([])
+    setEditing(null)
+    api
+      .courseLessons(courseId)
+      .then((list) => current && setLessons(list))
+      .catch((e) => current && setError(e.message))
+    return () => {
+      current = false
+    }
+  }, [courseId])
+
+  const sorted = [...lessons].sort((a, b) => a.position - b.position || a.id - b.id)
+  const set = (name: keyof typeof EMPTY_LESSON) => (value: string) => setValues((v) => ({ ...v, [name]: value }))
+
+  function start(lesson: AdminLesson | null) {
+    setError(null)
+    setEditing(lesson ? lesson.id : 'new')
+    setValues(
+      lesson
+        ? {
+            position: String(lesson.position),
+            title: lesson.title,
+            minutes: String(lesson.minutes),
+            body: lesson.body,
+            videoUrl: lesson.pastedVideoUrl ?? '',
+            videoKey: '',
+            slidesUrl: lesson.pastedSlidesUrl ?? '',
+            slidesKey: '',
+          }
+        : { ...EMPTY_LESSON, position: String(sorted.length + 1) },
+    )
+  }
+
+  async function run(action: () => Promise<AdminLesson>, done: string) {
+    setError(null)
+    try {
+      const saved = await action()
+      setLessons((all) => (all.some((l) => l.id === saved.id) ? all.map((l) => (l.id === saved.id ? saved : l)) : [...all, saved]))
+      toast(done)
+      return true
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong')
+      return false
+    }
+  }
+
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    if (courseId === null) return
+    const input = {
+      position: Number(values.position),
+      title: values.title.trim(),
+      minutes: Number(values.minutes),
+      body: values.body,
+      // An uploaded file replaces a pasted link.
+      videoUrl: values.videoKey ? null : values.videoUrl.trim() || null,
+      videoKey: values.videoKey || null,
+      slidesUrl: values.slidesKey ? null : values.slidesUrl.trim() || null,
+      slidesKey: values.slidesKey || null,
+    }
+    const ok =
+      editing === 'new'
+        ? await run(() => api.addCourseLesson(courseId, input), `“${input.title}” saved as a draft`)
+        : await run(() => api.updateCourseLesson(editing as number, input), `“${input.title}” saved: approve it again`)
+    if (ok) setEditing(null)
+  }
+
+  async function remove(lesson: AdminLesson) {
+    const sure = await confirm({
+      title: `Delete “${lesson.title}”?`,
+      body: 'A lesson learners have done cannot be deleted.',
+      confirmLabel: 'Delete lesson',
+      danger: true,
+    })
+    if (!sure) return
+    setError(null)
+    try {
+      await api.deleteCourseLesson(lesson.id)
+      setLessons((all) => all.filter((l) => l.id !== lesson.id))
+      toast(`“${lesson.title}” deleted`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not delete the lesson')
+    }
+  }
+
+  return (
+    <>
+      <div className="card inline-form">
+        <label>
+          Course
+          <select value={courseId ?? ''} onChange={(e) => setCourseId(Number(e.target.value))}>
+            {courses.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="muted form-wide">
+          Learners do a course’s approved lessons in order, and its test opens after the last one. A lesson with a film
+          can be marked done only once the film has played to the end.
+        </p>
+      </div>
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
+      {sorted.map((l) => (
+        <section key={l.id} className="card">
+          <div className="section-head">
+            <h3>
+              Lesson {l.position}: {l.title}
+            </h3>
+            <span className={`badge ${l.status === 'APPROVED' ? 'badge-ok' : ''}`}>
+              {l.status === 'APPROVED' ? 'Approved' : l.status === 'REJECTED' ? 'Rejected' : 'Draft'}
+            </span>
+          </div>
+          <p className="muted">
+            {l.minutes} minutes · done by {l.learnersDone} {l.learnersDone === 1 ? 'learner' : 'learners'}
+            {l.reviewedBy ? ` · reviewed by ${l.reviewedBy}` : ''}
+          </p>
+          {l.paragraphs.map((p) => (
+            <p key={p}>{p}</p>
+          ))}
+          <p>
+            {l.videoUrl ? (
+              <a href={l.videoUrl} target="_blank" rel="noreferrer">
+                Open the film
+              </a>
+            ) : (
+              <span className="muted">No film</span>
+            )}
+            {' · '}
+            {l.slidesUrl ? (
+              <a href={l.slidesUrl} target="_blank" rel="noreferrer">
+                Open the slides
+              </a>
+            ) : (
+              <span className="muted">No slides</span>
+            )}
+          </p>
+          {l.violations.length > 0 && (
+            <p className="banner-warn">
+              Wording to change before it can be approved: {l.violations.map((v) => `“${v.term}”`).join(', ')}
+            </p>
+          )}
+          <div className="actions">
+            {l.status !== 'APPROVED' && (
+              <button
+                className="btn btn-primary"
+                onClick={() => run(() => api.approveCourseLesson(l.id), `Lesson ${l.position} approved`)}
+              >
+                Approve
+              </button>
+            )}
+            {l.status === 'DRAFT' && (
+              <button className="btn" onClick={() => run(() => api.rejectCourseLesson(l.id), `Lesson ${l.position} rejected`)}>
+                Reject
+              </button>
+            )}
+            <button className="btn" onClick={() => start(l)}>
+              Edit
+            </button>
+            <button className="btn" onClick={() => remove(l)}>
+              Delete
+            </button>
+          </div>
+        </section>
+      ))}
+      {courseId !== null && editing === null && (
+        <div className="actions">
+          <button className="btn btn-primary" onClick={() => start(null)}>
+            Add a lesson
+          </button>
+        </div>
+      )}
+      {editing !== null && (
+        <section className="card">
+          <h3>{editing === 'new' ? 'New lesson' : 'Edit the lesson'}</h3>
+          <form className="inline-form" onSubmit={save} aria-label="Lesson">
+            <label>
+              Lesson number
+              <input type="number" min={1} max={200} required value={values.position} onChange={(e) => set('position')(e.target.value)} />
+            </label>
+            <label>
+              Minutes
+              <input type="number" min={1} max={600} required value={values.minutes} onChange={(e) => set('minutes')(e.target.value)} />
+            </label>
+            <label className="form-wide">
+              Title
+              <input required maxLength={200} value={values.title} onChange={(e) => set('title')(e.target.value)} />
+            </label>
+            <label className="form-wide">
+              Text, for example the script (optional)
+              <span className="hint">Leave a blank line between paragraphs.</span>
+              <textarea rows={6} maxLength={20000} value={values.body} onChange={(e) => set('body')(e.target.value)} />
+            </label>
+            <label className="form-wide">
+              Film link (optional)
+              <span className="hint">An https:// address</span>
+              <input type="url" maxLength={500} value={values.videoUrl} disabled={!!values.videoKey} onChange={(e) => set('videoUrl')(e.target.value)} />
+            </label>
+            {rules && (
+              <FileChoice
+                rules={rules}
+                accept={(type) => type.startsWith('video/')}
+                onUploaded={set('videoKey')}
+                onBusy={setBusy}
+                then="Save the lesson to keep it."
+                formats="MP4 or WebM video"
+              />
+            )}
+            <label className="form-wide">
+              Slides link (optional)
+              <span className="hint">An https:// address</span>
+              <input type="url" maxLength={500} value={values.slidesUrl} disabled={!!values.slidesKey} onChange={(e) => set('slidesUrl')(e.target.value)} />
+            </label>
+            {rules && (
+              <FileChoice
+                rules={rules}
+                accept={(type) => type === 'application/pdf'}
+                onUploaded={set('slidesKey')}
+                onBusy={setBusy}
+                then="Save the lesson to keep it."
+                formats="PDF"
+              />
+            )}
+            <div className="actions form-wide">
+              <button className="btn btn-primary" disabled={busy}>
+                {editing === 'new' ? 'Save as a draft' : 'Save the lesson'}
+              </button>
+              <button type="button" className="btn" onClick={() => setEditing(null)}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+    </>
+  )
+}
+
 export default function ContentPage() {
+  const [lessonsTab, setLessonsTab] = useState(
+    () => new URLSearchParams(window.location.search).get('tab') === 'course-lessons',
+  )
   const [kind, setKind] = useState<ContentKind>('content')
   const [items, setItems] = useState<ContentItem[]>([])
   const [filter, setFilter] = useState<'DRAFT' | 'ALL'>('DRAFT')
@@ -671,12 +953,26 @@ export default function ContentPage() {
         <h1>Content approval</h1>
         <div className="chips">
           {KINDS.map((k) => (
-            <button key={k.kind} className={`chip ${kind === k.kind ? 'chip-on' : ''}`} onClick={() => setKind(k.kind)}>
+            <button
+              key={k.kind}
+              className={`chip ${!lessonsTab && kind === k.kind ? 'chip-on' : ''}`}
+              onClick={() => {
+                setLessonsTab(false)
+                setKind(k.kind)
+              }}
+            >
               {k.label}
             </button>
           ))}
+          <button className={`chip ${lessonsTab ? 'chip-on' : ''}`} onClick={() => setLessonsTab(true)}>
+            Course lessons
+          </button>
         </div>
       </div>
+      {lessonsTab ? (
+        <CourseLessonsPanel rules={rules} />
+      ) : (
+        <>
       <div className="chips">
         <button className={`chip ${filter === 'DRAFT' ? 'chip-on' : ''}`} onClick={() => setFilter('DRAFT')}>
           Awaiting sign-off ({drafts.length})
@@ -794,6 +1090,8 @@ export default function ContentPage() {
           </div>
         ))}
       </div>
+        </>
+      )}
     </>
   )
 }

@@ -67,6 +67,7 @@ export default function TodayScreen() {
     // A payment problem must not hide the activities, so it falls back to nothing due.
     const due = await api.myPayments().then((m) => m.outstandingPence, () => 0)
     // Likewise a live session open to join now, from the parent course.
+    // Refused (and so false) where live courses are switched off: courses are recorded (task 89).
     const liveNow = await api.liveSessions().then((l) => l.some((s) => s.open), () => false)
     return {
       children,

@@ -212,7 +212,7 @@ public class LiveSessionService {
         enrolment.attendanceChanged((int) attendance.countByIdEnrolmentId(enrolmentId));
         certificates.issueIfComplete(enrolment);
         return TrainingViews.EnrolmentView.of(enrolment, attendance.attendedNumbers(enrolmentId),
-                certificates.quizProgress(enrolment));
+                certificates.quizProgress(enrolment), certificates.lessonProgress(enrolment), false);
     }
 
     /**

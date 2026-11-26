@@ -235,17 +235,99 @@ export interface Course {
   pricePence: number
   renewalPence: number | null
   awardsCertificate: boolean
+  /** Live cohorts: empty unless live courses are switched on (settings.liveCourses). */
   cohorts: { id: number; name: string; startsOn: string; timeSlot: string; trainerName: string; seatsLeft: number; recordingAgreed: boolean }[]
+  /** The recorded lessons a learner does, their minutes in all, and how many tests follow them. */
+  lessons: number
+  lessonMinutes: number
+  quizzes: number
+  /** Where the signed-in person stands on the recorded course. */
+  place: 'NONE' | 'BOOKED' | 'REQUESTED'
+  /** Their school pays, so they ask their head for a place. */
+  needsApproval: boolean
+}
+
+/** A lesson of a recorded course as its learner sees it. videoUrl and slidesUrl come only for an open lesson. */
+export interface CourseLesson {
+  id: number
+  position: number
+  title: string
+  paragraphs: string[]
+  minutes: number
+  /** There is a film to play to the end before the lesson can be marked done. */
+  hasFilm: boolean
+  videoUrl: string | null
+  slidesUrl: string | null
+  /** Every lesson before it is done. */
+  open: boolean
+  done: boolean
+}
+
+/** A learner's place on a recorded course, with its lessons in order. */
+export interface CoursePlayer {
+  enrolmentId: number
+  courseId: number
+  courseTitle: string
+  learnerName: string
+  lessons: CourseLesson[]
+  lessonsDone: number
+  totalMinutes: number
+  /** Every lesson is done, so the course's tests can be taken. */
+  quizzesOpen: boolean
+  quizzes: number
+  quizzesPassed: number
+  certificateIssuedOn: string | null
+}
+
+/** A recorded course's lesson as the team writes it: drafts too. */
+export interface AdminLesson {
+  id: number
+  position: number
+  title: string
+  body: string
+  paragraphs: string[]
+  minutes: number
+  status: 'DRAFT' | 'APPROVED' | 'REJECTED'
+  reviewedBy: string | null
+  reviewedAt: string | null
+  violations: { text: string; term: string }[]
+  /** A link to open the film or the slides (signed, for an uploaded file). */
+  videoUrl: string | null
+  pastedVideoUrl: string | null
+  videoUploaded: boolean
+  slidesUrl: string | null
+  pastedSlidesUrl: string | null
+  slidesUploaded: boolean
+  learnersDone: number
+}
+
+export interface LessonInput {
+  position: number
+  title: string
+  body: string
+  minutes: number
+  videoUrl: string | null
+  videoKey: string | null
+  slidesUrl: string | null
+  slidesKey: string | null
 }
 
 export interface Enrolment {
   id: number
-  cohortId: number
+  /** The cohort of a live course; null, with its name, date and time slot, for a place on a recorded course. */
+  cohortId: number | null
   courseTitle: string
   track: 'PROFESSIONAL' | 'PARENT'
-  cohortName: string
-  startsOn: string
-  timeSlot: string
+  cohortName: string | null
+  startsOn: string | null
+  timeSlot: string | null
+  courseId: number
+  /** A place on a recorded course: the learner does its lessons in order. */
+  recorded: boolean
+  lessonsDone: number
+  lessons: number
+  /** The learner may still cancel the place themself (nothing started, no certificate). */
+  canCancel: boolean
   sessionsAttended: number
   liveSessions: number
   assessmentPassed: boolean
@@ -306,11 +388,13 @@ export interface AdminQuiz extends QuizInput {
 /** A member of staff's request for a course place their school pays for; their head approves or declines it. */
 export interface CourseRequest {
   id: number
-  cohortId: number
+  /** Null, with the cohort's name, date and time slot, for a recorded course. */
+  cohortId: number | null
+  courseId: number
   courseTitle: string
-  cohortName: string
-  startsOn: string
-  timeSlot: string
+  cohortName: string | null
+  startsOn: string | null
+  timeSlot: string | null
   pricePence: number
   learnerName: string
   learnerEmail: string
@@ -556,6 +640,10 @@ export interface Trainer {
 /** A course as the team manages it: every cohort, past ones too, with places booked. */
 export interface AdminCourse extends CourseInput {
   id: number
+  /** Recorded lessons approved, lessons still to approve, and learners with a place on the recorded course. */
+  lessons: number
+  lessonDrafts: number
+  learners: number
   /** clashes: sessions still to come that overlap another cohort's on the same Zoom login. */
   cohorts: (CohortInput & { id: number; booked: number; sessions: SessionSummary[]; clashes: string[] })[]
 }
@@ -824,6 +912,8 @@ export interface CountrySettings {
   dataHeldIn: string | null
   /** "Credit note", or "Adjustment note" in Australia. */
   creditNoteTitle: string
+  /** Live courses on Zoom, cohorts and trainers are switched on. Off: courses are recorded (go-live task 89). */
+  liveCourses: boolean
 }
 
 /**
@@ -1194,6 +1284,19 @@ export const api = {
     request<string>('GET', `/api/schools/${schoolId}/exports/${name}.csv`),
   courses: () => request<{ rules: string; courses: Course[] }>('GET', '/api/training/courses'),
   enrol: (cohortId: number) => request<Enrolment>('POST', `/api/training/cohorts/${cohortId}/enrol`),
+  enrolOnCourse: (courseId: number) => request<Enrolment>('POST', `/api/training/courses/${courseId}/enrol`),
+  requestCourse: (courseId: number) => request<CourseRequest>('POST', `/api/training/courses/${courseId}/request`),
+  coursePlayer: (enrolmentId: number) => request<CoursePlayer>('GET', `/api/training/enrolments/${enrolmentId}/lessons`),
+  completeCourseLesson: (enrolmentId: number, lessonId: number) =>
+    request<CoursePlayer>('POST', `/api/training/enrolments/${enrolmentId}/lessons/${lessonId}/complete`),
+  courseLessons: (courseId: number) => request<AdminLesson[]>('GET', `/api/admin/courses/${courseId}/lessons`),
+  addCourseLesson: (courseId: number, l: LessonInput) =>
+    request<AdminLesson>('POST', `/api/admin/courses/${courseId}/lessons`, l),
+  updateCourseLesson: (id: number, l: LessonInput) => request<AdminLesson>('PUT', `/api/admin/lessons/${id}`, l),
+  approveCourseLesson: (id: number) => request<AdminLesson>('POST', `/api/admin/lessons/${id}/approve`),
+  rejectCourseLesson: (id: number) => request<AdminLesson>('POST', `/api/admin/lessons/${id}/reject`),
+  deleteCourseLesson: (id: number) => request<void>('DELETE', `/api/admin/lessons/${id}`),
+  courseLearners: (courseId: number) => request<Enrolment[]>('GET', `/api/admin/courses/${courseId}/enrolments`),
   myEnrolments: () => request<Enrolment[]>('GET', '/api/training/enrolments/mine'),
   requestPlace: (cohortId: number) => request<CourseRequest>('POST', `/api/training/cohorts/${cohortId}/request`),
   myRequests: () => request<CourseRequest[]>('GET', '/api/training/requests/mine'),

@@ -127,6 +127,8 @@ sequenceDiagram
 
 <a id="courses"></a>
 
+> **Since go-live task 89 courses are recorded.** The team sets up a course on Courses, writes and approves its lessons on Content approval (Course lessons: a film by upload or `https` link, optional text and slides; `/api/admin/courses/{id}/lessons`), writes its test under Quizzes, and sees its learners and their progress on the course's page (`GET /api/admin/courses/{id}/enrolments`). Cohorts, trainers and the live register below run only with `LIVE_COURSES=true`. See [Recorded courses](4-practitioner.md#recorded).
+
 ## Courses, cohorts, quizzes and trainers
 
 Adding a cohort schedules its live sessions. Trainers get an invite and their own Zoom login.

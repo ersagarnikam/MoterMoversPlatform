@@ -32,6 +32,7 @@ public interface UnsavedUploadRepository extends JpaRepository<UnsavedUpload, St
                 UNION ALL SELECT 1 FROM programme_film WHERE video_key = :key
                 UNION ALL SELECT 1 FROM home_activity WHERE video_key = :key
                 UNION ALL SELECT 1 FROM induction_lesson WHERE video_key = :key
+                UNION ALL SELECT 1 FROM course_lesson WHERE video_key = :key OR slides_key = :key
                 UNION ALL SELECT 1 FROM library_resource WHERE file_key = :key
             ) uses
             """, nativeQuery = true)

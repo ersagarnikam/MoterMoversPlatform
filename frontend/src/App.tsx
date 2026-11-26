@@ -16,6 +16,7 @@ import CertificatePage from './pages/CertificatePage'
 import MyPaymentsPage from './pages/MyPaymentsPage'
 import LiveRoomPage from './pages/LiveRoomPage'
 import LiveSessionsPage from './pages/LiveSessionsPage'
+import CourseLessonsPage from './pages/CourseLessonsPage'
 import TrainerCohortsPage from './pages/TrainerCohortsPage'
 import TeamHomePage from './pages/TeamHomePage'
 import QuizPage from './pages/QuizPage'
@@ -121,6 +122,7 @@ export default function App() {
         <Route path="/live" element={<LiveSessionsPage />} />
         <Route path="/live/:sessionId" element={<LiveRoomPage />} />
         <Route path="/trainer/cohorts" element={<TrainerCohortsPage />} />
+        <Route path="/training/course/:enrolmentId" element={<CourseLessonsPage />} />
         <Route path="/training/quiz/:enrolmentId/:quizId" element={<QuizPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/school/setup" element={<SchoolSetupPage />} />

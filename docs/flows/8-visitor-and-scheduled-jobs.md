@@ -52,6 +52,8 @@ sequenceDiagram
 
 <a id="jobs"></a>
 
+> The live-session reminder and "open to join" jobs (`SessionReminderJob`) send nothing unless live courses are switched on (`LIVE_COURSES=true`, go-live task 89). The certificate reminder a month before expiry runs as before.
+
 ## Scheduled jobs
 
 Six jobs run on the API's clock (the deployment's time zone): session reminders, session opening, certificate expiry, deleting leavers, cleaning up unsaved uploads and reminding families before a home pass or extension ends (`HomePassService.remindEnding`, daily at 08:15; flow 5b, 4; a monthly subscription renews by itself and gets none).

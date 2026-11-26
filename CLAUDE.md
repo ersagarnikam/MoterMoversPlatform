@@ -65,7 +65,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
   start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V27`, added by Dev 2026-11-26);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V28`, added by Dev 2026-11-27);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -81,14 +81,14 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-26) 327 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-26) 101 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock, the home subscription card, labels
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-27) 332 unit + API integration tests (H2); they run with live courses on (task 89)
+cd frontend && npm test             # (added by Dev, 2026-11-27) 110 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock, the home subscription card, labels, recorded course rules
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
 # the 50 times in 15 minutes one address is allowed): cd backend && LOGIN_LIMIT_PER_IP=500 ./mvnw spring-boot:run
 # (added by Dev, 2026-11-21) and with STRIPE_FAKE=true, the stand-in for Stripe that the subscription test pays with (task 68).
-cd frontend && npm run e2e          # (added by Dev, 2026-11-16) 72 Playwright tests; locally add PW_CHANNEL=chrome
+cd frontend && npm run e2e          # (added by Dev, 2026-11-27) 70 Playwright tests; locally add PW_CHANNEL=chrome
 ```
 
 (added by Dev, 2026-11-06, task 79) Scheduled jobs never fire in backend tests: `NoScheduledJobsInTests`, in the test sources, gives every test
@@ -230,10 +230,11 @@ first. Read the note for a task there before changing that area. Keep this secti
 the details of new work in its pull request, the board spec, `docs/history.md` (add a dated note there) and `deploy/RUNBOOK.md`.
 
 **Where things stand.** Release 1 is built except the items under Next steps and on the board; nothing is deployed yet (task 9, servers,
-checklist in `deploy/SERVER-SETUP.md`). Latest migration **V27**. Tests: backend 327, web 101 unit tests, 72 browser tests. Last merged:
-task 88, clean-up (pull request #83, main 5f82e26); task 87, monthly launch price (#81). In progress: **task 89, recorded courses in place
-of live Zoom courses** (Developer, branch `task-89`, migration V28; Pat's email of 2026-11-26 and Sagar's decision of 2026-11-27 that the
-trainer role is not needed). The go-live dates are provisional (Go-live plan above).
+checklist in `deploy/SERVER-SETUP.md`). Latest migration **V28**. Tests: backend 332, web 110 unit tests, 70 browser tests. Last merged:
+task 88, clean-up (pull request #83, main 5f82e26); task 87, monthly launch price (#81). (added by Dev, 2026-11-27) In progress, built and with
+the Tester: **task 89, recorded courses in place of live Zoom courses** (branch `task-89`, migration V28). A course is ordered lessons a learner
+does in their own time, then a test and the certificate; live cohorts, Zoom and trainers are behind `LIVE_COURSES`, off by default. An
+enrolment's cohort may now be null: use `getCourse()`. Full note at the top of `docs/history.md`. The go-live dates are provisional (Go-live plan above).
 
 **What the platform does now** (details in `docs/history.md`, by task):
 - **Schools:** licences (plans with dated prices on Plans and prices; a school is licensed for a colour on a day when any of its licences
@@ -291,7 +292,7 @@ app stores' payment rule; accreditation (task 90, later). Domain: patpreedy.com 
 **Merging.** The Developer opens the pull request; the Project manager merges it with the Tester's pass, every check green on the latest
 commit and the owner's OK (team rules at the top; never `gh pr merge --auto`). GitHub also has `rahul-work`, a teammate's branch: leave it alone.
 
-Recent commits (newest first, 2026-11-27): [PM: Claude, 2026-11-27] CLAUDE.md split, history to `docs/history.md`, server setup checklist; (added by Dev, 2026-11-26) clean-up before the feature freeze (task 88); (added by Dev, 2026-11-26) the monthly launch price for the Programme at Home (task 87); [PM: Claude, 2026-11-26] go-live dates provisional. Older: `docs/history.md` and `git log`.
+Recent commits (newest first, 2026-11-27): (added by Dev, 2026-11-27) recorded courses in place of live Zoom courses, with live courses behind a setting; [PM: Claude, 2026-11-27] CLAUDE.md split, history to `docs/history.md`, server setup checklist; (added by Dev, 2026-11-26) clean-up before the feature freeze (task 88); (added by Dev, 2026-11-26) the monthly launch price for the Programme at Home (task 87); [PM: Claude, 2026-11-26] go-live dates provisional. Older: `docs/history.md` and `git log`.
 
 [PM: Claude, 2026-11-06] **Boards on monday.com:** all open work is on the go-live board 5032300138 (Go-live plan, Tracking). Two more
 boards: "Motor Movers" (5032278115, the flows by role) and "User Journeys" (5032278564).

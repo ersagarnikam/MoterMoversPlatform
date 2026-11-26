@@ -18,4 +18,7 @@ public interface CourseRequestRepository extends JpaRepository<CourseRequest, Lo
     long countByCohortIdAndStatus(Long cohortId, CourseRequest.Status status);
 
     long countByStatus(CourseRequest.Status status);
+
+    Optional<CourseRequest> findByCourseIdAndUserIdAndStatusAndCohortIsNull(Long courseId, Long userId,
+            CourseRequest.Status status);
 }

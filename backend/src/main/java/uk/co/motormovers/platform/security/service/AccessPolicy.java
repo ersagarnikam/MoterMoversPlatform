@@ -57,6 +57,27 @@ public class AccessPolicy {
 
     /** Head-level view of a school (dashboards, exports). */
     /** The programme team only. */
+    /**
+     * A place on a recorded course, with its lessons and their films: the learner whose place it is, or the team.
+     * Nobody else, whatever their role: not a head, a trainer or another learner on the same course (task 89).
+     */
+    public CurrentUser requireCoursePlace(Long learnerId) {
+        CurrentUser me = currentUser.current();
+        if (!me.is(Role.ADMIN) && !me.id().equals(learnerId)) {
+            throw new AccessDeniedException("This is someone else's place on the course");
+        }
+        return me;
+    }
+
+    /** Doing a course's lessons: only the learner whose place it is. */
+    public CurrentUser requireOwnCoursePlace(Long learnerId) {
+        CurrentUser me = currentUser.current();
+        if (!me.id().equals(learnerId)) {
+            throw new AccessDeniedException("Only the learner does the lessons of their course");
+        }
+        return me;
+    }
+
     public CurrentUser requireAdmin() {
         CurrentUser me = currentUser.current();
         if (!me.is(Role.ADMIN)) {

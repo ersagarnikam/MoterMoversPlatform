@@ -18,6 +18,7 @@ import uk.co.motormovers.platform.security.model.CurrentUser;
 import uk.co.motormovers.platform.security.service.CurrentUserResolver;
 import uk.co.motormovers.platform.training.dto.CourseInputs.CohortInput;
 import uk.co.motormovers.platform.training.dto.CourseInputs.CourseInput;
+import uk.co.motormovers.platform.content.model.ContentStatus;
 import uk.co.motormovers.platform.training.dto.TrainingViews;
 import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.CohortSession;
@@ -25,6 +26,7 @@ import uk.co.motormovers.platform.training.model.Course;
 import uk.co.motormovers.platform.training.model.CourseTrack;
 import uk.co.motormovers.platform.training.repository.CohortRepository;
 import uk.co.motormovers.platform.training.repository.CohortSessionRepository;
+import uk.co.motormovers.platform.training.repository.CourseLessonRepository;
 import uk.co.motormovers.platform.training.repository.CourseRepository;
 import uk.co.motormovers.platform.training.repository.EnrolmentRepository;
 import uk.co.motormovers.platform.user.model.AppUser;
@@ -48,10 +50,12 @@ public class CourseAdminService {
     private final CohortSessionRepository sessions;
     private final CurrentUserResolver currentUser;
     private final Clock clock;
+    private final CourseLessonRepository lessons;
 
     public CourseAdminService(CourseRepository courses, CohortRepository cohorts, EnrolmentRepository enrolments,
             WordingGuard wordingGuard, LiveSessionService live, AppUserRepository users,
-            CohortSessionRepository sessions, CurrentUserResolver currentUser, Clock clock) {
+            CohortSessionRepository sessions, CurrentUserResolver currentUser, Clock clock,
+            CourseLessonRepository lessons) {
         this.courses = courses;
         this.cohorts = cohorts;
         this.enrolments = enrolments;
@@ -61,6 +65,7 @@ public class CourseAdminService {
         this.sessions = sessions;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.lessons = lessons;
     }
 
     @Transactional(readOnly = true)
@@ -168,7 +173,10 @@ public class CourseAdminService {
                                 (int) enrolments.countByCohortId(h.getId()), h.getTrainerName(),
                                 h.getTrainer() == null ? null : h.getTrainer().getId(), h.isRecordingAgreed(),
                                 live.summaries(h.getId()), clashes(h, upcoming)))
-                        .toList());
+                        .toList(),
+                (int) lessons.countByCourseIdAndStatus(c.getId(), ContentStatus.APPROVED),
+                (int) lessons.countByCourseIdAndStatus(c.getId(), ContentStatus.DRAFT),
+                (int) enrolments.countByCourseIdAndCohortIsNull(c.getId()));
     }
 
     /**

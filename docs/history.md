@@ -4,7 +4,51 @@
 because `CLAUDE.md` had grown past 160,000 characters and every session reads it whole. Newest first, as written at the time: a later
 note can supersede an earlier one. Add a dated note at the top for new work, and keep `CLAUDE.md` short.
 
-## Notes by date (to 2026-11-26)
+## Notes by date (to 2026-11-27)
+
+(added by Dev, 2026-11-27) **Recorded courses in place of live Zoom courses (go-live task 89; migration V28).** Pat (email of 2026-11-26): all
+training is recorded, since live sessions cannot cope with the volume and three time zones. Sagar (2026-11-27): the trainer role is not needed.
+- **A course is ordered lessons.** `course_lesson` (title, text such as the script, a film and slides each by upload or `https` link, DRAFT or
+  APPROVED with the wording check; `training/model/CourseLesson`). The team writes and approves them on **Content approval, Course lessons**
+  (the one page that may send a file to the store; the course's own page lists them and links there) through `CourseLessonService`:
+  `/api/admin/courses/{id}/lessons`, `/api/admin/lessons/{id}` with `/approve`, `/reject` and DELETE. A changed lesson goes back to a draft;
+  one learners have done cannot be deleted. `UnsavedUploadRepository.uses` counts both key columns.
+- **A place is on the course itself.** `enrolment.course_id` is always set and `cohort_id` is optional (`Enrolment.isRecorded()`); the same for
+  `course_request`. **Code that reads `getCohort()` on an enrolment or a request must allow null: use `getCourse()`.** A learner books with
+  `POST /api/training/courses/{id}/enrol` and starts at once; staff whose school pays ask with `/request` and their head approves on the
+  school's Payments page, which books the place and invoices the school, as before. A course with no approved lesson cannot be booked.
+- **Taking it.** `GET /api/training/enrolments/{id}/lessons` gives the approved lessons in order, each done or open, with signed film and
+  slides links for an open lesson only; `POST .../lessons/{lessonId}/complete` marks one done and is refused out of order
+  (`course_lesson_progress`). The website (`/training/course/:enrolmentId`, `CourseLessonsPage`, rules in `courseLessons.ts`) offers Mark as
+  done once the lesson's film has played to its end, or at any time for a lesson with no film. The server cannot see playback: it keeps the
+  order, the browser keeps the film rule.
+- **The test and the certificate.** A recorded place's quizzes open when every approved lesson is done (`QuizService.isOpen`).
+  `CertificateService.issueIfComplete` is still the one place: every lesson done and every quiz passed (`lessonsDone`, `lessonProgress`).
+  The PDF says "has completed every lesson and passed the test"; the email, expiry and the reminder are unchanged. Cancelling: until the first
+  lesson is done (the team any time before a certificate).
+- **Access:** `AccessPolicy.requireCoursePlace` (the learner whose place it is, or the team) for the lessons and links, and
+  `requireOwnCoursePlace` for marking a lesson done. Drafts and the lesson endpoints are the team's (`requireAdmin`).
+- **Live courses are switched off, not deleted.** `platform.live-courses` (`LIVE_COURSES`, default false; `training/config/LiveCourses`). Off:
+  an interceptor answers 404 on every live and trainer endpoint (`/api/training/live/**`, `/api/admin/live/**`, cohorts, trainers,
+  `/api/trainer/**`, the assessment), `SessionReminderJob` sends nothing, cohort places and requests are not listed, and the web and the app
+  hide Live sessions, Trainers, My cohorts, cohorts and the Zoom rules (`liveCourses` in `GET /api/settings`). A trainer account signs in to
+  "Courses are recorded" with nothing to do. Zoom keys are not needed. **The backend tests run with it on**
+  (`backend/src/test/resources/application.properties`), so the live tests are unchanged; `RecordedCourseTest` (own database) runs with it off.
+  CI's loadtest job sets `LIVE_COURSES=true`; the browser tests run with it off.
+- **Starter and demo content.** With live courses off: "Practitioner course" with three placeholder lessons (20 minutes each, marked as
+  placeholders) and one final test of ten placeholder questions at 80% (8 of 10; the first answer is the right one), and "Parent course" with
+  two placeholder lessons; launch prices unchanged. Demo places (`seed/DemoCourses`): Sam Rivers and Jo Bennett have each done their first
+  lesson, and Mr Patel holds the certificate. With live courses on, the starter and demo are as they were (cohorts, three quizzes).
+- **Parent app:** the Course tab lists a place's lessons and opens each open lesson's film (Watch the film) and slides; booking is there too.
+  Marking a lesson done and the test are on the website, because the app has no player to tell when a film has ended.
+- **Kept the title "Practitioner course"** (the spec offered "Teacher course"; the team can rename it on screen).
+- **Known limits:** Pat's recordings, scripts, slides and questions are placeholders until the team enters them. Marking a lesson done trusts
+  the browser about the film. A course cannot be both sold live and recorded sensibly: with live courses on, a course shows both. No renewal
+  of a certificate online (as before). Not tried on PostgreSQL itself or with a real bucket. **The guides need rebuilding** (task 41):
+  Training, Courses, Content approval, the team's home page and the parent app's Course tab changed, and the trainer's guide no longer applies.
+- **Tests:** `RecordedCourseTest` (5: a practitioner to the certificate, a parent booking and cancelling, a head's approval, access, live off),
+  `courseLessons.test.ts`, and browser tests: the team sets up a course with a film, a learner plays it to the end and does the lessons; a
+  teacher's request and the head's approval; a practitioner passes the final test and downloads the certificate; a trainer signs in to nothing.
 
 (added by Dev, 2026-11-26) **Clean-up before the feature freeze (go-live task 88; migration V27).** Eight small fixes from the Tester's low
 notes on tasks 57, 68, 80, 82 and 85, and the licence status left open since task 14:

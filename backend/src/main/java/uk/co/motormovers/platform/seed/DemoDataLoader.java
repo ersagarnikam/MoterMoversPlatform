@@ -60,6 +60,7 @@ import uk.co.motormovers.platform.school.repository.SchoolClassRepository;
 import uk.co.motormovers.platform.school.repository.SchoolRepository;
 import uk.co.motormovers.platform.school.repository.TrustRepository;
 import uk.co.motormovers.platform.school.service.PlanService;
+import uk.co.motormovers.platform.training.config.LiveCourses;
 import uk.co.motormovers.platform.training.model.Cohort;
 import uk.co.motormovers.platform.training.model.Enrolment;
 import uk.co.motormovers.platform.training.model.Course;
@@ -116,6 +117,8 @@ public class DemoDataLoader implements ApplicationRunner {
     private final Random random = new Random(42);
     /** Extra parents booked on the live cohort, for deploy/loadtest/live-session.js. Normally 0. */
     private final int loadTestLearners;
+    private final DemoCourses demoCourses;
+    private final LiveCourses liveCourses;
 
     public DemoDataLoader(TrustRepository trusts, SchoolRepository schools, LicenceRepository licences,
             SchoolClassRepository classes, AppUserRepository users, ChildRepository children,
@@ -129,8 +132,11 @@ public class DemoDataLoader implements ApplicationRunner {
             InductionProgressRepository inductionProgress, PaymentRepository payments, PlanService plans,
             StarterContent starterContent, DemoAssessments demoAssessments, DemoHome demoHome,
             PasswordEncoder passwordEncoder, PlatformProperties properties, Clock clock,
+            DemoCourses demoCourses, LiveCourses liveCourses,
             @Value("${platform.load-test-learners:0}") int loadTestLearners) {
         this.loadTestLearners = loadTestLearners;
+        this.demoCourses = demoCourses;
+        this.liveCourses = liveCourses;
         this.payments = payments;
         this.plans = plans;
         this.starterContent = starterContent;
@@ -232,7 +238,13 @@ public class DemoDataLoader implements ApplicationRunner {
         // A family whose Programme at Home pass has ended, so Renew shows.
         demoHome.seedEnded(users.save(new AppUser("lapsed@example.test", "Tom Reid", hash, Role.PARENT, null, null)),
                 today);
-        seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
+        if (liveCourses.on()) {
+            // Live courses (off unless a deployment switches them on): cohorts, their sessions and a trainer.
+            seedCohorts(starter.professional(), starter.parent(), new Trainers(pat, laura, amy), jo, hash, today);
+        } else {
+            // Recorded courses: Sam and Jo part-way through, and Mr Patel with the certificate.
+            demoCourses.seed(starter.professional(), starter.parent(), sam, patel, jo);
+        }
         seedParentApp(oakfield, y2r, jo, today, starter.homeActivities());
         seedPayments(oakfield, marlow, brookhouse, sam, jo, today, starter.professional(), starter.parent());
         log.info("Demo data loaded. Sign in with e.g. teacher@oakfield.test / {}", DEMO_PASSWORD);

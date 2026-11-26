@@ -104,6 +104,8 @@ jobs:
         working-directory: backend
         env:
           LOAD_TEST_LEARNERS: '100'
+          # The load test joins a live session; live courses are off unless switched on (go-live task 89).
+          LIVE_COURSES: 'true'
           LOGIN_LIMIT_PER_IP: '500'
         run: |
           ./mvnw -B -q package -DskipTests

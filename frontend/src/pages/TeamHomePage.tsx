@@ -6,6 +6,7 @@ import Skeleton from '../components/Skeleton'
 import { day } from '../dates'
 import { sessionTime, startsIn } from '../live'
 import { money } from '../money'
+import { useCountry } from '../country'
 
 /**
  * The programme team's home: what needs attention today, each with a link to where it is done. Things that need
@@ -13,6 +14,8 @@ import { money } from '../money'
  */
 export default function TeamHomePage() {
   const { user } = useAuth()
+  // Live sessions and Zoom clashes belong to live courses, which a deployment may have switched off (task 89).
+  const live = useCountry()?.liveCourses ?? false
   const [data, setData] = useState<TeamOverview | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -26,8 +29,9 @@ export default function TeamHomePage() {
   if (error) return <p className="error">{error}</p>
   if (!data) return <Skeleton lines={4} />
 
-  const cards: { busy: boolean; node: ReactNode }[] = [
+  const cards: { busy: boolean; node: ReactNode; liveOnly?: boolean }[] = [
     {
+      liveOnly: true,
       busy: data.sessionsToday.length > 0,
       node: (
         <HomeCard key="live" title="Live sessions today" link="/live" linkLabel="All live sessions" count={data.sessionsToday.length}>
@@ -109,6 +113,7 @@ export default function TeamHomePage() {
       ),
     },
     {
+      liveOnly: true,
       busy: data.clashingCohorts > 0,
       node: (
         <HomeCard key="clashes" title="Zoom clashes" link="/admin/courses" linkLabel="Courses" count={data.clashingCohorts}>
@@ -155,6 +160,7 @@ export default function TeamHomePage() {
       ),
     },
   ]
+  const shown = cards.filter((c) => live || !c.liveOnly)
 
   return (
     <>
@@ -163,8 +169,8 @@ export default function TeamHomePage() {
         <span className="muted">What needs attention today</span>
       </div>
       <div className="home-grid">
-        {cards.filter((c) => c.busy).map((c) => c.node)}
-        {cards.filter((c) => !c.busy).map((c) => c.node)}
+        {shown.filter((c) => c.busy).map((c) => c.node)}
+        {shown.filter((c) => !c.busy).map((c) => c.node)}
       </div>
     </>
   )

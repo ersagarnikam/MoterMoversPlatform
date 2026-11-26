@@ -4,6 +4,10 @@ Only the cohorts the team assigns: run sessions on Zoom and keep the register.
 
 [All roles](README.md) · Traced from the code at commit 93da753 (4 Nov 2026). Errors are problem details: 400 a rule broken, 403 no access, 429 a rate limit. When an endpoint or rule shown here changes, update the diagram in the same pull request.
 
+> **Live courses are switched off by default (go-live task 89).** Courses are recorded: see [Recorded courses](4-practitioner.md#recorded). What this section shows runs only in a deployment started with `LIVE_COURSES=true`; with it off, every endpoint here answers 404 and the screens are hidden.
+
+With live courses off, a trainer account signs in to a page that says courses are recorded and there is nothing for it to do; no new trainer can be added.
+
 ## Flows
 
 1. [Start a live session as host](#host)

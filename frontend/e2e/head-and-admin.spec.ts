@@ -136,8 +136,11 @@ test('the team approves a whole module; a draft failing the wording check stays 
 test('the team lands on a home page of what needs attention', async ({ page }) => {
   await signIn(page, 'admin@motormovers.test')
   await expect(page.getByRole('heading', { name: 'Hello, Laura' })).toBeVisible()
-  const today = page.locator('section', { has: page.getByRole('heading', { name: 'Live sessions today' }) })
-  await expect(today).toContainText('Cohort A · starting now')
+  // Courses are recorded (task 89): nothing about live sessions or Zoom shows, on the page or in the menu.
+  await expect(page.getByRole('heading', { name: 'Live sessions today' })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Zoom clashes' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Live sessions', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Trainers', exact: true })).toHaveCount(0)
   const drafts = page.locator('section', { has: page.getByRole('heading', { name: 'Waiting for sign-off' }) })
   await expect(drafts).toContainText(/waiting to be checked and approved/)
   await drafts.getByRole('link', { name: /Content approval/ }).click()
@@ -310,128 +313,117 @@ test('the team attaches a film to a rhyme and the class player plays it, and to 
   await expect(page.getByText('Films for Green exercises (0 of 27 have one)')).toBeVisible()
 })
 
-test('the team sets up a course and opens a cohort for booking', async ({ page }) => {
+test('the team sets up a recorded course, and a learner does its lessons in order', async ({ page }) => {
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Courses', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Courses', exact: true })).toBeVisible()
 
   const title = `Browser course ${Date.now()}`
   const setUp = page.locator('section', { has: page.getByRole('heading', { name: 'Set up a course' }) })
+  // Nothing about live sessions on the form.
+  await expect(setUp.getByLabel('Live sessions')).toHaveCount(0)
   await setUp.getByLabel('Course title').fill(title)
-  await setUp.getByLabel('Description').fill('A short course for early-years staff.')
-  await setUp.getByLabel('Price (£)').fill('45')
+  await setUp.getByLabel('Description').fill('A short recorded course for early-years staff.')
+  await setUp.getByLabel('Price (£)').fill('0')
   await setUp.getByRole('button', { name: 'Set up course' }).click()
   await expect(page.getByText(`${title} set up`)).toBeVisible()
 
   const course = page.locator('.course-admin', { hasText: title })
-  await expect(course.getByText('No cohorts yet.')).toBeVisible()
-  await course.getByText('Open a cohort').click()
-  const startsOn = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
-  await course.getByLabel('Cohort name').fill('Browser cohort')
-  await course.getByLabel('Starts').fill(startsOn)
-  await course.getByLabel('Day and time').fill('Wednesdays 7:00 pm UK')
-  await course.getByLabel('Trainer').selectOption({ label: 'Amy Clarke' })
+  await expect(course.getByText('No lessons yet.')).toBeVisible()
+  await expect(course.getByText('Nobody has a place yet.')).toBeVisible()
+  await expect(course.getByRole('heading', { name: 'Cohorts' })).toHaveCount(0)
   await expectAccessible(page)
-  await course.getByRole('button', { name: 'Open cohort' }).click()
-  await expect(course.getByText('0 of 30 places booked')).toBeVisible()
 
-  await course.getByRole('button', { name: 'Edit cohort' }).click()
-  const edit = course.locator('form', { has: page.getByRole('button', { name: 'Save cohort' }) })
-  await edit.getByLabel('Places').fill('12')
-  await edit.getByRole('button', { name: 'Save cohort' }).click()
-  await expect(course.getByText('0 of 12 places booked')).toBeVisible()
-
-  // A quiz between sessions, written on the course.
-  await course.getByText('Quizzes (0)').click()
-  await course.getByRole('button', { name: 'Add a quiz' }).click()
-  await course.getByLabel('Quiz title').fill('First week check')
-  await course.getByLabel('Question 1', { exact: true }).fill('How long is the daily session?')
-  await course.getByLabel('Answers for question 1, one per line').fill('5 minutes\n10 minutes')
-  await course.getByLabel('Right answer to question 1').selectOption({ label: '10 minutes' })
+  // Lessons are written on Content approval, the page that can send a file to the store.
+  const film = await shortFilm(page)
+  await course.getByRole('link', { name: 'Write and approve lessons' }).click()
+  await expect(page.getByRole('heading', { name: 'Content approval' })).toBeVisible()
+  await expect(page.getByRole('combobox')).toContainText(title)
+  await page.getByRole('button', { name: 'Add a lesson' }).click()
+  const form = page.getByRole('form', { name: 'Lesson' })
+  await form.getByLabel('Title').fill('Watch and move')
+  await form.getByLabel(/^Text/).fill('Watch the film, then try it yourself.')
+  await form.locator('input[type=file]').first().setInputFiles({ name: 'lesson.webm', mimeType: 'video/webm', buffer: film })
+  await expect(page.getByText('“lesson.webm” is uploaded')).toBeVisible()
   await expectAccessible(page)
-  await course.getByRole('button', { name: 'Save quiz' }).click()
-  await expect(page.locator('.toasts').getByText('First week check saved')).toBeVisible()
-  await expect(course.getByText('Quizzes (1)')).toBeVisible()
-
-  await page.getByRole('link', { name: '← All courses' }).click()
-  await expect(page.locator('.course-summary', { hasText: title })).toContainText('1 cohort coming up · 0 of 12 places booked')
-  await page.getByRole('link', { name: 'See the catalogue as learners do' }).click()
-  const listed = page.locator('section', { has: page.getByRole('heading', { name: title }) })
-  await expect(listed.getByText('12 places left')).toBeVisible()
-})
-
-test('Pat starts a live session, keeps the register, and a parent joins it', async ({ page }) => {
-  // The demo has a parent cohort whose first session starts ten minutes after the API starts, with Jo booked.
-  await signIn(page, 'pat@motormovers.test')
-  await page.getByRole('link', { name: 'Live sessions', exact: true }).click()
-  const now = page.locator('.live-list li', { hasText: 'Cohort A · starting now' }).filter({ hasText: 'Session 1 of 3' })
-  await expectAccessible(page)
-  await now.getByRole('link', { name: 'Start session' }).click()
-
-  await expect(page.getByRole('heading', { name: 'Live session 1 of 3' })).toBeVisible()
-  // Without the Zoom keys (as here), the room runs without video and says so.
-  await expect(page.getByText('Zoom is not connected yet')).toBeVisible()
-  await expect(page.getByText(/Adults only on camera/)).toBeVisible()
-  const jo = page.getByLabel('Jo Bennett')
-  await jo.click()
-  await expect(jo).toBeChecked()
-  // Nobody has opened the session yet.
-  await expect(page.getByText('Joined: 0 of 1')).toBeVisible()
-  await expect(page.locator('.register')).toContainText('not joined yet')
-  await expectAccessible(page)
-  await page.getByRole('button', { name: 'Leave session' }).click()
-  await expect(page.getByRole('heading', { name: 'Live sessions' })).toBeVisible()
+  await form.getByRole('button', { name: 'Save as a draft' }).click()
+  const first = page.locator('section', { has: page.getByRole('heading', { name: 'Lesson 1: Watch and move' }) })
+  await expect(first.getByText('Draft', { exact: true })).toBeVisible()
+  await first.getByRole('button', { name: 'Approve' }).click()
+  await expect(first.getByText('Approved', { exact: true })).toBeVisible()
+  // A second lesson with no film, which blocks on the wording check until it is changed.
+  await page.getByRole('button', { name: 'Add a lesson' }).click()
+  await form.getByLabel('Title').fill('Spotting ADHD')
+  await form.getByRole('button', { name: 'Save as a draft' }).click()
+  const second = page.locator('section', { has: page.getByRole('heading', { name: /^Lesson 2:/ }) })
+  await expect(second.getByText('Wording to change before it can be approved')).toBeVisible()
+  await second.getByRole('button', { name: 'Edit' }).click()
+  await form.getByLabel('Title').fill('Try it together')
+  await form.getByRole('button', { name: 'Save the lesson' }).click()
+  await second.getByRole('button', { name: 'Approve' }).click()
+  await expect(second.getByText('Approved', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Sign out' }).click()
 
-  await signIn(page, 'parent@example.test')
-  const mine = page.locator('section', { has: page.getByRole('heading', { name: 'Your live sessions' }) })
-  await mine.getByRole('link', { name: 'Join live session' }).click()
-  await expect(page.getByRole('heading', { name: 'Live session 1 of 3' })).toBeVisible()
-  await expect(page.getByText(/Adults only on camera/)).toBeVisible()
-  // Only the team keeps the register.
-  await expect(page.getByRole('heading', { name: 'Register' })).toHaveCount(0)
+  // A practitioner books it and starts at once.
+  await signIn(page, 'practitioner@example.test')
+  const card = page.locator('section', { has: page.getByRole('heading', { name: title }) })
+  await expect(card).toContainText('2 recorded lessons')
+  await card.getByRole('button', { name: 'Book a place' }).click()
+  await expect(card.getByText('Booked', { exact: true })).toBeVisible()
+  const place = page.locator('.enrolment', { hasText: title })
+  await expect(place).toContainText('0 of 2 lessons done')
+  await place.getByRole('link', { name: 'Start the course' }).click()
+  await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible()
+
+  // The first lesson can be marked done only once its film has played to the end; the second waits for the first.
+  const done1 = page.getByRole('button', { name: 'Mark lesson 1 as done' })
+  await expect(done1).toBeDisabled()
+  await expect(page.getByText('Watch the film to the end, then mark the lesson as done.')).toBeVisible()
+  await expect(page.getByText('Opens after lesson 1')).toBeVisible()
+  await expectAccessible(page)
+  const video = page.locator('.lesson video')
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThan(0)
+  await video.evaluate((el: HTMLVideoElement) => {
+    el.muted = true
+    return el.play()
+  })
+  await expect(done1).toBeEnabled({ timeout: 15_000 })
+  await done1.click()
+  await expect(page.getByText('Lesson 1 is done')).toBeVisible()
+  // The second has no film, so it can be marked at once.
+  await page.getByRole('button', { name: 'Mark lesson 2 as done' }).click()
+  await expect(page.getByText('Every lesson is done')).toBeVisible()
+  await expect(page.getByText('2 of 2 lessons done')).toBeVisible()
   await page.getByRole('button', { name: 'Sign out' }).click()
 
-  // Pat sees who has joined, and when.
-  await signIn(page, 'pat@motormovers.test')
-  await page.getByRole('link', { name: 'Live sessions', exact: true }).click()
-  await page
-    .locator('.live-list li', { hasText: 'Cohort A · starting now' })
-    .filter({ hasText: 'Session 1 of 3' })
-    .getByRole('link', { name: 'Start session' })
-    .click()
-  await expect(page.getByText('Joined: 1 of 1')).toBeVisible()
-  await expect(page.locator('.register')).toContainText(/joined \d{2}:\d{2}/)
+  // The team sees the learner and how far they have got.
+  await signIn(page, 'admin@motormovers.test')
+  await page.getByRole('link', { name: 'Courses', exact: true }).click()
+  await page.getByRole('link', { name: new RegExp(title) }).click()
+  await expect(page.getByRole('cell', { name: /Sam Rivers/ })).toBeVisible()
+  await expect(page.getByRole('cell', { name: '2 of 2 lessons done' })).toBeVisible()
 })
 
-test('a trainer runs only the sessions of the cohorts given to them', async ({ page }) => {
+test('a trainer account has nothing to sign in to while courses are recorded', async ({ page }) => {
   await signIn(page, 'trainer@motormovers.test')
-  await expect(page.getByRole('heading', { name: 'Live sessions' })).toBeVisible()
-  // The only page a trainer has.
-  await expect(page.getByRole('link', { name: 'Courses', exact: true })).toHaveCount(0)
-  const sessions = page.locator('.live-list li')
-  await expect(sessions.first()).toContainText('Cohort B · UK morning / AU evening')
-  await expect(page.locator('.live-list li', { hasText: 'Cohort A · starting now' })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Courses are recorded' })).toBeVisible()
+  await expect(page.getByText('There is nothing for a trainer account to do here.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Live sessions', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'My cohorts', exact: true })).toHaveCount(0)
   await expectAccessible(page)
-  await sessions.first().getByRole('link', { name: 'Start session' }).click()
-  await expect(page.getByRole('heading', { name: 'Register' })).toBeVisible()
-
-  // Her cohorts, with their bookings and assessments.
   await page.goto('/trainer/cohorts')
-  await expect(page.getByRole('heading', { name: 'My cohorts' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Practitioner course · Cohort B · UK morning / AU evening' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /Cohort A · starting now/ })).toHaveCount(0)
-  await expectAccessible(page)
+  await expect(page.getByRole('heading', { name: 'Courses are recorded' })).toBeVisible()
 })
 
 test('a teacher asks for a course place, the head approves it, and the teacher can cancel it', async ({ page }) => {
-  const cohortName = 'Cohort A · UK evening'
   await signIn(page, 'newteacher@oakfield.test')
   await page.getByRole('link', { name: 'Training', exact: true }).click()
   await expect(page.getByText('your head approves each one')).toBeVisible()
-  await page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Ask for a place' }).click()
+  const card = page.locator('section', { has: page.getByRole('heading', { name: 'Practitioner course' }) })
+  await expect(card).toContainText('3 recorded lessons, about 60 minutes in all, to take in your own time, then a test')
+  await card.getByRole('button', { name: 'Ask for a place' }).click()
   await expect(page.getByText('Request sent')).toBeVisible()
-  await expect(page.locator('.cohort', { hasText: cohortName }).getByText('Waiting for approval')).toBeVisible()
+  await expect(card.getByText('Waiting for approval')).toBeVisible()
   await expectAccessible(page)
   await page.getByRole('button', { name: 'Sign out' }).click()
 
@@ -442,12 +434,13 @@ test('a teacher asks for a course place, the head approves it, and the teacher c
   await expectAccessible(page)
   await request.getByRole('button', { name: 'Approve' }).click()
   await expect(page.getByText("Mr Lewis's place on Practitioner course is booked")).toBeVisible()
-  await expect(page.getByRole('cell', { name: /Mr Lewis \(Cohort A · UK evening\)/ })).toBeVisible()
+  await expect(page.getByRole('cell', { name: 'Practitioner course · Mr Lewis' })).toBeVisible()
   await page.getByRole('button', { name: 'Sign out' }).click()
 
   await signIn(page, 'newteacher@oakfield.test')
   await page.getByRole('link', { name: 'Training', exact: true }).click()
-  const place = page.locator('.enrolment', { hasText: cohortName })
+  const place = page.locator('.enrolment', { hasText: 'Practitioner course' })
+  await expect(place).toContainText('0 of 3 lessons done, then the test')
   await place.getByRole('button', { name: 'Cancel place' }).click()
   // Changing your mind keeps the place.
   await page.getByRole('dialog').getByRole('button', { name: 'Keep my place' }).click()
@@ -455,114 +448,63 @@ test('a teacher asks for a course place, the head approves it, and the teacher c
   await place.getByRole('button', { name: 'Cancel place' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Cancel place' }).click()
   await expect(page.getByText(/is cancelled\. The school's invoice for it is cancelled/)).toBeVisible()
-  await expect(page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Ask for a place' })).toBeVisible()
+  await expect(card.getByRole('button', { name: 'Ask for a place' })).toBeVisible()
 })
 
-test('the team adds a trainer with their own Zoom login', async ({ page }) => {
-  await signIn(page, 'admin@motormovers.test')
-  await page.getByRole('link', { name: 'Trainers', exact: true }).click()
-  const team = page.locator('section', { has: page.getByRole('heading', { name: 'The training team' }) })
-  await expect(team.getByRole('cell', { name: 'Amy Clarke' })).toBeVisible()
-  const name = `Trainer ${Date.now()}`
-  await team.getByText('Add a trainer').click()
-  await team.getByLabel('Name').fill(name)
-  await team.getByLabel('Email', { exact: true }).fill(`${Date.now()}@trainers.test`)
-  await team.getByLabel('Zoom login (optional)').fill('zoom.host@trainers.test')
-  await expectAccessible(page)
-  await team.getByRole('button', { name: 'Add trainer' }).click()
-  await expect(page.locator('.toasts').getByText(`${name} added`)).toBeVisible()
-  await expect(team.getByLabel(`Zoom login for ${name}`)).toHaveValue('zoom.host@trainers.test')
-
-  // Switched off, they can no longer sign in.
-  await team.getByRole('row', { name: new RegExp(name) }).getByRole('button', { name: 'Switch off' }).click()
-  await expect(page.locator(".toasts").getByText(`${name} is switched off`)).toBeVisible()
-  await expect(team.getByRole('row', { name: new RegExp(name) })).toContainText('(switched off)')
-})
-
-test('the team marks attendance and the assessment, and the learner gets a certificate', async ({ page }) => {
-  const cohortName = 'Cohort B · UK morning / AU evening'
+test('a practitioner finishes the lessons, passes the final test and gets the certificate', async ({ page }) => {
+  // Sam, in the demo, has done the first of the Practitioner course's three lessons.
   await signIn(page, 'practitioner@example.test')
-  await page.locator('.cohort', { hasText: cohortName }).getByRole('button', { name: 'Book a place' }).click()
-  await expect(page.locator('.cohort', { hasText: cohortName }).getByText('Booked')).toBeVisible()
-  await page.getByRole('button', { name: 'Sign out' }).click()
-
-  await signIn(page, 'admin@motormovers.test')
-  await page.getByRole('link', { name: 'Courses', exact: true }).click()
-  await page.getByRole('link', { name: /Practitioner course/ }).click()
-  const cohort = page.locator('.cohort-block', { hasText: cohortName })
-  await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
-  const session = (n: number) => cohort.getByLabel(`Sam Rivers attended session ${n}`)
-  // The box shows the saved register, so it ticks once the server has saved it.
-  await session(1).click()
-  await expect(session(1)).toBeChecked()
-  await session(2).click()
-  await expect(cohort.getByText('2 of 4')).toBeVisible()
-  // A learner ticked by mistake can be unticked.
-  await session(2).click()
-  await expect(cohort.getByText('1 of 4')).toBeVisible()
-  for (const n of [2, 3, 4]) {
-    await session(n).click()
-    await expect(session(n)).toBeChecked()
-  }
-  await expect(cohort.getByText('4 of 4')).toBeVisible()
-  await expect(cohort.getByText('3 quizzes and the assessment to go')).toBeVisible()
+  const place = page.locator('.enrolment', { hasText: 'Practitioner course' })
+  await expect(place).toContainText('1 of 3 lessons done, then the test')
+  // Started, so the place is no longer Sam's to cancel.
+  await expect(place.getByRole('button', { name: 'Cancel place' })).toHaveCount(0)
+  await expect(page.locator('.quiz-list li', { hasText: 'Final test' })).toContainText('Opens once every lesson is done')
+  await place.getByRole('link', { name: 'Continue the course' }).click()
+  await expect(page.getByRole('heading', { name: 'Practitioner course', level: 1 })).toBeVisible()
+  await expect(page.getByText('Not open yet')).toBeVisible()
   await expectAccessible(page)
-  const passed = cohort.getByLabel('Sam Rivers passed the assessment')
-  await passed.click()
-  await expect(passed).toBeChecked()
-  // The quizzes between sessions are still to do.
-  await expect(cohort.getByText('3 quizzes to go')).toBeVisible()
-  await page.getByRole('button', { name: 'Sign out' }).click()
+  // The placeholder lessons have no film, so each can be marked done in turn.
+  await page.getByRole('button', { name: 'Mark lesson 2 as done' }).click()
+  await expect(page.getByText('Lesson 2 is done')).toBeVisible()
+  await page.getByRole('button', { name: 'Mark lesson 3 as done' }).click()
+  await expect(page.getByText('Every lesson is done')).toBeVisible()
 
-  // Sam takes the quizzes, which opened as each session was ticked.
-  await signIn(page, 'practitioner@example.test')
-  const answers: [string, string[]][] = [
-    ['The daily session', ['10 minutes', 'The whole class together', 'Little and often is what makes the difference']],
-    [
-      'Colour stages and assessment',
-      ['Seven', 'Red', /How the child is getting on/.source, /Each exercise, from 1/.source],
-    ],
-    ['Keeping children and families safe', ['By initials', 'Adults only', 'Signpost them to their GP']],
-  ]
-  for (const [i, [title, right]] of answers.entries()) {
-    await page.locator('.quiz-list li', { hasText: title }).getByRole('link', { name: 'Take quiz' }).click()
-    await expect(page.getByRole('heading', { name: title })).toBeVisible()
-    if (i === 0) {
-      // A first try with a wrong answer: the score, and which question to look at again.
-      await page.getByLabel('5 minutes').check()
-      await page.getByLabel('The whole class together').check()
-      await page.getByLabel('Little and often is what makes the difference').check()
-      await expectAccessible(page)
-      await page.getByRole('button', { name: 'Send answers' }).click()
-      await expect(page.getByText('Not passed yet: 67%')).toBeVisible()
-      await expect(page.getByText('Look again at question 1.')).toBeVisible()
-      await page.getByRole('button', { name: 'Try again' }).click()
-    }
-    for (const answer of right) await page.getByLabel(new RegExp(answer)).check()
-    await page.getByRole('button', { name: 'Send answers' }).click()
-    await expect(page.getByText('Passed: 100%')).toBeVisible()
-    if (i < answers.length - 1) await page.getByRole('link', { name: 'Back to training' }).first().click()
-  }
-  // The last quiz completed the course.
+  // Ten questions, eight right to pass. First seven right: not enough.
+  await page.getByRole('link', { name: 'Take the test' }).click()
+  await expect(page.getByRole('heading', { name: 'Final test (placeholder questions)' })).toBeVisible()
+  const right = page.getByLabel('Placeholder answer A (the right one)')
+  const wrong = page.getByLabel('Placeholder answer B')
+  await expect(right).toHaveCount(10)
+  for (let i = 0; i < 10; i++) await (i < 7 ? right : wrong).nth(i).check()
+  await expectAccessible(page)
+  await page.getByRole('button', { name: 'Send answers' }).click()
+  await expect(page.getByText('Not passed yet: 70%')).toBeVisible()
+  await page.getByRole('button', { name: 'Try again' }).click()
+  for (let i = 0; i < 10; i++) await (i < 8 ? right : wrong).nth(i).check()
+  await page.getByRole('button', { name: 'Send answers' }).click()
+  await expect(page.getByText('Passed: 80%')).toBeVisible()
+
+  // The test completed the course.
   await page.getByRole('link', { name: 'see your certificate' }).click()
   await expect(page.getByRole('heading', { name: 'Certificate of completion' })).toBeVisible()
   const certificate = page.getByRole('article', { name: 'Certificate' })
   await expect(certificate.getByText('Sam Rivers')).toBeVisible()
   await expect(certificate.getByText('Practitioner course')).toBeVisible()
-  await expect(certificate).toContainText('passed the quizzes')
+  await expect(certificate).toContainText('has completed every lesson and passed the test')
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download PDF' }).click()
   expect((await download).suggestedFilename()).toBe('certificate.pdf')
   await expectAccessible(page)
   await page.getByRole('button', { name: 'Sign out' }).click()
 
-  // The team sees it issued, and it cannot be taken back here.
+  // The team sees it issued.
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Courses', exact: true }).click()
   await page.getByRole('link', { name: /Practitioner course/ }).click()
-  await cohort.getByRole('button', { name: 'Bookings and attendance' }).click()
-  await expect(cohort.getByText(/^Issued \w{3} \d{1,2} \w{3} \d{4}, valid until/)).toBeVisible()
-  await expect(passed).toBeDisabled()
+  const sam = page.getByRole('row', { name: /Sam Rivers/ })
+  await expect(sam).toContainText('3 of 3 lessons done, test passed')
+  await expect(sam).toContainText(/Issued \w{3} \d{1,2} \w{3} \d{4}/)
+  await expect(sam.getByRole('button', { name: 'Cancel place' })).toHaveCount(0)
 })
 
 test('the team adds a trust and opens a school’s setup', async ({ page }) => {
