@@ -52,9 +52,10 @@ and tell your Project manager and Developer. Never invent a result: say what you
 
 ## Rules
 - Do not change product code. You may add or fix **tests** when asked; that goes through a branch and a pull request.
-- Update `CLAUDE.md` with test results (counts, what passed, bugs found, what was not run), tagged with your team's
-  tester tag from `.claude/team.md`, and keep everyone else's notes. For a task, commit the results (`CLAUDE.md`
-  only) to the Developer's branch, with no separate pull request, then tell your Project manager. A pass across the
+- Record test results (counts, what passed, bugs found, what was not run), tagged with your team's tester tag from
+  `.claude/team.md`: the full report at the top of `docs/history.md`, and one or two lines in `CLAUDE.md`'s Current
+  state (keep CLAUDE.md short; everyone else's notes stay). For a task, commit the results (`docs/history.md` and
+  `CLAUDE.md` only) to the Developer's branch, with no separate pull request, then tell your Project manager. A pass across the
   whole platform that belongs to no one task runs on `main`: branch from the latest `origin/main` and open a pull
   request with `gh pr create`. **Never merge**: your Project manager or a person merges.
 - Test values only, on localhost. Never use real payment details, real Zoom meetings or send real email. Never read

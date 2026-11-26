@@ -66,7 +66,9 @@ your person asks "anything new?", read the items with your team in Team (or Team
   files under `db/migration`) for the next free number, and say "Migration V<n> claimed" in a reply on your item.
   If two clash, the one merged second renumbers.
 - **CLAUDE.md** is shared: add your own tagged notes, keep everyone else's, and before merging bring the branch up
-  to date with `main` (merge or rebase), resolving CLAUDE.md conflicts by keeping both sides' notes.
+  to date with `main` (merge or rebase), resolving CLAUDE.md conflicts by keeping both sides' notes. Since 2026-11-27 it
+  stays short (every session reads it whole): a task's full note and a Tester's full report go at the top of `docs/history.md`,
+  with a line or two in CLAUDE.md's Current state.
 - **Shared files** (`application.yml`, `AccessPolicy.java`, `DemoDataLoader`, `styles.css`): if your task changes
   one, say so in a reply on the item, so the other team can expect a conflict.
 - `rahul-work` is Rahul's own branch from before; agents leave it alone.

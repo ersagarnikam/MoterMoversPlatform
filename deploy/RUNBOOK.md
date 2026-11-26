@@ -11,6 +11,8 @@ Only Caddy is published. The database is not reachable from outside the server.
 
 ## First deployment
 
+A step-by-step checklist for DigitalOcean (servers, DNS, Spaces buckets, email, settings, checks) is in `deploy/SERVER-SETUP.md`.
+
 1. Server: 2 vCPU / 4 GB RAM is plenty to start. Install Docker Engine with the compose plugin. Open
    ports 80 and 443 only. Host it in the data region you serve (UK schools on UK hosting).
 2. Point DNS for your domain (an A record) at the server, and wait until it resolves.
