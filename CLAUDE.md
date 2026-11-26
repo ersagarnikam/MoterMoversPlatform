@@ -668,6 +668,28 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-27, `task-88` at 6e9b8ae, before merge, the Project manager's brief; Australia only, Sagar's choice): pull request #83
+(task 88, the clean-up before the feature freeze) passes, no bugs.** Backend 327, web 101 unit tests, the build and the parent app typecheck pass here. The browser tests were not rerun (CI passed them on 6e9b8ae).
+- **1, the last-day email (API, the stand-in, the development mail log):** cancel, carry on, cancel again sends one email, and again one after a second round. After the next month is paid, a cancellation with the later last day sends a second email.
+  The team's cancel on the same day sends none.
+- **2, the last member leaves:** the subscription stays ENDED with no family ("Cancelled by the family was deleted"), the team finds it by the payer's email with the day it was paid to, its two payments are unchanged, and no email goes out.
+  This also works when the payer leaves first and the carer last. A carer's email finds nothing ("no family").
+- **3, refunds:** a month refunded before it started has no end date; one refunded after it started ends on the refund day. Both read "Monthly payment", refunded on the day. A part refund is not marked refunded. Tom's ended pass, refunded in full,
+  reads "Pass" refunded, never "Paid", and gives no access back.
+- **4, licence status (API and screens):** a licence starting later reads "Starts Sun 6 Dec 2026" on Schools and licences and the trust or group dashboard, a free trial not started too, and one starting today does not. "Not started yet" filters them.
+  With several licences: running beats later; two running shows the later to end; ended plus two later shows the next to start (and the agreed price changes that one); only ended shows the last. With Oakfield's licence moved to tomorrow,
+  Today has no session and recording is refused with the licence message; moved back, the session returns.
+- **5, the film (Chrome, a 25-second film of the tester's own on Yellow rhyme 4):** playing at 3 s, paused after Skip to end, and still paused 3 s later. Pressing play afterwards still plays it.
+- **6, Approve all:** with Green's 180 sessions put back to draft, 100 shown reads "Approve all 180 drafts in Green"; module 1 reads "Approve all 30 drafts in Green module 1", and the confirmation reads the same. One Yellow draft reads "Approve the 1 draft in Yellow".
+- **7, the check (web and the app's web preview):** Tom, whose check is due and whose cover has ended, is not offered it on At home, the child page or the app's child screen. Priya still is, for Ava on the web and for both children in the app.
+- **8:** the RUNBOOK says to override `group` with `school`. On Plans and prices the retired Full programme reads "Retired · No longer on sale", with no price.
+- **V27, upgrading from main (9dee7e9) in Australia (H2 in PostgreSQL mode):** four subscriptions (active with two months, cancelling and told, ended, pending) keep their family, payer and status, and `paid_to` is each one's last covered day (the pending one has none).
+  A second start changes nothing. A family upgraded this way still keeps its row when the last member leaves.
+- **Low, for the owner or the Developer:** (1) A subscription whose last day was told before V27 (`end_notice_sent` with no `end_notice_day`) is never told a later last day. Seen with signed events: carry on, the next month paid, cancel again, no email.
+  No deployment has such rows yet. (2) The team overview lists a free trial that has not started under "Licences to renew", by its end date, with no "Starts" label. (3) When a deleted family's payer starts a new family, the team's search shows only the new
+  one, so the ended subscription is no longer found. (4) Items 5 and 7 have no automated test, though the spec asks for one per item.
+- **Not tested:** PostgreSQL (Docker's engine would not start), the UK and Ireland (Sagar: Australia only for now), a real Stripe account, and a real phone.
+
 **Task tested on its branch (updated by tester, 2026-11-26, `task-87` at 47e8c48, before merge, the Project manager's brief): pull request #81 (task 87, the monthly price
 for the Programme at Home) passes, no bugs.** Backend 324, web 92 unit tests, the build and the parent app typecheck pass here. The browser tests were not rerun (Sagar chose to skip them; CI passed them on 47e8c48).
 - **Each country started fresh (UK, Ireland, Australia, demo with `STRIPE_FAKE=true`, 13 API checks each):** `GET /api/home/pass` is on sale at 1499, 1699 and 2699, from today, changed by "launch prices". Tom (pass ended)
