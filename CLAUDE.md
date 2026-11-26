@@ -117,6 +117,8 @@ push. The loadtest job starts the API with `LOAD_TEST_LEARNERS=100` and runs `de
 
 ## Go-live plan (set 2026-11-05, with the owner)
 
+[PM: Claude, 2026-11-26] **The dates below are provisional** (Sagar, 2026-11-26: the go-live date is still flexible). They stay as
+targets; the board marks the launch milestones "(provisional date)", and inputs from Pat are asked for without a deadline.
 **Dates.** Dev and production ready in the UK, Ireland and Australia by **Thu 31 Dec 2026**. Go/no-go UK and Ireland Wed
 6 Jan 2027; **UK and Ireland open for sign-ups and sales Mon 11 Jan**. Go/no-go Australia Thu 14 Jan; **Australia live Mon
 18 Jan**. First training cohorts 25 Jan. **Release 2 by 26 Feb.** Anything that needs Pat, Kay or pilot teachers is due by
