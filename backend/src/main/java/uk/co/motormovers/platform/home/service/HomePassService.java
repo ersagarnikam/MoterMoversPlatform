@@ -247,6 +247,20 @@ public class HomePassService {
     @Transactional(readOnly = true)
     public HomePassViews.FamilyPass family(String email) {
         access.requireAdmin();
+        AppUser user = users.findByEmailIgnoreCase(email == null ? "" : email.strip())
+                .orElseThrow(() -> new NotFoundException("Account", email));
+        if (members.findByUserId(user.getId()).isEmpty()) {
+            // Their family was deleted when its last member left: what they paid for is kept (task 88).
+            List<HomeSubscription> kept = subscriptions.findByPayerIdAndFamilyIdIsNullOrderById(user.getId()).stream()
+                    .filter(s -> s.getStatus() != HomeSubscription.Status.PENDING).toList();
+            if (!kept.isEmpty()) {
+                HomeSubscription last = kept.getLast();
+                return new HomePassViews.FamilyPass(null, List.of(), false, last.getPaidTo(), List.of(),
+                        new HomePassViews.Subscription("ENDED", last.getPricePence(), user.getEmail(),
+                                last.getPaidTo(), last.getCreatedAt(), last.getEndedAt(), last.getCancelledBy(),
+                                last.getCancelNote()));
+            }
+        }
         return view(familyOf(email));
     }
 
@@ -407,10 +421,16 @@ public class HomePassService {
                 .filter(Objects::nonNull).toList();
         List<HomePassViews.Entry> history = passes.findByFamilyIdOrderById(familyId).stream()
                 .filter(HomePass::started)
-                .map(p -> new HomePassViews.Entry(p.getStartsOn(), p.getEndsOn(), p.getPaymentId(),
-                        p.getSubscriptionId() != null ? "Monthly payment"
-                                : p.getPaymentId() == null ? "Extended by the team" : "Paid",
-                        p.getAddedBy(), p.getAddedAt(), p.getNote()))
+                .map(p -> {
+                    LocalDate refundedOn = refundedInFullOn(p.getPaymentId());
+                    // A part refunded before it started is kept as ending the day before it starts: never shown so.
+                    LocalDate end = p.getEndsOn().isBefore(p.getStartsOn()) ? null : p.getEndsOn();
+                    return new HomePassViews.Entry(p.getStartsOn(), end, p.getPaymentId(),
+                            p.getSubscriptionId() != null ? "Monthly payment"
+                                    : p.getPaymentId() == null ? "Extended by the team"
+                                            : refundedOn != null ? "Pass" : "Paid",
+                            p.getAddedBy(), p.getAddedAt(), p.getNote(), refundedOn);
+                })
                 .toList();
         // The subscription the team would act on: the one running at Stripe, else the last that ran.
         List<HomeSubscription> started = subscriptions.findByFamilyIdOrderById(familyId).stream()
@@ -428,6 +448,17 @@ public class HomePassService {
                         shown.getCreatedAt(), shown.getEndedAt(), shown.getCancelledBy(), shown.getCancelNote());
         return new HomePassViews.FamilyPass(familyId, people, running(familyId), endsOn(familyId), history,
                 subscription);
+    }
+
+    /** The day a payment was refunded in full (its last refund), or null if it was not. */
+    private LocalDate refundedInFullOn(Long paymentId) {
+        if (paymentId == null) {
+            return null;
+        }
+        return payments.findById(paymentId).filter(p -> p.netPaidPence() <= 0)
+                .flatMap(p -> p.getRefunds().stream().map(r -> r.getRefundedOn()).filter(Objects::nonNull)
+                        .max(Comparator.naturalOrder()))
+                .orElse(null);
     }
 
     private LocalDate today() {

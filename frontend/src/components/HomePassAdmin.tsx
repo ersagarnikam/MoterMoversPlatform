@@ -2,6 +2,7 @@ import { HOME_PROGRAMME } from '../brand'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, type AdminFamilyPass, type HomePassPrices } from '../api'
 import { day } from '../dates'
+import { coverEntryLine } from '../labels'
 import { currencySymbol, money } from '../money'
 import { useConfirm, useToast } from './Feedback'
 
@@ -165,7 +166,9 @@ export function FamilyPassCard() {
       {family && (
         <>
           <p>
-            {family.members.map((m) => `${m.name} (${m.role.toLowerCase()})`).join(', ')}.{' '}
+            {family.familyId === null
+              ? 'This family has been deleted: its last member left. What was paid for is kept. '
+              : `${family.members.map((m) => `${m.name} (${m.role.toLowerCase()})`).join(', ')}. `}
             {family.endsOn
               ? family.running
                 ? `Covered to ${day(family.endsOn)}.`
@@ -182,7 +185,7 @@ export function FamilyPassCard() {
             <ul className="due-list">
               {family.history.map((h, i) => (
                 <li key={i}>
-                  {day(h.startsOn)} to {day(h.endsOn)} · {h.how}
+                  {coverEntryLine(h)}
                   <span className="muted">
                     {' '}
                     · {h.addedBy}
@@ -203,7 +206,8 @@ export function FamilyPassCard() {
               </div>
             </form>
           )}
-          <form className="inline-form" onSubmit={extend} aria-label="Extend the cover">
+          {family.familyId !== null && (
+            <form className="inline-form" onSubmit={extend} aria-label="Extend the cover">
             <label>
               Extend to
               <input type="date" required value={endsOn} onChange={(e) => setEndsOn(e.target.value)} />
@@ -215,7 +219,8 @@ export function FamilyPassCard() {
             <div className="actions">
               <button className="btn btn-primary">Extend the cover</button>
             </div>
-          </form>
+            </form>
+          )}
         </>
       )}
       {error && <p className="error">{error}</p>}

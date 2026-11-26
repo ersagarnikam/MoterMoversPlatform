@@ -4,9 +4,9 @@ import { useAuth } from '../auth'
 import { money } from '../money'
 import { pct } from '../stages'
 import { day } from '../dates'
+import { licenceStatusLabel } from '../labels'
 import Skeleton from '../components/Skeleton'
 
-const STATUS_LABEL = { ACTIVE: 'Active', RENEWAL_DUE: 'Renewal due', FREE_TRIAL: 'Free trial', EXPIRED: 'Expired' }
 
 /** Trust or group leads see each school's licence and summary results only. */
 export default function TrustDashboardPage() {
@@ -48,7 +48,7 @@ export default function TrustDashboardPage() {
             {data.schools.map((s) => (
               <tr key={s.schoolId}>
                 <td>{s.schoolName}</td>
-                <td className={s.licenceStatus === 'RENEWAL_DUE' ? 'strong' : ''}>{STATUS_LABEL[s.licenceStatus]}</td>
+                <td className={s.licenceStatus === 'RENEWAL_DUE' ? 'strong' : ''}>{licenceStatusLabel(s.licenceStatus, s.licenceStartsOn)}</td>
                 <td>{s.renewalDate ? day(s.renewalDate) : '-'}</td>
                 <td>{s.stages}</td>
                 <td className="num">{pct(s.assessedRate)}</td>

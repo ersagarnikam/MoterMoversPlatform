@@ -165,7 +165,7 @@ export default function HomeChildPage() {
       )}
 
       <h2>Settings</h2>
-      <Settings progress={progress} onChange={load} />
+      <Settings progress={progress} onChange={load} checkOpen={open} />
     </>
   )
 }
@@ -289,7 +289,16 @@ function Counter({ grid, done, days }: { grid: boolean[]; done: number; days: nu
 }
 
 /** Name and age, colour, linking a school, and deleting the child. */
-function Settings({ progress, onChange }: { progress: HomeProgress; onChange: () => void }) {
+function Settings({
+  progress,
+  onChange,
+  checkOpen,
+}: {
+  progress: HomeProgress
+  onChange: () => void
+  /** The family can do the check today: covered, and this parent's induction done. */
+  checkOpen: boolean
+}) {
   const { child } = progress
   const navigate = useNavigate()
   const toast = useToast()
@@ -379,8 +388,14 @@ function Settings({ progress, onChange }: { progress: HomeProgress; onChange: ()
         <section className="card">
           <h3>Colour</h3>
           <p className="muted">
-            Each colour builds on the one before. Change it if the exercises feel too easy or too hard, or{' '}
-            <Link to={`/home/child/${child.id}/check`}>do the check again</Link>.
+            Each colour builds on the one before. Change it if the exercises feel too easy or too hard
+            {checkOpen ? (
+              <>
+                , or <Link to={`/home/child/${child.id}/check`}>do the check again</Link>.
+              </>
+            ) : (
+              '.'
+            )}
           </p>
           <div className="chips">
             {STAGES.map((s) => (

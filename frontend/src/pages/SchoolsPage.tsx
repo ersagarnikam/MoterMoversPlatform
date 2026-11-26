@@ -5,6 +5,7 @@ import StageBadge from '../components/StageBadge'
 import { currencySymbol, money } from '../money'
 import { STAGES } from '../stages'
 import { day } from '../dates'
+import { licenceStatusLabel } from '../labels'
 import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
 import ListFilter, { matches } from '../components/ListFilter'
@@ -66,6 +67,7 @@ export default function SchoolsPage() {
           onChange: setStatus,
           options: [
             ['ALL', 'Every licence'],
+            ['UPCOMING', 'Not started yet'],
             ['ACTIVE', 'Active'],
             ['RENEWAL_DUE', 'Renewal due'],
             ['FREE_TRIAL', 'Free trial'],
@@ -102,7 +104,7 @@ export default function SchoolsPage() {
                     onSave={(p) => run(() => api.agreeSchoolPrice(s.id, p), `${s.name} now pays ${money(p)} a year`)}
                   />
                 </td>
-                <td>{s.licenceStatus.replace('_', ' ').toLowerCase()}</td>
+                <td>{licenceStatusLabel(s.licenceStatus, s.startsOn)}</td>
                 <td>{s.endsOn ? day(s.endsOn) : '-'}</td>
                 <td className="stage-list">
                   {STAGES.filter((st) => s.stages.includes(st.key)).map((st) => (

@@ -30,6 +30,9 @@ export default function HomeChildScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const childId = Number(id)
   const { data, error, refreshing, reload } = useLoad(() => api.homeProgress(childId), [childId])
+  // The check is offered only when the family can do it: covered today and this parent's induction done (task 88).
+  const pass = useLoad(() => api.homePass(), [])
+  const checkOpen = !!pass.data && pass.data.running && pass.data.inductionDone
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState<string | null>(null)
@@ -63,11 +66,13 @@ export default function HomeChildScreen() {
 
       <H2>Movements</H2>
       <MovementCards charts={data.charts} />
-      <Button
-        label={child.checkDue ? 'Time for the check again' : 'Do the check again'}
-        variant={child.checkDue ? 'primary' : 'secondary'}
-        onPress={() => router.push({ pathname: '/check/[id]', params: { id: childId } })}
-      />
+      {checkOpen && (
+        <Button
+          label={child.checkDue ? 'Time for the check again' : 'Do the check again'}
+          variant={child.checkDue ? 'primary' : 'secondary'}
+          onPress={() => router.push({ pathname: '/check/[id]', params: { id: childId } })}
+        />
+      )}
 
       <ExerciseList stageName={data.stageName} exercises={data.exercises} />
 

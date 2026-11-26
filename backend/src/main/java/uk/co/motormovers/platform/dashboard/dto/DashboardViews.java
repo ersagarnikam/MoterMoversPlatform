@@ -25,7 +25,7 @@ public final class DashboardViews {
      */
     public record TrustSchoolRow(Long schoolId, String schoolName, Licence.Status licenceStatus, String plan,
             LocalDate renewalDate, String stages, double assessedRate, double participation,
-            double developmentalRate, int extraSupport) {
+            double developmentalRate, int extraSupport, LocalDate licenceStartsOn) {
     }
 
     public record TrustDashboard(Long trustId, String trustName, List<TrustSchoolRow> schools) {

@@ -247,6 +247,11 @@ public class HomeSubscriptionService {
             return false;
         }
         HomeSubscription row = found.get();
+        if (row.getFamilyId() == null) {
+            // The family was deleted, and the subscription ended with it: there is nobody to cover.
+            orphan(stripeId, row.getId());
+            return false;
+        }
         row.knownToStripeAs(stripeId, id(invoice.path("customer")));
         if (payments.existsByStripeInvoiceId(invoiceId)) {
             return false;
@@ -277,6 +282,7 @@ public class HomeSubscriptionService {
                 .runs(period[0], period[1]));
         boolean first = row.getStatus() == Status.PENDING;
         row.paid();
+        row.paidTo(period[1]);
         log.info("Home subscription {} of family {}: a month paid, covered from {} to {}", row.getId(),
                 row.getFamilyId(), period[0], period[1]);
         if (first) {
@@ -385,7 +391,7 @@ public class HomeSubscriptionService {
         } catch (RuntimeException e) {
             log.warn("Could not cancel the second home subscription {}: {}", row.getId(), SafeErrors.describe(e));
         }
-        row.tellOfEnd();
+        row.endsUnannounced();
         row.ended(clock.instant());
     }
 
@@ -425,24 +431,30 @@ public class HomeSubscriptionService {
     /**
      * Someone has left a family. If they paid for its subscription it is cancelled, so they are not charged for a
      * family they are no longer in; the others keep the month paid for. When the family itself goes (its last member
-     * left), the subscription ends at once. Call it before the family's rows are deleted.
+     * left), the subscription ends at once and every row of the family's is kept, with no family, so the team can
+     * still find what was paid for by the payer's email (task 88). Call it before the family's rows are deleted.
      */
     @Transactional
     public void memberLeft(Long familyId, Long userId, boolean familyGoes) {
         for (HomeSubscription s : subscriptions.findByFamilyIdOrderById(familyId)) {
-            if (!s.getStatus().live() || (!familyGoes && !s.getPayerId().equals(userId))) {
-                continue;
-            }
-            HomeSubscription row = subscriptions.findLockedById(s.getId()).orElseThrow();
-            if (row.getStripeSubscriptionId() == null) {
-                continue;
+            if (s.getStatus().live() && (familyGoes || s.getPayerId().equals(userId))) {
+                HomeSubscription row = subscriptions.findLockedById(s.getId()).orElseThrow();
+                if (row.getStripeSubscriptionId() != null) {
+                    if (familyGoes) {
+                        stripe.cancelSubscription(row.getStripeSubscriptionId(), false);
+                        row.endsUnannounced();
+                        row.cancelledBy("the family was deleted", null);
+                        row.ended(clock.instant());
+                    } else if (!row.isCancelling()) {
+                        cancelAtStripe(row, "left the family", null);
+                    }
+                }
             }
             if (familyGoes) {
-                stripe.cancelSubscription(row.getStripeSubscriptionId(), false);
-                row.tellOfEnd();
-                row.ended(clock.instant());
-            } else if (!row.isCancelling()) {
-                cancelAtStripe(row, "left the family", null);
+                // Before the family's row goes, so the update never names a family that is no longer there.
+                s.ended(clock.instant());
+                s.familyGone();
+                subscriptions.saveAndFlush(s);
             }
         }
     }
@@ -459,12 +471,15 @@ public class HomeSubscriptionService {
         }
     }
 
-    /** One email to the family, the first time it is known that the subscription will end. */
+    /** One email to the family for each last day: the first time it is known that the subscription ends on it. */
     private void tellOfEnd(HomeSubscription row) {
-        if (!row.tellOfEnd()) {
+        if (row.getFamilyId() == null) {
             return;
         }
         LocalDate last = paidTo(row);
+        if (!row.tellOfEnd(last)) {
+            return;
+        }
         boolean stillOpen = last != null && !last.isBefore(today());
         String subject = "Your " + Brand.HOME + " subscription has been cancelled";
         String body = "Your family's monthly subscription to the " + Brand.HOME + " has been cancelled. No more "

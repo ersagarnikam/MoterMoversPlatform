@@ -209,7 +209,9 @@ export interface TrustDashboard {
   schools: {
     schoolId: number
     schoolName: string
-    licenceStatus: 'ACTIVE' | 'RENEWAL_DUE' | 'FREE_TRIAL' | 'EXPIRED'
+    licenceStatus: 'UPCOMING' | 'ACTIVE' | 'RENEWAL_DUE' | 'FREE_TRIAL' | 'EXPIRED'
+    /** When the licence shown starts: one that has not started reads "Starts <day>". */
+    licenceStartsOn: string | null
     plan: string | null
     renewalDate: string | null
     stages: string
@@ -406,6 +408,8 @@ export interface SchoolRow {
   endsOn: string | null
   stages: ColourStage[]
   parentLinksEnabled: boolean
+  /** When the licence shown starts. */
+  startsOn: string | null
 }
 
 export interface PriceRow {
@@ -852,15 +856,19 @@ export interface HomePass {
 
 /** A family's pass as the team sees it, found by any member's email. */
 export interface AdminFamilyPass {
-  familyId: number
+  /** Null for someone whose family has been deleted (its last member left): what they paid for is still shown. */
+  familyId: number | null
   members: { name: string; email: string; role: string }[]
   running: boolean
   endsOn: string | null
   history: {
     startsOn: string
-    endsOn: string
+    /** Null for a part refunded before it started. */
+    endsOn: string | null
     paymentId: number | null
     how: string
+    /** The day it was refunded in full, if it was. */
+    refundedOn: string | null
     addedBy: string
     addedAt: string
     note: string | null

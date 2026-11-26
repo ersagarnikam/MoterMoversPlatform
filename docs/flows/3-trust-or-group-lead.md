@@ -32,7 +32,7 @@ sequenceDiagram
     API->>AS: schoolFigures(schoolId)
     AS-->>API: children, share assessed this year, number flagged
   end
-  API-->>W: licence status (Active, Renewal due, Free trial, Expired), stages, figures
+  API-->>W: licence status (Starts <day>, Active, Renewal due, Free trial, Expired), stages, figures
   W->>API: GET /api/trusts/{id}/payments
   API-->>W: spending per school
   opt school has granted access to children

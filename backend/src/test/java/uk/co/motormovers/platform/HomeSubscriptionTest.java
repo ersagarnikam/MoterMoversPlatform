@@ -24,7 +24,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -80,6 +82,9 @@ class HomeSubscriptionTest {
 
     @Autowired
     Clock clock;
+
+    @Autowired
+    uk.co.motormovers.platform.payment.repository.PaymentRepository payments;
 
     @Autowired
     HomePassService passes;
@@ -281,11 +286,12 @@ class HomeSubscriptionTest {
         webhook(StripeMessages.subscriptionUpdated("sub_" + row, row, "cus_" + row, "active", false,
                 ",\"cancel_at\":" + Instant.now(clock).plusSeconds(86_400 * 30L).getEpochSecond()));
         pass(f.token).andExpect(jsonPath("$.subscription").value("CANCELLING"));
-        verify(mailer, times(2)).send(eq(f.email), contains("has been cancelled"), anyString());
+        // The last day is the one the family has been told already: one email for it, not two (task 88).
+        verify(mailer, times(1)).send(eq(f.email), contains("has been cancelled"), anyString());
 
         // The paid month ends at Stripe: the cover already paid for stays, and nothing more is sent.
         webhook(StripeMessages.subscriptionDeleted("sub_" + row, row, "cus_" + row));
-        verify(mailer, times(2)).send(eq(f.email), contains("has been cancelled"), anyString());
+        verify(mailer, times(1)).send(eq(f.email), contains("has been cancelled"), anyString());
         pass(f.token).andExpect(jsonPath("$.subscription").value("NONE")).andExpect(jsonPath("$.running").value(true))
                 .andExpect(jsonPath("$.endsOn").value(paidTo.toString()));
         assertThat(passes.coveredOn(f.familyId, paidTo)).isTrue();
@@ -293,6 +299,29 @@ class HomeSubscriptionTest {
         // On its last day the family can subscribe again; before that it is still covered.
         subscribe(f.token).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value(containsString("covered until")));
+    }
+
+    /** Task 88: told once for each last day, so a cancellation in a later month, with a later last day, is told. */
+    @Test
+    void cancellingAgainInALaterMonthTellsTheFamilyItsNewLastDay() throws Exception {
+        Family f = subscribed();
+        long row = f.row;
+        ZonedDateTime start = ZonedDateTime.now(clock);
+        webhook(StripeMessages.subscriptionUpdated("sub_" + row, row, "cus_" + row, "active", true, ""));
+        verify(mailer, times(1)).send(eq(f.email), contains("has been cancelled"),
+                contains(DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.UK)
+                        .format(start.toLocalDate().plusMonths(1))));
+
+        // They carry on, the next month is paid, and then they cancel for good.
+        webhook(StripeMessages.subscriptionUpdated("sub_" + row, row, "cus_" + row, "active", false, ""));
+        webhook(StripeMessages.invoicePaid("in_" + row + "_2", row, "sub_" + row, "cus_" + row, PRICE, "gbp",
+                start.plusMonths(1).toInstant(), start.plusMonths(2).toInstant()));
+        webhook(StripeMessages.subscriptionUpdated("sub_" + row, row, "cus_" + row, "active", true, ""));
+        webhook(StripeMessages.subscriptionUpdated("sub_" + row, row, "cus_" + row, "active", true, ""));
+        verify(mailer, times(2)).send(eq(f.email), contains("has been cancelled"), anyString());
+        verify(mailer, times(1)).send(eq(f.email), contains("has been cancelled"),
+                contains(DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.UK)
+                        .format(start.toLocalDate().plusMonths(2))));
     }
 
     @Test
@@ -320,6 +349,28 @@ class HomeSubscriptionTest {
         webhook(StripeMessages.invoicePaid("in_" + f.row + "_2", f.row, "sub_" + f.row, "cus_" + f.row, PRICE, "gbp",
                 start.plusMonths(1).toInstant(), start.plusMonths(2).toInstant()));
         assertThat(passes.coveredOn(f.familyId, today.plusMonths(1).plusDays(3))).isTrue();
+
+        // The team's history says the first month was refunded, and when (task 88).
+        String family = "/api/admin/home-pass/family?email=" + f.email;
+        mvc.perform(get(family).header("Authorization", bearer(admin))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.history[0].how").value("Monthly payment"))
+                .andExpect(jsonPath("$.history[0].startsOn").value(today.toString()))
+                .andExpect(jsonPath("$.history[0].endsOn").value(today.toString()))
+                .andExpect(jsonPath("$.history[0].refundedOn").value(today.toString()))
+                .andExpect(jsonPath("$.history[1].refundedOn").doesNotExist());
+        // A month refunded before it starts has no end before its start: it has no end at all.
+        Integer second = JsonPath.<List<Integer>>read(fetch(f.token, "/api/payments/mine"), "$.payments[*].id")
+                .stream().filter(id -> !id.equals(payment)).findFirst().orElseThrow();
+        when(stripe.invoicePaymentIntent(anyString())).thenReturn(null);
+        mvc.perform(post("/api/admin/payments/" + second + "/refund").header("Authorization", bearer(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amountPence\":" + PRICE + ",\"reason\":\"Taken by mistake\",\"clientId\":\""
+                        + UUID.randomUUID() + "\"}"))
+                .andExpect(status().isOk());
+        mvc.perform(get(family).header("Authorization", bearer(admin))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.history[1].startsOn").value(today.plusMonths(1).toString()))
+                .andExpect(jsonPath("$.history[1].endsOn").doesNotExist())
+                .andExpect(jsonPath("$.history[1].refundedOn").value(today.toString()));
     }
 
     @Test
@@ -426,7 +477,27 @@ class HomeSubscriptionTest {
         mvc.perform(delete("/api/home/members/" + gone.userId).header("Authorization", bearer(gone.token)))
                 .andExpect(status().isNoContent());
         verify(stripe).cancelSubscription("sub_" + gone.row, false);
-        assertThat(subscriptions.findById(gone.row)).isEmpty();
+        // Its row stays, ended and with no family, so the team can still find what was paid for (task 88).
+        HomeSubscription kept = subscriptions.findById(gone.row).orElseThrow();
+        assertThat(kept.getFamilyId()).isNull();
+        assertThat(kept.getStatus()).isEqualTo(HomeSubscription.Status.ENDED);
+        LocalDate paidTo = LocalDate.now(clock).plusMonths(1);
+        mvc.perform(get("/api/admin/home-pass/family?email=" + gone.email)
+                .header("Authorization", bearer(login("admin@motormovers.test")))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.familyId").doesNotExist()).andExpect(jsonPath("$.members").isEmpty())
+                .andExpect(jsonPath("$.running").value(false))
+                .andExpect(jsonPath("$.subscription.state").value("ENDED"))
+                .andExpect(jsonPath("$.subscription.payerEmail").value(gone.email))
+                .andExpect(jsonPath("$.subscription.pricePence").value(PRICE))
+                .andExpect(jsonPath("$.subscription.paidTo").value(paidTo.toString()))
+                .andExpect(jsonPath("$.subscription.cancelledBy").value("the family was deleted"));
+        // Nobody was told, and a month Stripe takes for it afterwards is stopped, not recorded.
+        verify(mailer, never()).send(eq(gone.email), contains("has been cancelled"), anyString());
+        ZonedDateTime late = ZonedDateTime.now(clock);
+        webhook(StripeMessages.invoicePaid("in_" + gone.row + "_late", gone.row, "sub_" + gone.row, "cus_" + gone.row,
+                PRICE, "gbp", late.plusMonths(1).toInstant(), late.plusMonths(2).toInstant()));
+        verify(stripe, times(2)).cancelSubscription("sub_" + gone.row, false);
+        assertThat(payments.existsByStripeInvoiceId("in_" + gone.row + "_late")).isFalse();
 
         // Stripe bills a subscription whose family is gone (its page was left open): it is stopped.
         ZonedDateTime start = ZonedDateTime.now(clock);

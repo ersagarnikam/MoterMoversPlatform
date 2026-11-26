@@ -1,6 +1,8 @@
 package uk.co.motormovers.platform.home.model;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Objects;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -61,6 +63,12 @@ public class HomeSubscription {
     private boolean cancelling;
 
     private boolean endNoticeSent;
+
+    /** The last day the family was told about, so it is told once for each. */
+    private LocalDate endNoticeDay;
+
+    /** The last day paid for, kept here because the days themselves go when the family is deleted. */
+    private LocalDate paidTo;
 
     private String failedInvoiceId;
 
@@ -130,12 +138,21 @@ public class HomeSubscription {
         }
     }
 
-    /** Whether it will end with the paid month. Carrying on again lets the family be told afresh next time. */
+    /** Whether it will end with the paid month. */
     public void cancelling(boolean cancelling) {
         this.cancelling = cancelling;
-        if (!cancelling && status != Status.ENDED) {
-            this.endNoticeSent = false;
+    }
+
+    /** A month was paid for, to this day. */
+    public void paidTo(LocalDate day) {
+        if (day != null && (paidTo == null || day.isAfter(paidTo))) {
+            this.paidTo = day;
         }
+    }
+
+    /** Its family has been deleted (the last member left): the row stays, for the team. */
+    public void familyGone() {
+        this.familyId = null;
     }
 
     public void ended(Instant at) {
@@ -152,11 +169,28 @@ public class HomeSubscription {
         this.cancelNote = note;
     }
 
-    /** Marks the family as told the last day. Returns whether it had not been told yet. */
-    public boolean tellOfEnd() {
-        boolean first = !endNoticeSent;
+    /** Nobody is to be told that this one ended (a duplicate, or a family that has gone). */
+    public void endsUnannounced() {
         this.endNoticeSent = true;
-        return first;
+        this.endNoticeDay = null;
+    }
+
+    /**
+     * Marks the family as told that {@code lastDay} is the last day. Returns whether it is news: it is told once for
+     * a given last day, so cancelling, carrying on and cancelling again in the same month sends one email, while a
+     * cancellation in a later month, with a later last day, sends another.
+     */
+    public boolean tellOfEnd(LocalDate lastDay) {
+        boolean told = endNoticeSent && (endNoticeDay == null || Objects.equals(endNoticeDay, lastDay));
+        this.endNoticeSent = true;
+        if (!told) {
+            this.endNoticeDay = lastDay;
+        }
+        return !told;
+    }
+
+    public LocalDate getPaidTo() {
+        return paidTo;
     }
 
     public Long getId() {

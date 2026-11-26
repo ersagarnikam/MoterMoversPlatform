@@ -38,9 +38,12 @@ public final class HomePassViews {
     public record Member(String name, String email, String role) {
     }
 
-    /** One part of a family's pass: bought ({@code paymentId}) or extended by the team. */
+    /**
+     * One part of a family's cover: bought ({@code paymentId}) or extended by the team. {@code refundedOn} is the day
+     * it was refunded in full, if it was; {@code endsOn} is then null for a part refunded before it started.
+     */
     public record Entry(LocalDate startsOn, LocalDate endsOn, Long paymentId, String how, String addedBy,
-            Instant addedAt, String note) {
+            Instant addedAt, String note, LocalDate refundedOn) {
     }
 
     /**
@@ -51,7 +54,11 @@ public final class HomePassViews {
             Instant endedAt, String cancelledBy, String cancelNote) {
     }
 
-    /** What the team sees for a family, found by any member's email. {@code subscription} is null with none. */
+    /**
+     * What the team sees for a family, found by any member's email. {@code subscription} is null with none.
+     * {@code familyId} is null, with no members, for someone whose family has been deleted (its last member left):
+     * what they paid for is still shown.
+     */
     public record FamilyPass(Long familyId, List<Member> members, boolean running, LocalDate endsOn,
             List<Entry> history, Subscription subscription) {
     }

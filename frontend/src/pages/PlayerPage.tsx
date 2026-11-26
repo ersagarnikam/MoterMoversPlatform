@@ -124,6 +124,7 @@ export default function PlayerPage() {
               src={current.film!}
               credit={current.credit}
               autoPlay={clock.running}
+              stopped={finished}
               onPlay={play}
               onPause={pause}
               onEnded={() => send({ type: 'ended' })}
@@ -134,6 +135,7 @@ export default function PlayerPage() {
               src={session.videoUrl!}
               credit={session.filmCredit}
               autoPlay={clock.running}
+              stopped={finished}
               startAt={sessionFilmAt.current}
               onTime={(seconds) => (sessionFilmAt.current = seconds)}
               onPlay={play}

@@ -1,7 +1,10 @@
 package uk.co.motormovers.platform.school.model;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 import jakarta.persistence.CollectionTable;
@@ -27,7 +30,8 @@ public class Licence {
     public static final int RENEWAL_WINDOW_DAYS = 60;
 
     public enum Status {
-        ACTIVE, RENEWAL_DUE, FREE_TRIAL, EXPIRED
+        /** Not started yet: it runs from its start date (task 88). */
+        UPCOMING, ACTIVE, RENEWAL_DUE, FREE_TRIAL, EXPIRED
     }
 
     @Id
@@ -67,7 +71,27 @@ public class Licence {
         this.stages = stages.isEmpty() ? EnumSet.noneOf(ColourStage.class) : EnumSet.copyOf(stages);
     }
 
+    /**
+     * The licence a school's status is shown from, where it has several: the one running today (the latest to end,
+     * if more than one), else the next to start, else the last that ended. Whether a colour is open is another
+     * question, answered from every licence: {@code LicenceService.licensedFor}.
+     */
+    public static Optional<Licence> shownOn(Collection<Licence> all, LocalDate today) {
+        Optional<Licence> running = all.stream().filter(l -> l.isValidOn(today))
+                .max(Comparator.comparing(Licence::getEndsOn));
+        if (running.isPresent()) {
+            return running;
+        }
+        Optional<Licence> next = all.stream().filter(l -> today.isBefore(l.getStartsOn()))
+                .min(Comparator.comparing(Licence::getStartsOn));
+        return next.isPresent() ? next : all.stream().max(Comparator.comparing(Licence::getEndsOn));
+    }
+
     public Status statusOn(LocalDate today) {
+        // The same rule as isValidOn: before its start it does not run, whatever its plan.
+        if (today.isBefore(startsOn)) {
+            return Status.UPCOMING;
+        }
         if (today.isAfter(endsOn)) {
             return Status.EXPIRED;
         }

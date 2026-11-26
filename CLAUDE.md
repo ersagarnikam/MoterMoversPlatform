@@ -64,7 +64,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
   database (`spring.datasource.url=jdbc:h2:mem:<name>;...`): the demo loads once per database, on the clock of the first context to
   start, and the other tests expect today's demo (task 83).
 - **Errors** are problem details with user-safe messages (`common/exception/ApiExceptionHandler`).
-- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V26`, added by Dev 2026-11-21);
+- **Schema changes** are new Flyway migrations (`backend/src/main/resources/db/migration`, latest `V27`, added by Dev 2026-11-26);
   never edit an applied one. JPA runs with `ddl-auto: validate`.
 - **Email** goes through `common/config/Mailer`; with no SMTP configured it logs the message (dev).
 - (added by Dev, 2026-11-06) **No personal data or tokens in logs.** Never log an email address, a name, a child's initials, a
@@ -80,8 +80,8 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-26) 324 unit + API integration tests (H2)
-cd frontend && npm test             # (added by Dev, 2026-11-21) 92 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock, the home subscription card
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-26) 327 unit + API integration tests (H2)
+cd frontend && npm test             # (added by Dev, 2026-11-26) 101 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock, the home subscription card, labels
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
 # Browser tests: start the API with demo data and LOGIN_LIMIT_PER_IP=500 first (the tests sign in more than
@@ -222,6 +222,31 @@ to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_.
 refuses placeholders.
 
 ## Current state (2026-11-26)
+
+(added by Dev, 2026-11-26) **Clean-up before the feature freeze (go-live task 88; migration V27).** Eight small fixes from the Tester's low
+notes on tasks 57, 68, 80, 82 and 85, and the licence status left open since task 14:
+- **Last-day email once.** A family is told once for each last day (`home_subscription.end_notice_day`, `HomeSubscription.tellOfEnd(day)`):
+  cancel, carry on and cancel again in the same month sends one email; a cancellation in a later month, with a later last day, sends another.
+- **A subscription's row outlives its family.** When the last member leaves, the family is deleted and its subscription rows stay, ENDED and
+  with no family (`family_id` is now optional, ON DELETE SET NULL; `paid_to` is kept on the row because the days themselves go with the
+  family). The team's family search, by the payer's email, then shows "This family has been deleted" with the subscription, its price, the
+  day it was paid to and "Cancelled by the family was deleted"; Extend is not offered. A month Stripe takes for such a row is stopped, not
+  recorded. Code that reads `HomeSubscription.getFamilyId()` must allow null.
+- **A refunded part says so.** The team's history (`HomePassViews.Entry.refundedOn`, `coverEntryLine` in `frontend/src/labels.ts`) reads
+  "... · Monthly payment · Refunded on <day>" (a pass reads "Pass", never "Paid"); a part refunded before it started has no end date.
+- **A licence that has not started shows "Starts <day>"** (`Licence.Status.UPCOMING`, the same rule as `isValidOn`, whatever the plan), on
+  the trust or group dashboard and Schools and licences, which gains a "Not started yet" filter. Where a school has several licences the
+  row shows the one running today, else the next to start, else the last that ended (`Licence.shownOn`); the agreed price is changed on that
+  one. `LicenceService.licensedFor` is unchanged. The team overview's "licences to renew" needed no change. **The owner can still say no to
+  this item.** `LicenceRepository.findFirstBySchoolIdOrderByEndsOnDesc` is gone.
+- **The film stops at the session's end** (`Film`'s `stopped`, set by the class player once the plan is finished, as after Skip to end).
+- **Approve all** reads "Approve all 180 drafts in Green" or "Approve the 1 draft in Yellow module 19": the scope it approves, not "shown".
+- **The check is offered only when the family can do it** (covered today and the induction done): "do the check again" on the web child
+  page, "Time for the check again" on At home, and the parent app's child screen button.
+- **Launch prices:** the RUNBOOK says to override `group` with `school`; a retired plan reads "No longer on sale" in place of its old price.
+Wording rules with a count, date or state are in `frontend/src/labels.ts` (`labels.test.ts`). Tests: `HomeSubscriptionTest` (the email, the
+kept row, the refunded months), `LicenceTest`. **For the guides (task 41):** Schools and licences, the trust dashboard, Plans and prices and
+Content approval changed slightly. Not tried on PostgreSQL itself (V27 replaces the `family_id` column, as V19 did for another table).
 
 (added by Dev, 2026-11-26) **The Programme at Home is on sale monthly from the first start (go-live task 87; no migration).** The owner
 decided on 2026-11-26: monthly only, with no yearly option, at £14.99 (UK), €16.99 (Ireland) and A$26.99 (Australia) a month, tax
@@ -642,6 +667,28 @@ latest licence and `statusOn`, which ignores the start date (a licence starting 
 is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scores and movements) now drops a record
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
+
+**Task tested on its branch (updated by tester, 2026-11-27, `task-88` at 6e9b8ae, before merge, the Project manager's brief; Australia only, Sagar's choice): pull request #83
+(task 88, the clean-up before the feature freeze) passes, no bugs.** Backend 327, web 101 unit tests, the build and the parent app typecheck pass here. The browser tests were not rerun (CI passed them on 6e9b8ae).
+- **1, the last-day email (API, the stand-in, the development mail log):** cancel, carry on, cancel again sends one email, and again one after a second round. After the next month is paid, a cancellation with the later last day sends a second email.
+  The team's cancel on the same day sends none.
+- **2, the last member leaves:** the subscription stays ENDED with no family ("Cancelled by the family was deleted"), the team finds it by the payer's email with the day it was paid to, its two payments are unchanged, and no email goes out.
+  This also works when the payer leaves first and the carer last. A carer's email finds nothing ("no family").
+- **3, refunds:** a month refunded before it started has no end date; one refunded after it started ends on the refund day. Both read "Monthly payment", refunded on the day. A part refund is not marked refunded. Tom's ended pass, refunded in full,
+  reads "Pass" refunded, never "Paid", and gives no access back.
+- **4, licence status (API and screens):** a licence starting later reads "Starts Sun 6 Dec 2026" on Schools and licences and the trust or group dashboard, a free trial not started too, and one starting today does not. "Not started yet" filters them.
+  With several licences: running beats later; two running shows the later to end; ended plus two later shows the next to start (and the agreed price changes that one); only ended shows the last. With Oakfield's licence moved to tomorrow,
+  Today has no session and recording is refused with the licence message; moved back, the session returns.
+- **5, the film (Chrome, a 25-second film of the tester's own on Yellow rhyme 4):** playing at 3 s, paused after Skip to end, and still paused 3 s later. Pressing play afterwards still plays it.
+- **6, Approve all:** with Green's 180 sessions put back to draft, 100 shown reads "Approve all 180 drafts in Green"; module 1 reads "Approve all 30 drafts in Green module 1", and the confirmation reads the same. One Yellow draft reads "Approve the 1 draft in Yellow".
+- **7, the check (web and the app's web preview):** Tom, whose check is due and whose cover has ended, is not offered it on At home, the child page or the app's child screen. Priya still is, for Ava on the web and for both children in the app.
+- **8:** the RUNBOOK says to override `group` with `school`. On Plans and prices the retired Full programme reads "Retired · No longer on sale", with no price.
+- **V27, upgrading from main (9dee7e9) in Australia (H2 in PostgreSQL mode):** four subscriptions (active with two months, cancelling and told, ended, pending) keep their family, payer and status, and `paid_to` is each one's last covered day (the pending one has none).
+  A second start changes nothing. A family upgraded this way still keeps its row when the last member leaves.
+- **Low, for the owner or the Developer:** (1) A subscription whose last day was told before V27 (`end_notice_sent` with no `end_notice_day`) is never told a later last day. Seen with signed events: carry on, the next month paid, cancel again, no email.
+  No deployment has such rows yet. (2) The team overview lists a free trial that has not started under "Licences to renew", by its end date, with no "Starts" label. (3) When a deleted family's payer starts a new family, the team's search shows only the new
+  one, so the ended subscription is no longer found. (4) Items 5 and 7 have no automated test, though the spec asks for one per item.
+- **Not tested:** PostgreSQL (Docker's engine would not start), the UK and Ireland (Sagar: Australia only for now), a real Stripe account, and a real phone.
 
 **Task tested on its branch (updated by tester, 2026-11-26, `task-87` at 47e8c48, before merge, the Project manager's brief): pull request #81 (task 87, the monthly price
 for the Programme at Home) passes, no bugs.** Backend 324, web 92 unit tests, the build and the parent app typecheck pass here. The browser tests were not rerun (Sagar chose to skip them; CI passed them on 47e8c48).
@@ -1300,7 +1347,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-26): (added by Dev, 2026-11-26) the monthly launch price for the Programme at Home in all three countries; [PM: Claude, 2026-11-22] task 68 merged in the notes; (added by Dev, 2026-11-21) monthly billing for the Programme at Home, with a stand-in for Stripe; (added by Dev, 2026-11-17) session-notice tests put their own session in the window; [PM: Claude, 2026-11-17] task 57 merged in the notes; (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-26): (added by Dev, 2026-11-26) clean-up before the feature freeze: the Tester's low notes and the licence status; (added by Dev, 2026-11-26) the monthly launch price for the Programme at Home in all three countries; [PM: Claude, 2026-11-22] task 68 merged in the notes; (added by Dev, 2026-11-21) monthly billing for the Programme at Home, with a stand-in for Stripe; (added by Dev, 2026-11-17) session-notice tests put their own session in the window; [PM: Claude, 2026-11-17] task 57 merged in the notes; (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);

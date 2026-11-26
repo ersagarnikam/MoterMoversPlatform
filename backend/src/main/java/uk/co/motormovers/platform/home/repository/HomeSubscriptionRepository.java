@@ -16,6 +16,9 @@ public interface HomeSubscriptionRepository extends JpaRepository<HomeSubscripti
 
     List<HomeSubscription> findByFamilyIdOrderById(Long familyId);
 
+    /** What someone paid for in a family that has since been deleted (its last member left). */
+    List<HomeSubscription> findByPayerIdAndFamilyIdIsNullOrderById(Long payerId);
+
     /** Held until the transaction ends: Stripe's messages about one subscription take turns. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from HomeSubscription s where s.id = :id")

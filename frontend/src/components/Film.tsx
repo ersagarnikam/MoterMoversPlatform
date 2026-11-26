@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 /**
  * A session's film with its credit line. Only the film's details load until someone presses play, and the browser then
  * fetches it in ranges as it plays or seeks, so a film of several hundred megabytes is never downloaded whole.
@@ -11,6 +13,7 @@ export default function Film({
   onTime,
   autoPlay = false,
   startAt = 0,
+  stopped = false,
 }: {
   src: string
   credit: string | null
@@ -23,10 +26,17 @@ export default function Film({
   autoPlay?: boolean
   /** Carry on from here, for a film that left the screen and has come back. */
   startAt?: number
+  /** The session is over: a film still playing is paused (for example after Skip to end). */
+  stopped?: boolean
 }) {
+  const video = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    if (stopped) video.current?.pause()
+  }, [stopped])
   return (
     <figure className="film">
       <video
+        ref={video}
         src={src}
         controls
         preload="metadata"

@@ -93,7 +93,7 @@ public class DashboardService {
         List<DashboardViews.TrustSchoolRow> rows = schools.findByTrustIdOrderByName(trustId).stream().map(s -> {
             DashboardViews.SchoolDashboard d = buildSchool(s);
             AssessmentService.SchoolFigures a = assessments.schoolFigures(s.getId());
-            Licence licence = licences.findFirstBySchoolIdOrderByEndsOnDesc(s.getId()).orElse(null);
+            Licence licence = Licence.shownOn(licences.findBySchoolId(s.getId()), today).orElse(null);
             return new DashboardViews.TrustSchoolRow(s.getId(), s.getName(),
                     licence == null ? Licence.Status.EXPIRED : licence.statusOn(today),
                     licence == null ? null : licence.getPlan().getLabel(),
@@ -101,7 +101,8 @@ public class DashboardService {
                     licence == null ? "" : describeStages(licence.getStages()),
                     d.childrenTotal() == 0 ? 0 : (double) d.childrenAssessed() / d.childrenTotal(),
                     d.dailyParticipation(),
-                    a.children() == 0 ? 0 : (double) a.developmentallyAssessed() / a.children(), a.extraSupport());
+                    a.children() == 0 ? 0 : (double) a.developmentallyAssessed() / a.children(), a.extraSupport(),
+                    licence == null ? null : licence.getStartsOn());
         }).toList();
         return new DashboardViews.TrustDashboard(trust.getId(), trust.getName(), rows);
     }
