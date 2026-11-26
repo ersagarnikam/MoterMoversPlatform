@@ -191,10 +191,13 @@ class CountrySettingsTest {
         assertThat(au.childcarePence()).isEqualTo(75_000);
         assertThat(countries.get(Region.UK).validated("uk").launchPrices().homePassPence()).isEqualTo(53_000);
         assertThat(countries.get(Region.IE).validated("ie").launchPrices().practitionerRenewalPence()).isEqualTo(3_500);
-        // The home programme's monthly price is the one that may be left out, and is, until it is decided (task 68).
-        for (Region region : Region.values()) {
-            assertThat(countries.get(region).validated(region.name()).launchPrices().homeMonthlyPence()).isNull();
-        }
+        // The home programme's monthly price (the owner, 2026-11-26, task 87), in pence and cents.
+        assertThat(countries.get(Region.UK).validated("uk").launchPrices().homeMonthlyPence()).isEqualTo(1_499);
+        assertThat(countries.get(Region.IE).validated("ie").launchPrices().homeMonthlyPence()).isEqualTo(1_699);
+        assertThat(countries.get(Region.AU).validated("au").launchPrices().homeMonthlyPence()).isEqualTo(2_699);
+        // It is the one price that may be left blank: monthly is then not on sale until the team sets a price.
+        assertThat(countries(Map.of("PLATFORM_COUNTRIES_AU_LAUNCHPRICES_HOMEMONTHLY", "")).get(Region.AU)
+                .validated("au").launchPrices().homeMonthlyPence()).isNull();
         assertThat(countries(Map.of("PLATFORM_COUNTRIES_IE_LAUNCHPRICES_HOMEMONTHLY", "17.50")).get(Region.IE)
                 .validated("ie").launchPrices().homeMonthlyPence()).isEqualTo(1_750);
         assertThatThrownBy(() -> countries(Map.of("PLATFORM_COUNTRIES_UK_LAUNCHPRICES_HOMEMONTHLY", "-1")).get(Region.UK)

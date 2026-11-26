@@ -80,7 +80,7 @@ school, security, seed, training, user`, plus `assessment` (Pat's two assessment
 ## Build and test
 
 ```bash
-cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-21) 322 unit + API integration tests (H2)
+cd backend  && ./mvnw -B verify      # (added by Dev, 2026-11-26) 324 unit + API integration tests (H2)
 cd frontend && npm test             # (added by Dev, 2026-11-21) 92 unit tests (Vitest): money, times, offline queue, API client, assessment points, home ages, the brand, the player's clock, the home subscription card
 cd frontend && npm run build        # typecheck + production build
 cd mobile   && npx tsc --noEmit     # parent app typecheck
@@ -219,7 +219,23 @@ Ireland stay as suggested (Neuroway), not yet confirmed by Kay or Neuroway. Its 
 to confirm before they go in the legal entity settings (`PLATFORM_COUNTRIES_AU_...`, `deploy/country.env`); production
 refuses placeholders.
 
-## Current state (2026-11-22)
+## Current state (2026-11-26)
+
+(added by Dev, 2026-11-26) **The Programme at Home is on sale monthly from the first start (go-live task 87; no migration).** The owner
+decided on 2026-11-26: monthly only, with no yearly option, at £14.99 (UK), €16.99 (Ireland) and A$26.99 (Australia) a month, tax
+included (£14.99 includes VAT £2.50; €16.99 includes VAT €3.18; A$26.99 includes GST A$2.45).
+- **Where:** `home-monthly` in each country's `launch-prices` in application.yml. `seed/LaunchPrices` (unchanged) sets it from today when
+  there is no monthly price at all, so a price the team set, even one for a later date, is never replaced, and a second start changes
+  nothing. A deployment that started with none gets its country's on the next start.
+- **It can still be left blank** (`PLATFORM_COUNTRIES_<REGION>_LAUNCHPRICES_HOMEMONTHLY=` with nothing after it): monthly is then not on
+  sale until the team sets a price. `HomeSubscriptionTest` starts that way, because it sets its own prices and dates.
+- **Demo:** monthly is on sale at once. Priya (pass running) is told the day she can subscribe from; Tom (pass ended) sees "Subscribe
+  for £14.99 a month". This supersedes the lines in the task 68 note below that say no monthly price is set.
+- **Tests:** `CountrySettingsTest` (the three prices, and blank), `LaunchPricesTest` (applied once, the team's price left alone, a month
+  with UK VAT), `RegionIrelandTest` and `RegionAustraliaTest` (the price, and a month with its tax). The browser test no longer sets the
+  price first: it reads the launch price on Plans and prices, sets a later price, and subscribes at £14.99.
+- **Guides:** the income table and status line in `docs/guide-builder/build.mjs` say monthly; **the PDFs are not rebuilt** (task 41).
+- **Not in this task:** a free first week or month (Kay and the adviser), a yearly option, moving families that already subscribe.
 
 [PM: Claude, 2026-11-22] **Monthly billing merged (go-live task 68, pull request #79, main 1f0f03a).** Sagar accepted the Developer's five decisions (the note
 below). Before staging: the four Stripe webhook events and the Customer Portal (RUNBOOK, Card payments); Kay's monthly prices are still to come.
@@ -251,8 +267,8 @@ family subscribes on Stripe's own page and Stripe takes each month; the 12-month
   subscription under `parent.subscription_details` and no payment intent (asked for with `GET /v1/invoice_payments`, so a month can be
   refunded through Stripe), and a cancellation may come as `cancel_at`. The older shape is read too. The month is the invoice line's
   `period`, never the invoice's own `period_start` and `period_end`.
-- **Price:** `home-monthly` in a country's `launch-prices` is the one price that may be left out, and is in all three countries until Kay
-  answers. With no monthly price, monthly is not on sale. The team sets it on Plans and prices (the pass price card is gone from there).
+- **Price:** `home-monthly` in a country's `launch-prices` is the one price that may be left out. (added by Dev, 2026-11-26: set in all three
+  countries since task 87.) With no monthly price, monthly is not on sale. The team sets it on Plans and prices (the pass price card is gone from there).
 - **Web:** the At home card (`HomePassCard`, `homePass.ts`): the monthly price and Subscribe, then the state, with Manage for the payer.
   Payments: the family's subscription, Cancel the subscription and Extend. **Parent app:** the state only, with no price, no button and no
   link to a payment page (the app stores' rules; the owner and the adviser are to confirm this for each store).
@@ -260,8 +276,8 @@ family subscribes on Stripe's own page and Stripe takes each month; the 12-month
   demos and the browser tests only, and `ProductionChecks` refuses it). No card and no money: Subscribe and Pay by card "pay" at once, and
   Manage opens a plain page with what Stripe would do next (cancel, the next month, a refused card, end it). Its messages go through the
   same code as the webhook. **The browser tests need it**, and CI's e2e job sets it.
-- **Demo:** Priya's and Tom's 12-month passes are as before (Priya covered, Tom's ended); no monthly price is set, so set one on Plans and
-  prices to try subscribing.
+- **Demo:** Priya's and Tom's 12-month passes are as before (Priya covered, Tom's ended); (added by Dev, 2026-11-26) monthly is on sale at the
+  launch price since task 87, so Tom can subscribe.
 - **Known limits:** not tried with a real Stripe account (RUNBOOK, Card payments, lists the webhook events and the Customer Portal settings
   to set first). A family that already subscribes is not moved to a new price. A family whose children have all moved to a school keeps
   paying until it cancels. A Stripe page left open and paid after the family subscribed another way makes a second subscription, which the
@@ -330,7 +346,8 @@ Irish ones (task 4), tax included:
 | Group of schools, a year (`TRUST`, 10% below a school) | £571.50 | €670.50 | A$1,080 |
 | Practitioner course, then renewal a year | £105 / £30 | €125 / €35 | A$200 / A$60 |
 | Parent course | £55 | €60 | A$100 |
-| Programme at Home, 12-month pass | £530 | €620 | A$1,000 |
+| Programme at Home, 12-month pass (no longer sold, task 68) | £530 | €620 | A$1,000 |
+| Programme at Home, a month (added by Dev, 2026-11-26, task 87) | £14.99 | €16.99 | A$26.99 |
 
 **Plans (V24):** the codes stay; `EARLY_YEARS` is labelled "Childcare centre or kindergarten", `PRIMARY_CORE` "School", `TRUST` "Group of
 schools", and `FULL_PROGRAMME` is retired (not on sale or on the price chart; a licence that holds it keeps working). **Where the prices
@@ -1268,7 +1285,7 @@ Built so far:
   creates the first admin from `PLATFORM_ADMIN_EMAIL`, Docker images, Caddy + nginx, nightly backups,
   `deploy/.env.example`, `deploy/RUNBOOK.md`.
 
-Recent commits (newest first, 2026-11-22): [PM: Claude, 2026-11-22] task 68 merged in the notes; (added by Dev, 2026-11-21) monthly billing for the Programme at Home, with a stand-in for Stripe; (added by Dev, 2026-11-17) session-notice tests put their own session in the window; [PM: Claude, 2026-11-17] task 57 merged in the notes; (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
+Recent commits (newest first, 2026-11-26): (added by Dev, 2026-11-26) the monthly launch price for the Programme at Home in all three countries; [PM: Claude, 2026-11-22] task 68 merged in the notes; (added by Dev, 2026-11-21) monthly billing for the Programme at Home, with a stand-in for Stripe; (added by Dev, 2026-11-17) session-notice tests put their own session in the window; [PM: Claude, 2026-11-17] task 57 merged in the notes; (added by Dev, 2026-11-16) films for a rhyme, a module or an exercise, in the class player and the home session; [PM: Claude, 2026-11-16] decisions, prices and the board in the notes; [PM: Claude, 2026-11-16] guides rebuilt with the new plans; (added by Dev, 2026-11-16) launch prices per country, Kay's plans; [PM: Claude, 2026-11-16] guides rebuilt with the new name and launch prices; (added by Dev, 2026-11-16) rename the platform and apps to the Professor Pat Preedy Programme, with the logo; [PM: Claude, 2026-11-16] the platform rename is decided (task 84); [PM: Claude, 2026-11-15] handoff files for restarting a session; [PM: Claude, 2026-11-15] brand and Pat's recordings in the notes; (added by Dev, 2026-11-12) home pass follow-ups (refund gap, offline sessions, the check, contact details); (added by Dev, 2026-11-12) own databases for the tests that change the clock, and the demo's session near midnight; (added by Dev, 2026-11-12) the Motor Movers at Home pass; (added by Dev, 2026-11-12) Ireland and Australia details from Pat, six-week modules at home; (added by Dev, 2026-11-10) load Pat's daily session plans; [PM: Claude, 2026-11-10] one branch and one pull request per task; (added by Dev, 2026-11-10) clean up uploaded files that were never saved; (added by Dev, 2026-11-06) keep apostrophes in download names and close the log shipper gaps; (added by Dev, 2026-11-06) keep scheduled jobs out of the backend tests; (added by Dev, 2026-11-06) limit staff induction films to licensed schools and the team; (added by Dev, 2026-11-06) small fixes from the Tester's task 75 check; (added by Dev, 2026-11-06) the Tester's file hosting and log findings; (added by Dev, 2026-11-06) log limits, safe logs and an optional log shipper; (added by Dev, 2026-11-06) file storage for films, recordings and printables; (added by Dev, 2026-11-06) the Tester's findings on country labels and refunds; (added by Dev, 2026-11-06) refunds and credit notes; (added by Dev, 2026-11-06) the parent app asks for the country; (added by Dev, 2026-11-06) parent induction before the first home session; (added by Dev, 2026-11-06) the legal entity on screens, emails and certificates; (added by Dev, 2026-11-06) the school year and year names by country; (added by Dev, 2026-11-06) the tax included in each payment; (added by Dev, 2026-11-06) amounts in the deployment's currency; [PM: Claude, 2026-11-06] one monday.com board for all open work; (added by Dev, 2026-11-06) country settings, Ireland and the open settings endpoint; (added by Dev, 2026-11-06) check the licence when a session is recorded; [PM: Claude, 2026-11-06] where Developer specs live (go-live board); (added by Dev) Pat's revised assessment content and the home cool-down; guides rebuilt without the 0 to 3 check; retire the 0 to 3 readiness check; flow sequence diagrams for every role (`docs/flows/`); Pat's answers (the other five colours' grids, Motor Movers at Home
 rules); prototype guides for Pat; price chart and enquiry form on the website; guides rebuilt; Motor Movers at Home on the website; school assessments in the parent app; email a family code; Motor Movers at Home; clearer head assessment figures,
 suggested point and flag reasons;
 colour stage pills on every screen (web and parent app); Pat's two assessments (developmental charts and exercise scores);
@@ -1340,7 +1357,7 @@ Not started unless noted. Confirm priorities with the owner.
    the parent induction she asked for (content from her; then a gate before the first session), the
    other points under Still to settle in `docs/home-programme-design.md`, a privacy notice for families (Motor Movers is responsible
    for home children's data itself), and a price (card payments exist; a subscription is not built). Not built:
-   subscriptions. (added by Dev, 2026-11-21) Monthly subscriptions are built (task 68, Current state); the monthly price is still to come from Kay. (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
+   subscriptions. (added by Dev, 2026-11-21) Monthly subscriptions are built (task 68, Current state); the monthly price is set since 2026-11-26 (task 87). (added by Dev, 2026-11-05) Where Red fits, the rhyme order and the module length were confirmed on
    2026-11-05, and the cool-down ends a session from Green to Indigo (pull request #25).
 13. **Australia (planned, not started; the owner said "later", 2026-11-03).** Launch in Australia as well. Suggested:
    its own deployment (`platform.region: AU`, data kept in Australia, as designed) with the currency following the

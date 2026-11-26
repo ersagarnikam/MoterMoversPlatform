@@ -310,7 +310,7 @@ function overviewBody() {
         <tr><td>Group of schools</td><td>Each school in a group</td><td class="num" colspan="3">10% off licences and training</td></tr>
         <tr><td>Practitioner course</td><td>Practitioner or employer; then a yearly renewal</td><td class="num">£105, then £30</td><td class="num">€125, then €35</td><td class="num">A$200, then A$60</td></tr>
         <tr><td>Parent course</td><td>Family</td><td class="num">£55</td><td class="num">€60</td><td class="num">A$100</td></tr>
-        <tr><td>The Programme at Home</td><td>Family, 12-month pass</td><td class="num">£530</td><td class="num">€620</td><td class="num">A$1,000</td></tr>
+        <tr><td>The Programme at Home</td><td>Family, each month</td><td class="num">£14.99</td><td class="num">€16.99</td><td class="num">A$26.99</td></tr>
       </tbody>
     </table>
     <p class="muted">Launch prices agreed in November 2026. Each country runs separately and charges in its own currency; the team can change any price in the platform at any time, and each licence covers the stages the team sets for that school. A free trial lets a school start before it buys.</p>
@@ -326,7 +326,7 @@ function overviewBody() {
         <li>Parent phone app for iPhone and Android, with phone notifications.</li>
         <li>Live courses on Zoom with registers, quizzes and certificates; payments by card, refunds and credit notes.</li>
         <li>Pat Preedy’s two assessments and her 990 daily session plans, for all seven colours.</li>
-        <li>The Programme at Home, sold as a 12-month family pass (switched off until Pat and the owner agree).</li>
+        <li>The Programme at Home, sold as a monthly family subscription (switched off until Pat and the owner agree).</li>
         <li>The UK, Ireland and Australia from one build, each with its own currency, tax, school year and data held in that country.</li>
         <li>Checked automatically on every change: 290 system checks, 79 web checks, 71 that click through every role, and a load test of 50 learners joining at once.</li>
         <li>Production set-up tried in full: HTTPS, nightly off-site backups, safe logs, and a refusal to start with unsafe settings.</li>

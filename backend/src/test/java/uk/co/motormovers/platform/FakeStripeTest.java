@@ -35,7 +35,7 @@ import uk.co.motormovers.platform.user.repository.AppUserRepository;
 /**
  * The stand-in for Stripe (STRIPE_FAKE=true), which the demo and the browser tests use: subscribing, cancelling, the
  * next month and a refused card all reach the platform as Stripe's own messages would, with no keys. Also a monthly
- * launch price from the settings (home-monthly), which this context is given and no real country has yet.
+ * launch price from the settings (home-monthly), which this context is given in place of the UK's own.
  */
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:fakestripe;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",

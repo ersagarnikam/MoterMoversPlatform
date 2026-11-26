@@ -98,9 +98,12 @@ included: `childcare`, `school` and `group` (the three yearly licences; a group 
 `practitioner` and `practitioner-renewal`, `parent-course` and `home-pass` (the old 12-month pass, no longer sold).
 Override one before the first start with, for example, `PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL=1300`.
 
-`home-monthly`, the home programme's monthly price, is the one price that may be left out, and it is left out in all
-three countries until it is decided. With none, monthly is **not on sale**: set it before the first start
-(`PLATFORM_COUNTRIES_UK_LAUNCHPRICES_HOMEMONTHLY=14.50`), or afterwards on Plans and prices.
+`home-monthly` is the home programme's monthly price: 14.99 in the UK, 16.99 in Ireland and 26.99 in Australia (the
+owner, 2026-11-26; monthly only, with no yearly option). So the subscription is on sale from the first start. It is
+applied only when there is no monthly price at all, so a price the team set, even one for a later date, is never
+replaced. It is the one price that may be left blank (`PLATFORM_COUNTRIES_UK_LAUNCHPRICES_HOMEMONTHLY=` with nothing
+after the equals sign): monthly is then **not on sale** until the team sets a price on Plans and prices. A deployment
+that started before these prices were added and has no monthly price gets its country's on the next start.
 
 They are applied on start, once: a licence plan still at its original set-up price gets the launch price from that
 day (its history shows "launch prices"), the home pass gets its price if it has none, and the two starter courses are

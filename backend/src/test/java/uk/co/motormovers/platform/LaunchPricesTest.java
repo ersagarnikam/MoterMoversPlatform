@@ -39,6 +39,7 @@ import uk.co.motormovers.platform.training.repository.CourseRepository;
 // Its own database: these tests change the price history, which the other tests read.
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:launchprices;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH")
 @AutoConfigureMockMvc
+@org.springframework.context.annotation.Import(MonthlyInRegion.class)
 class LaunchPricesTest {
 
     @Autowired
@@ -62,8 +63,9 @@ class LaunchPricesTest {
 
     /** Checks a deployment's prices, whichever country it started in. Amounts in the minor unit. */
     static void assertPrices(PlanService plans, CourseRepository courses, HomePassPriceRepository passPrices,
-            LocalDate today, int childcare, int school, int group, int practitioner, int renewal, int parentCourse,
-            int homePass) {
+            uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository monthlyPrices, LocalDate today,
+            int childcare, int school, int group, int practitioner, int renewal, int parentCourse, int homePass,
+            int homeMonthly) {
         assertThat(plans.priceOn("EARLY_YEARS", today)).as("childcare centre or kindergarten").isEqualTo(childcare);
         assertThat(plans.priceOn("PRIMARY_CORE", today)).as("school").isEqualTo(school);
         assertThat(plans.priceOn("TRUST", today)).as("group of schools").isEqualTo(group);
@@ -75,6 +77,8 @@ class LaunchPricesTest {
         assertThat(course(courses, "Parent course").getPricePence()).isEqualTo(parentCourse);
         assertThat(passPrices.findFirstByEffectiveFromLessThanEqualOrderByEffectiveFromDesc(today).orElseThrow()
                 .getPricePence()).as("home pass").isEqualTo(homePass);
+        assertThat(monthlyPrices.findFirstByEffectiveFromLessThanEqualOrderByEffectiveFromDesc(today).orElseThrow()
+                .getPricePence()).as("home programme, a month").isEqualTo(homeMonthly);
     }
 
     private static Course course(CourseRepository courses, String title) {
@@ -84,16 +88,49 @@ class LaunchPricesTest {
     @Autowired
     uk.co.motormovers.platform.home.repository.HomeMonthlyPriceRepository monthlyPrices;
 
-    /** Task 68: no country has a monthly price yet, so none is applied and monthly is not on sale. */
+    @Autowired
+    MonthlyInRegion monthly;
+
+    /** Task 87: the home programme is on sale monthly from the first start, at the country's price, set once. */
     @Test
-    void theHomeProgrammesMonthlyPriceWaitsForTheTeam() throws Exception {
+    void theHomeProgrammeIsOnSaleMonthlyFromTheFirstStart() {
+        List<uk.co.motormovers.platform.home.model.HomeMonthlyPrice> all = monthlyPrices.findAll();
+        assertThat(all).hasSize(1);
+        assertThat(all.getFirst().getPricePence()).isEqualTo(1_499);
+        assertThat(all.getFirst().getEffectiveFrom()).isEqualTo(today());
+        assertThat(all.getFirst().getChangedBy()).isEqualTo(LaunchPrices.CHANGED_BY);
         assertThat(launchPrices.apply()).isZero();
-        assertThat(monthlyPrices.count()).isZero();
+        assertThat(monthlyPrices.count()).isEqualTo(1);
+    }
+
+    /** Any monthly price of the team's, even one not yet in force, means the launch price is never put back. */
+    @Test
+    void aMonthlyPriceTheTeamSetIsLeftAloneOnTheNextStart() {
+        List<uk.co.motormovers.platform.home.model.HomeMonthlyPrice> launch = monthlyPrices.findAll();
+        monthlyPrices.deleteAll();
+        monthlyPrices.save(new uk.co.motormovers.platform.home.model.HomeMonthlyPrice(1_600, today().plusDays(10), "admin@motormovers.test",
+                clock.instant()));
+        try {
+            assertThat(launchPrices.apply()).isZero();
+            assertThat(monthlyPrices.findAll()).extracting(uk.co.motormovers.platform.home.model.HomeMonthlyPrice::getPricePence)
+                    .containsExactly(1_600);
+        } finally {
+            monthlyPrices.deleteAll();
+            launch.forEach(p -> monthlyPrices.save(new uk.co.motormovers.platform.home.model.HomeMonthlyPrice(p.getPricePence(),
+                    p.getEffectiveFrom(), p.getChangedBy(), p.getChangedAt())));
+        }
+    }
+
+    /** A month at the UK's price: 14.99 pounds, of which the 20% VAT is 2.50. */
+    @Test
+    void aMonthAtTheUkPriceIncludesVat() {
+        monthly.aMonthIsPaidWithTax("gbp", "eur", 1_499, 250);
     }
 
     @Test
     void aUkDeploymentStartsWithTheUkPrices() {
-        assertPrices(plans, courses, passPrices, today(), 39_500, 63_500, 57_150, 10_500, 3_000, 5_500, 53_000);
+        assertPrices(plans, courses, passPrices, monthlyPrices, today(), 39_500, 63_500, 57_150, 10_500, 3_000, 5_500, 53_000,
+                1_499);
     }
 
     @Test
@@ -120,9 +157,11 @@ class LaunchPricesTest {
     void aSecondStartChangesNothing() {
         long planRows = planPrices.count();
         long passRows = passPrices.count();
+        long monthlyRows = monthlyPrices.count();
         assertThat(launchPrices.apply()).isZero();
         assertThat(planPrices.count()).isEqualTo(planRows);
         assertThat(passPrices.count()).isEqualTo(passRows);
+        assertThat(monthlyPrices.count()).isEqualTo(monthlyRows);
     }
 
     @Test
