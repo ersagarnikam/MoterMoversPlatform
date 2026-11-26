@@ -641,6 +641,19 @@ is, for the owner to decide. The web offline queue (`outbox.ts`, assessment scor
 the server refuses (400) with a toast saying why, sending the rest of the batch one at a time, instead of retrying it
 for ever; daily sessions are not queued (the player shows the refusal as a toast).
 
+**Task tested on its branch (updated by tester, 2026-11-26, `task-87` at 47e8c48, before merge, the Project manager's brief): pull request #81 (task 87, the monthly price
+for the Programme at Home) passes, no bugs.** Backend 324, web 92 unit tests, the build and the parent app typecheck pass here. The browser tests were not rerun (Sagar chose to skip them; CI passed them on 47e8c48).
+- **Each country started fresh (UK, Ireland, Australia, demo with `STRIPE_FAKE=true`, 13 API checks each):** `GET /api/home/pass` is on sale at 1499, 1699 and 2699, from today, changed by "launch prices". Tom (pass ended)
+  can subscribe; Priya (pass to Oct 2027) sees the price but cannot yet. Tom subscribes on the stand-in and his month is PAID at the price, with tax 250 (VAT £2.50), 318 (VAT €3.18) and 245 (GST A$2.45). The team sets a later price
+  (accepted) and a second price for today is refused; today's stays the launch price.
+- **A second start changes nothing:** every row of the monthly, pass and licence prices is identical across three starts in the UK and two in Ireland and Australia, the team's later price included.
+- **Upgrade from main's database (de59b3e, UK):** a team price from today stays and no launch row is added. A team price for a later date only stays, and monthly stays off sale until then. With no price, the launch price is added from today.
+  (A first run lost the later price, because the tester force-killed H2 just after saving it; rerun with a clean stop, it is kept. `LaunchPrices` only adds a price when there is none.)
+- **Overrides (Australia, no demo):** unset gives 2699, `29.95` gives 2995, blank leaves monthly off sale, and `abc`, `-1` and `26.999` stop start-up with the setting named ("must be amounts of 0 or more, with at most two decimal places").
+- **Docs:** RUNBOOK, README, the guides' income table and the Developer's note give the monthly price and no longer say it is not on sale.
+- **Low, for the owner or the Developer:** (1) `HOMEMONTHLY=0` is accepted and saves a monthly price of A$0 from today, while the team's form refuses 0 (what a family is then offered was not tried). (2) The Project manager's note of 2026-11-22 still says "Kay's monthly prices are still to come".
+- **Not tested (Sagar, 2026-11-26: Australia only for the rest until everything is ready):** the screens (At home, Plans and prices) and the app on screen, which the browser test covers for the UK, and the browser tests locally. Also not tested: PostgreSQL and a real Stripe account.
+
 **Task tested on its branch (updated by tester, 2026-11-21, `task-68` at c0973bc, before merge, the Project manager's brief): pull request #79 (task 68, monthly billing for
 the Programme at Home) passes, no bugs.** Backend 322, web 92 unit tests, the build, the parent app typecheck and all 72 browser tests pass (with `STRIPE_FAKE=true`; H2 with demo data, installed Chrome).
 - **Through the API, 76 checks in each of the UK, Ireland and Australia** (the stand-in for Stripe, plus webhook events signed by the tester with a local test secret): not on sale and checkout refused with no monthly price; a price in the past, of 0,
