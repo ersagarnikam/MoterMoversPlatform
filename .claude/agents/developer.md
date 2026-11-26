@@ -55,7 +55,8 @@ keeping out of the scratchpad, and name where they are.
 - Stage colours through `StageBadge`, dates through `day()`, toasts and confirmations through `useToast`/`useConfirm`.
 
 ## Finishing a change
-- Update `CLAUDE.md` in the same pull request: Current state with the date, Next steps, test counts, the latest
+- Update `CLAUDE.md` in the same pull request (keep it short: the task's full note goes at the top of `docs/history.md`,
+  with a line or two in Current state): Current state with the date, Next steps, test counts, the latest
   migration, the recent commits line, and an In progress note while the work is open (who, team, branch, pull
   request). Tag what you add with your team's tag from `.claude/team.md`. Keep everyone else's notes.
 - When a change alters an endpoint, an access rule or a flow step, update that role's file in `docs/flows/`. When
