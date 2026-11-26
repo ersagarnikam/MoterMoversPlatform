@@ -61,7 +61,7 @@ public class AdminSchoolController {
      */
     public record SchoolRow(Long id, String name, String trustName, String region, String plan, String planCode,
             Integer agreedPricePence, Integer listPricePence, Licence.Status licenceStatus, LocalDate endsOn,
-            Set<ColourStage> stages, boolean parentLinksEnabled) {
+            Set<ColourStage> stages, boolean parentLinksEnabled, LocalDate startsOn) {
     }
 
     public record ParentLinksRequest(boolean enabled) {
@@ -80,7 +80,7 @@ public class AdminSchoolController {
     @Transactional(readOnly = true)
     public List<SchoolRow> list() {
         return schools.findAll().stream()
-                .map(s -> row(s, licences.findFirstBySchoolIdOrderByEndsOnDesc(s.getId()).orElse(null)))
+                .map(s -> row(s, shown(s.getId()).orElse(null)))
                 .toList();
     }
 
@@ -111,7 +111,7 @@ public class AdminSchoolController {
     @Transactional
     public SchoolRow agreePrice(@PathVariable Long id, @Valid @RequestBody AgreedPrice request) {
         School school = schools.findById(id).orElseThrow(() -> new NotFoundException("School", id));
-        Licence licence = licences.findFirstBySchoolIdOrderByEndsOnDesc(id)
+        Licence licence = shown(id)
                 .orElseThrow(() -> new IllegalArgumentException("This school has no licence"));
         checkTrialPrice(licence.getPlan(), request.pricePence());
         licence.agreePrice(request.pricePence());
@@ -131,7 +131,13 @@ public class AdminSchoolController {
                 l == null ? null : l.getPlan().getCode(), l == null ? null : l.getAgreedPricePence(),
                 l == null ? null : plans.priceOn(l.getPlan().getCode(), today),
                 l == null ? Licence.Status.EXPIRED : l.statusOn(today), l == null ? null : l.getEndsOn(),
-                l == null ? Set.of() : Set.copyOf(l.getStages()), s.isParentLinksEnabled());
+                l == null ? Set.of() : Set.copyOf(l.getStages()), s.isParentLinksEnabled(),
+                l == null ? null : l.getStartsOn());
+    }
+
+    /** The licence the school's row shows: running today, else the next to start, else the last that ended. */
+    private java.util.Optional<Licence> shown(Long schoolId) {
+        return Licence.shownOn(licences.findBySchoolId(schoolId), LocalDate.now(clock));
     }
 
     /** Lets the school's staff invite parents into the parent app. Switching it off hides every link at once. */

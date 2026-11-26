@@ -108,6 +108,10 @@ created at theirs (`SEED_STARTER_CONTENT=true`). **After the first start, change
 course's price on its page), not here:** a price the team has set is never overwritten, so editing `launch-prices`
 later changes nothing for a plan, pass or course that already has its price.
 
+**Override `group` whenever you override `school`.** Each price is taken as written: `group` is not worked out from
+`school`, so `PLATFORM_COUNTRIES_AU_LAUNCHPRICES_SCHOOL=1300` on its own leaves a group school at 1,080. Set
+`PLATFORM_COUNTRIES_AU_LAUNCHPRICES_GROUP=1170` (10% less) with it.
+
 ## Updating
 
 ```bash

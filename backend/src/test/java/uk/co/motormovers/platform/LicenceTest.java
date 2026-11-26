@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +33,41 @@ class LicenceTest {
         assertThat(due.statusOn(today)).isEqualTo(Licence.Status.RENEWAL_DUE);
         assertThat(expired.statusOn(today)).isEqualTo(Licence.Status.EXPIRED);
         assertThat(trial.statusOn(today)).isEqualTo(Licence.Status.FREE_TRIAL);
+    }
+
+    /** Task 88: a licence that has not started is never shown as Active, whatever its plan. */
+    @Test
+    void aLicenceThatHasNotStartedIsUpcoming() {
+        Licence nextMonth = new Licence(school, fullProgramme, 0, today.plusMonths(1), today.plusMonths(13),
+                EnumSet.of(ColourStage.RED));
+        Licence trialNextWeek = new Licence(school, freeTrial, 0, today.plusDays(7), today.plusDays(37),
+                EnumSet.of(ColourStage.RED));
+        assertThat(nextMonth.statusOn(today)).isEqualTo(Licence.Status.UPCOMING);
+        assertThat(trialNextWeek.statusOn(today)).isEqualTo(Licence.Status.UPCOMING);
+        // From its first day it runs, as isValidOn says.
+        assertThat(nextMonth.statusOn(today.plusMonths(1))).isEqualTo(Licence.Status.ACTIVE);
+        assertThat(nextMonth.isValidOn(today.plusMonths(1))).isTrue();
+    }
+
+    /** The licence a school's status is shown from: running today, else the next to start, else the last ended. */
+    @Test
+    void aSchoolWithSeveralLicencesShowsTheOneThatMatters() {
+        Licence ended = licence(fullProgramme, today.minusDays(10));
+        Licence olderEnded = licence(fullProgramme, today.minusMonths(13));
+        Licence running = licence(fullProgramme, today.plusDays(20));
+        Licence renewal = new Licence(school, fullProgramme, 0, today.plusDays(21), today.plusDays(386),
+                EnumSet.of(ColourStage.RED));
+        Licence later = new Licence(school, fullProgramme, 0, today.plusDays(387), today.plusDays(700),
+                EnumSet.of(ColourStage.RED));
+
+        // The one running today, even though the renewal ends later: its status is Renewal due, not Active.
+        assertThat(Licence.shownOn(List.of(ended, running, renewal, later), today)).contains(running);
+        assertThat(running.statusOn(today)).isEqualTo(Licence.Status.RENEWAL_DUE);
+        // None running: the next to start.
+        assertThat(Licence.shownOn(List.of(olderEnded, ended, later, renewal), today)).contains(renewal);
+        // None running or to come: the last that ended.
+        assertThat(Licence.shownOn(List.of(olderEnded, ended), today)).contains(ended);
+        assertThat(Licence.shownOn(List.of(), today)).isEmpty();
     }
 
     @Test

@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { api, type HomeOverview } from '../../api'
+import { api, type HomeOverview, type HomePass } from '../../api'
 import HomePassCard from '../../components/HomePassCard'
 import { CardPaymentReturn } from '../../components/PayByCard'
 import Skeleton from '../../components/Skeleton'
 import StageBadge from '../../components/StageBadge'
 import { day } from '../../dates'
 import { ageLabel, toMonths } from '../../homeProgramme'
+import { sessionsOpen } from '../../homePass'
 
 /**
  * The Programme at Home on the website: the family's own children (not linked to a school), and adding one. Only a
@@ -15,12 +16,18 @@ import { ageLabel, toMonths } from '../../homeProgramme'
 export default function HomeOverviewPage() {
   const [data, setData] = useState<HomeOverview | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pass, setPass] = useState<HomePass | null>(null)
 
   useEffect(() => {
     api
       .homeOverview()
       .then(setData)
       .catch((e) => setError(e.message))
+    // Whether the check can be done today; without an answer it is not offered.
+    api
+      .homePass()
+      .then(setPass)
+      .catch(() => setPass(null))
   }, [])
 
   if (!data) return error ? <p className="error">{error}</p> : <Skeleton />
@@ -52,7 +59,7 @@ export default function HomeOverviewPage() {
               <p className="muted">
                 {!k.stage
                   ? 'Start with a short check'
-                  : k.checkDue
+                  : k.checkDue && sessionsOpen(pass)
                     ? 'Time for the check again'
                     : `Checked ${day(k.checkedOn)}`}
               </p>

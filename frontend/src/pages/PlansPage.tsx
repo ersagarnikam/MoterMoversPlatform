@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { api, type Plan } from '../api'
 import { currencySymbol, money } from '../money'
 import { day } from '../dates'
+import { planPriceLabel } from '../labels'
 import { useToast } from '../components/Feedback'
 import Skeleton from '../components/Skeleton'
 import { HomeMonthlyPriceCard } from '../components/HomePassAdmin'
@@ -87,7 +88,7 @@ function PlanCard({ plan: p, run }: { plan: Plan; run: Run }) {
         <h3>
           {p.label} {!p.active && <span className="badge">Retired</span>} {p.freeTrial && <span className="badge">Free trial</span>}
         </h3>
-        <span className="price">{money(p.currentPricePence)} a year</span>
+        <span className="price">{planPriceLabel(p)}</span>
       </div>
       <p className="muted">
         {p.licences} {p.licences === 1 ? 'licence' : 'licences'} on this plan

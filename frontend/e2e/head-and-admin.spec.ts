@@ -668,6 +668,8 @@ test('the team schedules a price rise, and past prices stay in the history', asy
   await signIn(page, 'admin@motormovers.test')
   await page.getByRole('link', { name: 'Plans and prices', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Plans and prices' })).toBeVisible()
+  // A retired plan shows no price (task 88): its old one is not on offer.
+  await expect(page.locator('.plan-retired').first()).toContainText('No longer on sale')
   await expectAccessible(page)
 
   const plan = page.locator('.plan-card', { has: page.getByRole('heading', { name: /^School/ }) })

@@ -12,6 +12,7 @@ import {
 import StageBadge from '../components/StageBadge'
 import { STAGES } from '../stages'
 import { day } from '../dates'
+import { approveAllLabel, draftCount } from '../labels'
 import { useConfirm, useToast } from '../components/Feedback'
 import { uploadFile } from '../upload'
 
@@ -644,7 +645,7 @@ export default function ContentPage() {
     const name = STAGES.find((s) => s.key === stage)?.label
     const what = unit ? `${name} module ${unit}` : `all of ${name}`
     const sure = await confirm({
-      title: `Approve ${drafts.length} drafts in ${what}?`,
+      title: `Approve ${draftCount(drafts.length)} in ${what}?`,
       body: 'Teachers can run them as soon as they are approved. Any that fail the wording check stay as drafts.',
       confirmLabel: 'Approve them',
     })
@@ -719,7 +720,12 @@ export default function ContentPage() {
           {stage && (
             <div className="actions form-wide">
               <button className="btn btn-primary" disabled={approving || drafts.length === 0} onClick={approveAll}>
-                {approving ? 'Approving…' : `Approve all ${drafts.length} drafts shown`}
+                {approving
+                  ? 'Approving…'
+                  : approveAllLabel(
+                      drafts.length,
+                      `${STAGES.find((s) => s.key === stage)?.label}${unit ? ` module ${unit}` : ''}`,
+                    )}
               </button>
             </div>
           )}
